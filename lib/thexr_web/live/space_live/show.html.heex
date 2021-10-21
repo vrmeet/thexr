@@ -1,0 +1,32 @@
+<h1>Show Space</h1>
+
+<%= if @live_action in [:edit] do %>
+  <%= live_modal ThexrWeb.SpaceLive.FormComponent,
+    id: @space.id,
+    title: @page_title,
+    action: @live_action,
+    space: @space,
+    return_to: Routes.space_show_path(@socket, :show, @space) %>
+<% end %>
+
+<ul>
+
+  <li>
+    <strong>Name:</strong>
+    <%= @space.name %>
+  </li>
+
+  <li>
+    <strong>Description:</strong>
+    <%= @space.description %>
+  </li>
+
+  <li>
+    <strong>Slug:</strong>
+    <%= @space.slug %>
+  </li>
+
+</ul>
+
+<span><%= live_patch "Edit", to: Routes.space_show_path(@socket, :edit, @space), class: "button" %></span> |
+<span><%= live_redirect "Back", to: Routes.space_index_path(@socket, :index) %></span>

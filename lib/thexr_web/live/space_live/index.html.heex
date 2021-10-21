@@ -1,0 +1,39 @@
+<h1>Listing Spaces</h1>
+
+<%= if @live_action in [:new, :edit] do %>
+  <%= live_modal ThexrWeb.SpaceLive.FormComponent,
+    id: @space.id || :new,
+    title: @page_title,
+    action: @live_action,
+    space: @space,
+    return_to: Routes.space_index_path(@socket, :index) %>
+<% end %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Slug</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="spaces">
+    <%= for space <- @spaces do %>
+      <tr id={"space-#{space.id}"}>
+        <td><%= space.name %></td>
+        <td><%= space.description %></td>
+        <td><%= space.slug %></td>
+
+        <td>
+          <span><%= live_redirect "Show", to: Routes.space_show_path(@socket, :show, space) %></span>
+          <span><%= live_patch "Edit", to: Routes.space_index_path(@socket, :edit, space) %></span>
+          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: space.id, data: [confirm: "Are you sure?"] %></span>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<span><%= live_patch "New Space", to: Routes.space_index_path(@socket, :new) %></span>

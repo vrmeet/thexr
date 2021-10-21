@@ -18,6 +18,22 @@ defmodule ThexrWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+
+    # basic starting point for seeing a space
+    live "/spaces", SpaceLive.Index, :index
+    live "/spaces/new", SpaceLive.Index, :new
+    live "/spaces/:id/edit", SpaceLive.Index, :edit
+
+    live "/spaces/:id", SpaceLive.Show, :show
+    live "/spaces/:id/show/edit", SpaceLive.Show, :edit
+
+    # spaces have entities
+    live "/entities", EntityLive.Index, :index
+    live "/entities/new", EntityLive.Index, :new
+    live "/entities/:id/edit", EntityLive.Index, :edit
+
+    live "/entities/:id", EntityLive.Show, :show
+    live "/entities/:id/show/edit", EntityLive.Show, :edit
   end
 
   # Other scopes may use custom stacks.

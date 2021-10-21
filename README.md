@@ -1,5 +1,14 @@
 # Thexr
 
+## developers
+
+An easy way to setup your local dev env is to use
+https://github.com/nicbet/docker-phoenix
+
+just clone it and follow the install instructions,
+then within that repo, clone THIS repo at the src folder
+
+
 To start your Phoenix server:
 
   * Install dependencies with `mix deps.get`
