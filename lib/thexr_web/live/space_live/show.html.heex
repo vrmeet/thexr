@@ -30,3 +30,18 @@
 
 <span><%= live_patch "Edit", to: Routes.space_show_path(@socket, :edit, @space), class: "button" %></span> |
 <span><%= live_redirect "Back", to: Routes.space_index_path(@socket, :index) %></span>
+
+<ul>
+  <%= for entity <- @space.entities do %>
+    <li> <%= entity.id %> <%= entity.name %>  <%= entity.type %> </li>
+  <% end %>
+</ul>
+
+<h2>Add Entities</h2>
+
+<form phx-submit="add_entity">
+  <select name="entity_kind">
+    <%= options_for_select(Thexr.Spaces.Entity.kinds(), "") %>
+  </select>
+  <button>Add</button>
+</form>

@@ -8,7 +8,7 @@ defmodule Thexr.Spaces.Space do
     field :description, :string
     field :name, :string
     field :slug, :string
-
+    has_many :entities, Thexr.Spaces.Entity
     timestamps()
   end
 

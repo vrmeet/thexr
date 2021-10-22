@@ -37,6 +37,10 @@ defmodule Thexr.Spaces do
   """
   def get_space!(id), do: Repo.get!(Space, id)
 
+  def get_space_with_entities!(id) do
+    Repo.get!(Space, id) |> Repo.preload(:entities)
+  end
+
   @doc """
   Creates a space.
 

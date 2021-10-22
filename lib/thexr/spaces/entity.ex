@@ -13,6 +13,10 @@ defmodule Thexr.Spaces.Entity do
     timestamps()
   end
 
+  def kinds do
+    ["box", "cone", "sphere"]
+  end
+
   @doc false
   def changeset(entity, attrs) do
     entity
