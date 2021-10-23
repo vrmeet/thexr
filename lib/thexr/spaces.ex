@@ -201,4 +201,14 @@ defmodule Thexr.Spaces do
   def change_entity(%Entity{} = entity, attrs \\ %{}) do
     Entity.changeset(entity, attrs)
   end
+
+  def parent_entity(child_id, new_parent_id) do
+    Entity.setparent_changeset(%Entity{id: child_id}, new_parent_id)
+    |> Repo.update()
+  end
+
+  def unparent_entity(child_id) do
+    Entity.unsetparent_changeset(%Entity{id: child_id})
+    |> Repo.update()
+  end
 end
