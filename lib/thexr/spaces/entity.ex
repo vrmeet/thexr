@@ -25,6 +25,14 @@ defmodule Thexr.Spaces.Entity do
     |> create_name_if_missing()
   end
 
+  def setparent_changeset(entity, parent_id) do
+    entity |> cast(%{"parent_id" => parent_id}, [:parent_id])
+  end
+
+  def unsetparent_changeset(entity) do
+    entity |> change() |> force_change(:parent_id, nil)
+  end
+
   defp create_name_if_missing(changeset) do
     if changeset.valid? do
       case fetch_field(changeset, :name) do
