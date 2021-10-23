@@ -7,3 +7,9 @@
 <!-- - Space has one or more 'scene' entities. -->
 - Have a list of entities that can be added to a space
 - Box, Sphere, Cone
+## [0.0.2] ?
+- Entity
+   - deleting an entity from a space
+   - parenting, unparenting an entity
+- Components
+   color, rotation, position, 

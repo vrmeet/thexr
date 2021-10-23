@@ -2,6 +2,7 @@ defmodule ThexrWeb.SpaceLive.Show do
   use ThexrWeb, :live_view
 
   alias Thexr.Spaces
+  alias Thexr.Spaces.Entity
 
   @impl true
   def mount(_params, _session, socket) do
@@ -23,6 +24,12 @@ defmodule ThexrWeb.SpaceLive.Show do
   def handle_event("add_entity", %{"entity_kind" => entity_kind}, socket) do
     attrs = %{space_id: socket.assigns.space.id, name: "my-entity", type: entity_kind}
     Spaces.create_entity(attrs)
+    space_with_entities = Spaces.get_space_with_entities!(socket.assigns.space.id)
+    {:noreply, assign(socket, :space, space_with_entities)}
+  end
+
+  def handle_event("delete_entity", %{"entity_id" => entity_id}, socket) do
+    Spaces.delete_entity(%Entity{id: entity_id})
     space_with_entities = Spaces.get_space_with_entities!(socket.assigns.space.id)
     {:noreply, assign(socket, :space, space_with_entities)}
   end
