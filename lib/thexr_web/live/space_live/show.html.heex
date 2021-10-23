@@ -33,7 +33,7 @@
 
 <ul>
   <%= for entity <- @space.entities do %>
-    <li> <%= entity.id %> <%= entity.name %>  <%= entity.type %> <button phx-click={Phoenix.LiveView.JS.push("delete_entity", value: %{entity_id: entity.id})}>X</button></li>
+    <li> <%= entity.name %>  <%= entity.type %> <button phx-click={Phoenix.LiveView.JS.push("delete_entity", value: %{entity_id: entity.id})}>X</button></li>
   <% end %>
 </ul>
 
