@@ -16,6 +16,24 @@ defmodule Thexr.Spaces.Space do
   def changeset(space, attrs) do
     space
     |> cast(attrs, [:name, :description, :slug])
-    |> validate_required([:name, :slug])
+    |> validate_required([:name])
+    |> create_rand_slug_if_missing()
+  end
+
+  defp create_rand_slug_if_missing(changeset) do
+    if changeset.valid? do
+      case fetch_field(changeset, :slug) do
+        {:data, nil} ->
+          name = fetch_field!(changeset, :name)
+          new_slug = "#{name}_#{Thexr.Utils.randId()}"
+          put_change(changeset, :slug, new_slug)
+
+        _ ->
+          changeset
+      end
+      |> IO.inspect(label: "changeset")
+    else
+      changeset
+    end
   end
 end

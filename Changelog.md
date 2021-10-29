@@ -19,6 +19,8 @@
     should allow preloading of children
 ## [0.0.4] - ?
     - one failing test re: child_count
+    - show root level entities in the UI
+    - some UI to allow parenting / unparenting
 
   - write a recursive content_tag to display nested entities
   https://elixirforum.com/t/recursion-templates-and-views/8997/3

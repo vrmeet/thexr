@@ -23,27 +23,27 @@ defmodule ThexrWeb.EntityLiveTest do
       assert html =~ entity.name
     end
 
-    test "saves new entity", %{conn: conn} do
-      {:ok, index_live, _html} = live(conn, Routes.entity_index_path(conn, :index))
+    # test "saves new entity", %{conn: conn} do
+    #   {:ok, index_live, _html} = live(conn, Routes.entity_index_path(conn, :index))
 
-      assert index_live |> element("a", "New Entity") |> render_click() =~
-               "New Entity"
+    #   assert index_live |> element("a", "New Entity") |> render_click() =~
+    #            "New Entity"
 
-      assert_patch(index_live, Routes.entity_index_path(conn, :new))
+    #   assert_patch(index_live, Routes.entity_index_path(conn, :new))
 
-      assert index_live
-             |> form("#entity-form", entity: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
+    #   assert index_live
+    #          |> form("#entity-form", entity: @invalid_attrs)
+    #          |> render_change() =~ "can&#39;t be blank"
 
-      {:ok, _, html} =
-        index_live
-        |> form("#entity-form", entity: @create_attrs)
-        |> render_submit()
-        |> follow_redirect(conn, Routes.entity_index_path(conn, :index))
+    #   {:ok, _, html} =
+    #     index_live
+    #     |> form("#entity-form", entity: @create_attrs)
+    #     |> render_submit()
+    #     |> follow_redirect(conn, Routes.entity_index_path(conn, :index))
 
-      assert html =~ "Entity created successfully"
-      assert html =~ "some name"
-    end
+    #   assert html =~ "Entity created successfully"
+    #   assert html =~ "some name"
+    # end
 
     test "updates entity in listing", %{conn: conn, entity: entity} do
       {:ok, index_live, _html} = live(conn, Routes.entity_index_path(conn, :index))
