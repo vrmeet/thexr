@@ -9,7 +9,8 @@ defmodule Thexr.Spaces.Entity do
     field :type, :string
     field :space_id, :binary_id
     field :parent_id, :binary_id
-
+    field :child_count, :integer, default: 0
+    has_many :children, Thexr.Spaces.Entity, foreign_key: :parent_id
     timestamps()
   end
 

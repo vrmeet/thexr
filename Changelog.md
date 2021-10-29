@@ -11,7 +11,18 @@
 - Entity
    - deleting an entity from a space
    - parenting, unparenting an entity
-## [0.0.3] ?
+## [0.0.3] - 2021-10-25
+- write some tests:
+  x parenting entity, will set child count on parent
+  x add has_many directive on entity schema 
+    has_many :children, Entity, foreign_key: :parent_id
+    should allow preloading of children
+## [0.0.4] - ?
+    - one failing test re: child_count
+
+  - write a recursive content_tag to display nested entities
+  https://elixirforum.com/t/recursion-templates-and-views/8997/3
+
 - Display some nesting of parent children in the ui for entities
 - allow parenting and unparenting of entities in the UI
 - Components

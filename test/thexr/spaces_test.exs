@@ -35,7 +35,12 @@ defmodule Thexr.SpacesTest do
 
     test "update_space/2 with valid data updates the space" do
       space = space_fixture()
-      update_attrs = %{description: "some updated description", name: "some updated name", slug: "some updated slug"}
+
+      update_attrs = %{
+        description: "some updated description",
+        name: "some updated name",
+        slug: "some updated slug"
+      }
 
       assert {:ok, %Space{} = space} = Spaces.update_space(space, update_attrs)
       assert space.description == "some updated description"
@@ -79,7 +84,8 @@ defmodule Thexr.SpacesTest do
     end
 
     test "create_entity/1 with valid data creates a entity" do
-      valid_attrs = %{name: "some name", type: "some type"}
+      space = space_fixture()
+      valid_attrs = %{name: "some name", type: "some type", space_id: space.id}
 
       assert {:ok, %Entity{} = entity} = Spaces.create_entity(valid_attrs)
       assert entity.name == "some name"
@@ -114,6 +120,19 @@ defmodule Thexr.SpacesTest do
     test "change_entity/1 returns a entity changeset" do
       entity = entity_fixture()
       assert %Ecto.Changeset{} = Spaces.change_entity(entity)
+    end
+
+    test "parent entity" do
+      entity1 = entity_fixture()
+      entity2 = entity_fixture(%{space_id: entity1.space_id})
+      Spaces.parent_entity(entity2.id, entity1.id)
+      # reload parent
+      entity1 = entity1 |> Repo.preload(:children)
+      assert length(entity1.children) == 1
+      IO.inspect(entity1, label: "entity1")
+      # assert entity1.child_count == 1
+
+      assert(Spaces.get_entity!(entity2.id).parent_id != nil)
     end
   end
 end

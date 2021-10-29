@@ -205,10 +205,23 @@ defmodule Thexr.Spaces do
   def parent_entity(child_id, new_parent_id) do
     Entity.setparent_changeset(%Entity{id: child_id}, new_parent_id)
     |> Repo.update()
+
+    query = from(e in Entity, update: [inc: [child_count: 1]], where: e.id == ^new_parent_id)
+    query |> Repo.update_all([])
   end
 
   def unparent_entity(child_id) do
-    Entity.unsetparent_changeset(%Entity{id: child_id})
-    |> Repo.update()
+    q1 = from(e in Entity, select: [:parent_id], where: e.id == ^child_id)
+    entity = Repo.one(q1)
+
+    if entity && entity.parent_id do
+      query =
+        from(e in Entity, update: [inc: [child_count: -1]], where: e.id == ^entity.parent_id)
+
+      query |> Repo.update_all([])
+
+      Entity.unsetparent_changeset(%Entity{id: child_id})
+      |> Repo.update()
+    end
   end
 end
