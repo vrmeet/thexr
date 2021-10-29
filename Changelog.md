@@ -17,8 +17,12 @@
   x add has_many directive on entity schema 
     has_many :children, Entity, foreign_key: :parent_id
     should allow preloading of children
-## [0.0.4] - ?
-    - one failing test re: child_count
+## [0.0.4] - 2021-10-28
+    x one failing test re: child_count
+    x show root level entities in the UI
+    x some UI to allow parenting
+    
+## [0.0.5] - ? UI - unparenting
 
   - write a recursive content_tag to display nested entities
   https://elixirforum.com/t/recursion-templates-and-views/8997/3

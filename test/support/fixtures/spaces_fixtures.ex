@@ -12,10 +12,8 @@ defmodule Thexr.SpacesFixtures do
       attrs
       |> Enum.into(%{
         description: "some description",
-        name: "some name",
-        slug: "some slug"
+        name: "some name"
       })
-      |> IO.inspect(label: "creating space fixture")
       |> Thexr.Spaces.create_space()
 
     space
@@ -25,8 +23,6 @@ defmodule Thexr.SpacesFixtures do
   Generate a entity.
   """
   def entity_fixture(attrs \\ %{}) do
-    IO.inspect(attrs, label: "entity fixture receiving attrs")
-
     space =
       cond do
         attrs[:space_id] == nil && attrs["space_id"] == nil -> space_fixture()
@@ -40,7 +36,6 @@ defmodule Thexr.SpacesFixtures do
         type: "some type",
         space_id: space.id
       })
-      |> IO.inspect(label: "entity attrs")
       |> Thexr.Spaces.create_entity()
 
     entity
