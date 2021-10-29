@@ -45,7 +45,6 @@ defmodule Thexr.Spaces.Entity do
         _ ->
           changeset
       end
-      |> IO.inspect(label: "changeset")
     else
       changeset
     end
