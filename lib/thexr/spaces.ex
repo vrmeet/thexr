@@ -7,6 +7,7 @@ defmodule Thexr.Spaces do
   alias Thexr.Repo
 
   alias Thexr.Spaces.Space
+  alias Thexr.Spaces.Entity
 
   @doc """
   Returns the list of spaces.
@@ -37,8 +38,14 @@ defmodule Thexr.Spaces do
   """
   def get_space!(id), do: Repo.get!(Space, id)
 
-  def get_space_with_entities!(id) do
-    Repo.get!(Space, id) |> Repo.preload(:entities)
+  def get_space_with_top_level_entities!(id) do
+    space = Repo.get!(Space, id)
+    Map.merge(space, %{:entities => get_space_top_level_entities!(id)})
+  end
+
+  def get_space_top_level_entities!(id) do
+    q1 = from(e in Thexr.Spaces.Entity, where: is_nil(e.parent_id) and e.space_id == ^id)
+    Repo.all(q1)
   end
 
   @doc """
@@ -223,5 +230,10 @@ defmodule Thexr.Spaces do
       Entity.unsetparent_changeset(%Entity{id: child_id})
       |> Repo.update()
     end
+  end
+
+  def get_children_entities_of_entity_by_id(id) do
+    q = from(e in Entity, where: e.parent_id == ^id)
+    Repo.all(q)
   end
 end

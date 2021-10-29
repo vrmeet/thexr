@@ -14,7 +14,10 @@ defmodule ThexrWeb.SpaceLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:space, Spaces.get_space_with_entities!(id))}
+     |> assign(:space, Spaces.get_space!(id))
+     |> assign(:selected_entity_id, nil)
+     |> assign(:selected_previous_entity_id, nil)
+     |> assign(:entities, Spaces.get_space_top_level_entities!(id))}
   end
 
   defp page_title(:show), do: "Show Space"
@@ -24,13 +27,30 @@ defmodule ThexrWeb.SpaceLive.Show do
   def handle_event("add_entity", %{"entity_kind" => entity_kind}, socket) do
     attrs = %{space_id: socket.assigns.space.id, type: entity_kind}
     Spaces.create_entity(attrs)
-    space_with_entities = Spaces.get_space_with_entities!(socket.assigns.space.id)
-    {:noreply, assign(socket, :space, space_with_entities)}
+    entities = Spaces.get_space_top_level_entities!(socket.assigns.space.id)
+    {:noreply, assign(socket, :entities, entities)}
   end
 
   def handle_event("delete_entity", %{"entity_id" => entity_id}, socket) do
     Spaces.delete_entity(%Entity{id: entity_id})
-    space_with_entities = Spaces.get_space_with_entities!(socket.assigns.space.id)
-    {:noreply, assign(socket, :space, space_with_entities)}
+    entities = Spaces.get_space_top_level_entities!(socket.assigns.space.id)
+    {:noreply, assign(socket, :entities, entities)}
+  end
+
+  def handle_event("select_entity", %{"id" => entity_id}, socket) do
+    prev = socket.assigns.selected_entity_id
+    {:noreply, assign(socket, selected_entity_id: entity_id, selected_previous_entity_id: prev)}
+  end
+
+  def handle_event("parent_selected_entities", _, socket) do
+    Spaces.parent_entity(
+      socket.assigns.selected_previous_entity_id,
+      socket.assigns.selected_entity_id
+    )
+
+    entities = Spaces.get_space_top_level_entities!(socket.assigns.space.id)
+
+    {:noreply,
+     assign(socket, selected_entity_id: nil, selected_previous_entity_id: nil, entities: entities)}
   end
 end
