@@ -22,7 +22,16 @@
     x show root level entities in the UI
     x some UI to allow parenting
     
-## [0.0.5] - ? UI - unparenting
+## [0.0.5] - 2021-10-31
+  x Query top level nodes and any 'expanded' nodes
+  x take a flat list -> parent_map
+  x parent_map -> recursive data structure for UI
+  x content_tag function to render UI
+## 
+## [0.0.6] ??
+- take a parent_map and create a nested struct
+ui - present nodes that can be expanded
+unparenting
 
   - write a recursive content_tag to display nested entities
   https://elixirforum.com/t/recursion-templates-and-views/8997/3
