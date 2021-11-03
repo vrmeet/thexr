@@ -31,35 +31,31 @@
 <span><%= live_patch "Edit", to: Routes.space_show_path(@socket, :edit, @space), class: "button" %></span> |
 <span><%= live_redirect "Back", to: Routes.space_index_path(@socket, :index) %></span>
 <style>
-  li.selected {
+    ul.entities li.selected {
     border: 1px solid red;
   }
-  li.previously_selected {
+   ul.entities li.previously_selected {
     border: 1px solid orange;
   }
+  ul.entities {
+    list-style-type: none;
+  }
+
 </style>
 
+<div>
 <%= if @selected_previous_entity_id && @selected_entity_id do %>
-<button phx-click="parent_selected_entities">Parent</button>
+  <button phx-click="parent_selected_entities">Parent</button>
 <% end %>
+<%= if @selected_entity_id do %>
+  <button phx-click="delete_selected_entity">Delete</button>
+<% end %>
+</div>
 
-<ul>
-  <%= for entity <- @entities do %>
-    <% class = cond do
-        (@selected_entity_id == entity.id) -> "selected"
-        (@selected_previous_entity_id == entity.id) -> "previously_selected"
-        true -> ""
-      end
-    %>
-    
-    <li class={class} id={"#{entity.id}"} phx-click={Phoenix.LiveView.JS.push("select_entity", value: %{id: entity.id})}> 
-      <%= entity.id %>
-      <%= entity.name %> 
-       <%= entity.type %> 
-       <button phx-click={Phoenix.LiveView.JS.push("delete_entity", value: %{entity_id: entity.id})}>X</button>
-    </li>
-  <% end %>
-</ul>
+
+
+<%= ThexrWeb.SpaceLive.NestedUl.nested_ul(@entities, %{selected_entity_id: @selected_entity_id, selected_previous_entity_id: @selected_previous_entity_id}) %>
+
 
 <h2>Add Entities</h2>
 
@@ -69,3 +65,9 @@
   </select>
   <button>Add</button>
 </form>
+
+<textarea>
+<%= inspect(@entities) %>
+----
+<%= inspect(@expanded_nodes) %>
+</textarea>
