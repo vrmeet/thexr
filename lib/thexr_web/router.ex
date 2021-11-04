@@ -34,6 +34,14 @@ defmodule ThexrWeb.Router do
 
     live "/entities/:id", EntityLive.Show, :show
     live "/entities/:id/show/edit", EntityLive.Show, :edit
+
+    # entities have components
+    live "/components", ComponentLive.Index, :index
+    live "/components/new", ComponentLive.Index, :new
+    live "/components/:id/edit", ComponentLive.Index, :edit
+
+    live "/components/:id", ComponentLive.Show, :show
+    live "/components/:id/show/edit", ComponentLive.Show, :edit
   end
 
   # Other scopes may use custom stacks.
