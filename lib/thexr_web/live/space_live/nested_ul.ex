@@ -11,9 +11,14 @@ defmodule ThexrWeb.SpaceLive.NestedUl do
 
   def li_class(entity, opts) do
     cond do
-      opts.selected_entity_id == entity.id -> "selected"
-      opts.selected_previous_entity_id == entity.id -> "previously_selected"
-      true -> ""
+      opts.selected_entity && opts.selected_entity.id == entity.id ->
+        "selected"
+
+      opts.selected_previous_entity && opts.selected_previous_entity.id == entity.id ->
+        "previously_selected"
+
+      true ->
+        ""
     end
   end
 
@@ -23,7 +28,10 @@ defmodule ThexrWeb.SpaceLive.NestedUl do
     content_tag(:li,
       id: entity.id,
       class: class,
-      phx_click: Phoenix.LiveView.JS.push("select_entity", value: %{id: entity.id})
+      phx_click:
+        Phoenix.LiveView.JS.push("select_entity",
+          value: %{id: entity.id, parent_id: entity.parent_id}
+        )
     ) do
       li_content(entity, opts)
     end
