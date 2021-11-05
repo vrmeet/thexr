@@ -44,17 +44,16 @@
 </style>
 
 <div>
-<%= if @selected_previous_entity_id && @selected_entity_id do %>
+<%= if @selected_previous_entity && @selected_entity do %>
   <button phx-click="parent_selected_entities">Parent</button>
 <% end %>
-<%= if @selected_entity_id do %>
+<%= if @selected_entity do %>
+  <%= if @selected_entity.parent_id do %>
+    <button phx-click="unparent_selected_entity">Unparent</button>
+  <% end %>
   <button phx-click="delete_selected_entity">Delete</button>
 <% end %>
 </div>
-
-
-
-<%= ThexrWeb.SpaceLive.NestedUl.nested_ul(@entities, %{selected_entity_id: @selected_entity_id, selected_previous_entity_id: @selected_previous_entity_id}) %>
 
 
 <h2>Add Entities</h2>
@@ -66,7 +65,16 @@
   <button>Add</button>
 </form>
 
+
+<%= ThexrWeb.SpaceLive.NestedUl.nested_ul(@entities, %{selected_entity: @selected_entity, selected_previous_entity: @selected_previous_entity}) %>
+
+<%= if @selected_entity do %>
+<hr>
+<h2>Selected Entity</h2>
+<% end %>
+
 <textarea>
+
 <%= inspect(@entities) %>
 ----
 <%= inspect(@expanded_nodes) %>

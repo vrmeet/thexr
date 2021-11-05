@@ -27,16 +27,14 @@
   x take a flat list -> parent_map
   x parent_map -> recursive data structure for UI
   x content_tag function to render UI
-## 
-## [0.0.6] ??
-- take a parent_map and create a nested struct
-ui - present nodes that can be expanded
-unparenting
 
-  - write a recursive content_tag to display nested entities
-  https://elixirforum.com/t/recursion-templates-and-views/8997/3
+## [0.0.6] - 2021-11-03
+x ability to unparent an entity in the UI
+x created migration and schema for components
 
-- Display some nesting of parent children in the ui for entities
-- allow parenting and unparenting of entities in the UI
+- prevent circular references in parenting
+- ability to add components to an entity when selected
+- add polymorphic embedded schema for different shapes of components
+
 - Components
    color, rotation, position, 
