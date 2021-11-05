@@ -29,12 +29,16 @@
   x content_tag function to render UI
 
 ## [0.0.6] - 2021-11-03
-x ability to unparent an entity in the UI
-x created migration and schema for components
+  x ability to unparent an entity in the UI
+  x created migration and schema for components
 
+## [0.0.7] - 2021-11-04
+  x added polymorphic_embeds library for validating component of particular schema
+  x added context functions for listing and creating component position for an entity
+
+## [0.0.8] ??
 - prevent circular references in parenting
 - ability to add components to an entity when selected
-- add polymorphic embedded schema for different shapes of components
 
 - Components
    color, rotation, position, 

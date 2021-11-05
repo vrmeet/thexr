@@ -324,6 +324,15 @@ defmodule Thexr.Spaces do
     Repo.all(Component)
   end
 
+  def list_component_types do
+    ["position"]
+  end
+
+  def list_components_for_entity(entity_id) do
+    query = from(c in Component, where: c.entity_id == ^entity_id)
+    Repo.all(query)
+  end
+
   @doc """
   Gets a single component.
 
@@ -352,8 +361,8 @@ defmodule Thexr.Spaces do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_component(attrs \\ %{}) do
-    %Component{}
+  def create_component_for_entity(entity_id, attrs \\ %{}) do
+    %Component{entity_id: entity_id}
     |> Component.changeset(attrs)
     |> Repo.insert()
   end
