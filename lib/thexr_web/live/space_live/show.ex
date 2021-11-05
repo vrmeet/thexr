@@ -68,7 +68,8 @@ defmodule ThexrWeb.SpaceLive.Show do
       {:noreply,
        assign(socket,
          selected_entity: Spaces.get_entity!(entity_id),
-         selected_previous_entity: prev_entity
+         selected_previous_entity: prev_entity,
+         selected_entity_components: Spaces.list_components_for_entity(entity_id)
        )}
     end
   end
