@@ -15,8 +15,8 @@ defmodule ThexrWeb.SpaceLive.Show do
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
      |> assign(:space, Spaces.get_space!(id))
-     |> assign(:selected_entity_id, nil)
-     |> assign(:selected_previous_entity_id, nil)
+     |> assign(:selected_entity, nil)
+     |> assign(:selected_previous_entity, nil)
      |> assign(:expanded_nodes, [])
      |> assign(:entities, Spaces.entity_tree_nested(id, []))}
   end
@@ -47,48 +47,55 @@ defmodule ThexrWeb.SpaceLive.Show do
   end
 
   def handle_event("delete_selected_entity", _, socket) do
-    selected_entity_id = socket.assigns.selected_entity_id
+    selected_entity_id = socket.assigns.selected_entity.id
     Spaces.delete_entity(%Entity{id: selected_entity_id})
 
     socket =
       socket
-      |> assign(:selected_entity_id, nil)
+      |> assign(:selected_entity, nil)
       |> remove_from_expanded_nodes(selected_entity_id)
 
     {:noreply, reload_tree(socket)}
   end
 
   def handle_event("select_entity", %{"id" => entity_id}, socket) do
-    prev = socket.assigns.selected_entity_id
+    prev_entity = socket.assigns.selected_entity
 
-    if prev == entity_id do
+    if prev_entity && prev_entity.id == entity_id do
       # no-op, already selected
       {:noreply, socket}
     else
-      {:noreply, assign(socket, selected_entity_id: entity_id, selected_previous_entity_id: prev)}
+      {:noreply,
+       assign(socket,
+         selected_entity: Spaces.get_entity!(entity_id),
+         selected_previous_entity: prev_entity
+       )}
     end
+  end
+
+  def handle_event("unparent_selected_entity", _, socket) do
+    Spaces.unparent_entity(socket.assigns.selected_entity.id)
+    socket = reload_tree(socket)
+    {:noreply, socket}
   end
 
   def handle_event("parent_selected_entities", _, socket) do
     Spaces.parent_entity(
-      socket.assigns.selected_previous_entity_id,
-      socket.assigns.selected_entity_id
+      socket.assigns.selected_previous_entity.id,
+      socket.assigns.selected_entity.id
     )
 
     socket = reload_tree(socket)
 
-    {:noreply, assign(socket, selected_entity_id: nil, selected_previous_entity_id: nil)}
+    {:noreply, assign(socket, selected_entity: nil, selected_previous_entity: nil)}
   end
 
   def handle_event("expand_entity", %{"id" => entity_id}, socket) do
-    IO.inspect("calling expand node #{entity_id}")
-
     socket =
       socket
       |> add_to_expanded_nodes(entity_id)
       |> reload_tree()
 
-    IO.inspect(socket.assigns)
     {:noreply, socket}
   end
 

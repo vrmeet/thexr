@@ -40,4 +40,19 @@ defmodule Thexr.SpacesFixtures do
 
     entity
   end
+
+  @doc """
+  Generate a component.
+  """
+  def component_fixture(attrs \\ %{}) do
+    {:ok, component} =
+      attrs
+      |> Enum.into(%{
+        data: %{},
+        type: "some type"
+      })
+      |> Thexr.Spaces.create_component()
+
+    component
+  end
 end

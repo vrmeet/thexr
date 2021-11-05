@@ -135,4 +135,60 @@ defmodule Thexr.SpacesTest do
       assert(Spaces.get_entity!(entity2.id).parent_id != nil)
     end
   end
+
+  describe "components" do
+    alias Thexr.Spaces.Component
+
+    import Thexr.SpacesFixtures
+
+    @invalid_attrs %{data: nil, type: nil}
+
+    test "list_components/0 returns all components" do
+      component = component_fixture()
+      assert Spaces.list_components() == [component]
+    end
+
+    test "get_component!/1 returns the component with given id" do
+      component = component_fixture()
+      assert Spaces.get_component!(component.id) == component
+    end
+
+    test "create_component/1 with valid data creates a component" do
+      valid_attrs = %{data: %{}, type: "some type"}
+
+      assert {:ok, %Component{} = component} = Spaces.create_component(valid_attrs)
+      assert component.data == %{}
+      assert component.type == "some type"
+    end
+
+    test "create_component/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Spaces.create_component(@invalid_attrs)
+    end
+
+    test "update_component/2 with valid data updates the component" do
+      component = component_fixture()
+      update_attrs = %{data: %{}, type: "some updated type"}
+
+      assert {:ok, %Component{} = component} = Spaces.update_component(component, update_attrs)
+      assert component.data == %{}
+      assert component.type == "some updated type"
+    end
+
+    test "update_component/2 with invalid data returns error changeset" do
+      component = component_fixture()
+      assert {:error, %Ecto.Changeset{}} = Spaces.update_component(component, @invalid_attrs)
+      assert component == Spaces.get_component!(component.id)
+    end
+
+    test "delete_component/1 deletes the component" do
+      component = component_fixture()
+      assert {:ok, %Component{}} = Spaces.delete_component(component)
+      assert_raise Ecto.NoResultsError, fn -> Spaces.get_component!(component.id) end
+    end
+
+    test "change_component/1 returns a component changeset" do
+      component = component_fixture()
+      assert %Ecto.Changeset{} = Spaces.change_component(component)
+    end
+  end
 end
