@@ -349,17 +349,6 @@ defmodule Thexr.Spaces do
       "delete from treepaths where descendant_id in (select descendant_id from treepaths where ancestor_id = $1) and ancestor_id not in (select descendant_id from treepaths where ancestor_id = $1)",
       [Ecto.UUID.dump!(child_id)]
     )
-
-    # 1. get my descendants: select descendant_id from treepaths where ancestor_id = me
-    # 2. get my ancestors: select ancestor_id from treepaths where descendant_id = me
-
-    # delete from treepaths where
-
-    # remove any tree paths where this child is a descendant
-    # from(t in Treepath, where: t.descendant_id == ^child_id) |> Repo.delete_all()
-
-    # add back self
-    # Repo.insert_all(Treepath, [%{ancestor_id: child_id, descendant_id: child_id}])
   end
 
   # stand alone version

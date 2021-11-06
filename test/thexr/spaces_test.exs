@@ -121,37 +121,6 @@ defmodule Thexr.SpacesTest do
       entity = entity_fixture()
       assert %Ecto.Changeset{} = Spaces.change_entity(entity)
     end
-
-    # test "parent entity" do
-    #   unrelated_entity = entity_fixture()
-    #   parent_entity = entity_fixture(%{space_id: unrelated_entity.space_id})
-    #   child_entity = entity_fixture(%{space_id: unrelated_entity.space_id})
-
-    #   Spaces.parent_entity(child_entity.id, parent_entity.id)
-
-    #   assert Spaces.entity_has_parent?(child_entity.id, parent_entity.id) == {true, 1}
-
-    #   child_entity = Spaces.get_entity!(child_entity.id)
-    #   assert child_entity.parent_id == parent_entity.id
-
-    #   parent_entity = Spaces.get_entity!(parent_entity.id)
-    #   assert parent_entity.child_count == 1
-    # end
-
-    # test "multiple levels of parenting" do
-    #   a = entity_fixture(%{name: "a"})
-    #   b = entity_fixture(%{space_id: a.space_id, name: "b"})
-    #   c = entity_fixture(%{space_id: a.space_id, name: "c"})
-
-    #   Spaces.parent_entity(c.id, b.id)
-    #   Spaces.parent_entity(b.id, a.id)
-
-    #   Repo.all(Entity) |> IO.inspect(label: "entities")
-    #   Repo.all(Thexr.Spaces.Treepath) |> IO.inspect(label: "treepaths")
-    #   # assert Spaces.entity_has_parent?(c.id, a.id) == {true, 2}
-    # end
-
-    # ++++++++++++++++++++++
   end
 
   describe "parenting entities" do
@@ -206,14 +175,12 @@ defmodule Thexr.SpacesTest do
       assert {false, _} = Spaces.entity_has_ancestor?(d.id, b.id)
     end
 
-    test "unparent B", %{a: a, b: b, c: c, d: d} do
+    test "unparent B", %{a: a, b: b} do
       Spaces.unparent_entity(b.id)
       # refresh
-      %{a: a, b: b, c: c, d: d} = %{
+      %{a: a, b: b} = %{
         a: Spaces.get_entity!(a.id),
-        b: Spaces.get_entity!(b.id),
-        c: Spaces.get_entity!(c.id),
-        d: Spaces.get_entity!(d.id)
+        b: Spaces.get_entity!(b.id)
       }
 
       # B has no parent_id
@@ -224,12 +191,11 @@ defmodule Thexr.SpacesTest do
       assert {false, _} = Spaces.entity_has_ancestor?(b.id, a.id)
     end
 
-    test "unparent C", %{a: a, b: b, c: c, d: d} do
+    test "unparent C", %{a: a, c: c, d: d} do
       Spaces.unparent_entity(c.id)
       # refresh
-      %{a: a, b: b, c: c, d: d} = %{
+      %{a: a, c: c, d: d} = %{
         a: Spaces.get_entity!(a.id),
-        b: Spaces.get_entity!(b.id),
         c: Spaces.get_entity!(c.id),
         d: Spaces.get_entity!(d.id)
       }
@@ -274,6 +240,7 @@ defmodule Thexr.SpacesTest do
       # D has B and A as ancestors
       assert {true, _} = Spaces.entity_has_ancestor?(d.id, b.id)
       assert {true, _} = Spaces.entity_has_ancestor?(d.id, a.id)
+      assert {true, _} = Spaces.entity_has_ancestor?(c.id, a.id)
     end
 
     test "prevent circular reference", %{c: c, d: d} do

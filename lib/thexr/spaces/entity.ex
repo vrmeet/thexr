@@ -8,7 +8,6 @@ defmodule Thexr.Spaces.Entity do
     field :name, :string
     field :type, :string
     field :space_id, Ecto.UUID
-    field :has_children, :boolean, default: false, virtual: true
     field :parent_id, :binary_id
     field :child_count, :integer, default: 0
     has_many :children, Thexr.Spaces.Entity, foreign_key: :parent_id
