@@ -122,73 +122,218 @@ defmodule Thexr.SpacesTest do
       assert %Ecto.Changeset{} = Spaces.change_entity(entity)
     end
 
-    test "parent entity" do
-      entity1 = entity_fixture()
-      entity2 = entity_fixture(%{space_id: entity1.space_id})
-      Spaces.parent_entity(entity2.id, entity1.id)
-      # reload parent
-      entity1 = entity1 |> Repo.preload(:children)
-      assert length(entity1.children) == 1
-      IO.inspect(entity1, label: "entity1")
-      # assert entity1.child_count == 1
+    # test "parent entity" do
+    #   unrelated_entity = entity_fixture()
+    #   parent_entity = entity_fixture(%{space_id: unrelated_entity.space_id})
+    #   child_entity = entity_fixture(%{space_id: unrelated_entity.space_id})
 
-      assert(Spaces.get_entity!(entity2.id).parent_id != nil)
-    end
+    #   Spaces.parent_entity(child_entity.id, parent_entity.id)
+
+    #   assert Spaces.entity_has_parent?(child_entity.id, parent_entity.id) == {true, 1}
+
+    #   child_entity = Spaces.get_entity!(child_entity.id)
+    #   assert child_entity.parent_id == parent_entity.id
+
+    #   parent_entity = Spaces.get_entity!(parent_entity.id)
+    #   assert parent_entity.child_count == 1
+    # end
+
+    # test "multiple levels of parenting" do
+    #   a = entity_fixture(%{name: "a"})
+    #   b = entity_fixture(%{space_id: a.space_id, name: "b"})
+    #   c = entity_fixture(%{space_id: a.space_id, name: "c"})
+
+    #   Spaces.parent_entity(c.id, b.id)
+    #   Spaces.parent_entity(b.id, a.id)
+
+    #   Repo.all(Entity) |> IO.inspect(label: "entities")
+    #   Repo.all(Thexr.Spaces.Treepath) |> IO.inspect(label: "treepaths")
+    #   # assert Spaces.entity_has_parent?(c.id, a.id) == {true, 2}
+    # end
+
+    # ++++++++++++++++++++++
   end
 
-  describe "components" do
-    alias Thexr.Spaces.Component
+  describe "parenting entities" do
+    alias Thexr.Spaces.Entity
 
     import Thexr.SpacesFixtures
 
-    @invalid_attrs %{data: nil, type: nil}
+    setup do
+      # create top level entities, A, B, C, D
+      # set hierarchy
+      #   A
+      #  / \
+      # B   C
+      #      \
+      #       D
+      a = entity_fixture(%{name: "a"})
+      b = entity_fixture(%{space_id: a.space_id, name: "b"})
+      c = entity_fixture(%{space_id: a.space_id, name: "c"})
+      d = entity_fixture(%{space_id: a.space_id, name: "d"})
+      Spaces.parent_entity(b.id, a.id)
+      Spaces.parent_entity(c.id, a.id)
+      Spaces.parent_entity(d.id, c.id)
 
-    test "list_components/0 returns all components" do
-      component = component_fixture()
-      assert Spaces.list_components() == [component]
+      %{
+        a: Spaces.get_entity!(a.id),
+        b: Spaces.get_entity!(b.id),
+        c: Spaces.get_entity!(c.id),
+        d: Spaces.get_entity!(d.id)
+      }
     end
 
-    test "get_component!/1 returns the component with given id" do
-      component = component_fixture()
-      assert Spaces.get_component!(component.id) == component
+    test "immediate parent is set", %{a: a, b: b, c: c} do
+      # B and C have parent_id set and it is A.id
+      assert b.parent_id == a.id
+      assert c.parent_id == a.id
     end
 
-    test "create_component/1 with valid data creates a component" do
-      valid_attrs = %{data: %{}, type: "some type"}
-
-      assert {:ok, %Component{} = component} = Spaces.create_component(valid_attrs)
-      assert component.data == %{}
-      assert component.type == "some type"
+    test "child_count is set", %{a: a, c: c} do
+      # A has child count of 2
+      assert a.child_count == 2
+      # C has child count of 1
+      assert c.child_count == 1
     end
 
-    test "create_component/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Spaces.create_component(@invalid_attrs)
+    test "ancestor lookup works", %{a: a, b: b, c: c, d: d} do
+      # A is an ancestor to everyone
+      assert {true, _} = Spaces.entity_has_ancestor?(d.id, a.id)
+      # C is an ancestor to D
+      assert {true, _} = Spaces.entity_has_ancestor?(d.id, c.id)
+      # B is not an ancestor of C or D
+      assert {false, _} = Spaces.entity_has_ancestor?(c.id, b.id)
+      assert {false, _} = Spaces.entity_has_ancestor?(d.id, b.id)
     end
 
-    test "update_component/2 with valid data updates the component" do
-      component = component_fixture()
-      update_attrs = %{data: %{}, type: "some updated type"}
+    test "unparent B", %{a: a, b: b, c: c, d: d} do
+      Spaces.unparent_entity(b.id)
+      # refresh
+      %{a: a, b: b, c: c, d: d} = %{
+        a: Spaces.get_entity!(a.id),
+        b: Spaces.get_entity!(b.id),
+        c: Spaces.get_entity!(c.id),
+        d: Spaces.get_entity!(d.id)
+      }
 
-      assert {:ok, %Component{} = component} = Spaces.update_component(component, update_attrs)
-      assert component.data == %{}
-      assert component.type == "some updated type"
+      # B has no parent_id
+      assert b.parent_id == nil
+      # A has child_count of 1
+      assert a.child_count == 1
+      # A is not ancestor of B
+      assert {false, _} = Spaces.entity_has_ancestor?(b.id, a.id)
     end
 
-    test "update_component/2 with invalid data returns error changeset" do
-      component = component_fixture()
-      assert {:error, %Ecto.Changeset{}} = Spaces.update_component(component, @invalid_attrs)
-      assert component == Spaces.get_component!(component.id)
+    test "unparent C", %{a: a, b: b, c: c, d: d} do
+      Spaces.unparent_entity(c.id)
+      # refresh
+      %{a: a, b: b, c: c, d: d} = %{
+        a: Spaces.get_entity!(a.id),
+        b: Spaces.get_entity!(b.id),
+        c: Spaces.get_entity!(c.id),
+        d: Spaces.get_entity!(d.id)
+      }
+
+      # C becomes parentless
+      assert c.parent_id == nil
+      # D is not a descendant of A
+      assert {false, _} = Spaces.entity_has_ancestor?(d.id, a.id)
+      # C remains an ancestor of D
+      assert {true, _} = Spaces.entity_has_ancestor?(d.id, c.id)
     end
 
-    test "delete_component/1 deletes the component" do
-      component = component_fixture()
-      assert {:ok, %Component{}} = Spaces.delete_component(component)
-      assert_raise Ecto.NoResultsError, fn -> Spaces.get_component!(component.id) end
+    test "move B under D", %{a: a, b: b, c: c, d: d} do
+      Spaces.parent_entity(b.id, d.id)
+      # refresh
+      %{a: a, b: b, c: c, d: d} = %{
+        a: Spaces.get_entity!(a.id),
+        b: Spaces.get_entity!(b.id),
+        c: Spaces.get_entity!(c.id),
+        d: Spaces.get_entity!(d.id)
+      }
+
+      # A, C and D are all ancestors of B
+      assert {true, _} = Spaces.entity_has_ancestor?(b.id, a.id)
+      assert {true, _} = Spaces.entity_has_ancestor?(b.id, c.id)
+      assert {true, _} = Spaces.entity_has_ancestor?(b.id, d.id)
+
+      # A has child count of 1
+      assert a.child_count == 1
     end
 
-    test "change_component/1 returns a component changeset" do
-      component = component_fixture()
-      assert %Ecto.Changeset{} = Spaces.change_component(component)
+    test "move C under B", %{a: a, b: b, c: c, d: d} do
+      Spaces.parent_entity(c.id, b.id)
+      # refresh
+      %{a: a, b: b, c: c, d: d} = %{
+        a: Spaces.get_entity!(a.id),
+        b: Spaces.get_entity!(b.id),
+        c: Spaces.get_entity!(c.id),
+        d: Spaces.get_entity!(d.id)
+      }
+
+      # D has B and A as ancestors
+      assert {true, _} = Spaces.entity_has_ancestor?(d.id, b.id)
+      assert {true, _} = Spaces.entity_has_ancestor?(d.id, a.id)
+    end
+
+    test "prevent circular reference", %{c: c, d: d} do
+      refute Spaces.parent_entity(c.id, d.id)
     end
   end
+
+  # describe "components" do
+  #   alias Thexr.Spaces.Component
+
+  #   import Thexr.SpacesFixtures
+
+  #   @invalid_attrs %{data: nil, type: nil}
+
+  #   test "list_components/0 returns all components" do
+  #     component = component_fixture()
+  #     assert Spaces.list_components() == [component]
+  #   end
+
+  #   test "get_component!/1 returns the component with given id" do
+  #     component = component_fixture()
+  #     assert Spaces.get_component!(component.id) == component
+  #   end
+
+  #   test "create_component/1 with valid data creates a component" do
+  #     valid_attrs = %{data: %{}, type: "some type"}
+
+  #     assert {:ok, %Component{} = component} = Spaces.create_component(valid_attrs)
+  #     assert component.data == %{}
+  #     assert component.type == "some type"
+  #   end
+
+  #   test "create_component/1 with invalid data returns error changeset" do
+  #     assert {:error, %Ecto.Changeset{}} = Spaces.create_component(@invalid_attrs)
+  #   end
+
+  #   test "update_component/2 with valid data updates the component" do
+  #     component = component_fixture()
+  #     update_attrs = %{data: %{}, type: "some updated type"}
+
+  #     assert {:ok, %Component{} = component} = Spaces.update_component(component, update_attrs)
+  #     assert component.data == %{}
+  #     assert component.type == "some updated type"
+  #   end
+
+  #   test "update_component/2 with invalid data returns error changeset" do
+  #     component = component_fixture()
+  #     assert {:error, %Ecto.Changeset{}} = Spaces.update_component(component, @invalid_attrs)
+  #     assert component == Spaces.get_component!(component.id)
+  #   end
+
+  #   test "delete_component/1 deletes the component" do
+  #     component = component_fixture()
+  #     assert {:ok, %Component{}} = Spaces.delete_component(component)
+  #     assert_raise Ecto.NoResultsError, fn -> Spaces.get_component!(component.id) end
+  #   end
+
+  #   test "change_component/1 returns a component changeset" do
+  #     component = component_fixture()
+  #     assert %Ecto.Changeset{} = Spaces.change_component(component)
+  #   end
+  # end
 end
