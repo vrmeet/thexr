@@ -1,21 +1,21 @@
 defmodule ThexrWeb.SpaceLiveTest do
   use ThexrWeb.ConnCase
 
-  import Phoenix.LiveViewTest
-  import Thexr.SpacesFixtures
+  # import Phoenix.LiveViewTest
+  # import Thexr.SpacesFixtures
 
-  @create_attrs %{description: "some description", name: "some name", slug: "some slug"}
-  @update_attrs %{
-    description: "some updated description",
-    name: "some updated name",
-    slug: "some updated slug"
-  }
-  @invalid_attrs %{description: nil, name: nil, slug: nil}
+  # @create_attrs %{description: "some description", name: "some name", slug: "some slug"}
+  # @update_attrs %{
+  #   description: "some updated description",
+  #   name: "some updated name",
+  #   slug: "some updated slug"
+  # }
+  # @invalid_attrs %{description: nil, name: nil, slug: nil}
 
-  defp create_space(_) do
-    space = space_fixture()
-    %{space: space}
-  end
+  # defp create_space(_) do
+  #   space = space_fixture()
+  #   %{space: space}
+  # end
 
   # describe "Index" do
   #   setup [:create_space]

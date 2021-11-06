@@ -1,17 +1,17 @@
 defmodule ThexrWeb.ComponentLiveTest do
   use ThexrWeb.ConnCase
 
-  import Phoenix.LiveViewTest
-  import Thexr.SpacesFixtures
+  # import Phoenix.LiveViewTest
+  # import Thexr.SpacesFixtures
 
-  @create_attrs %{data: %{}, type: "some type"}
-  @update_attrs %{data: %{}, type: "some updated type"}
-  @invalid_attrs %{data: nil, type: nil}
+  # @create_attrs %{data: %{}, type: "some type"}
+  # @update_attrs %{data: %{}, type: "some updated type"}
+  # @invalid_attrs %{data: nil, type: nil}
 
-  defp create_component(_) do
-    component = component_fixture()
-    %{component: component}
-  end
+  # defp create_component(_) do
+  #   component = component_fixture()
+  #   %{component: component}
+  # end
 
   # describe "Index" do
   #   setup [:create_component]
