@@ -36,8 +36,11 @@
   x added polymorphic_embeds library for validating component of particular schema
   x added context functions for listing and creating component position for an entity
 
-## [0.0.8] ??
+## [issue 6] - 2021-11-05
 - prevent circular references in parenting
+  - when parenting, first check that the child is not an ancestor of the parent
+
+-----
 - ability to add components to an entity when selected
 
 - Components

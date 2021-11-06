@@ -8,6 +8,7 @@ defmodule Thexr.Spaces do
 
   alias Thexr.Spaces.Space
   alias Thexr.Spaces.Entity
+  alias Thexr.Spaces.Treepath
 
   @doc """
   Returns the list of spaces.
@@ -222,9 +223,19 @@ defmodule Thexr.Spaces do
 
   """
   def create_entity(attrs \\ %{}) do
-    %Entity{}
-    |> Entity.changeset(attrs)
-    |> Repo.insert()
+    result =
+      %Entity{}
+      |> Entity.changeset(attrs)
+      |> Repo.insert()
+
+    case result do
+      {:ok, entity} ->
+        Repo.insert_all(Treepath, [%{ancestor_id: entity.id, descendant_id: entity.id}])
+        {:ok, entity}
+
+      result ->
+        result
+    end
   end
 
   @doc """
@@ -274,33 +285,101 @@ defmodule Thexr.Spaces do
     Entity.changeset(entity, attrs)
   end
 
+  # 3 operations
+
   def parent_entity(child_id, new_parent_id) do
-    # check if child already has a parent
-    entity = Repo.get!(Entity, child_id)
+    case entity_has_ancestor?(new_parent_id, child_id) do
+      {true, _} ->
+        false
 
-    if entity.parent_id do
-      unparent_entity(child_id)
+      _ ->
+        unparent_entity(child_id, new_parent_id)
+
+        # set parent_id on entity record
+        Entity.setparent_changeset(%Entity{id: child_id}, new_parent_id)
+        |> Repo.update()
+
+        # increment child_count on the new parent
+        query = from(e in Entity, update: [inc: [child_count: 1]], where: e.id == ^new_parent_id)
+        query |> Repo.update_all([])
+
+        # https://www.percona.com/blog/2011/02/14/moving-subtrees-in-closure-table/
+        # now we need to insert all the nodes of the subtree.
+        # We use a Cartesian join between the ancestors (going up) and the descendants (going down).
+        insert_tree_query = """
+        INSERT into treepaths (ancestor_id, descendant_id, depth)
+        SELECT supertree.ancestor_id, subtree.descendant_id,
+        supertree.depth+subtree.depth+1
+        FROM treepaths AS supertree CROSS JOIN treepaths AS subtree
+        WHERE subtree.ancestor_id = $1
+        AND supertree.descendant_id = $2
+        """
+
+        Ecto.Adapters.SQL.query!(
+          Repo,
+          insert_tree_query,
+          [Ecto.UUID.dump!(child_id), Ecto.UUID.dump!(new_parent_id)]
+        )
+
+        true
     end
-
-    Entity.setparent_changeset(%Entity{id: child_id}, new_parent_id)
-    |> Repo.update()
-
-    query = from(e in Entity, update: [inc: [child_count: 1]], where: e.id == ^new_parent_id)
-    query |> Repo.update_all([])
   end
 
+  # move to new parent version (just avoids unsetting parent_id on entity)
+  def unparent_entity(child_id, _new_parent) do
+    # get the parent_id
+    query =
+      from e in Entity,
+        select: e.parent_id,
+        where: not is_nil(e.parent_id) and e.id == ^child_id
+
+    case Repo.all(query) do
+      [] ->
+        "no-op"
+
+      [parent_id] ->
+        query = from(e in Entity, update: [inc: [child_count: -1]], where: e.id == ^parent_id)
+        query |> Repo.update_all([])
+    end
+
+    # remove any tree paths in my descendants https://www.percona.com/blog/2011/02/14/moving-subtrees-in-closure-table/
+    # essentially breaking the subtree away
+    Ecto.Adapters.SQL.query(
+      Repo,
+      "delete from treepaths where descendant_id in (select descendant_id from treepaths where ancestor_id = $1) and ancestor_id not in (select descendant_id from treepaths where ancestor_id = $1)",
+      [Ecto.UUID.dump!(child_id)]
+    )
+
+    # 1. get my descendants: select descendant_id from treepaths where ancestor_id = me
+    # 2. get my ancestors: select ancestor_id from treepaths where descendant_id = me
+
+    # delete from treepaths where
+
+    # remove any tree paths where this child is a descendant
+    # from(t in Treepath, where: t.descendant_id == ^child_id) |> Repo.delete_all()
+
+    # add back self
+    # Repo.insert_all(Treepath, [%{ancestor_id: child_id, descendant_id: child_id}])
+  end
+
+  # stand alone version
   def unparent_entity(child_id) do
-    q1 = from(e in Entity, select: [:parent_id], where: e.id == ^child_id)
-    entity = Repo.one(q1)
+    unparent_entity(child_id, :move)
 
-    if entity && entity.parent_id do
-      query =
-        from(e in Entity, update: [inc: [child_count: -1]], where: e.id == ^entity.parent_id)
+    Entity.unsetparent_changeset(%Entity{id: child_id})
+    |> Repo.update()
+  end
 
-      query |> Repo.update_all([])
+  def entity_has_ancestor?(test_child_id, test_ancestor_id) do
+    query =
+      from(t in Treepath,
+        select: t.depth,
+        where: t.descendant_id == ^test_child_id and t.ancestor_id == ^test_ancestor_id
+      )
 
-      Entity.unsetparent_changeset(%Entity{id: child_id})
-      |> Repo.update()
+    case Repo.all(query) do
+      [] -> {false, nil}
+      [depth] -> {true, depth}
     end
   end
 
