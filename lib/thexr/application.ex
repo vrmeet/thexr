@@ -15,7 +15,9 @@ defmodule Thexr.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Thexr.PubSub},
       # Start the Endpoint (http/https)
-      ThexrWeb.Endpoint
+      ThexrWeb.Endpoint,
+      {Registry, keys: :unique, name: Thexr.ExperienceRegistry},
+      Thexr.ExperienceSupervisor
       # Start a worker by calling: Thexr.Worker.start_link(arg)
       # {Thexr.Worker, arg}
     ]
