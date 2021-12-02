@@ -68,7 +68,8 @@ defmodule Thexr.ExperienceServer do
     {:ok,
      %{
        slug: slug,
-       game: %Game{}
+       game: %Game{},
+       game_start_debounce_ref: nil
      }, @timeout}
   end
 
@@ -86,7 +87,7 @@ defmodule Thexr.ExperienceServer do
     {new_game, cmd} = Game.process_event(state.game, event_name, payload)
 
     state = Map.put(state, :game, new_game)
-    process_cmd(state, cmd)
+    state = process_cmd(state, cmd)
     {:noreply, state, @timeout}
   end
 
@@ -110,10 +111,32 @@ defmodule Thexr.ExperienceServer do
     :ok
   end
 
-  defp process_cmd(_state, nil) do
+  defp process_cmd(state, nil) do
+    state
   end
 
-  defp process_cmd(_state, :min_players_met) do
-    Process.send_after(self(), :start_game, 1000)
+  defp process_cmd(state, {:min_player_met, debounce_time_sec}) do
+    case state.game_start_debounce_ref do
+      nil ->
+        Map.put(
+          state,
+          :game_start_debounce_ref,
+          Process.send_after(self(), :start_game, debounce_time_sec * 1000)
+        )
+
+      ref ->
+        Process.cancel_timer(ref)
+        Map.put(state, :game_start_debounce_ref, nil)
+    end
+  end
+
+  defp process_cmd(state, {:person_teleported, payload}) do
+    ThexrWeb.Endpoint.broadcast!(state.slug, "person_teleported", payload)
+    state
+  end
+
+  defp process_cmd(state, cmd) do
+    IO.inspect(cmd, label: "unhandled process cmd")
+    state
   end
 end

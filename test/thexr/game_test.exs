@@ -4,14 +4,20 @@ defmodule Thexr.GameTest do
   alias Thexr.{Game}
 
   describe "game" do
-    test "parse a spec" do
+    setup do
       game = %Game{}
 
       game_spec =
         File.read!("./test/support/fixtures/squid_game.json")
         |> Jason.decode!()
 
-      new_game = Game.parse_spec(game, game_spec)
+      %{game: Game.parse_spec(game, game_spec)}
+    end
+
+    test "get cmd to spawn to random location when person joins", %{game: game} do
+      {game, cmd} = Game.process_event(game, "person_entered", %{"id" => "abc"})
+      IO.inspect(game)
+      IO.inspect(cmd)
     end
   end
 end

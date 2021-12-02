@@ -1,4 +1,5 @@
 %{
+  "atomic_map": {:hex, :atomic_map, "0.9.3", "3c7f1302e0590164732d08ca999708efbb2cd768abf2911cf140280ce2dc499d", [:mix], [], "hexpm", "c237babf301bd2435bd85b96cffc973022b4cbb7721537059ee0dd3bb74938d2"},
   "castore": {:hex, :castore, "0.1.12", "b5755d7668668a74c0e3c4c68df91da927e063a5cade17d693eff04e6ab64805", [:mix], [], "hexpm", "981c79528f88ec4ffd627214ad4cdd25052dc56c002996c603011ae37ec1b4b0"},
   "connection": {:hex, :connection, "1.1.0", "ff2a49c4b75b6fb3e674bfc5536451607270aac754ffd1bdfe175abe4a6d7a68", [:mix], [], "hexpm", "722c1eb0a418fbe91ba7bd59a47e28008a189d47e37e0e7bb85585a016b2869c"},
   "cowboy": {:hex, :cowboy, "2.9.0", "865dd8b6607e14cf03282e10e934023a1bd8be6f6bacf921a7e2a96d800cd452", [:make, :rebar3], [{:cowlib, "2.11.0", [hex: :cowlib, repo: "hexpm", optional: false]}, {:ranch, "1.8.0", [hex: :ranch, repo: "hexpm", optional: false]}], "hexpm", "2c729f934b4e1aa149aff882f57c6372c15399a20d54f65c8d67bef583021bde"},

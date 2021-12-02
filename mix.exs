@@ -49,7 +49,8 @@ defmodule Thexr.MixProject do
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:polymorphic_embed, "~> 1.7.2"}
+      {:polymorphic_embed, "~> 1.7.2"},
+      {:atomic_map, "~> 0.9"}
     ]
   end
 
