@@ -10,19 +10,12 @@ defmodule Thexr.Game do
   end
 
   def parse_spec(game = %Game{}, %{"constructs" => constructs}) do
-    opt_in_sign =
-      Enum.find(constructs, nil, fn construct ->
-        construct["type"] == "opt_in_sign"
+    config =
+      Enum.reduce(constructs, %ExperienceConfig{}, fn construct, config ->
+        ExperienceConfig.parse_construct(config, construct)
       end)
 
-    case opt_in_sign do
-      nil ->
-        game
-
-      sign ->
-        min_players = sign["params"]["min_players"]
-        %Game{game | config: %ExperienceConfig{min_players: min_players}}
-    end
+    %Game{game | config: config}
   end
 
   def start_game(game = %Game{}) do
@@ -37,7 +30,10 @@ defmodule Thexr.Game do
   def process_event(game = %Game{}, "person_entered", %{"id" => id}) do
     new_participants = Map.put(game.participants, id, Participant.new(id))
     game = %Game{game | participants: new_participants}
-    {game, nil}
+
+    {game,
+     {:person_teleported,
+      %{id: id, position: get_random_spawn_point(game.config.initial_spawn_plane)}}}
   end
 
   def process_event(game = %Game{}, "person_opt_in", %{"id" => id}) do
@@ -48,7 +44,7 @@ defmodule Thexr.Game do
 
     # now return a tuple saying condition met?
     if game.config.min_players <= num_ready_to_play(game.participants) do
-      {game, :min_players_met}
+      {game, {:min_player_met, game.config.game_start_debounce_sec}}
     else
       {game, nil}
     end
@@ -92,5 +88,15 @@ defmodule Thexr.Game do
     Enum.count(participants, fn {_k, v} ->
       Participant.opted_in?(v)
     end)
+  end
+
+  def get_random_spawn_point(%{position: %{x: x, y: y, z: z}, length: length, width: width}) do
+    rand_x = :rand.uniform() * width + x - width / 2
+    rand_z = :rand.uniform() * length + z - length / 2
+    %{x: rand_x, y: y, z: rand_z}
+  end
+
+  def get_random_spawn_point(_) do
+    get_random_spawn_point(%{position: %{x: 0, y: 0, z: 0}, length: 1.5, width: 1.5})
   end
 end
