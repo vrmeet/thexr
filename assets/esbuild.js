@@ -1,5 +1,6 @@
 const esbuild = require('esbuild')
 
+
 // Decide which mode to proceed with
 let mode = 'build'
 process.argv.slice(2).forEach((arg) => {
@@ -15,7 +16,7 @@ process.argv.slice(2).forEach((arg) => {
 
 // Define esbuild options + extras for watch and deploy
 let opts = {
-    entryPoints: ['js/app.js'],
+    entryPoints: ['js/app.js', 'js/experiment.ts'],
     bundle: true,
     external: ["/fonts/*", "/images/*"],
     logLevel: 'info',
