@@ -25,7 +25,10 @@ config :thexr, ThexrWeb.Endpoint,
   secret_key_base: "ECThNXubNdN0CLRsR5g9kT0zhuUJrjTuvcCOxymF/xiekvivkqU+vKW+cKiqsebp",
   watchers: [
     # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
-    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
+    # esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
+
+    # the above default was replaced with https://cloudless.studio/wrapping-your-head-around-assets-in-phoenix-1-6
+    node: ["esbuild.js", "--watch", cd: Path.expand("../assets", __DIR__)]
   ]
 
 # ## SSL Support
