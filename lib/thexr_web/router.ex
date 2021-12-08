@@ -18,6 +18,7 @@ defmodule ThexrWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+    get "/experiment", ExperimentController, :index
 
     # basic starting point for seeing a space
     live "/spaces", SpaceLive.Index, :index

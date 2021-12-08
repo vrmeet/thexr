@@ -42,7 +42,6 @@ defmodule Thexr.MixProject do
       {:phoenix_live_view, "~> 0.17.3"},
       {:floki, ">= 0.32.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.6"},
-      {:esbuild, "~> 0.2", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.3"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
@@ -62,11 +61,11 @@ defmodule Thexr.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "ecto.setup"],
+      setup: ["deps.get", "ecto.setup", "cmd npm --prefix assets install"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
-      "assets.deploy": ["esbuild default --minify", "phx.digest"]
+      "assets.deploy": ["cmd npm --prefix assets run deploy"]
     ]
   end
 end
