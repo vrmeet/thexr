@@ -19,6 +19,7 @@ defmodule ThexrWeb.Router do
 
     get "/", PageController, :index
     get "/experiment", ExperimentController, :index
+    resources "/plugins", PluginController
 
     # basic starting point for seeing a space
     live "/spaces", SpaceLive.Index, :index

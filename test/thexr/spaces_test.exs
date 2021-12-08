@@ -303,4 +303,60 @@ defmodule Thexr.SpacesTest do
   #     assert %Ecto.Changeset{} = Spaces.change_component(component)
   #   end
   # end
+
+  describe "plugins" do
+    alias Thexr.Spaces.Plugin
+
+    import Thexr.SpacesFixtures
+
+    @invalid_attrs %{js: nil, ts: nil}
+
+    test "list_plugins/0 returns all plugins" do
+      plugin = plugin_fixture()
+      assert Spaces.list_plugins() == [plugin]
+    end
+
+    test "get_plugin!/1 returns the plugin with given id" do
+      plugin = plugin_fixture()
+      assert Spaces.get_plugin!(plugin.id) == plugin
+    end
+
+    test "create_plugin/1 with valid data creates a plugin" do
+      valid_attrs = %{js: "some js", ts: "some ts"}
+
+      assert {:ok, %Plugin{} = plugin} = Spaces.create_plugin(valid_attrs)
+      assert plugin.js == "some js"
+      assert plugin.ts == "some ts"
+    end
+
+    test "create_plugin/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Spaces.create_plugin(@invalid_attrs)
+    end
+
+    test "update_plugin/2 with valid data updates the plugin" do
+      plugin = plugin_fixture()
+      update_attrs = %{js: "some updated js", ts: "some updated ts"}
+
+      assert {:ok, %Plugin{} = plugin} = Spaces.update_plugin(plugin, update_attrs)
+      assert plugin.js == "some updated js"
+      assert plugin.ts == "some updated ts"
+    end
+
+    test "update_plugin/2 with invalid data returns error changeset" do
+      plugin = plugin_fixture()
+      assert {:error, %Ecto.Changeset{}} = Spaces.update_plugin(plugin, @invalid_attrs)
+      assert plugin == Spaces.get_plugin!(plugin.id)
+    end
+
+    test "delete_plugin/1 deletes the plugin" do
+      plugin = plugin_fixture()
+      assert {:ok, %Plugin{}} = Spaces.delete_plugin(plugin)
+      assert_raise Ecto.NoResultsError, fn -> Spaces.get_plugin!(plugin.id) end
+    end
+
+    test "change_plugin/1 returns a plugin changeset" do
+      plugin = plugin_fixture()
+      assert %Ecto.Changeset{} = Spaces.change_plugin(plugin)
+    end
+  end
 end

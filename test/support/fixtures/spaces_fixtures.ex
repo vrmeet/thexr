@@ -55,4 +55,19 @@ defmodule Thexr.SpacesFixtures do
 
     component
   end
+
+  @doc """
+  Generate a plugin.
+  """
+  def plugin_fixture(attrs \\ %{}) do
+    {:ok, plugin} =
+      attrs
+      |> Enum.into(%{
+        js: "some js",
+        ts: "some ts"
+      })
+      |> Thexr.Spaces.create_plugin()
+
+    plugin
+  end
 end

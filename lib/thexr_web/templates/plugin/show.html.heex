@@ -1,0 +1,18 @@
+<h1>Show Plugin</h1>
+
+<ul>
+
+  <li>
+    <strong>Ts:</strong>
+    <%= @plugin.ts %>
+  </li>
+
+  <li>
+    <strong>Js:</strong>
+    <%= @plugin.js %>
+  </li>
+
+</ul>
+
+<span><%= link "Edit", to: Routes.plugin_path(@conn, :edit, @plugin) %></span> |
+<span><%= link "Back", to: Routes.plugin_path(@conn, :index) %></span>
