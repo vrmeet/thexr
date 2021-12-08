@@ -1,5 +1,5 @@
 const esbuild = require('esbuild')
-
+const falWorks = require('@fal-works/esbuild-plugin-global-externals')
 
 // Decide which mode to proceed with
 let mode = 'build'
@@ -13,6 +13,13 @@ process.argv.slice(2).forEach((arg) => {
 // original esbuild elixir wrapper had these args:
 //    ~w(js/app.js --bundle --target=es2016 --outdir=../priv/static/assets 
 //--external:/fonts/* --external:/images/*),
+const globals = {
+    babylonjs: {
+        varName: 'BABYLON',
+        type: "cjs",
+    },
+}
+
 
 // Define esbuild options + extras for watch and deploy
 let opts = {
@@ -21,7 +28,8 @@ let opts = {
     external: ["/fonts/*", "/images/*"],
     logLevel: 'info',
     target: 'es2016',
-    outdir: '../priv/static/assets'
+    outdir: '../priv/static/assets',
+    plugins: [falWorks.globalExternals(globals)],
 }
 if (mode === 'watch') {
     opts = {
