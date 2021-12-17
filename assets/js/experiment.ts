@@ -1,6 +1,29 @@
 import * as BABYLON from 'babylonjs'
 
+let workerCode = `
 
+onmessage = (msg) => {
+    if (msg.data[0] === "add") {
+        console.log('cookie', document.cookie)
+       
+        self.postMessage(["result", msg.data[1] + msg.data[2]])
+        
+    }
+}
+`
+
+let workerBlob = new Blob([workerCode], { type: "text/javascript" })
+
+let workerURL = URL.createObjectURL(workerBlob)
+
+let worker = new Worker(workerURL)
+
+
+worker.postMessage(["add", 1, 2])
+worker.onmessage = (incoming) => {
+    console.log("incoming from worker", incoming.data)
+}
+window["worker"] = worker
 // window["plugins"] = {}
 // //load plugins
 // Tools.LoadScript("http://localhost:4000/assets/plugin1.js", () => {
