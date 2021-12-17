@@ -1,5 +1,29 @@
 import * as BABYLON from 'babylonjs'
 
+const text = `
+<states>
+  <state name="part1">
+    <box position="[0,0,0]"/>
+  </state>
+  <state name="part2">
+    <box position="[1,1,-1]"/>
+  </state>
+</states>
+`
+const parser = new DOMParser();
+const xmlDoc = parser.parseFromString(text, "text/xml");
+
+let getStates = xmlDoc.getElementsByTagName("states")[0]
+window['states'] = getStates
+for (let i = 0; i < getStates.childElementCount; i++) {
+    let state = getStates.children[i]
+    for (let j = 0; j < state.childElementCount; j++) {
+        let entity = state.children[j]
+        console.log("entityNodeName", entity.nodeName, "properties", entity.attributes)
+    }
+}
+
+
 window.addEventListener('DOMContentLoaded', async function () {
     var canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;
 
