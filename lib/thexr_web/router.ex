@@ -18,6 +18,7 @@ defmodule ThexrWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+    get "/:slug", ExperienceController, :show
     get "/experiment", ExperimentController, :index
     resources "/plugins", PluginController
 
