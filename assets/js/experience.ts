@@ -1,29 +1,5 @@
 import * as BABYLON from 'babylonjs'
-
-const text = `
-<states>
-  <state name="part1">
-    <box position="[0,0,0]"/>
-  </state>
-  <state name="part2">
-    <box position="[1,1,-1]"/>
-  </state>
-</states>
-`
-const parser = new DOMParser();
-const xmlDoc = parser.parseFromString(text, "text/xml");
-
-let getStates = xmlDoc.getElementsByTagName("states")[0]
-window['states'] = getStates
-for (let i = 0; i < getStates.childElementCount; i++) {
-    let state = getStates.children[i]
-    for (let j = 0; j < state.childElementCount; j++) {
-        let entity = state.children[j]
-        console.log("entityNodeName", entity.nodeName, "properties", entity.attributes)
-    }
-}
-
-
+import { ExperienceSpecParser } from './experience_spec_parser'
 window.addEventListener('DOMContentLoaded', async function () {
     var canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;
 
@@ -32,6 +8,7 @@ window.addEventListener('DOMContentLoaded', async function () {
     var createScene = function () {
         // Create a basic BJS Scene object
         var scene = new BABYLON.Scene(engine);
+        window['scene'] = scene
         // Create a FreeCamera, and set its position to {x: 0, y: 5, z: -10}
         var camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), scene);
         // Target the camera to scene origin
@@ -40,17 +17,15 @@ window.addEventListener('DOMContentLoaded', async function () {
         camera.attachControl(canvas, false);
         // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
         var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), scene);
-        // Create a built-in "sphere" shape; its constructor takes 6 params: name, segment, diameter, scene, updatable, sideOrientation
-        var sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 2, scene, false, BABYLON.Mesh.FRONTSIDE);
-        // Move the sphere upward 1/2 of its height
-        sphere.position.y = 1;
-        // Create a built-in "ground" shape; its constructor takes 6 params : name, width, height, subdivision, scene, updatable
-        var ground = BABYLON.Mesh.CreateGround('ground1', 6, 6, 2, scene, false);
-        // Return the created scene
+
         return scene;
     }
     // call the createScene function
     var scene = createScene();
+    // parse the scene for states
+    let experienceParser = new ExperienceSpecParser('', scene)
+    window['experienceParser'] = experienceParser
+    experienceParser.stateChange('part1')
     // run the render loop
     engine.runRenderLoop(function () {
         scene.render();
