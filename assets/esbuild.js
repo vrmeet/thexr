@@ -14,16 +14,20 @@ process.argv.slice(2).forEach((arg) => {
 //    ~w(js/app.js --bundle --target=es2016 --outdir=../priv/static/assets 
 //--external:/fonts/* --external:/images/*),
 const globals = {
-    babylonjs: {
+    'babylonjs': {
         varName: 'BABYLON',
-        type: "cjs",
+        type: 'cjs',
     },
+    'babylonjs-materials': {
+        varName: 'BABYLON',
+        type: 'cjs'
+    }
 }
 
 
 // Define esbuild options + extras for watch and deploy
 let opts = {
-    entryPoints: ['js/app.js', 'js/experiment.ts'],
+    entryPoints: ['js/app.js', 'js/experience.ts'],
     bundle: true,
     external: ["/fonts/*", "/images/*"],
     logLevel: 'info',
