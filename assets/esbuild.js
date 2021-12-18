@@ -14,10 +14,14 @@ process.argv.slice(2).forEach((arg) => {
 //    ~w(js/app.js --bundle --target=es2016 --outdir=../priv/static/assets 
 //--external:/fonts/* --external:/images/*),
 const globals = {
-    babylonjs: {
+    'babylonjs': {
         varName: 'BABYLON',
-        type: "cjs",
+        type: 'cjs',
     },
+    'babylonjs-materials': {
+        varName: 'BABYLON',
+        type: 'cjs'
+    }
 }
 
 

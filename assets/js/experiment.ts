@@ -1,5 +1,6 @@
 import * as BABYLON from 'babylonjs'
 
+
 let workerCode = `
 
 onmessage = (msg) => {
