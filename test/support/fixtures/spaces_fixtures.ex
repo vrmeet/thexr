@@ -70,4 +70,20 @@ defmodule Thexr.SpacesFixtures do
 
     plugin
   end
+
+  @doc """
+  Generate a template.
+  """
+  def template_fixture(attrs \\ %{}) do
+    {:ok, template} =
+      attrs
+      |> Enum.into(%{
+        data: %{},
+        description: "some description",
+        name: "some name"
+      })
+      |> Thexr.Spaces.create_template()
+
+    template
+  end
 end

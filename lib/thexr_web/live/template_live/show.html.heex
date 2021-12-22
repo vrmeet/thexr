@@ -1,0 +1,34 @@
+<h1>Show Template</h1>
+
+<%= if @live_action in [:edit] do %>
+  <%= live_modal ThexrWeb.TemplateLive.FormComponent,
+    id: @template.id,
+    title: @page_title,
+    action: @live_action,
+    template: @template,
+    return_to: Routes.template_show_path(@socket, :show, @template) %>
+<% end %>
+
+<ul>
+
+  <li>
+    <strong>Name:</strong>
+    <%= @template.name %>
+  </li>
+
+  <li>
+    <strong>Description:</strong>
+    <%= @template.description %>
+  </li>
+
+  <li>
+    <strong>Data:</strong>
+    <textarea>
+    <%= @template.data %>
+    </textarea>
+  </li>
+
+</ul>
+
+<span><%= live_patch "Edit", to: Routes.template_show_path(@socket, :edit, @template), class: "button" %></span> |
+<span><%= live_redirect "Back", to: Routes.template_index_path(@socket, :index) %></span>

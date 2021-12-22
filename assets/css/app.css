@@ -87,3 +87,7 @@
   text-decoration: none;
   cursor: pointer;
 }
+
+.template_area {
+  height: 20em;
+}
