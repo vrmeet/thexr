@@ -13,18 +13,28 @@ defmodule Thexr.Spaces.Space do
   end
 
   @doc false
-  def changeset(space, attrs) do
+  def new_changeset(space, attrs) do
     space
-    |> cast(attrs, [:name, :description, :slug])
+    |> cast(attrs, [:name, :description])
     |> validate_required([:name])
-    |> create_rand_slug_if_missing()
   end
 
-  defp create_rand_slug_if_missing(changeset) do
+  def edit_changeset(space, attrs) do
+    space
+    |> cast(attrs, [:name, :description, :slug])
+    |> validate_required([:name, :description, :slug])
+    |> create_rand_slug_if_missing()
+    |> unique_constraint(:slug)
+  end
+
+  def create_rand_slug_if_missing(changeset) do
     if changeset.valid? do
       case fetch_field(changeset, :slug) do
         {:data, nil} ->
-          name = fetch_field!(changeset, :name)
+          name =
+            fetch_field!(changeset, :name)
+            |> String.replace(~r/[^a-zA-Z0-9]/, "-")
+
           new_slug = "#{name}_#{Thexr.Utils.randId()}"
           put_change(changeset, :slug, new_slug)
 

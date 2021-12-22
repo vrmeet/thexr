@@ -15,6 +15,7 @@ defmodule ThexrWeb.SpaceLive.FormComponent do
 
   @impl true
   def handle_event("validate", %{"space" => space_params}, socket) do
+    # TODO validate as new or edit based on live_action
     changeset =
       socket.assigns.space
       |> Spaces.change_space(space_params)

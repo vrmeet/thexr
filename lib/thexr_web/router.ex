@@ -19,32 +19,48 @@ defmodule ThexrWeb.Router do
 
     get "/", PageController, :index
     get "/:slug", ExperienceController, :show
-    get "/experiment", ExperimentController, :index
-    resources "/plugins", PluginController
+  end
+
+  scope "/admin", ThexrWeb do
+    pipe_through :browser
+
+    live "/templates", TemplateLive.Index, :index
+    live "/templates/new", TemplateLive.Index, :new
+    live "/templates/:id/edit", TemplateLive.Index, :edit
+
+    live "/templates/:id", TemplateLive.Show, :show
+    live "/templates/:id/show/edit", TemplateLive.Show, :edit
+  end
+
+  scope "/m", ThexrWeb do
+    pipe_through :browser
+
+    # get "/experiment", ExperimentController, :index
+    # resources "/plugins", PluginController
 
     # basic starting point for seeing a space
     live "/spaces", SpaceLive.Index, :index
     live "/spaces/new", SpaceLive.Index, :new
     live "/spaces/:id/edit", SpaceLive.Index, :edit
 
-    live "/spaces/:id", SpaceLive.Show, :show
-    live "/spaces/:id/show/edit", SpaceLive.Show, :edit
+    # live "/spaces/:id", SpaceLive.Show, :show
+    # live "/spaces/:id/show/edit", SpaceLive.Show, :edit
 
     # spaces have entities
-    live "/entities", EntityLive.Index, :index
-    live "/entities/new", EntityLive.Index, :new
-    live "/entities/:id/edit", EntityLive.Index, :edit
+    # live "/entities", EntityLive.Index, :index
+    # live "/entities/new", EntityLive.Index, :new
+    # live "/entities/:id/edit", EntityLive.Index, :edit
 
-    live "/entities/:id", EntityLive.Show, :show
-    live "/entities/:id/show/edit", EntityLive.Show, :edit
+    # live "/entities/:id", EntityLive.Show, :show
+    # live "/entities/:id/show/edit", EntityLive.Show, :edit
 
     # entities have components
-    live "/components", ComponentLive.Index, :index
-    live "/components/new", ComponentLive.Index, :new
-    live "/components/:id/edit", ComponentLive.Index, :edit
+    # live "/components", ComponentLive.Index, :index
+    # live "/components/new", ComponentLive.Index, :new
+    # live "/components/:id/edit", ComponentLive.Index, :edit
 
-    live "/components/:id", ComponentLive.Show, :show
-    live "/components/:id/show/edit", ComponentLive.Show, :edit
+    # live "/components/:id", ComponentLive.Show, :show
+    # live "/components/:id/show/edit", ComponentLive.Show, :edit
   end
 
   # Other scopes may use custom stacks.
@@ -62,7 +78,7 @@ defmodule ThexrWeb.Router do
   if Mix.env() in [:dev, :test] do
     import Phoenix.LiveDashboard.Router
 
-    scope "/" do
+    scope "/admin" do
       pipe_through :browser
       live_dashboard "/dashboard", metrics: ThexrWeb.Telemetry
     end

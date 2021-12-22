@@ -1,10 +1,10 @@
 <div>
   <h2><%= @title %></h2>
-  
+
   <.form
     let={f}
     for={@changeset}
-    id="space-form"
+    id="template-form"
     phx-target={@myself}
     phx-change="validate"
     phx-submit="save">
@@ -14,16 +14,12 @@
     <%= error_tag f, :name %>
   
     <%= label f, :description %>
-    <%= textarea f, :description %>
+    <%= text_input f, :description %>
     <%= error_tag f, :description %>
   
-  <%= if @action == :edit do %>
-
-    <%= label f, :slug %>
-    <%= text_input f, :slug %>
-    <%= error_tag f, :slug %>
-
-  <% end %>
+    <%= label f, :data %>
+    <%= textarea f, :data, [class: "template_area"] %>
+    <%= error_tag f, :data %>
   
     <div>
       <%= submit "Save", phx_disable_with: "Saving..." %>
