@@ -5,7 +5,11 @@ defmodule ThexrWeb.SpaceLive.FormComponent do
 
   @impl true
   def update(%{space: space} = assigns, socket) do
-    changeset = Spaces.change_space(space)
+    changeset =
+      case socket.assigns[:changeset] do
+        nil -> Spaces.change_space(space)
+        changeset -> changeset
+      end
 
     {:ok,
      socket
@@ -25,6 +29,17 @@ defmodule ThexrWeb.SpaceLive.FormComponent do
   end
 
   def handle_event("save", %{"space" => space_params}, socket) do
+    space_params =
+      case socket.assigns.selected_template_id do
+        nil ->
+          space_params
+
+        template_id ->
+          template = Spaces.get_template!(template_id)
+          Map.put(space_params, "data", template.data)
+      end
+      |> IO.inspect(label: "space_params")
+
     save_space(socket, socket.assigns.action, space_params)
   end
 

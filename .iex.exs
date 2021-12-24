@@ -1,4 +1,4 @@
 alias Thexr.Repo
-alias Thexr.Spaces.{Entity, Space}
+alias Thexr.Spaces.{Space, Template}
 alias Thexr.Spaces
 alias Thexr.{ExperienceSupervisor, ExperienceServer}

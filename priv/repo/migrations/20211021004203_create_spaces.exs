@@ -7,9 +7,10 @@ defmodule Thexr.Repo.Migrations.CreateSpaces do
       add :name, :string, null: false
       add :description, :text
       add :slug, :string, null: false
-
+      add :data, :text, default: ""
       timestamps()
     end
+
     create unique_index(:spaces, [:slug])
   end
 end
