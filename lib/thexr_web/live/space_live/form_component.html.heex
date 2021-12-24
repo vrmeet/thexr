@@ -32,7 +32,7 @@
   <% end %>
   
     <div>
-      <%= submit "Save", phx_disable_with: "Saving...", disabled: (@selected_template_id == nil) %>
+      <%= submit "Save", phx_disable_with: "Saving...", disabled: (@action == :new && @selected_template_id == nil) %>
     </div>
   </.form>
 </div>

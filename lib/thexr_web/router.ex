@@ -18,7 +18,7 @@ defmodule ThexrWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
-    get "/:slug", ExperienceController, :show
+    get "/:slug", SpaceController, :show
   end
 
   scope "/admin", ThexrWeb do
@@ -35,7 +35,6 @@ defmodule ThexrWeb.Router do
   scope "/m", ThexrWeb do
     pipe_through :browser
 
-    # get "/experiment", ExperimentController, :index
     # resources "/plugins", PluginController
 
     # basic starting point for seeing a space
