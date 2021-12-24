@@ -6,7 +6,7 @@ defmodule Thexr.Repo.Migrations.CreateTemplates do
       add :id, :binary_id, primary_key: true
       add :name, :string, null: false
       add :description, :string, null: false
-      add :data, :text, default: "{}"
+      add :data, :text, default: ""
       timestamps()
     end
 

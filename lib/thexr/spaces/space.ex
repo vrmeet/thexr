@@ -8,6 +8,7 @@ defmodule Thexr.Spaces.Space do
     field :description, :string
     field :name, :string
     field :slug, :string
+    field :data, :string, default: ""
     has_many :entities, Thexr.Spaces.Entity
     timestamps()
   end
@@ -15,7 +16,7 @@ defmodule Thexr.Spaces.Space do
   @doc false
   def new_changeset(space, attrs) do
     space
-    |> cast(attrs, [:name, :description])
+    |> cast(attrs, [:name, :description, :data])
     |> validate_required([:name])
   end
 

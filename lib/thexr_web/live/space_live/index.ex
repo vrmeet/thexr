@@ -6,7 +6,7 @@ defmodule ThexrWeb.SpaceLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, :spaces, list_spaces())}
+    {:ok, assign(socket, spaces: list_spaces(), selected_template_id: nil)}
   end
 
   @impl true
@@ -38,6 +38,13 @@ defmodule ThexrWeb.SpaceLive.Index do
     {:ok, _} = Spaces.delete_space(space)
 
     {:noreply, assign(socket, :spaces, list_spaces())}
+  end
+
+  @impl true
+  def handle_info({:template_clicked, template_id}, socket) do
+    socket = assign(socket, selected_template_id: template_id)
+
+    {:noreply, socket}
   end
 
   defp list_spaces do

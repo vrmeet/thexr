@@ -1,0 +1,8 @@
+<div>
+  <h2>Select a template</h2>
+  <ul id="templates">
+    <%= for template <- @templates do %>
+      <li class={ if template.id == @selected_template_id, do: "selected", else: "" } phx-click="template_clicked" phx-value-id={template.id} phx-target={@myself}><%= template.name %></li>
+    <% end %>
+  </ul>
+</div>
