@@ -27,9 +27,6 @@
   </li>
 
 </ul>
-
-<span><%= live_patch "Edit", to: Routes.space_show_path(@socket, :edit, @space), class: "button" %></span> |
-<span><%= live_redirect "Back", to: Routes.space_index_path(@socket, :index) %></span>
 <style>
     ul.entities li.selected {
     border: 1px solid red;
