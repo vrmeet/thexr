@@ -42,7 +42,7 @@ defmodule ThexrWeb.Router do
     live "/spaces/new", SpaceLive.Index, :new
     live "/spaces/:id/edit", SpaceLive.Index, :edit
 
-    # live "/spaces/:id", SpaceLive.Show, :show
+    live "/edit_space/:slug", SpaceEditLive.Index, :index
     # live "/spaces/:id/show/edit", SpaceLive.Show, :edit
 
     # spaces have entities
