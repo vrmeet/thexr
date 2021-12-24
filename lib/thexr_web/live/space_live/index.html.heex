@@ -29,7 +29,7 @@
         <td><%= space.slug %></td>
 
         <td>
-          <span><%= link "Enter", to: Routes.experience_path(@socket, :show, space.slug) %></span>
+          <span><%= link "Enter", to: Routes.space_path(@socket, :show, space.slug) %></span>
           <span><%= live_patch "Edit", to: Routes.space_index_path(@socket, :edit, space) %></span>
           <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: space.id, data: [confirm: "Are you sure?"] %></span>
         </td>
