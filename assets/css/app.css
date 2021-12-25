@@ -89,6 +89,18 @@
 }
 /* my styles */
 
+
+body {
+  color: gray;
+  background-color: #09061c83;
+}
+
+input, textarea, select {
+  color: #873386;
+  font-weight: 900;
+}
+
+
 .template_area {
   height: 20em;
 }
@@ -96,3 +108,4 @@
 #templates .selected {
   border: 1px solid red;
 }
+

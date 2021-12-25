@@ -1,7 +1,7 @@
 import * as BABYLON from 'babylonjs'
 import { ExperienceSpecParser } from './experience_spec_parser'
 window.addEventListener('DOMContentLoaded', async function () {
-    var canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;
+    var canvas = document.getElementById('spaceCanvas') as HTMLCanvasElement;
 
     let engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
 
