@@ -1,6 +1,67 @@
-<h1>Experience</h1>
 
-<canvas id="renderCanvas"></canvas>
+<style>
+  html, body {
+      overflow: hidden;
+      width   : 100%;
+      height  : 100%;
+      margin  : 0;
+      padding : 0;
 
-<iframe src={"/m/edit_space/#{@space.slug}"}></iframe>
+      background: radial-gradient(ellipse at top, #201111, transparent),
+            radial-gradient(ellipse at bottom, #000021, transparent);
+  }
 
+  #spaceCanvas {
+      position: absolute;
+      width   : 100%;
+      height  : 100%;
+      touch-action: none;
+      outline: none;
+      z-index: 1;
+  }
+
+#editingSpace {
+  top: 0;
+  right: 0;
+  position: absolute;
+  width: 25%;
+  height: 100%;
+}
+
+#editSpaceMenu {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 3;
+    cursor: pointer;
+}
+#editSpaceMenu:hover {
+    font-weight: bold;
+}
+.editing {
+    z-index: 2;
+}
+
+</style>
+
+<div id="editSpaceMenu">Menu</div>
+
+<canvas id="spaceCanvas"></canvas>
+
+<div id="editingSpace">
+<iframe allowtransparency="true" width="100%" height="100%" src={"/m/edit_space/#{@space.slug}"}></iframe>
+</div>
+<script>
+
+  window.addEventListener('DOMContentLoaded',  () => {
+    let menuButton = document.getElementById('editSpaceMenu');
+    let menu = document.getElementById('editingSpace');
+    
+    menuButton.addEventListener('click', () => {
+        console.log("clicked")
+        menu.classList.toggle("editing");
+    })
+
+  })
+
+</script>
