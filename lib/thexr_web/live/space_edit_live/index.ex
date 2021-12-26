@@ -24,7 +24,7 @@ defmodule ThexrWeb.SpaceEditLive.Index do
 
   @impl true
   def handle_event("add_entity", %{"entity_kind" => entity_kind}, socket) do
-    attrs = %{space_id: socket.assigns.space.id, type: entity_kind}
+    attrs = %{"space_id" => socket.assigns.space.id, "type" => entity_kind}
     Spaces.create_entity(attrs)
     entities = Spaces.get_all_entities_for_space(socket.assigns.space.id)
 

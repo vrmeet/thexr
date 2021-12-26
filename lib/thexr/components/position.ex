@@ -1,4 +1,4 @@
-defmodule Thexr.Components.Position do
+defmodule Thexr.Components.Vector3 do
   use Ecto.Schema
   import Ecto.Changeset
 

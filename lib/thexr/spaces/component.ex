@@ -7,12 +7,14 @@ defmodule Thexr.Spaces.Component do
   @foreign_key_type :binary_id
   schema "components" do
     field :type, :string
-    field :entity_id, :binary_id
+    belongs_to :entity, Thexr.Spaces.Entity
 
     # field :data, :map
     field :data, PolymorphicEmbed,
       types: [
-        position: Thexr.Components.Position
+        position: Thexr.Components.Vector3,
+        rotation: Thexr.Components.Vector3,
+        scale: Thexr.Components.Vector3
       ],
       on_type_not_found: :raise,
       on_replace: :update
@@ -22,8 +24,12 @@ defmodule Thexr.Spaces.Component do
 
   @doc false
   def changeset(component, attrs) do
+    type = attrs["type"]
+    data = Map.put(attrs["data"], "__type__", type)
+    attrs = Map.put(attrs, "data", data)
+
     component
-    |> cast(attrs, [:type])
+    |> cast(attrs, [:type, :entity_id])
     |> cast_polymorphic_embed(:data, required: true)
 
     # |> validate_required([:type, :d])
