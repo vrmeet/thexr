@@ -226,19 +226,20 @@ defmodule Thexr.Spaces do
 
   """
   def create_entity(attrs \\ %{}) do
-    result =
-      %Entity{}
-      |> Entity.changeset(attrs)
-      |> Repo.insert()
+    attrs = Entity.build_default_components(attrs)
 
-    case result do
-      {:ok, entity} ->
-        Repo.insert_all(Treepath, [%{ancestor_id: entity.id, descendant_id: entity.id}])
-        {:ok, entity}
+    %Entity{}
+    |> Entity.changeset(attrs)
+    |> Repo.insert()
 
-      result ->
-        result
-    end
+    # case result do
+    #   {:ok, entity} ->
+    #     Repo.insert_all(Treepath, [%{ancestor_id: entity.id, descendant_id: entity.id}])
+    #     {:ok, entity}
+
+    #   result ->
+    #     result
+    # end
   end
 
   @doc """
@@ -432,7 +433,16 @@ defmodule Thexr.Spaces do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_component_for_entity(entity_id, attrs \\ %{}) do
+
+  # def create_component(attrs \\ %{}) do
+  #   %Component{}
+  #   |> Component.changeset(attrs)
+  #   |> Repo.insert()
+  # end
+
+  def create_component_for_entity(entity_id, component_type, attrs \\ %{}) do
+    attrs = %{"type" => component_type, "data" => Map.put(attrs, "__type__", component_type)}
+
     %Component{entity_id: entity_id}
     |> Component.changeset(attrs)
     |> Repo.insert()

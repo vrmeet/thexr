@@ -12,7 +12,8 @@ defmodule Thexr.SpacesFixtures do
       attrs
       |> Enum.into(%{
         description: "some description",
-        name: "some name"
+        name: "some name",
+        data: ""
       })
       |> Thexr.Spaces.create_space()
 
@@ -45,13 +46,15 @@ defmodule Thexr.SpacesFixtures do
   Generate a component.
   """
   def component_fixture(attrs \\ %{}) do
-    {:ok, component} =
-      attrs
-      |> Enum.into(%{
-        data: %{},
-        type: "some type"
-      })
-      |> Thexr.Spaces.create_component()
+    entity =
+      cond do
+        attrs[:entity_id] == nil && attrs["entity_id"] == nil -> entity_fixture()
+        true -> %{id: attrs[:entity_id] || attrs["entity_id"]}
+      end
+
+    attrs = Enum.into(attrs, %{"x" => 1, "y" => 0, "z" => -2})
+
+    {:ok, component} = Thexr.Spaces.create_component_for_entity(entity.id, "position", attrs)
 
     component
   end
