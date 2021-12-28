@@ -1,6 +1,7 @@
 defmodule Thexr.Components.Vector3 do
   use Ecto.Schema
   import Ecto.Changeset
+  @derive Jason.Encoder
 
   @primary_key false
 
