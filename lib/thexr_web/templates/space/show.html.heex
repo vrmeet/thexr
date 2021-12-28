@@ -52,8 +52,9 @@
 <iframe allowtransparency="true" width="100%" height="100%" src={"/m/edit_space/#{@space.slug}"}></iframe>
 </div>
 <script>
-
+  window['initialScene'] = <%= raw Thexr.Spaces.serialize(@space.id) %>;
   window.addEventListener('DOMContentLoaded',  () => {
+    window.orchestrator.start()
     let menuButton = document.getElementById('editSpaceMenu');
     let menu = document.getElementById('editingSpace');
     

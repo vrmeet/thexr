@@ -3,6 +3,8 @@ defmodule Thexr.Spaces.Component do
   import Ecto.Changeset
   import PolymorphicEmbed, only: [cast_polymorphic_embed: 3]
 
+  @derive {Jason.Encoder, only: [:type, :data]}
+
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "components" do

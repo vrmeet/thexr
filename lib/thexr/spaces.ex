@@ -197,6 +197,12 @@ defmodule Thexr.Spaces do
     Repo.all(Entity)
   end
 
+  def list_entities_for_space_with_components(space_id) do
+    query = from(e in Entity, where: e.space_id == ^space_id)
+    entities = Repo.all(query)
+    entities |> Repo.preload(:components)
+  end
+
   @doc """
   Gets a single entity.
 
@@ -685,5 +691,13 @@ defmodule Thexr.Spaces do
   """
   def change_template(%Template{} = template, attrs \\ %{}) do
     Template.changeset(template, attrs)
+  end
+
+  # Serializing
+
+  @spec serialize(any) :: binary
+  def serialize(space_id) do
+    entities = list_entities_for_space_with_components(space_id)
+    Jason.encode!(entities)
   end
 end
