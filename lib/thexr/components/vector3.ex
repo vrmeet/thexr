@@ -11,11 +11,11 @@ defmodule Thexr.Components.Vector3 do
     field :z, :float
   end
 
-  def changeset(position, params) do
-    position
+  def changeset(vec3, params) do
+    vec3
     |> cast(params, ~w(x y z)a)
+    |> validate_required(~w(x y z)a)
 
-    # |> validate_required(:address)
     # |> validate_length(:address, min: 4)
   end
 end

@@ -1,3 +1,4 @@
+
 <h1>Edit Space <%= @space.name %></h1>
 
 <h2>Add +</h2>
@@ -11,8 +12,32 @@
 
 <h2>Entities</h2>
 
-<ul>
+<ul class="entitiesList">
 <%= for entity <- @entities do %>
-  <li><%= entity.name %></li>
+  <li class={if (entity.id == (@selected_entity && @selected_entity.id)), do: "selected", else: ""}>
+    <span phx-click="select_entity" phx-value-id={entity.id}><%= entity.name %></span>
+  </li>
 <% end %>
 </ul>
+
+<%= if @selected_entity != nil do %>
+<hr>
+  <ul class="componentsList">
+    <%= for component <- @selected_entity.components do %>
+      <li class={if (component.id == (@component_changeset && @component_changeset.data.id)), do: "selected", else: ""}>
+        <span phx-click="select_component" phx-value-id={component.id}><%= component.type %></span>
+        <%= if component.id == (@component_changeset && @component_changeset.data.id) do %>
+          <div>
+            <.form let={f} for={@component_changeset} id={@component_changeset.data.id} phx-change="component_change">
+              <%= hidden_input f, :id %>
+              <%= hidden_input f, :type %>
+              <%= polymorphic_embed_inputs_for f, :data, @component_changeset.data.type, fn component_form -> %>
+                <%= component_inputs(@component_changeset, component_form) %>
+              <% end %>
+            </.form>
+          </div>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

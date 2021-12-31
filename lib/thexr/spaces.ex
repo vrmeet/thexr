@@ -42,7 +42,7 @@ defmodule Thexr.Spaces do
   def get_space_by_slug(slug), do: Repo.get_by(Space, slug: slug)
 
   def get_all_entities_for_space(space_id) do
-    q = from(e in Entity, where: e.space_id == ^space_id)
+    q = from(e in Entity, where: e.space_id == ^space_id, order_by: e.inserted_at)
     Repo.all(q)
   end
 

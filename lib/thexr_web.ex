@@ -39,6 +39,8 @@ defmodule ThexrWeb do
 
       # Include shared imports and aliases for views
       unquote(view_helpers())
+      # https://github.com/mathieuprog/polymorphic_embed
+      import PolymorphicEmbed.HTML.Form
     end
   end
 
@@ -48,6 +50,8 @@ defmodule ThexrWeb do
         layout: {ThexrWeb.LayoutView, "live.html"}
 
       unquote(view_helpers())
+      # https://github.com/mathieuprog/polymorphic_embed
+      import PolymorphicEmbed.HTML.Form
     end
   end
 
