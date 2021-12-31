@@ -24,16 +24,31 @@ defmodule Thexr.Spaces.Component do
     timestamps()
   end
 
+  def changeset(component) do
+    changeset(component, %{type: component.type, data: Map.from_struct(component.data)})
+  end
+
   @doc false
   def changeset(component, attrs) do
-    type = attrs["type"]
-    data = Map.put(attrs["data"], "__type__", type)
-    attrs = Map.put(attrs, "data", data)
+    attrs = AtomicMap.convert(attrs)
+
+    type = attrs.type
+    data = Map.put(attrs.data, :__type__, type)
+    attrs = Map.put(attrs, :data, data)
 
     component
+    |> remove_errors()
     |> cast(attrs, [:type, :entity_id])
     |> cast_polymorphic_embed(:data, required: true)
 
     # |> validate_required([:type, :d])
+  end
+
+  def remove_errors(%Ecto.Changeset{} = changeset) do
+    %{changeset | errors: [], valid?: true}
+  end
+
+  def remove_errors(component) do
+    component
   end
 end

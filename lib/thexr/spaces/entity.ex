@@ -12,8 +12,6 @@ defmodule Thexr.Spaces.Entity do
     field :space_id, Ecto.UUID
     field :parent_id, :binary_id
     has_many :components, Thexr.Spaces.Component
-    # field :child_count, :integer, default: 0
-    # has_many :children, Thexr.Spaces.Entity, foreign_key: :parent_id
     timestamps()
   end
 
