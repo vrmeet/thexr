@@ -1,0 +1,19 @@
+{
+    "name": "Docker Phoenix",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/app",
+    "forwardPorts": [
+        4000
+    ],
+    "shutdownAction": "stopCompose",
+    "extensions": [
+        // "mjmcloug.vscode-elixir",
+        "jakebecker.elixir-ls",
+        "phoenixframework.phoenix"
+        // "florinpatrascu.vscode-elixir-snippets",
+    ],
+    "remoteEnv": {
+        "ERL_AFLAGS": "-kernel shell_history enabled"
+    }
+}
