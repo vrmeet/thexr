@@ -38,7 +38,6 @@ export class Orchestrator {
     findOrCreateMesh(entity: { type: string, name: string, id: string, components: any, parent?: string }) {
 
         let mesh: BABYLON.AbstractMesh
-        console.log('what is entity', entity)
         mesh = this.scene.getMeshById(entity.id)
         if (!mesh) {
             if (entity.type === 'box') {
@@ -54,7 +53,29 @@ export class Orchestrator {
                 mesh.id = entity.id
             }
         }
+        if (mesh) {
+            entity.components.forEach(component => {
+                this.processComponent(mesh, component)
+            })
+        }
         return mesh
+    }
+
+    processComponent(mesh: BABYLON.AbstractMesh, component: { type: string, data: any }) {
+        switch (component.type) {
+            case 'position':
+                mesh.position.set(component.data.x, component.data.y, component.data.z)
+                break;
+            case 'scale':
+                mesh.scaling.set(component.data.x, component.data.y, component.data.z)
+                break;
+            case 'rotation':
+                mesh.rotation.set(component.data.x, component.data.y, component.data.z)
+                break;
+            default:
+                console.log('unknown component', component.type)
+
+        }
     }
 
 
