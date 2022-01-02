@@ -41,13 +41,11 @@ defmodule ThexrWeb.SpaceEditLive.Index do
   end
 
   def handle_event("select_entity", %{"id" => id}, socket) do
-    socket = trigger_autosave(socket)
-
     selected_entity = socket.assigns.selected_entity
 
     cond do
       selected_entity == nil || id != selected_entity.id ->
-        IO.inspect("selected entity")
+        socket = trigger_autosave(socket)
         results = Enum.filter(socket.assigns.entities, fn entity -> entity.id == id end)
 
         selected_entity =
@@ -65,15 +63,11 @@ defmodule ThexrWeb.SpaceEditLive.Index do
   end
 
   def handle_event("select_component", %{"id" => id}, socket) do
-    IO.inspect("select component")
-
-    socket = trigger_autosave(socket)
-
     component_changeset = socket.assigns.component_changeset
 
     cond do
       component_changeset == nil || component_changeset.data.id != id ->
-        IO.inspect("select component")
+        socket = trigger_autosave(socket)
 
         results =
           Enum.filter(socket.assigns.selected_entity.components, fn component ->
@@ -109,19 +103,6 @@ defmodule ThexrWeb.SpaceEditLive.Index do
         {:noreply, assign(socket, component_changeset: changeset)}
     end
   end
-
-  # def handle_event("component_save", _, socket) do
-  #   case Repo.update(socket.assigns.component_changeset) do
-  #     {:ok, component} ->
-  #       IO.inspect("saved")
-  #       component_changeset = Component.changeset(component)
-  #       {:noreply, assign(socket, component_changeset: component_changeset)}
-
-  #     {:error, changeset} ->
-  #       IO.inspect("errored")
-  #       {:noreply, assign(socket, component_changeset: changeset)}
-  #   end
-  # end
 
   @impl true
   def handle_info(:autosave, socket) do
