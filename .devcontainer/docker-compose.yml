@@ -19,7 +19,7 @@ services:
       - ..:/app:cached
 
       # This lets you avoid setting up Git again in the container
-      - ~/.gitconfig:/root/.gitconfig
+      - $HOME/.gitconfig:/root/.gitconfig
     depends_on:
       - db
 
@@ -34,4 +34,4 @@ services:
       - "database:/var/lib/postgresql/data"
 
 volumes:
-  database:
+  database: null
