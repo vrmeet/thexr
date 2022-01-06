@@ -695,9 +695,10 @@ defmodule Thexr.Spaces do
 
   # Serializing
 
-  @spec serialize(any) :: binary
-  def serialize(space_id) do
-    entities = list_entities_for_space_with_components(space_id)
-    Jason.encode!(entities)
+  def serialize(space) do
+    entities = list_entities_for_space_with_components(space.id)
+
+    %{entities: entities, slug: space.slug}
+    |> Jason.encode!()
   end
 end

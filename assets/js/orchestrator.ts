@@ -1,11 +1,34 @@
 import * as BABYLON from 'babylonjs'
 import * as MAT from 'babylonjs-materials'
+import { Socket, Channel } from 'phoenix'
 
 export class Orchestrator {
     public canvas;
-    public scene;
+    public scene: BABYLON.Scene;
     public engine;
-    constructor(public canvasId: string) {
+    public socket: Socket;
+    public spaceChannel: Channel
+    public slug: string
+    public entities: any[]
+    constructor(public canvasId: string, public serializedSpace: { slug: string, entities: any[] }) {
+        this.socket = new Socket('/socket', { params: {} })
+        this.slug = serializedSpace.slug;
+        this.entities = serializedSpace.entities
+        this.spaceChannel = this.socket.channel(`space:${serializedSpace.slug}`, {})
+
+        this.socket.connect()
+        this.spaceChannel.join()
+            .receive("ok", resp => { console.log("Joined successfully", resp) })
+            .receive("error", resp => { console.log("Unable to join", resp) })
+
+        window['channel'] = this.spaceChannel
+        this.spaceChannel.on("component_changed", params => {
+            let meshes = this.scene.getMeshesById(params.entity_id)
+            meshes.forEach(mesh => {
+                this.processComponent(mesh, { type: params.type, data: params.data })
+            })
+            console.log("component changed", JSON.stringify(params, null, 2))
+        })
 
     }
 
@@ -21,7 +44,7 @@ export class Orchestrator {
         camera.attachControl(this.canvas, false);
         // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
         var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), this.scene);
-        this.parseInitialScene(window['initialScene'])
+        this.parseInitialScene(this.entities)
         return this.scene;
 
 
@@ -97,5 +120,8 @@ export class Orchestrator {
 
     }
 }
-
-window['orchestrator'] = new Orchestrator('spaceCanvas')
+window.addEventListener('DOMContentLoaded', async () => {
+    let serializedSpace = window['serializedSpace']
+    let orchestrator = new Orchestrator('spaceCanvas', serializedSpace)
+    orchestrator.start()
+})
