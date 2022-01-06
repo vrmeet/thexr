@@ -24,17 +24,13 @@ defmodule Thexr.Spaces.Component do
     timestamps()
   end
 
-  def changeset(component) do
-    changeset(component, %{type: component.type, data: Map.from_struct(component.data)})
-  end
-
   @doc false
   def changeset(component, attrs) do
-    attrs = AtomicMap.convert(attrs)
+    # attrs = AtomicMap.convert(attrs)
 
-    type = attrs.type
-    data = Map.put(attrs.data, :__type__, type)
-    attrs = Map.put(attrs, :data, data)
+    # type = attrs.type
+    # data = Map.put(attrs.data, :__type__, type)
+    # attrs = Map.put(attrs, :data, data)
 
     component
     |> remove_errors()

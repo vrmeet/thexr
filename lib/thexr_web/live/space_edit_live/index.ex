@@ -75,7 +75,7 @@ defmodule ThexrWeb.SpaceEditLive.Index do
           end)
 
         selected_component = List.first(results)
-        component_changeset = Component.changeset(selected_component)
+        component_changeset = Component.changeset(selected_component, %{})
 
         {:noreply,
          assign(socket,
@@ -88,6 +88,7 @@ defmodule ThexrWeb.SpaceEditLive.Index do
   end
 
   def handle_event("component_change", %{"component" => component}, socket) do
+    IO.inspect("in component change")
     socket = debounce_autosave(socket)
     component_changeset = Component.changeset(socket.assigns.component_changeset, component)
 
@@ -97,7 +98,7 @@ defmodule ThexrWeb.SpaceEditLive.Index do
 
     case result do
       {:ok, _component} ->
-        {:noreply, assign(socket, component_changeset: component_changeset)}
+        {:noreply, assign(socket, component_changeset: %{component_changeset | action: :update})}
 
       {:error, changeset} ->
         {:noreply, assign(socket, component_changeset: changeset)}
@@ -111,7 +112,9 @@ defmodule ThexrWeb.SpaceEditLive.Index do
   end
 
   @impl true
-  def terminate(_reason, socket) do
+  def terminate(reason, socket) do
+    IO.inspect("getting terminated!")
+    IO.inspect(reason)
     # try to save any unsaved changes if window is closed before autosave happens
     trigger_autosave(socket)
 
@@ -120,6 +123,7 @@ defmodule ThexrWeb.SpaceEditLive.Index do
 
   def debounce_autosave(socket) do
     IO.inspect("debouncing ")
+    IO.inspect(:os.timestamp())
     # cancel previous timer if any
     ref = socket.assigns.ref
 
@@ -127,15 +131,13 @@ defmodule ThexrWeb.SpaceEditLive.Index do
       Process.cancel_timer(ref)
     end
 
-    # set a new timer
-
     ref = Process.send_after(self(), :autosave, 2000)
-
     assign(socket, ref: ref)
   end
 
   def trigger_autosave(socket) do
     IO.inspect("attempting auto save")
+    IO.inspect(socket.assigns.component_changeset, label: "changeset at top")
     ref = socket.assigns.ref
 
     if ref != nil do
@@ -143,7 +145,18 @@ defmodule ThexrWeb.SpaceEditLive.Index do
     end
 
     with true <- socket.assigns.component_changeset != nil,
+         true <- socket.assigns.component_changeset.action == :update,
          {:ok, component} <- Repo.update(socket.assigns.component_changeset) do
+      # this should prevent needless save to DB if no action is set
+      updated_changeset = Component.changeset(component, %{})
+      socket = assign(socket, component_changeset: updated_changeset)
+
+      ThexrWeb.Endpoint.broadcast("space:#{socket.assigns.space.slug}", "component_changed", %{
+        "entity_id" => component.entity_id,
+        "type" => component.type,
+        "data" => component.data
+      })
+
       selected_entity = socket.assigns.selected_entity
       IO.inspect("success")
 
@@ -162,7 +175,9 @@ defmodule ThexrWeb.SpaceEditLive.Index do
       )
     else
       err ->
-        IO.inspect(err)
+        IO.inspect(socket.assigns.component_changeset, label: "component_changeset")
+        IO.inspect("didn't auto save")
+        IO.inspect(err, label: "err")
         assign(socket, ref: nil)
     end
   end
