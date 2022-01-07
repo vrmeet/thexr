@@ -15,7 +15,7 @@
 <ul class="entitiesList">
 <%= for entity <- @entities do %>
   <li class={if (entity.id == (@selected_entity && @selected_entity.id)), do: "selected", else: ""}>
-    <span phx-click="select_entity" phx-value-id={entity.id}><%= entity.name %></span>
+    <span phx-click="select_entity" phx-value-id={entity.id}><%= entity.name %></span><span phx-click="delete_entity" phx-value-id={entity.id} style="margin-left: 1em; font-size: 2em; cursor: pointer">&times;</span>
   </li>
 <% end %>
 </ul>

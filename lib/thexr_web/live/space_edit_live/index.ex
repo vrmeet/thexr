@@ -29,12 +29,52 @@ defmodule ThexrWeb.SpaceEditLive.Index do
   # end
 
   @impl true
+
+  def handle_event("delete_entity", %{"id" => id}, socket) do
+    Spaces.delete_entity(%Entity{id: id})
+    new_entities = Enum.filter(socket.assigns.entities, fn entity -> entity.id != id end)
+    socket = assign(socket, entities: new_entities)
+
+    socket =
+      cond do
+        socket.assigns.selected_entity && socket.assigns.selected_entity.id == id ->
+          assign(socket, selected_entity: nil)
+
+        true ->
+          socket
+      end
+
+    socket =
+      cond do
+        socket.assigns.component_changeset &&
+            socket.assigns.component_changeset.data.entity_id == id ->
+          assign(socket, component_changeset: nil)
+
+        true ->
+          socket
+      end
+
+    ThexrWeb.Endpoint.broadcast(
+      "space:#{socket.assigns.space.slug}",
+      "entity_deleted",
+      %{id: id}
+    )
+
+    {:noreply, socket}
+  end
+
   def handle_event("add_entity", %{"entity_kind" => entity_kind}, socket) do
     socket = trigger_autosave(socket)
     attrs = %{"space_id" => socket.assigns.space.id, "type" => entity_kind}
     {:ok, entity} = Spaces.create_entity(attrs)
     entities = Spaces.get_all_entities_for_space(socket.assigns.space.id)
     entity = entity |> Repo.preload(components: from(c in Component, order_by: c.type))
+
+    ThexrWeb.Endpoint.broadcast(
+      "space:#{socket.assigns.space.slug}",
+      "entity_created",
+      entity
+    )
 
     {:noreply,
      assign(socket, entities: entities, selected_entity: entity, component_changeset: nil)}
