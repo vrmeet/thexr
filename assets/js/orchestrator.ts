@@ -29,6 +29,15 @@ export class Orchestrator {
             })
             console.log("component changed", JSON.stringify(params, null, 2))
         })
+        this.spaceChannel.on("entity_created", entity => {
+            this.findOrCreateMesh(entity)
+        })
+        this.spaceChannel.on("entity_deleted", params => {
+            let meshes = this.scene.getMeshesById(params.id)
+            meshes.forEach(mesh => {
+                mesh.dispose()
+            })
+        })
 
     }
 
