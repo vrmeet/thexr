@@ -67,7 +67,6 @@ defmodule ThexrWeb.SpaceEditLive.Index do
     socket = trigger_autosave(socket)
     attrs = %{"space_id" => socket.assigns.space.id, "type" => entity_kind}
     {:ok, entity} = Spaces.create_entity(attrs)
-    entities = Spaces.get_all_entities_for_space(socket.assigns.space.id)
     entity = entity |> Repo.preload(components: from(c in Component, order_by: c.type))
 
     ThexrWeb.Endpoint.broadcast(
@@ -75,6 +74,8 @@ defmodule ThexrWeb.SpaceEditLive.Index do
       "entity_created",
       entity
     )
+
+    entities = socket.assigns.entities ++ [entity]
 
     {:noreply,
      assign(socket, entities: entities, selected_entity: entity, component_changeset: nil)}
@@ -171,7 +172,7 @@ defmodule ThexrWeb.SpaceEditLive.Index do
       Process.cancel_timer(ref)
     end
 
-    ref = Process.send_after(self(), :autosave, 2000)
+    ref = Process.send_after(self(), :autosave, 800)
     assign(socket, ref: ref)
   end
 

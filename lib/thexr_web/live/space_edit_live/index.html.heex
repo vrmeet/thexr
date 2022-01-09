@@ -28,7 +28,7 @@
         <span phx-click="select_component" phx-value-id={component.id}><%= component.type %></span>
         <%= if component.id == (@component_changeset && @component_changeset.data.id) do %>
           <div>
-            <.form let={f} for={@component_changeset} id={@component_changeset.data.id} phx-change="component_change" phx-debounce="150">
+            <.form let={f} for={@component_changeset} id={@component_changeset.data.id} phx-change="component_change" phx-debounce="250">
               <%= hidden_input f, :id %>
               <%= hidden_input f, :type %>
               <%= polymorphic_embed_inputs_for f, :data, @component_changeset.data.type, fn component_form -> %>

@@ -4,6 +4,8 @@ defmodule Thexr.Spaces do
   """
 
   import Ecto.Query, warn: false
+  alias Ecto.Multi
+
   alias Thexr.Repo
 
   alias Thexr.Spaces.Space
@@ -234,10 +236,16 @@ defmodule Thexr.Spaces do
   def create_entity(attrs \\ %{}) do
     attrs = Entity.build_default_components(attrs)
 
-    %Entity{}
-    |> Entity.changeset(attrs)
-    |> Repo.insert()
+    changeset =
+      %Entity{}
+      |> Entity.changeset(attrs)
 
+    {:ok, %{entity: entity}} =
+      Multi.new()
+      |> Multi.insert(:entity, changeset)
+      |> Repo.transaction()
+
+    {:ok, entity}
     # case result do
     #   {:ok, entity} ->
     #     Repo.insert_all(Treepath, [%{ancestor_id: entity.id, descendant_id: entity.id}])
