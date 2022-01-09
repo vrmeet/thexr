@@ -59,7 +59,6 @@ select {
 /* Headers */
 header {
   width: 100%;
-  background: #fdfdfd;
   border-bottom: 1px solid #eaeaea;
   margin-bottom: 2rem;
 }
