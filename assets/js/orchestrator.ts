@@ -41,7 +41,7 @@ export class Orchestrator {
 
     }
 
-    createScene() {
+    async createScene() {
         // Create a basic BJS Scene object
         this.scene = new BABYLON.Scene(this.engine);
         window['scene'] = this.scene
@@ -50,7 +50,15 @@ export class Orchestrator {
         // Target the camera to scene origin
         camera.setTarget(BABYLON.Vector3.Zero());
         // Attach the camera to the canvas
-        camera.attachControl(this.canvas, false);
+        camera.attachControl(this.canvas, true);
+
+        const env = this.scene.createDefaultEnvironment();
+
+        const xr = await this.scene.createDefaultXRExperienceAsync({
+            floorMeshes: [env.ground]
+        });
+
+
         // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
         var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), this.scene);
         this.parseInitialScene(this.entities)
@@ -114,6 +122,7 @@ export class Orchestrator {
     }
 
     processComponent(mesh: BABYLON.AbstractMesh, component: { type: string, data: any }) {
+        console.log("attempting to process component", JSON.stringify(component))
         switch (component.type) {
             case 'position':
                 mesh.position.set(component.data.x, component.data.y, component.data.z)
@@ -126,7 +135,8 @@ export class Orchestrator {
                 break;
             case 'color':
                 const mat = this.findOrCreateMaterial({ type: "color", colorString: component.data.value })
-                mesh.material = mat
+                mesh.material = mat;
+                break;
             default:
                 console.log('unknown component', component.type)
 
