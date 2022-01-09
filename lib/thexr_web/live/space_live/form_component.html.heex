@@ -25,14 +25,9 @@
     <%= label f, :description %>
     <%= textarea f, :description %>
     <%= error_tag f, :description %>
-
-
-  <%= if @action == :new do %>
-    <%= live_component ThexrWeb.SpaceLive.TemplatesComponent, id: :templates %>
-  <% end %>
   
     <div>
-      <%= submit "Save", phx_disable_with: "Saving...", disabled: (@action == :new && @selected_template_id == nil) %>
+      <%= submit "Save", phx_disable_with: "Saving..." %>
     </div>
   </.form>
 </div>
