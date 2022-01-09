@@ -16,31 +16,53 @@ defmodule Thexr.Spaces.Entity do
   end
 
   def kinds do
-    ["box", "cone", "sphere"]
+    ["box", "cone", "sphere", "grid", "plane"]
+  end
+
+  def default_components("grid") do
+    %{
+      "position" => %{"x" => 0, "y" => 0, "z" => 0},
+      "rotation" => %{"x" => 1.5708, "y" => 0, "z" => 0},
+      "scale" => %{"x" => 1, "y" => 1, "z" => 1}
+    }
   end
 
   def default_components(_) do
     %{
       "position" => %{"x" => 0, "y" => 0, "z" => 0},
       "rotation" => %{"x" => 0, "y" => 0, "z" => 0},
-      "scale" => %{"x" => 1, "y" => 1, "z" => 1}
+      "scale" => %{"x" => 1, "y" => 1, "z" => 1},
+      "color" => "#FFFFFF"
     }
   end
 
   def build_default_components(%{"type" => type} = attrs) do
-    default_components = default_components(type)
-
-    components =
-      Enum.map(default_components, fn {k, v} ->
-        %{"type" => k, "data" => Map.put(v, "__type__", k)}
-      end)
-
-    Map.put(attrs, "components", components)
+    set_components_in_attrs(attrs, default_components(type))
   end
 
   def build_default_components(attrs) do
     IO.inspect(attrs)
     raise "build_default_components requires a map with a type key"
+  end
+
+  defp set_components_in_attrs(attrs, given_components) do
+    components =
+      Enum.map(given_components, fn {component_type, component_value} ->
+        %{
+          "type" => component_type,
+          "data" => construct_component_data(component_type, component_value)
+        }
+      end)
+
+    Map.put(attrs, "components", components)
+  end
+
+  def construct_component_data(component_type, component_value) when is_map(component_value) do
+    Map.put(component_value, "__type__", component_type)
+  end
+
+  def construct_component_data(component_type, component_value) do
+    %{"__type__" => component_type, "value" => component_value}
   end
 
   def changeset(entity, attrs) do

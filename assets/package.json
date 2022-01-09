@@ -16,6 +16,7 @@
         "phoenix_live_view": "file:../deps/phoenix_live_view"
     },
     "devDependencies": {
+        "@types/phoenix": "^1.5.4",
         "esbuild": "^0.14.2"
     }
 }

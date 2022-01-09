@@ -66,6 +66,22 @@ export class Orchestrator {
         })
     }
 
+    findOrCreateMaterial(opts: { type: 'color' | 'grid', colorString?: string }) {
+        if (opts.type === 'color' && opts.colorString) {
+            let mat = this.scene.getMaterialByName(`mat_${opts.colorString}`)
+            if (mat) {
+                return mat
+            } else {
+                let myMaterial = new BABYLON.StandardMaterial(`mat_${opts.colorString}`, this.scene);
+                let color = BABYLON.Color3.FromHexString(opts.colorString)
+                myMaterial.diffuseColor = color;
+                return myMaterial
+            }
+        } else {
+            return this.scene.getMaterialByName("mat_grid") || (new MAT.GridMaterial("mat_grid", this.scene))
+        }
+    }
+
 
     findOrCreateMesh(entity: { type: string, name: string, id: string, components: any, parent?: string }) {
 
@@ -75,7 +91,11 @@ export class Orchestrator {
             if (entity.type === 'box') {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, {}, this.scene)
             } else if (entity.type === 'plane') {
-                mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, {}, this.scene)
+                mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
+            } else if (entity.type === 'grid') {
+                mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { size: 25, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
+                const gridMat = this.findOrCreateMaterial({ type: "grid" })
+                mesh.material = gridMat;
             } else if (entity.type === 'sphere') {
                 mesh = BABYLON.MeshBuilder.CreateSphere(entity.name, {}, this.scene)
             } else if (entity.type === 'cone') {
@@ -104,6 +124,9 @@ export class Orchestrator {
             case 'rotation':
                 mesh.rotation.set(component.data.x, component.data.y, component.data.z)
                 break;
+            case 'color':
+                const mat = this.findOrCreateMaterial({ type: "color", colorString: component.data.value })
+                mesh.material = mat
             default:
                 console.log('unknown component', component.type)
 
