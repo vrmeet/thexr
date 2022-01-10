@@ -17,7 +17,7 @@ defmodule Thexr.Spaces.Component do
         position: Thexr.Components.Vector3,
         rotation: Thexr.Components.Vector3,
         scale: Thexr.Components.Vector3,
-        color: Thexr.Components.String
+        color: Thexr.Components.ColorString
       ],
       on_type_not_found: :raise,
       on_replace: :update
