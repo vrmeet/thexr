@@ -9,14 +9,6 @@
     phx-change="validate"
     phx-submit="save">
 
-      
-  <%= if @action == :edit do %>
-
-    <%= label f, :slug %>
-    <%= text_input f, :slug %>
-    <%= error_tag f, :slug %>
-
-  <% end %>
   
     <%= label f, :name %>
     <%= text_input f, :name %>
@@ -25,6 +17,19 @@
     <%= label f, :description %>
     <%= textarea f, :description %>
     <%= error_tag f, :description %>
+
+   <%= if @action == :edit do %>
+
+    <%= label f, :slug %>
+    <%= text_input f, :slug %>
+    <%= error_tag f, :slug %>
+
+    <%= inputs_for f, :settings, fn ff -> %>
+      <%= label ff, :clear_color %>
+      <%= text_input ff, :clear_color %>
+    <% end %>
+
+  <% end %>
   
     <div>
       <%= submit "Save", phx_disable_with: "Saving..." %>

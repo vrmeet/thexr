@@ -134,6 +134,7 @@ defmodule Thexr.Spaces do
     %Space{}
     |> Space.new_changeset(attrs)
     |> Space.create_rand_slug_if_missing()
+    |> Space.create_settings_if_missing()
     |> Repo.insert()
   end
 
@@ -706,7 +707,7 @@ defmodule Thexr.Spaces do
   def serialize(space) do
     entities = list_entities_for_space_with_components(space.id)
 
-    %{entities: entities, slug: space.slug}
+    %{entities: entities, slug: space.slug, settings: space.settings}
     |> Jason.encode!()
   end
 end

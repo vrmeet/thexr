@@ -7,7 +7,7 @@ defmodule Thexr.Repo.Migrations.CreateSpaces do
       add :name, :string, null: false
       add :description, :text
       add :slug, :string, null: false
-      add :data, :text, default: ""
+      add :settings, :map, default: %{}, null: false
       timestamps()
     end
 

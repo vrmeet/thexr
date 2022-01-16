@@ -2,6 +2,10 @@ import * as BABYLON from 'babylonjs'
 import * as MAT from 'babylonjs-materials'
 import { Socket, Channel } from 'phoenix'
 
+type SceneSettings = {
+    clear_color: string
+}
+
 export class Orchestrator {
     public canvas;
     public scene: BABYLON.Scene;
@@ -10,10 +14,12 @@ export class Orchestrator {
     public spaceChannel: Channel
     public slug: string
     public entities: any[]
-    constructor(public canvasId: string, public serializedSpace: { slug: string, entities: any[] }) {
+    public settings: SceneSettings
+    constructor(public canvasId: string, public serializedSpace: { settings: SceneSettings, slug: string, entities: any[] }) {
         this.socket = new Socket('/socket', { params: {} })
         this.slug = serializedSpace.slug;
         this.entities = serializedSpace.entities
+        this.settings = serializedSpace.settings
         this.spaceChannel = this.socket.channel(`space:${serializedSpace.slug}`, {})
 
         this.socket.connect()
@@ -44,6 +50,7 @@ export class Orchestrator {
     async createScene() {
         // Create a basic BJS Scene object
         this.scene = new BABYLON.Scene(this.engine);
+        this.scene.clearColor = BABYLON.Color4.FromHexString(this.settings.clear_color)
         window['scene'] = this.scene
         // Create a FreeCamera, and set its position to {x: 0, y: 5, z: -10}
         var camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), this.scene);

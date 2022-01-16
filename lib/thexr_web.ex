@@ -60,6 +60,8 @@ defmodule ThexrWeb do
       use Phoenix.LiveComponent
 
       unquote(view_helpers())
+      # https://github.com/mathieuprog/polymorphic_embed
+      import PolymorphicEmbed.HTML.Form
     end
   end
 

@@ -12,8 +12,7 @@ defmodule Thexr.SpacesFixtures do
       attrs
       |> Enum.into(%{
         description: "some description",
-        name: "some name",
-        data: ""
+        name: "some name"
       })
       |> Thexr.Spaces.create_space()
 
