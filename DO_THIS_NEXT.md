@@ -1,12 +1,8 @@
 TODO:
 
-<!-- - iframe menu doesn't seem like it will support more advanced interactions like modals and search
-and the ability to interact with the scene at the same time (create a maze).  For that it seems like react might be a better solution, especially if there are a large number of entities.
-- learn some react? -->
-
-- add fogcolor, fogdensity clear color to a space
-- remove the default environment
-
+- enforce https
+- use custom domain name
+- add about us section
 - make a hamburger menu button (in VR make mounted to left hand)
 - menu button pulls up advanced dynamic texture for a mesh : https://doc.babylonjs.com/divingDeeper/gui/gui#texture-mode
 
