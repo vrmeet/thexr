@@ -27,6 +27,12 @@
     <%= inputs_for f, :settings, fn ff -> %>
       <%= label ff, :clear_color %>
       <%= text_input ff, :clear_color %>
+      
+      <%= label ff, :fog_color %>
+      <%= text_input ff, :fog_color %>
+      
+      <%= label ff, :fog_density %>
+      <%= text_input ff, :fog_density %>
     <% end %>
 
   <% end %>
