@@ -1,9 +1,12 @@
 import * as BABYLON from 'babylonjs'
 import * as MAT from 'babylonjs-materials'
+import { float } from 'babylonjs/types';
 import { Socket, Channel } from 'phoenix'
 
 type SceneSettings = {
     clear_color: string
+    fog_color: string
+    fog_density: float
 }
 
 export class Orchestrator {
@@ -51,6 +54,9 @@ export class Orchestrator {
         // Create a basic BJS Scene object
         this.scene = new BABYLON.Scene(this.engine);
         this.scene.clearColor = BABYLON.Color4.FromHexString(this.settings.clear_color)
+        this.scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
+        this.scene.fogColor = BABYLON.Color3.FromHexString(this.settings.fog_color)
+        this.scene.fogDensity = this.settings.fog_density
         window['scene'] = this.scene
         // Create a FreeCamera, and set its position to {x: 0, y: 5, z: -10}
         var camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), this.scene);
@@ -59,10 +65,10 @@ export class Orchestrator {
         // Attach the camera to the canvas
         camera.attachControl(this.canvas, true);
 
-        const env = this.scene.createDefaultEnvironment();
+        //  const env = this.scene.createDefaultEnvironment();
 
         const xr = await this.scene.createDefaultXRExperienceAsync({
-            floorMeshes: [env.ground]
+            //floorMeshes: [env.ground]
         });
 
 
