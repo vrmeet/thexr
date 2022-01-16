@@ -16,7 +16,8 @@ config :thexr, ThexrWeb.Endpoint,
   cache_static_manifest: "priv/static/cache_manifest.json",
   secret_key_base: Map.fetch!(System.get_env(), "SECRET_KEY_BASE"),
   server: true,
-  force_ssl: [rewrite_on: [:x_forwarded_proto]]
+  # To dynamically redirect to the host of the current request, set :host in the :force_ssl configuration to nil.
+  force_ssl: [rewrite_on: [:x_forwarded_proto], host: nil]
 
 config :thexr, Thexr.Repo,
   adapter: Ecto.Adapters.Postgres,
