@@ -57,35 +57,4 @@ defmodule Thexr.SpacesFixtures do
 
     component
   end
-
-  @doc """
-  Generate a plugin.
-  """
-  def plugin_fixture(attrs \\ %{}) do
-    {:ok, plugin} =
-      attrs
-      |> Enum.into(%{
-        js: "some js",
-        ts: "some ts"
-      })
-      |> Thexr.Spaces.create_plugin()
-
-    plugin
-  end
-
-  @doc """
-  Generate a template.
-  """
-  def template_fixture(attrs \\ %{}) do
-    {:ok, template} =
-      attrs
-      |> Enum.into(%{
-        data: %{},
-        description: "some description",
-        name: "some name"
-      })
-      |> Thexr.Spaces.create_template()
-
-    template
-  end
 end

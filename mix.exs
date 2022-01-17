@@ -50,7 +50,8 @@ defmodule Thexr.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:polymorphic_embed, "~> 1.7.2"},
       {:atomic_map, "~> 0.9"},
-      {:honeybadger, "~> 0.18"}
+      {:honeybadger, "~> 0.18"},
+      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false}
     ]
   end
 
