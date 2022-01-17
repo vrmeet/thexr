@@ -1,5 +1,6 @@
 defmodule ThexrWeb.Router do
   use ThexrWeb, :router
+  use Honeybadger.Plug
 
   pipeline :browser do
     plug :accepts, ["html"]

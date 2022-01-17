@@ -31,6 +31,9 @@ config :thexr, ThexrWeb.Endpoint,
     node: ["esbuild.js", "--watch", cd: Path.expand("../assets", __DIR__)]
   ]
 
+config :honeybadger,
+  environment_name: :dev
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed
