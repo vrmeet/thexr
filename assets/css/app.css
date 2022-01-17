@@ -93,6 +93,13 @@
 body {
   color: rgb(226, 212, 212);
   background-color: #07031fd3;
+  font-size: 2em
+}
+
+header {
+  text-align: center;
+  padding-bottom: 0.1em;
+  /* border: 1px solid red; */
 }
 
 input, textarea, select {
