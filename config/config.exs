@@ -48,6 +48,11 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :honeybadger,
+  api_key: "da405219",
+  ecto_repos: [Thexr.Repo],
+  use_logger: true
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

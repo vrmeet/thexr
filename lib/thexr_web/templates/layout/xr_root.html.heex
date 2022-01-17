@@ -11,6 +11,18 @@
     <script src="https://preview.babylonjs.com/babylon.js"></script>
     <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
     <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/orchestrator.js")}></script>
+    <%= if Application.get_env(:honeybadger, :environment_name) == :prod do %>
+
+      <script src="//js.honeybadger.io/v3.2/honeybadger.min.js" type="text/javascript"></script>
+  
+      <script type="text/javascript">
+        Honeybadger.configure({
+          apiKey: 'd839a21f',
+          environment: 'production'
+        });
+      </script>
+
+    <% end %>
   </head>
   <body>
     <%= @inner_content %>

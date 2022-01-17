@@ -28,5 +28,8 @@ config :logger, level: :warn
 # i want to see SQL query in tests
 # config :logger, level: :debug
 
+config :honeybadger,
+  environment_name: :test
+
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime

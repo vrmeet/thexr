@@ -20,7 +20,7 @@ defmodule Thexr.MixProject do
   def application do
     [
       mod: {Thexr.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:honeybadger, :logger, :runtime_tools]
     ]
   end
 
@@ -49,7 +49,8 @@ defmodule Thexr.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
       {:polymorphic_embed, "~> 1.7.2"},
-      {:atomic_map, "~> 0.9"}
+      {:atomic_map, "~> 0.9"},
+      {:honeybadger, "~> 0.18"}
     ]
   end
 
