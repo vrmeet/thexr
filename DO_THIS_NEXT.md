@@ -1,7 +1,5 @@
 TODO:
 
-- enforce https
-- use custom domain name
 - add about us section
 - make a hamburger menu button (in VR make mounted to left hand)
 - menu button pulls up advanced dynamic texture for a mesh : https://doc.babylonjs.com/divingDeeper/gui/gui#texture-mode
