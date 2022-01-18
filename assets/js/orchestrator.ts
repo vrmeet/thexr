@@ -18,12 +18,17 @@ export class Orchestrator {
     public slug: string
     public entities: any[]
     public settings: SceneSettings
+
+
+
     constructor(public canvasId: string, public serializedSpace: { settings: SceneSettings, slug: string, entities: any[] }) {
         this.socket = new Socket('/socket', { params: { token: window['userToken'] } })
         this.slug = serializedSpace.slug;
         this.entities = serializedSpace.entities
         this.settings = serializedSpace.settings
-        this.spaceChannel = this.socket.channel(`space:${serializedSpace.slug}`, {})
+
+
+        this.spaceChannel = this.socket.channel(`space:${serializedSpace.slug}`, { spawn_point: this.findSpawnPoint() })
 
         this.socket.connect()
         this.spaceChannel.join()
@@ -55,7 +60,22 @@ export class Orchestrator {
         this.spaceChannel.on('presence_diff', params => {
             console.log('presence_diff', params)
         })
+        window['orchestrator'] = this
+    }
 
+    findSpawnPoint() {
+        try {
+            console.log('this entities', this.entities)
+            // TODO: looking into using js match toy instead of try catch??
+            const result = this.entities.filter(entity => entity.type === 'spawn_point')
+            console.log('result', result)
+            let pos = result[0].components[0].data
+
+            return { pos: [pos.x, pos.y, pos.z] }
+        } catch (e) {
+            console.log(e)
+            return { pos: [0, 0, 0] }
+        }
     }
 
     async createScene() {

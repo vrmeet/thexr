@@ -16,7 +16,13 @@ defmodule Thexr.Spaces.Entity do
   end
 
   def kinds do
-    ["box", "cone", "sphere", "grid", "plane"]
+    ["box", "cone", "sphere", "grid", "plane", "spawn_point"]
+  end
+
+  def default_components("spawn_point") do
+    %{
+      "position" => %{"x" => 0, "y" => 0, "z" => 0}
+    }
   end
 
   def default_components("grid") do

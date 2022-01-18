@@ -8,6 +8,15 @@ defmodule ThexrWeb.SpaceController do
 
   def show(conn, %{"slug" => slug}) do
     space = Spaces.get_space_by_slug(slug)
-    render(conn, "show.html", space: space, user_token: user_token(conn), layout: false)
+
+    case space do
+      nil ->
+        conn
+        |> put_flash(:error, "Unrecognized Space Slug in the URL")
+        |> redirect(to: Routes.page_path(conn, :index))
+
+      space ->
+        render(conn, "show.html", space: space, user_token: user_token(conn), layout: false)
+    end
   end
 end

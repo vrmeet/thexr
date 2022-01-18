@@ -3,7 +3,8 @@ defmodule ThexrWeb.SpaceChannel do
   alias ThexrWeb.Presence
 
   @impl true
-  def join("space:" <> slug, _params, socket) do
+  def join("space:" <> slug, params, socket) do
+    IO.inspect(params, label: "params")
     send(self(), :after_join)
     {:ok, %{"hi" => "there", "slug" => slug}, socket}
   end
