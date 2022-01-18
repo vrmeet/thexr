@@ -1,5 +1,10 @@
 TODO:
 
+- restore VR presence
+- set user id in session
+
+- restore audio webrtc
+
 - add about us section
 
 - make a hamburger menu button (in VR make mounted to left hand)

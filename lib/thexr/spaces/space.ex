@@ -57,7 +57,7 @@ defmodule Thexr.Spaces.Space do
             fetch_field!(changeset, :name)
             |> String.replace(~r/[^a-zA-Z0-9]/, "-")
 
-          new_slug = "#{name}_#{Thexr.Utils.randId()}"
+          new_slug = "#{name}_#{Thexr.Utils.random_id()}"
           put_change(changeset, :slug, new_slug)
 
         _ ->

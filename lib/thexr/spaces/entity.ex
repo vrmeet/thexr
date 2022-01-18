@@ -86,7 +86,7 @@ defmodule Thexr.Spaces.Entity do
       case fetch_field(changeset, :name) do
         {:data, nil} ->
           kind = fetch_field!(changeset, :type)
-          new_name = "#{kind}_#{Thexr.Utils.randId()}"
+          new_name = "#{kind}_#{Thexr.Utils.random_id()}"
           put_change(changeset, :name, new_name)
 
         _ ->

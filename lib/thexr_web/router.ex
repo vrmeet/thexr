@@ -2,6 +2,8 @@ defmodule ThexrWeb.Router do
   use ThexrWeb, :router
   use Honeybadger.Plug
 
+  import ThexrWeb.Plugs.Identity, only: [maybe_assign_unique_id: 2]
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -9,6 +11,7 @@ defmodule ThexrWeb.Router do
     plug :put_root_layout, {ThexrWeb.LayoutView, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug :maybe_assign_unique_id
   end
 
   pipeline :api do

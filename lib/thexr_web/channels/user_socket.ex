@@ -16,24 +16,23 @@ defmodule ThexrWeb.UserSocket do
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
   @impl true
-  def connect(_params, socket, _connect_info) do
-    # case verify(socket, token) do
-    #   {:ok, member_id} ->
-    #     socket = assign(socket, :member_id, member_id)
-    #     {:ok, socket}
+  def connect(%{"token" => token}, socket, _connect_info) do
+    case verify(socket, token) do
+      {:ok, member_id} ->
+        socket = assign(socket, :member_id, member_id)
+        {:ok, socket}
 
-    #   {:error, err} ->
-    #     Logger.error("#{__MODULE__} connect error #{inspect(err)}")
-    #     :error
-    # end
-    {:ok, socket}
+      {:error, err} ->
+        Logger.error("#{__MODULE__} connect error #{inspect(err)}")
+        :error
+    end
   end
 
   @one_day 86400
 
-  # defp verify(socket, token) do
-  #   Phoenix.Token.verify(socket, "salt", token, max_age: @one_day)
-  # end
+  defp verify(socket, token) do
+    Phoenix.Token.verify(socket, "salt", token, max_age: @one_day)
+  end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
   #
