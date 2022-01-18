@@ -19,7 +19,7 @@ export class Orchestrator {
     public entities: any[]
     public settings: SceneSettings
     constructor(public canvasId: string, public serializedSpace: { settings: SceneSettings, slug: string, entities: any[] }) {
-        this.socket = new Socket('/socket', { params: {} })
+        this.socket = new Socket('/socket', { params: { token: window['userToken'] } })
         this.slug = serializedSpace.slug;
         this.entities = serializedSpace.entities
         this.settings = serializedSpace.settings
@@ -27,25 +27,33 @@ export class Orchestrator {
 
         this.socket.connect()
         this.spaceChannel.join()
-            .receive("ok", resp => { console.log("Joined successfully", resp) })
-            .receive("error", resp => { console.log("Unable to join", resp) })
+            .receive('ok', resp => { console.log('Joined successfully', resp) })
+            .receive('error', resp => { console.log('Unable to join', resp) })
 
         window['channel'] = this.spaceChannel
-        this.spaceChannel.on("component_changed", params => {
+        this.spaceChannel.on('component_changed', params => {
             let meshes = this.scene.getMeshesById(params.entity_id)
             meshes.forEach(mesh => {
                 this.processComponent(mesh, { type: params.type, data: params.data })
             })
-            console.log("component changed", JSON.stringify(params, null, 2))
+            console.log('component changed', JSON.stringify(params, null, 2))
         })
-        this.spaceChannel.on("entity_created", entity => {
+        this.spaceChannel.on('entity_created', entity => {
             this.findOrCreateMesh(entity)
         })
-        this.spaceChannel.on("entity_deleted", params => {
+        this.spaceChannel.on('entity_deleted', params => {
             let meshes = this.scene.getMeshesById(params.id)
             meshes.forEach(mesh => {
                 mesh.dispose()
             })
+        })
+
+        this.spaceChannel.on('presence_state', params => {
+            console.log('presence_state', params)
+        })
+
+        this.spaceChannel.on('presence_diff', params => {
+            console.log('presence_diff', params)
         })
 
     }
@@ -99,7 +107,7 @@ export class Orchestrator {
                 return myMaterial
             }
         } else {
-            return this.scene.getMaterialByName("mat_grid") || (new MAT.GridMaterial("mat_grid", this.scene))
+            return this.scene.getMaterialByName('mat_grid') || (new MAT.GridMaterial('mat_grid', this.scene))
         }
     }
 
@@ -115,7 +123,7 @@ export class Orchestrator {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
             } else if (entity.type === 'grid') {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { size: 25, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
-                const gridMat = this.findOrCreateMaterial({ type: "grid" })
+                const gridMat = this.findOrCreateMaterial({ type: 'grid' })
                 mesh.material = gridMat;
             } else if (entity.type === 'sphere') {
                 mesh = BABYLON.MeshBuilder.CreateSphere(entity.name, {}, this.scene)
@@ -135,7 +143,7 @@ export class Orchestrator {
     }
 
     processComponent(mesh: BABYLON.AbstractMesh, component: { type: string, data: any }) {
-        console.log("attempting to process component", JSON.stringify(component))
+        console.log('attempting to process component', JSON.stringify(component))
         switch (component.type) {
             case 'position':
                 mesh.position.set(component.data.x, component.data.y, component.data.z)
@@ -147,7 +155,7 @@ export class Orchestrator {
                 mesh.rotation.set(component.data.x, component.data.y, component.data.z)
                 break;
             case 'color':
-                const mat = this.findOrCreateMaterial({ type: "color", colorString: component.data.value })
+                const mat = this.findOrCreateMaterial({ type: 'color', colorString: component.data.value })
                 mesh.material = mat;
                 break;
             default:

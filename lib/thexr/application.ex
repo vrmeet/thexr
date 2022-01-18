@@ -14,6 +14,8 @@ defmodule Thexr.Application do
       ThexrWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: Thexr.PubSub},
+      # Start Presence
+      ThexrWeb.Presence,
       # Start the Endpoint (http/https)
       ThexrWeb.Endpoint,
       {Registry, keys: :unique, name: Thexr.ExperienceRegistry},
