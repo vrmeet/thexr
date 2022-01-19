@@ -16,7 +16,12 @@ defmodule ThexrWeb.SpaceController do
         |> redirect(to: Routes.page_path(conn, :index))
 
       space ->
+        nudge_space(space)
         render(conn, "show.html", space: space, user_token: user_token(conn), layout: false)
     end
+  end
+
+  def nudge_space(space) do
+    Thexr.SpaceSupervisor.start_space(space.slug)
   end
 end

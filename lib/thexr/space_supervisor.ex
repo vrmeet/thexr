@@ -1,7 +1,7 @@
-defmodule Thexr.ExperienceSupervisor do
+defmodule Thexr.SpaceSupervisor do
   use DynamicSupervisor
 
-  alias Thexr.ExperienceServer
+  alias Thexr.SpaceServer
 
   @spec start_link(any) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(_arg) do
@@ -16,15 +16,15 @@ defmodule Thexr.ExperienceSupervisor do
   Starts a `GameServer` process and supervises it.
   """
 
-  def start_experience(slug) do
-    DynamicSupervisor.start_child(__MODULE__, {ExperienceServer, slug})
+  def start_space(slug) do
+    DynamicSupervisor.start_child(__MODULE__, {SpaceServer, slug})
   end
 
   @doc """
   Terminates the `GameServer` process normally. It won't be restarted.
   """
   def stop_space(slug) do
-    child_pid = Thexr.ExperienceServer.pid(slug)
+    child_pid = Thexr.SpaceServer.pid(slug)
     DynamicSupervisor.terminate_child(__MODULE__, child_pid)
   end
 end
