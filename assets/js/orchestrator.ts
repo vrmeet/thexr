@@ -27,8 +27,10 @@ export class Orchestrator {
         this.entities = serializedSpace.entities
         this.settings = serializedSpace.settings
 
+        this.findMyPos()
 
-        this.spaceChannel = this.socket.channel(`space:${serializedSpace.slug}`, { spawn_point: this.findSpawnPoint() })
+
+        this.spaceChannel = this.socket.channel(`space:${serializedSpace.slug}`, { spawn_point: this.findMyPos() })
 
         this.socket.connect()
         this.spaceChannel.join()
@@ -63,6 +65,17 @@ export class Orchestrator {
         window['orchestrator'] = this
     }
 
+    findMyPos() {
+        let posString = window.sessionStorage.getItem('pos')
+        if (!posString) {
+            let spawnPoint = this.findSpawnPoint()
+            window.sessionStorage.setItem('pos', JSON.stringify(spawnPoint))
+            return spawnPoint
+        } else {
+            return JSON.parse(posString)
+        }
+    }
+
     findSpawnPoint() {
         try {
             console.log('this entities', this.entities)
@@ -87,7 +100,8 @@ export class Orchestrator {
         this.scene.fogDensity = this.settings.fog_density
         window['scene'] = this.scene
         // Create a FreeCamera, and set its position to {x: 0, y: 5, z: -10}
-        var camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), this.scene);
+        let pos = this.findMyPos()['pos']
+        var camera = new BABYLON.FreeCamera('camera1', BABYLON.Vector3.FromArray(pos), this.scene);
         // Target the camera to scene origin
         camera.setTarget(BABYLON.Vector3.Zero());
         // Attach the camera to the canvas

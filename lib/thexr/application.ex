@@ -18,8 +18,8 @@ defmodule Thexr.Application do
       ThexrWeb.Presence,
       # Start the Endpoint (http/https)
       ThexrWeb.Endpoint,
-      {Registry, keys: :unique, name: Thexr.ExperienceRegistry},
-      Thexr.ExperienceSupervisor
+      {Registry, keys: :unique, name: Thexr.SpaceRegistry},
+      Thexr.SpaceSupervisor
       # Start a worker by calling: Thexr.Worker.start_link(arg)
       # {Thexr.Worker, arg}
     ]
