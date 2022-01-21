@@ -2,11 +2,18 @@ import * as BABYLON from 'babylonjs'
 import * as MAT from 'babylonjs-materials'
 import { float } from 'babylonjs/types';
 import { Socket, Channel } from 'phoenix'
+import { Subject } from 'rxjs'
+import { filter, throttleTime } from 'rxjs/operators'
 
 type SceneSettings = {
     clear_color: string
     fog_color: string
     fog_density: float
+}
+
+type SignalEvent = {
+    event: string
+    payload: any
 }
 
 export class Orchestrator {
@@ -18,10 +25,12 @@ export class Orchestrator {
     public slug: string
     public entities: any[]
     public settings: SceneSettings
+    public signals: Subject<SignalEvent>
 
 
 
     constructor(public canvasId: string, public serializedSpace: { settings: SceneSettings, slug: string, entities: any[] }) {
+        this.signals = new Subject()
         this.socket = new Socket('/socket', { params: { token: window['userToken'] } })
         this.slug = serializedSpace.slug;
         this.entities = serializedSpace.entities
@@ -38,6 +47,9 @@ export class Orchestrator {
             .receive('error', resp => { console.log('Unable to join', resp) })
 
         window['channel'] = this.spaceChannel
+        this.spaceChannel.on("member_moved", ({ member_id, pos }) => {
+            console.log("getting member moved", member_id, pos)
+        })
         this.spaceChannel.on('component_changed', params => {
             let meshes = this.scene.getMeshesById(params.entity_id)
             meshes.forEach(mesh => {
@@ -91,6 +103,27 @@ export class Orchestrator {
         }
     }
 
+    async createCamera() {
+        let pos = this.findMyPos()['pos']
+        var camera = new BABYLON.FreeCamera('camera1', BABYLON.Vector3.FromArray(pos), this.scene);
+        // Target the camera to scene origin
+        camera.setTarget(BABYLON.Vector3.Zero());
+        // Attach the camera to the canvas
+        camera.attachControl(this.canvas, true);
+        camera.inertia = 0.7;
+        camera.onViewMatrixChangedObservable.add(cam => {
+            let posArray = cam.position.asArray().map(value => Math.round(value * 100000) / 100000)
+            this.signals.next({ event: "camera_moved", payload: { pos: posArray } })
+        })
+
+        //  const env = this.scene.createDefaultEnvironment();
+
+        const xr = await this.scene.createDefaultXRExperienceAsync({
+            //floorMeshes: [env.ground]
+        });
+
+    }
+
     async createScene() {
         // Create a basic BJS Scene object
         this.scene = new BABYLON.Scene(this.engine);
@@ -99,20 +132,7 @@ export class Orchestrator {
         this.scene.fogColor = BABYLON.Color3.FromHexString(this.settings.fog_color)
         this.scene.fogDensity = this.settings.fog_density
         window['scene'] = this.scene
-        // Create a FreeCamera, and set its position to {x: 0, y: 5, z: -10}
-        let pos = this.findMyPos()['pos']
-        var camera = new BABYLON.FreeCamera('camera1', BABYLON.Vector3.FromArray(pos), this.scene);
-        // Target the camera to scene origin
-        camera.setTarget(BABYLON.Vector3.Zero());
-        // Attach the camera to the canvas
-        camera.attachControl(this.canvas, true);
-
-        //  const env = this.scene.createDefaultEnvironment();
-
-        const xr = await this.scene.createDefaultXRExperienceAsync({
-            //floorMeshes: [env.ground]
-        });
-
+        this.createCamera()
 
         // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
         var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), this.scene);
@@ -199,7 +219,8 @@ export class Orchestrator {
     }
 
 
-    start() {
+    async start() {
+
         this.canvas = document.getElementById(this.canvasId) as HTMLCanvasElement;
 
         this.engine = new BABYLON.Engine(this.canvas, true, { preserveDrawingBuffer: true, stencil: true });
@@ -214,6 +235,16 @@ export class Orchestrator {
         window.addEventListener('resize', () => {
             this.engine.resize();
         });
+
+        // send camera movement
+        this.signals.pipe(
+            filter(msg => (msg.event === 'camera_moved')),
+            throttleTime(100)
+        ).subscribe(msg => {
+            this.spaceChannel.push(msg.event, msg.payload)
+            window.sessionStorage.setItem('pos', JSON.stringify(msg.payload))
+            console.log('saving pos', msg.payload)
+        })
 
     }
 }
