@@ -17,7 +17,13 @@ defmodule ThexrWeb.SpaceController do
 
       space ->
         nudge_space(space)
-        render(conn, "show.html", space: space, user_token: user_token(conn), layout: false)
+
+        render(conn, "show.html",
+          member_id: conn.assigns.unique_id,
+          space: space,
+          user_token: user_token(conn),
+          layout: false
+        )
     end
   end
 

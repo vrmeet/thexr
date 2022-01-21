@@ -154,6 +154,16 @@ defmodule Thexr.Spaces do
     space
     |> Space.edit_changeset(attrs)
     |> Repo.update()
+    |> broadcast_space_update()
+  end
+
+  defp broadcast_space_update({:ok, space}) do
+    ThexrWeb.Endpoint.broadcast("space:#{space.slug}", "space_settings_changed", space.settings)
+    {:ok, space}
+  end
+
+  defp broadcast_space_update(other) do
+    other
   end
 
   @doc """
