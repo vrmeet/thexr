@@ -29,15 +29,12 @@ export class Orchestrator {
 
 
 
-    constructor(public canvasId: string, public serializedSpace: { settings: SceneSettings, slug: string, entities: any[] }) {
+    constructor(public canvasId: string, public memberId: string, public serializedSpace: { settings: SceneSettings, slug: string, entities: any[] }) {
         this.signals = new Subject()
         this.socket = new Socket('/socket', { params: { token: window['userToken'] } })
         this.slug = serializedSpace.slug;
         this.entities = serializedSpace.entities
         this.settings = serializedSpace.settings
-
-        this.findMyPos()
-
 
         this.spaceChannel = this.socket.channel(`space:${serializedSpace.slug}`, { spawn_point: this.findMyPos() })
 
@@ -49,6 +46,12 @@ export class Orchestrator {
         window['channel'] = this.spaceChannel
         this.spaceChannel.on("member_moved", ({ member_id, pos }) => {
             console.log("getting member moved", member_id, pos)
+            let mesh = this.scene.getMeshByName(`avatar_${member_id}`)
+
+            if (mesh) {
+                mesh.position.fromArray(pos)
+            }
+
         })
         this.spaceChannel.on('component_changed', params => {
             let meshes = this.scene.getMeshesById(params.entity_id)
@@ -69,11 +72,24 @@ export class Orchestrator {
 
         this.spaceChannel.on('presence_state', params => {
             console.log('presence_state', params)
+            Object.keys(params).filter((id) => id !== this.memberId).map(id => {
+                BABYLON.MeshBuilder.CreateBox(`avatar_${id}`)
+            })
         })
 
         this.spaceChannel.on('presence_diff', params => {
             console.log('presence_diff', params)
+
+            Object.keys(params.joins).filter((id) => id !== this.memberId).map(id => {
+                BABYLON.MeshBuilder.CreateBox(`avatar_${id}`)
+            })
         })
+
+        this.spaceChannel.on('space_settings_changed', params => {
+            this.processSceneSettings(params.clear_color, params.fog_color, params.fog_density)
+
+        })
+
         window['orchestrator'] = this
     }
 
@@ -107,7 +123,7 @@ export class Orchestrator {
         let pos = this.findMyPos()['pos']
         var camera = new BABYLON.FreeCamera('camera1', BABYLON.Vector3.FromArray(pos), this.scene);
         // Target the camera to scene origin
-        camera.setTarget(BABYLON.Vector3.Zero());
+        // camera.setTarget(BABYLON.Vector3.Zero());
         // Attach the camera to the canvas
         camera.attachControl(this.canvas, true);
         camera.inertia = 0.7;
@@ -124,13 +140,17 @@ export class Orchestrator {
 
     }
 
+    processSceneSettings(clearColor: string, fogColor: string, fogDensity: number) {
+        this.scene.clearColor = BABYLON.Color4.FromHexString(clearColor)
+        this.scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
+        this.scene.fogColor = BABYLON.Color3.FromHexString(fogColor)
+        this.scene.fogDensity = fogDensity
+    }
+
     async createScene() {
         // Create a basic BJS Scene object
         this.scene = new BABYLON.Scene(this.engine);
-        this.scene.clearColor = BABYLON.Color4.FromHexString(this.settings.clear_color)
-        this.scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
-        this.scene.fogColor = BABYLON.Color3.FromHexString(this.settings.fog_color)
-        this.scene.fogDensity = this.settings.fog_density
+        this.processSceneSettings(this.settings.clear_color, this.settings.fog_color, this.settings.fog_density)
         window['scene'] = this.scene
         this.createCamera()
 
@@ -249,7 +269,8 @@ export class Orchestrator {
     }
 }
 window.addEventListener('DOMContentLoaded', async () => {
-    let serializedSpace = window['serializedSpace']
-    let orchestrator = new Orchestrator('spaceCanvas', serializedSpace)
+    const serializedSpace = window['serializedSpace']
+    const memberId = window['memberId']
+    const orchestrator = new Orchestrator('spaceCanvas', memberId, serializedSpace)
     orchestrator.start()
 })
