@@ -115,7 +115,7 @@ export class Orchestrator {
             return { pos: [pos.x, pos.y, pos.z] }
         } catch (e) {
             console.log(e)
-            return { pos: [0, 0, 0] }
+            return { pos: [0, 1.7, -8] }
         }
     }
 
