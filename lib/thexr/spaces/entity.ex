@@ -21,7 +21,7 @@ defmodule Thexr.Spaces.Entity do
 
   def default_components("spawn_point") do
     %{
-      "position" => %{"x" => 0, "y" => 0, "z" => 0}
+      "position" => %{"x" => 0, "y" => 1.7, "z" => -8}
     }
   end
 
