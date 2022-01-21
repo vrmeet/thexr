@@ -10,8 +10,9 @@ defmodule ThexrWeb.SpaceChannel do
   end
 
   @impl true
-  def handle_in("hi", _, socket) do
-    broadcast(socket, "sup", %{"my" => "msg"})
+  @spec handle_in(<<_::96>>, map, Phoenix.Socket.t()) :: {:noreply, Phoenix.Socket.t()}
+  def handle_in("camera_moved", %{"pos" => pos}, socket) do
+    broadcast_from(socket, "member_moved", %{member_id: socket.assigns.member_id, pos: pos})
     {:noreply, socket}
   end
 

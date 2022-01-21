@@ -5,17 +5,19 @@ TODO:
   - camera (created at fixed location) -> create at at user's location
   - if user has no location (use spawn point), if they do, reuse the previous location
 
-  1. create an entity for a spawn point (X)
-  2. pass the spawn point to the channel join api (X)
-  2.5 need an owning process for an ETS table (X)
-  2.6 create an ETS table for user locations/rotation (x)
-  3. store the user's location in the backend (ETS) (x)
-  <!-- 4. return the location to the channel join response (either spawn point or previous location)
-  5. only after location is known do we draw camera
-  6. only after camera is created do we start game engine -->
+On camera move, send camera pos, rot to others
+throttle using rxjs
+  every 100 ms, send over websocket posrot
+  save posrot to sessionStorage
 
-  New thought, we can store last known position in local variable to avoid server round trip before rendering our camera.  We probably still want the ETS table so we can batch position broadcasts to each player though.
+- store position/rotation updates in ETS table
+- broadcast message to all connected users
 
+- Receive all messages in client using a pattern matching library (match toy)
+
+==
+
+buffer pos rotation messages so less chatty
 
 - restore audio webrtc
 
