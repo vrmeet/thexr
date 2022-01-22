@@ -18,16 +18,21 @@ defmodule ThexrWeb.SpaceChannel do
 
   @impl true
   def handle_info({:after_join, params}, socket) do
-    ets_ref = Thexr.SpaceServer.ets_ref(socket.assigns.slug)
+    case Thexr.SpaceServer.ets_ref(socket.assigns.slug) do
+      {:error, _} ->
+        push(socket, "server_lost", {})
+        {:noreply, socket}
 
-    :ets.insert(
-      ets_ref,
-      {socket.assigns.member_id, params}
-    )
+      ets_ref ->
+        :ets.insert(
+          ets_ref,
+          {socket.assigns.member_id, params}
+        )
 
-    {:ok, _} = Presence.track(socket, socket.assigns.member_id, %{})
+        {:ok, _} = Presence.track(socket, socket.assigns.member_id, %{})
 
-    push(socket, "presence_state", Presence.list(socket))
-    {:noreply, socket}
+        push(socket, "presence_state", Presence.list(socket))
+        {:noreply, socket}
+    end
   end
 end

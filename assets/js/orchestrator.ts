@@ -44,6 +44,11 @@ export class Orchestrator {
             .receive('error', resp => { console.log('Unable to join', resp) })
 
         window['channel'] = this.spaceChannel
+
+        this.spaceChannel.on("server_lost", () => {
+            window.location.href = '/';
+        })
+
         this.spaceChannel.on("member_moved", ({ member_id, pos }) => {
             console.log("getting member moved", member_id, pos)
             let mesh = this.scene.getMeshByName(`avatar_${member_id}`)
