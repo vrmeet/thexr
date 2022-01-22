@@ -40,7 +40,15 @@ defmodule Thexr.SpaceServer do
   end
 
   def ets_ref(slug) do
-    GenServer.call(pid(slug), :get_ets_ref)
+    safe_call(pid(slug), :get_ets_ref)
+  end
+
+  def safe_call(pid, payload) when is_pid(pid) do
+    GenServer.call(pid, payload)
+  end
+
+  def safe_call(nil, _) do
+    {:error, :no_pid}
   end
 
   #################################################################
