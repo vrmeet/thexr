@@ -10,14 +10,29 @@ defmodule ThexrWeb.SpaceChannel do
   end
 
   @impl true
-  @spec handle_in(<<_::96>>, map, Phoenix.Socket.t()) :: {:noreply, Phoenix.Socket.t()}
-  def handle_in("camera_moved", %{"pos" => pos}, socket) do
-    broadcast_from(socket, "member_moved", %{member_id: socket.assigns.member_id, pos: pos})
+  def handle_in("camera_moved", %{"pos" => pos, "rot" => rot}, socket) do
+    broadcast_from(socket, "member_moved", %{
+      member_id: socket.assigns.member_id,
+      pos: pos,
+      rot: rot
+    })
+
+    [px, py, pz] = pos
+    [rx, ry, rz, rw] = rot
+
+    :ets.insert(
+      socket.assigns.ets_ref,
+      {socket.assigns.member_id, {px, py, pz, rx, ry, rz, rw}}
+    )
+
     {:noreply, socket}
   end
 
   @impl true
-  def handle_info({:after_join, params}, socket) do
+  def handle_info(
+        {:after_join, %{"pos_rot" => %{"pos" => [px, py, pz], "rot" => [rx, ry, rz, rw]}}},
+        socket
+      ) do
     case Thexr.SpaceServer.ets_ref(socket.assigns.slug) do
       {:error, _} ->
         push(socket, "server_lost", %{})
@@ -26,12 +41,13 @@ defmodule ThexrWeb.SpaceChannel do
       ets_ref ->
         :ets.insert(
           ets_ref,
-          {socket.assigns.member_id, params}
+          {socket.assigns.member_id, {px, py, pz, rx, ry, rz, rw}}
         )
 
         {:ok, _} = Presence.track(socket, socket.assigns.member_id, %{})
 
         push(socket, "presence_state", Presence.list(socket))
+        socket = assign(socket, ets_ref: ets_ref)
         {:noreply, socket}
     end
   end

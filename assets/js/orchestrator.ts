@@ -5,6 +5,8 @@ import { Socket, Channel } from 'phoenix'
 import { Subject } from 'rxjs'
 import { filter, throttleTime } from 'rxjs/operators'
 
+const camPosRot = 'camPosRot'
+
 type SceneSettings = {
     use_skybox: boolean
     skybox_inclination: float
@@ -39,7 +41,7 @@ export class Orchestrator {
         this.entities = serializedSpace.entities
         this.settings = serializedSpace.settings
 
-        this.spaceChannel = this.socket.channel(`space:${serializedSpace.slug}`, { spawn_point: this.findMyPos() })
+        this.spaceChannel = this.socket.channel(`space:${serializedSpace.slug}`, { pos_rot: this.findMyPos() })
 
         this.socket.connect()
         this.spaceChannel.join()
@@ -52,11 +54,16 @@ export class Orchestrator {
             window.location.href = '/';
         })
 
-        this.spaceChannel.on("member_moved", ({ member_id, pos }) => {
+        this.spaceChannel.on("member_moved", ({ member_id, pos, rot }) => {
             let mesh = this.scene.getMeshByName(`avatar_${member_id}`)
 
             if (mesh) {
                 mesh.position.fromArray(pos)
+                if (!mesh.rotationQuaternion) {
+                    mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(rot)
+                } else {
+                    mesh.rotationQuaternion.copyFromFloats(rot[0], rot[1], rot[2], rot[3])
+                }
             }
 
         })
@@ -98,13 +105,13 @@ export class Orchestrator {
     }
 
     findMyPos() {
-        let posString = window.sessionStorage.getItem('pos')
-        if (!posString) {
+        let camPosRotString = window.sessionStorage.getItem(camPosRot)
+        if (!camPosRotString) {
             let spawnPoint = this.findSpawnPoint()
-            window.sessionStorage.setItem('pos', JSON.stringify(spawnPoint))
+            window.sessionStorage.setItem(camPosRot, JSON.stringify(spawnPoint))
             return spawnPoint
         } else {
-            return JSON.parse(posString)
+            return JSON.parse(camPosRotString)
         }
     }
 
@@ -114,11 +121,15 @@ export class Orchestrator {
             const result = this.entities.filter(entity => entity.type === 'spawn_point')
             let pos = result[0].components[0].data
 
-            return { pos: [pos.x, pos.y, pos.z] }
+            return { pos: [pos.x, pos.y, pos.z], rot: [0, 0, 0, 1] }
         } catch (e) {
             console.log(e)
-            return { pos: [0, 1.7, -8] }
+            return { pos: [0, 1.7, -8], rot: [0, 0, 0, 1] }
         }
+    }
+
+    reduceSigFigs(value) {
+        return Math.round(value * 100000) / 100000
     }
 
     async createCamera() {
@@ -130,8 +141,9 @@ export class Orchestrator {
         camera.attachControl(this.canvas, true);
         camera.inertia = 0.7;
         camera.onViewMatrixChangedObservable.add(cam => {
-            let posArray = cam.position.asArray().map(value => Math.round(value * 100000) / 100000)
-            this.signals.next({ event: "camera_moved", payload: { pos: posArray } })
+            let posArray = cam.position.asArray().map(this.reduceSigFigs)
+            let rotArray = cam.absoluteRotation.asArray().map(this.reduceSigFigs)
+            this.signals.next({ event: "camera_moved", payload: { pos: posArray, rot: rotArray } })
         })
 
         //  const env = this.scene.createDefaultEnvironment();
@@ -286,7 +298,7 @@ export class Orchestrator {
             throttleTime(100)
         ).subscribe(msg => {
             this.spaceChannel.push(msg.event, msg.payload)
-            window.sessionStorage.setItem('pos', JSON.stringify(msg.payload))
+            window.sessionStorage.setItem(camPosRot, JSON.stringify(msg.payload))
         })
 
     }
