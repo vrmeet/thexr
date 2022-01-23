@@ -28,18 +28,16 @@ defmodule ThexrWeb.Router do
   scope "/admin", ThexrWeb do
     pipe_through :browser
 
-    live "/templates", TemplateLive.Index, :index
-    live "/templates/new", TemplateLive.Index, :new
-    live "/templates/:id/edit", TemplateLive.Index, :edit
+    # live "/templates", TemplateLive.Index, :index
+    # live "/templates/new", TemplateLive.Index, :new
+    # live "/templates/:id/edit", TemplateLive.Index, :edit
 
-    live "/templates/:id", TemplateLive.Show, :show
-    live "/templates/:id/show/edit", TemplateLive.Show, :edit
+    # live "/templates/:id", TemplateLive.Show, :show
+    # live "/templates/:id/show/edit", TemplateLive.Show, :edit
   end
 
   scope "/m", ThexrWeb do
     pipe_through :browser
-
-    # resources "/plugins", PluginController
 
     # basic starting point for seeing a space
     live "/spaces", SpaceLive.Index, :index
@@ -47,6 +45,8 @@ defmodule ThexrWeb.Router do
     live "/spaces/:id/edit", SpaceLive.Index, :edit
 
     live "/edit_space/:slug", SpaceEditLive.Index, :index
+    live "/edit_space/:slug/edit", SpaceEditLive.Index, :edit
+
     # live "/spaces/:id/show/edit", SpaceLive.Show, :edit
 
     # spaces have entities

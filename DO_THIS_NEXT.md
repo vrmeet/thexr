@@ -1,9 +1,13 @@
 TODO:
 
-
 - store rotation updates in ETS table
-- batch broadcast message to all connected users
 - restore audio webrtc
+
+- animate changes
+
+- batch broadcast message to all connected users
+- mobile movement joystick
+
 
 - make a hamburger menu button (in VR make mounted to left hand)
 - menu button pulls up advanced dynamic texture for a mesh : https://doc.babylonjs.com/divingDeeper/gui/gui#texture-mode

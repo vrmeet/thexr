@@ -6,6 +6,8 @@ import { Subject } from 'rxjs'
 import { filter, throttleTime } from 'rxjs/operators'
 
 type SceneSettings = {
+    use_skybox: boolean
+    skybox_inclination: float
     clear_color: string
     fog_color: string
     fog_density: float
@@ -51,7 +53,6 @@ export class Orchestrator {
         })
 
         this.spaceChannel.on("member_moved", ({ member_id, pos }) => {
-            console.log("getting member moved", member_id, pos)
             let mesh = this.scene.getMeshByName(`avatar_${member_id}`)
 
             if (mesh) {
@@ -64,7 +65,6 @@ export class Orchestrator {
             meshes.forEach(mesh => {
                 this.processComponent(mesh, { type: params.type, data: params.data })
             })
-            console.log('component changed', JSON.stringify(params, null, 2))
         })
         this.spaceChannel.on('entity_created', entity => {
             this.findOrCreateMesh(entity)
@@ -77,14 +77,12 @@ export class Orchestrator {
         })
 
         this.spaceChannel.on('presence_state', params => {
-            console.log('presence_state', params)
             Object.keys(params).filter((id) => id !== this.memberId).map(id => {
                 BABYLON.MeshBuilder.CreateBox(`avatar_${id}`)
             })
         })
 
         this.spaceChannel.on('presence_diff', params => {
-            console.log('presence_diff', params)
 
             Object.keys(params.joins).filter((id) => id !== this.memberId).map(id => {
                 BABYLON.MeshBuilder.CreateBox(`avatar_${id}`)
@@ -92,7 +90,7 @@ export class Orchestrator {
         })
 
         this.spaceChannel.on('space_settings_changed', params => {
-            this.processSceneSettings(params.clear_color, params.fog_color, params.fog_density)
+            this.processSceneSettings(params as SceneSettings)
 
         })
 
@@ -112,10 +110,8 @@ export class Orchestrator {
 
     findSpawnPoint() {
         try {
-            console.log('this entities', this.entities)
             // TODO: looking into using js match toy instead of try catch??
             const result = this.entities.filter(entity => entity.type === 'spawn_point')
-            console.log('result', result)
             let pos = result[0].components[0].data
 
             return { pos: [pos.x, pos.y, pos.z] }
@@ -145,40 +141,42 @@ export class Orchestrator {
         });
 
     }
-
     findOrCreateSkyBox() {
         if (!this.skyBox) {
             this.skyBox = BABYLON.MeshBuilder.CreateBox(`${this.slug}_skybox`, { size: 50 })
             this.skyBox.infiniteDistance = true
             let skyboxMaterial = new MAT.SkyMaterial("skyMaterial", this.scene);
             skyboxMaterial.backFaceCulling = false;
-
-            // skyboxMaterial.inclination = -0.5; //sunset
-            skyboxMaterial.inclination = 0.3;
-            // skyboxMaterial.luminance
-            // skyboxMaterial.turbidity
-            // skyboxMaterial.rayleigh
-            // skyboxMaterial.cameraOffset.y
-
             this.skyBox.material = skyboxMaterial
         }
         return this.skyBox
     }
+    processSkybox(useSkybox: boolean, inclination: number) {
+        if (useSkybox) {
+            this.findOrCreateSkyBox()
+            let skyboxMaterial = this.skyBox.material as MAT.SkyMaterial
+            skyboxMaterial.inclination = inclination
+        } else {
+            if (this.skyBox) {
+                this.skyBox.material.dispose()
+                this.skyBox.dispose()
+                this.skyBox = null
+            }
+        }
+    }
 
-    processSceneSettings(clearColor: string, fogColor: string, fogDensity: number) {
-        // this.scene.clearColor = BABYLON.Color4.FromHexString(clearColor)
-
-        this.findOrCreateSkyBox()
+    processSceneSettings(settings: SceneSettings) {
+        this.scene.clearColor = BABYLON.Color4.FromHexString(settings.clear_color)
+        this.processSkybox(settings.use_skybox, settings.skybox_inclination)
         this.scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
-        this.scene.fogColor = BABYLON.Color3.FromHexString(fogColor)
-        //this.scene.fogDensity = 0.01
-        this.scene.fogDensity = fogDensity
+        this.scene.fogColor = BABYLON.Color3.FromHexString(settings.fog_color)
+        this.scene.fogDensity = settings.fog_density
     }
 
     async createScene() {
         // Create a basic BJS Scene object
         this.scene = new BABYLON.Scene(this.engine);
-        this.processSceneSettings(this.settings.clear_color, this.settings.fog_color, this.settings.fog_density)
+        this.processSceneSettings(this.settings as SceneSettings)
         window['scene'] = this.scene
         this.createCamera()
 
@@ -192,7 +190,6 @@ export class Orchestrator {
 
     parseInitialScene(entities) {
         entities.map(entity => {
-            console.log(entity)
             this.findOrCreateMesh(entity)
         })
     }
@@ -245,7 +242,6 @@ export class Orchestrator {
     }
 
     processComponent(mesh: BABYLON.AbstractMesh, component: { type: string, data: any }) {
-        console.log('attempting to process component', JSON.stringify(component))
         switch (component.type) {
             case 'position':
                 mesh.position.set(component.data.x, component.data.y, component.data.z)
@@ -291,7 +287,6 @@ export class Orchestrator {
         ).subscribe(msg => {
             this.spaceChannel.push(msg.event, msg.payload)
             window.sessionStorage.setItem('pos', JSON.stringify(msg.payload))
-            console.log('saving pos', msg.payload)
         })
 
     }

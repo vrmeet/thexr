@@ -4,11 +4,13 @@ defmodule Thexr.Spaces.Settings do
 
   @derive Jason.Encoder
 
-  @attributes ~w(clear_color fog_color fog_density)a
+  @attributes ~w(clear_color fog_color fog_density use_skybox skybox_inclination)a
 
   @primary_key false
   embedded_schema do
-    field :clear_color, :string, default: "#00FF00"
+    field :use_skybox, :boolean, default: false
+    field :skybox_inclination, :float, default: 0.0
+    field :clear_color, :string, default: "#201111"
     field :fog_color, :string, default: "#FEFAF0"
     field :fog_density, :float, default: 0.01
   end
