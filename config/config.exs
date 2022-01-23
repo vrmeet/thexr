@@ -49,7 +49,7 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 
 config :honeybadger,
-  api_key: "da405219",
+  api_key: System.get_env("HONEYBADGER_API_KEY"),
   ecto_repos: [Thexr.Repo],
   use_logger: true
 
