@@ -1,27 +1,9 @@
 TODO:
 
 
-- enable VR multiplayer presence
-  - camera (created at fixed location) -> create at at user's location
-  - if user has no location (use spawn point), if they do, reuse the previous location
-
-On camera move, send camera pos, rot to others
-throttle using rxjs
-  every 100 ms, send over websocket posrot
-  save posrot to sessionStorage
-
-- store position/rotation updates in ETS table
-- broadcast message to all connected users
-
-- Receive all messages in client using a pattern matching library (match toy)
-
-==
-
-buffer pos rotation messages so less chatty
-
+- store rotation updates in ETS table
+- batch broadcast message to all connected users
 - restore audio webrtc
-
-- add about us section
 
 - make a hamburger menu button (in VR make mounted to left hand)
 - menu button pulls up advanced dynamic texture for a mesh : https://doc.babylonjs.com/divingDeeper/gui/gui#texture-mode

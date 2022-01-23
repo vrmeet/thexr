@@ -20,7 +20,7 @@ defmodule ThexrWeb.SpaceChannel do
   def handle_info({:after_join, params}, socket) do
     case Thexr.SpaceServer.ets_ref(socket.assigns.slug) do
       {:error, _} ->
-        push(socket, "server_lost", {})
+        push(socket, "server_lost", %{})
         {:noreply, socket}
 
       ets_ref ->
