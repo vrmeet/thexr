@@ -23,11 +23,12 @@
 
   </head>
   <body>
-    <header>
-      <a href="/">TheXR Space</a> | 
-      <a href="/m/spaces">Spaces</a>
-
-    </header>
+    <%= if assigns[:header] != false do %>
+      <header>
+        <a href="/">TheXR Space</a> | 
+        <a href="/m/spaces">Spaces</a>
+      </header>
+    <% end %>
     <%= @inner_content %>
   </body>
 </html>

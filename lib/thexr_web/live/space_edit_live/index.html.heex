@@ -1,7 +1,15 @@
 
-<h1>Edit Space <%= @space.name %></h1>
+<%= if @live_action in [:edit] do %>
+  <%= live_modal ThexrWeb.SpaceEditLive.FormComponent,
+    id: @space.id ,
+    title: @page_title,
+    action: @live_action,
+    space: @space,
+    return_to: Routes.space_edit_index_path(@socket, :index, @space.slug) %>
+<% end %>
 
-<h2>Add +</h2>
+<span><%= link "Settings", to: Routes.space_edit_index_path(@socket, :edit, @space.slug) %></span>
+       
 
 <form phx-submit="add_entity">
   <select name="entity_kind">
@@ -10,7 +18,7 @@
   <button>Add</button>
 </form>
 
-<h2>Entities</h2>
+<h3>Entities</h3>
 
 <ul class="entitiesList">
 <%= for entity <- @entities do %>

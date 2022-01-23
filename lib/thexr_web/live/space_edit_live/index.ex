@@ -19,6 +19,7 @@ defmodule ThexrWeb.SpaceEditLive.Index do
        selected_entity: nil,
        component_changeset: nil,
        page_title: "Edit #{space.name}",
+       header: false,
        ref: nil
      )}
   end
