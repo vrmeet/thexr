@@ -26,6 +26,7 @@ export class Orchestrator {
     public entities: any[]
     public settings: SceneSettings
     public signals: Subject<SignalEvent>
+    public skyBox: BABYLON.Mesh
 
 
 
@@ -145,10 +146,32 @@ export class Orchestrator {
 
     }
 
+    findOrCreateSkyBox() {
+        if (!this.skyBox) {
+            this.skyBox = BABYLON.MeshBuilder.CreateBox(`${this.slug}_skybox`, { size: 50 })
+            this.skyBox.infiniteDistance = true
+            let skyboxMaterial = new MAT.SkyMaterial("skyMaterial", this.scene);
+            skyboxMaterial.backFaceCulling = false;
+
+            // skyboxMaterial.inclination = -0.5; //sunset
+            skyboxMaterial.inclination = 0.3;
+            // skyboxMaterial.luminance
+            // skyboxMaterial.turbidity
+            // skyboxMaterial.rayleigh
+            // skyboxMaterial.cameraOffset.y
+
+            this.skyBox.material = skyboxMaterial
+        }
+        return this.skyBox
+    }
+
     processSceneSettings(clearColor: string, fogColor: string, fogDensity: number) {
-        this.scene.clearColor = BABYLON.Color4.FromHexString(clearColor)
-        this.scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
+        // this.scene.clearColor = BABYLON.Color4.FromHexString(clearColor)
+
+        this.findOrCreateSkyBox()
+        this.scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
         this.scene.fogColor = BABYLON.Color3.FromHexString(fogColor)
+        //this.scene.fogDensity = 0.01
         this.scene.fogDensity = fogDensity
     }
 
