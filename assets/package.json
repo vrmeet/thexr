@@ -9,6 +9,7 @@
     },
     "dependencies": {
         "@fal-works/esbuild-plugin-global-externals": "^2.1.2",
+        "agora-rtc-sdk-ng": "^4.8.1",
         "babylonjs": "5.0.0-alpha.63",
         "babylonjs-materials": "5.0.0-alpha.63",
         "phoenix": "file:../deps/phoenix",
