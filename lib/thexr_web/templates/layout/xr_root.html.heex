@@ -10,6 +10,7 @@
     <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/app.js")}></script>
     <script src="https://preview.babylonjs.com/babylon.js"></script>
     <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.8.1.js"></script>
     <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/orchestrator.js")}></script>
     <%= if Application.get_env(:honeybadger, :environment_name) == :prod do %>
 

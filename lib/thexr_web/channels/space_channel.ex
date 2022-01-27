@@ -6,7 +6,7 @@ defmodule ThexrWeb.SpaceChannel do
   def join("space:" <> slug, params, socket) do
     send(self(), {:after_join, params})
     socket = assign(socket, :slug, slug)
-    {:ok, %{"hi" => "there", "slug" => slug}, socket}
+    {:ok, %{agora_app_id: System.get_env("AGORA_APP_ID")}, socket}
   end
 
   @impl true

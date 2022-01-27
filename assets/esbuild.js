@@ -21,6 +21,11 @@ const globals = {
     'babylonjs-materials': {
         varName: 'BABYLON',
         type: 'cjs'
+    },
+    'agora-rtc-sdk-ng': {
+        varName: 'AgoraRTC',
+        namedExports: ['IAgoraRTCClient', 'IAgoraRTCRemoteUser', 'ILocalVideoTrack', 'IMicrophoneAudioTrack', 'IRemoteAudioTrack', 'IRemoteVideoTrack'],
+        type: 'cjs'
     }
 }
 

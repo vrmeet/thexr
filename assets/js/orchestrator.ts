@@ -4,7 +4,7 @@ import { float } from 'babylonjs/types';
 import { Socket, Channel } from 'phoenix'
 import { Subject } from 'rxjs'
 import { filter, throttleTime } from 'rxjs/operators'
-
+import { WebRTCClientAgora } from './web-rtc-client-agora';
 const camPosRot = 'camPosRot'
 
 type SceneSettings = {
@@ -31,10 +31,11 @@ export class Orchestrator {
     public settings: SceneSettings
     public signals: Subject<SignalEvent>
     public skyBox: BABYLON.Mesh
-
+    public webRTCClient: WebRTCClientAgora
 
 
     constructor(public canvasId: string, public memberId: string, public serializedSpace: { settings: SceneSettings, slug: string, entities: any[] }) {
+        this.webRTCClient = this.webRTCClient = new WebRTCClientAgora(this.slug, this.memberId)
         this.signals = new Subject()
         this.socket = new Socket('/socket', { params: { token: window['userToken'] } })
         this.slug = serializedSpace.slug;
@@ -45,7 +46,11 @@ export class Orchestrator {
 
         this.socket.connect()
         this.spaceChannel.join()
-            .receive('ok', resp => { console.log('Joined successfully', resp) })
+            .receive('ok', resp => {
+                this.webRTCClient.join(resp.agora_app_id)
+                window['webRTCClient'] = this.webRTCClient;
+                console.log('Joined successfully')
+            })
             .receive('error', resp => { console.log('Unable to join', resp) })
 
         window['channel'] = this.spaceChannel
@@ -116,16 +121,15 @@ export class Orchestrator {
     }
 
     findSpawnPoint() {
-        try {
-            // TODO: looking into using js match toy instead of try catch??
-            const result = this.entities.filter(entity => entity.type === 'spawn_point')
+        const result = this.entities.filter(entity => entity.type === 'spawn_point')
+        console.log('result', JSON.stringify(result))
+        if (result.length > 0) {
             let pos = result[0].components[0].data
-
             return { pos: [pos.x, pos.y, pos.z], rot: [0, 0, 0, 1] }
-        } catch (e) {
-            console.log(e)
+        } else {
             return { pos: [0, 1.7, -8], rot: [0, 0, 0, 1] }
         }
+
     }
 
     reduceSigFigs(value) {
