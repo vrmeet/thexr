@@ -35,12 +35,12 @@ export class Orchestrator {
 
 
     constructor(public canvasId: string, public memberId: string, public serializedSpace: { settings: SceneSettings, slug: string, entities: any[] }) {
-        this.webRTCClient = this.webRTCClient = new WebRTCClientAgora(this.slug, this.memberId)
         this.signals = new Subject()
         this.socket = new Socket('/socket', { params: { token: window['userToken'] } })
         this.slug = serializedSpace.slug;
         this.entities = serializedSpace.entities
         this.settings = serializedSpace.settings
+        this.webRTCClient = this.webRTCClient = new WebRTCClientAgora(this.slug, this.memberId)
 
         this.spaceChannel = this.socket.channel(`space:${serializedSpace.slug}`, { pos_rot: this.findMyPos() })
 
