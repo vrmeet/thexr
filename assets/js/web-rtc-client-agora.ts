@@ -45,6 +45,7 @@ export class WebRTCClientAgora implements WebRTCClient {
 
             }
             if (mediaType === "audio") {
+                console.log('subscribed to other user audio')
                 this.otherMemberAudioTracks[otherMember.uid] = otherMember.audioTrack
                 this.onPublishedCallbacks.forEach(fn => {
                     fn(
@@ -52,11 +53,13 @@ export class WebRTCClientAgora implements WebRTCClient {
                         mediaType,
                         {
                             play: () => {
+                                console.log('starting playing other user audio track')
                                 this.otherMemberAudioTracks[otherMember.uid].play()
                             }
                         },
                         otherMember.audioTrack.getMediaStreamTrack()
                     )
+
                 })
             }
         })

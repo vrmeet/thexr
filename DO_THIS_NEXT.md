@@ -1,12 +1,14 @@
 TODO:
 
-
+- add back teleportation
 - restore audio webrtc (but to create the UI, would we use react?)
 - build a UI to manage muting/ and audio/video state
 - also need a way to select the mic and cam and submit it to agora
+- render skybox behind everything
 
 
 - add cylinder type
+
 - animate changes
 - have edit mode where you can click and move with the pointer
 

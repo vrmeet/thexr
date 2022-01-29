@@ -2,12 +2,14 @@
 
 ## developers
 
-An easy way to setup your local dev env is to use
-https://github.com/nicbet/docker-phoenix
+The easiest way to get a local running instance is to use vscode developer container.
+Simply open this folder using vscode and when it prompts you to open as dev container, do it.
 
-just clone it and follow the install instructions,
-then within that repo, clone THIS repo at the src folder
+To start your server at the vscode terminal panel use: ./server.sh
 
+Copy .env.sample to .env (ignored by git) to add secrets
+
+====
 
 To start your Phoenix server:
 
