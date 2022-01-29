@@ -40,7 +40,17 @@ export class Orchestrator {
         this.slug = serializedSpace.slug;
         this.entities = serializedSpace.entities
         this.settings = serializedSpace.settings
-        this.webRTCClient = this.webRTCClient = new WebRTCClientAgora(this.slug, this.memberId)
+        this.webRTCClient = new WebRTCClientAgora(this.slug, this.memberId)
+
+        // memberID: string,
+        // mediaType: "audio" | "video",
+        // playable: IPlayable,
+        // mediaStreamTrack: MediaStreamTrack) => void
+
+        this.webRTCClient.addRemoteStreamPublishedCallback((memberId, mediaType, playable, mediaStreamTrack) => {
+            console.log('this user is now publishing audio', memberId);
+            playable.play()
+        })
 
         this.spaceChannel = this.socket.channel(`space:${serializedSpace.slug}`, { pos_rot: this.findMyPos() })
 
