@@ -1,4 +1,6 @@
 const esbuild = require('esbuild')
+const sveltePlugin = require("esbuild-svelte")
+const sveltePreprocess = require("svelte-preprocess");
 const falWorks = require('@fal-works/esbuild-plugin-global-externals')
 
 // Decide which mode to proceed with
@@ -38,7 +40,9 @@ let opts = {
     logLevel: 'info',
     target: 'es2016',
     outdir: '../priv/static/assets',
-    plugins: [falWorks.globalExternals(globals)],
+    plugins: [sveltePlugin({
+        preprocess: sveltePreprocess(),
+    }), falWorks.globalExternals(globals)],
 }
 if (mode === 'watch') {
     opts = {

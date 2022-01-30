@@ -1,18 +1,21 @@
 import * as BABYLON from 'babylonjs'
 import * as MAT from 'babylonjs-materials'
-import { float } from 'babylonjs/types';
 import { Socket, Channel } from 'phoenix'
 import { Subject } from 'rxjs'
 import { filter, throttleTime } from 'rxjs/operators'
 import { WebRTCClientAgora } from './web-rtc-client-agora';
+import App from "./App.svelte";
+
+new App({ target: document.body });
+
 const camPosRot = 'camPosRot'
 
 type SceneSettings = {
     use_skybox: boolean
-    skybox_inclination: float
+    skybox_inclination: number
     clear_color: string
     fog_color: string
-    fog_density: float
+    fog_density: number
 }
 
 type SignalEvent = {
@@ -322,4 +325,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     const memberId = window['memberId']
     const orchestrator = new Orchestrator('spaceCanvas', memberId, serializedSpace)
     orchestrator.start()
+
+
 })
+
+
