@@ -2,26 +2,26 @@ import * as BABYLON from 'babylonjs'
 import * as MAT from 'babylonjs-materials'
 import { Socket, Channel } from 'phoenix'
 import { Subject } from 'rxjs'
-import { filter, throttleTime } from 'rxjs/operators'
+import { filter, throttleTime, skip } from 'rxjs/operators'
 import { WebRTCClientAgora } from './web-rtc-client-agora';
 import App from "./App.svelte";
 
-new App({ target: document.body });
+import type { SceneSettings, SignalEvent } from './types'
 
 const camPosRot = 'camPosRot'
 
-type SceneSettings = {
-    use_skybox: boolean
-    skybox_inclination: number
-    clear_color: string
-    fog_color: string
-    fog_density: number
-}
+// type SceneSettings = {
+//     use_skybox: boolean
+//     skybox_inclination: number
+//     clear_color: string
+//     fog_color: string
+//     fog_density: number
+// }
 
-type SignalEvent = {
-    event: string
-    payload: any
-}
+// type SignalEvent = {
+//     event: string
+//     payload: any
+// }
 
 export class Orchestrator {
     public canvas;
@@ -38,6 +38,7 @@ export class Orchestrator {
 
 
     constructor(public canvasId: string, public memberId: string, public serializedSpace: { settings: SceneSettings, slug: string, entities: any[] }) {
+
         this.signals = new Subject()
         this.socket = new Socket('/socket', { params: { token: window['userToken'] } })
         this.slug = serializedSpace.slug;
@@ -57,14 +58,6 @@ export class Orchestrator {
 
         this.spaceChannel = this.socket.channel(`space:${serializedSpace.slug}`, { pos_rot: this.findMyPos() })
 
-        this.socket.connect()
-        this.spaceChannel.join()
-            .receive('ok', resp => {
-                this.webRTCClient.join(resp.agora_app_id)
-                window['webRTCClient'] = this.webRTCClient;
-                console.log('Joined successfully')
-            })
-            .receive('error', resp => { console.log('Unable to join', resp) })
 
         window['channel'] = this.spaceChannel
 
@@ -120,6 +113,28 @@ export class Orchestrator {
         })
 
         window['orchestrator'] = this
+
+        new App({ target: document.body, props: { canvasId: canvasId, signals: this.signals } });
+
+    }
+
+    joinSpace(): Promise<any> {
+        return new Promise((resolve, reject) => {
+            this.socket.connect()
+            this.spaceChannel.join()
+                .receive('ok', resp => {
+                    this.webRTCClient.join(resp.agora_app_id)
+                    window['webRTCClient'] = this.webRTCClient;
+                    console.log('Joined successfully')
+                    resolve(resp)
+                })
+                .receive('error', resp => {
+                    console.log('Unable to join', resp)
+                    reject(resp)
+                })
+
+        })
+
     }
 
     findMyPos() {
@@ -291,6 +306,17 @@ export class Orchestrator {
         }
     }
 
+    forwardCameraMovement() {
+        // forward camera movement
+        this.signals.pipe(
+            filter(msg => (msg.event === 'camera_moved')),
+            throttleTime(100)
+        ).subscribe(msg => {
+            this.spaceChannel.push(msg.event, msg.payload)
+            window.sessionStorage.setItem(camPosRot, JSON.stringify(msg.payload))
+        })
+    }
+
 
     async start() {
 
@@ -309,14 +335,15 @@ export class Orchestrator {
             this.engine.resize();
         });
 
-        // send camera movement
+        // listen for clicked join button
         this.signals.pipe(
-            filter(msg => (msg.event === 'camera_moved')),
-            throttleTime(100)
-        ).subscribe(msg => {
-            this.spaceChannel.push(msg.event, msg.payload)
-            window.sessionStorage.setItem(camPosRot, JSON.stringify(msg.payload))
+            filter(msg => (msg.event == 'joined'))
+        ).subscribe(async () => {
+            await this.joinSpace();
+            this.forwardCameraMovement()
         })
+
+
 
     }
 }
