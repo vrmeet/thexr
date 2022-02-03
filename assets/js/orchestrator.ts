@@ -97,14 +97,14 @@ export class Orchestrator {
         this.spaceChannel.on('presence_state', params => {
             console.log('presence_state', JSON.stringify(params))
             Object.keys(params).filter((id) => id !== this.memberId).forEach(id => {
-                this.findOrCreateAvatar(id, params[id].at.pos, params[id].at.rot)
+                this.findOrCreateAvatar(id, params[id].metas[0].pos_rot)
             })
         })
 
         this.spaceChannel.on('presence_diff', params => {
             console.log('presence_diff', JSON.stringify(params))
             Object.keys(params.joins).filter((id) => id !== this.memberId).forEach(id => {
-                this.findOrCreateAvatar(id, params.joins[id].at.pos, params.joins[id].at.rot)
+                this.findOrCreateAvatar(id, params.joins[id].metas[0].pos_rot)
             })
             Object.keys(params.leaves).map(id => {
                 this.removeAvatar(id)
@@ -129,14 +129,18 @@ export class Orchestrator {
         }
     }
 
-    findOrCreateAvatar(id: string, pos: number[], rot: number[]) {
+    findOrCreateAvatar(id: string, posRot: any) {
         let box = this.scene.getMeshByName(`avatar_${id}`)
         if (!box) {
             box = BABYLON.MeshBuilder.CreateBox(`avatar_${id}`)
         }
-        box.position = BABYLON.Vector3.FromArray(pos)
-        box.rotationQuaternion = BABYLON.Quaternion.FromArray(rot)
-        return box
+        if (!posRot) {
+            return box
+        } else {
+            box.position = BABYLON.Vector3.FromArray(posRot.pos)
+            box.rotationQuaternion = BABYLON.Quaternion.FromArray(posRot.rot)
+            return box
+        }
     }
 
     joinSpace(): Promise<any> {
@@ -186,8 +190,9 @@ export class Orchestrator {
     }
 
     async createCamera() {
-        let pos = this.findMyPos()['pos']
-        var camera = new BABYLON.FreeCamera('camera1', BABYLON.Vector3.FromArray(pos), this.scene);
+        let posRot = this.findMyPos()
+        var camera = new BABYLON.FreeCamera('freeCam', BABYLON.Vector3.FromArray(posRot.pos), this.scene);
+        camera.rotationQuaternion = BABYLON.Quaternion.FromArray(posRot.rot)
         // Attach the camera to the canvas
         camera.attachControl(this.canvas, true);
         camera.inertia = 0.7;
@@ -328,6 +333,7 @@ export class Orchestrator {
     forwardCameraMovement() {
         // forward camera movement
         this.signals.pipe(
+            skip(1), // first pos/rot may not be correct as we're still putting it in position, besides we'll send this during space_channel connect
             filter(msg => (msg.event === 'camera_moved')),
             throttleTime(100)
         ).subscribe(msg => {

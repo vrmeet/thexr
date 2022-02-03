@@ -14,6 +14,10 @@ defmodule ThexrWeb.Presence do
   #   {"ErhlnZ", {0, 1.7, -8, 0, 0, 0, 1}},
   #   {"k7f4Wl", {0, 1.7, -4.62905, -0.03143, 0.22985, 0.00743, 0.97269}}
   # ]
+  #
+  # prone to race conditions, because either the presence list has the member_id first
+  # or the ets table can have the member_id first, leading to incomplete data
+  # to mitigate this, we also populate metas on first Track
 
   @impl true
   def fetch("space:" <> slug, presences) do
@@ -24,10 +28,15 @@ defmodule ThexrWeb.Presence do
       presences,
       fn {member_id, {p0, p1, p2, r0, r1, r2, r3}}, acc ->
         if Map.has_key?(presences, member_id) do
-          put_in(presences, [member_id, "at"], %{
-            "pos" => [p0, p1, p2],
-            "rot" => [r0, r1, r2, r3]
-          })
+          meta = List.first(presences[member_id].metas)
+
+          meta =
+            Map.put(meta, "pos_rot", %{
+              "pos" => [p0, p1, p2],
+              "rot" => [r0, r1, r2, r3]
+            })
+
+          put_in(presences, [member_id, :metas], [meta])
         else
           acc
         end
