@@ -35,6 +35,12 @@ export interface WebRTCClient {
     // mute others?
     // adjust others volume?
 
+
+    //current status
+    audioIsPublished: boolean
+    cameraIsPublished: boolean
+    screenIsPublished: boolean
+
     // observables
     addRemoteStreamPublishedCallback(callback: RemoteStreamPublishedCallback)
     addRemoteStreamUnpublishedCallback(callback: RemoteStreamUnpublishedCallback)

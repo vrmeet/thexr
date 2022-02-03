@@ -114,7 +114,7 @@ export class Orchestrator {
 
         window['orchestrator'] = this
 
-        new App({ target: document.body, props: { canvasId: canvasId, signals: this.signals } });
+        new App({ target: document.body, props: { canvasId: canvasId, webRTCClient: this.webRTCClient, signals: this.signals } });
 
     }
 
@@ -167,8 +167,6 @@ export class Orchestrator {
     async createCamera() {
         let pos = this.findMyPos()['pos']
         var camera = new BABYLON.FreeCamera('camera1', BABYLON.Vector3.FromArray(pos), this.scene);
-        // Target the camera to scene origin
-        // camera.setTarget(BABYLON.Vector3.Zero());
         // Attach the camera to the canvas
         camera.attachControl(this.canvas, true);
         camera.inertia = 0.7;
