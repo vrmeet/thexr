@@ -29,8 +29,10 @@ defmodule ThexrWeb.SpaceChannel do
   end
 
   @impl true
+  @spec handle_info({:after_join, map}, Phoenix.Socket.t()) :: {:noreply, Phoenix.Socket.t()}
   def handle_info(
-        {:after_join, %{"pos_rot" => %{"pos" => [px, py, pz], "rot" => [rx, ry, rz, rw]}}},
+        {:after_join,
+         %{"pos_rot" => %{"pos" => [px, py, pz], "rot" => [rx, ry, rz, rw]}} = pos_rot},
         socket
       ) do
     case Thexr.SpaceServer.ets_ref(socket.assigns.slug) do
@@ -44,7 +46,7 @@ defmodule ThexrWeb.SpaceChannel do
           {socket.assigns.member_id, {px, py, pz, rx, ry, rz, rw}}
         )
 
-        {:ok, _} = Presence.track(socket, socket.assigns.member_id, %{})
+        {:ok, _} = Presence.track(socket, socket.assigns.member_id, pos_rot)
 
         push(socket, "presence_state", Presence.list(socket))
         socket = assign(socket, ets_ref: ets_ref)
