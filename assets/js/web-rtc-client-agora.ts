@@ -1,5 +1,5 @@
 import AgoraRTC, { IAgoraRTCClient, IAgoraRTCRemoteUser, ILocalVideoTrack, IMicrophoneAudioTrack, IRemoteAudioTrack, IRemoteVideoTrack } from 'agora-rtc-sdk-ng'
-import { WebRTCClient, RemoteStreamPublishedCallback, RemoteStreamUnpublishedCallback } from "./web-rtc-client"
+import type { WebRTCClient, RemoteStreamPublishedCallback, RemoteStreamUnpublishedCallback } from "./web-rtc-client"
 
 export class WebRTCClientAgora implements WebRTCClient {
     public appId: string
@@ -11,9 +11,17 @@ export class WebRTCClientAgora implements WebRTCClient {
     public onPublishedCallbacks: RemoteStreamPublishedCallback[]
     public onUnpublishedCallbacks: RemoteStreamUnpublishedCallback[]
     public joined: boolean
+    public audioIsPublished: boolean
+    public screenIsPublished: boolean
+    public cameraIsPublished: boolean
+    public joinedPromise: Promise<any>
+
 
     constructor(public channelId: string, public userId: string) {
         this.joined = false
+        this.audioIsPublished = false
+        this.screenIsPublished = false
+        this.cameraIsPublished = false
         this.otherMemberAudioTracks = {}
         this.otherMemberVideoTracks = {}
         this.onPublishedCallbacks = []
@@ -89,8 +97,9 @@ export class WebRTCClientAgora implements WebRTCClient {
             return
         }
         try {
-            await this.client.join(appId, this.channelId, null, this.userId)
             this.joined = true
+            this.joinedPromise = this.client.join(appId, this.channelId, null, this.userId)
+            await this.joinedPromise
         } catch (err) {
             this.joined = false
             console.error(err)
@@ -111,40 +120,63 @@ export class WebRTCClientAgora implements WebRTCClient {
         return AgoraRTC.getPlaybackDevices()
     }
     async publishAudio(): Promise<void> {
-        if (!this.localAudioTrack) {
-            this.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack()
-            await this.client.publish([this.localAudioTrack])
-            console.log("publishing local track audio")
+        if (this.joined) {
+            await this.joinedPromise
+            if (!this.localAudioTrack) {
+                this.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack()
+                await this.client.publish([this.localAudioTrack])
+                console.log("publishing local track audio")
+                this.audioIsPublished = true
+            }
         }
     }
     async unpublishAudio(): Promise<void> {
-        if (this.localAudioTrack) {
-            await this.client.unpublish([this.localAudioTrack])
-            this.localAudioTrack.close()
-            this.localAudioTrack = null
-            console.log("UN-publishing local track audio")
+        if (this.joined) {
+            await this.joinedPromise
+            if (this.localAudioTrack) {
+                await this.client.unpublish([this.localAudioTrack])
+                this.localAudioTrack.close()
+                this.localAudioTrack = null
+                console.log("UN-publishing local track audio")
+                this.audioIsPublished = false
+            }
         }
     }
     async publishCamera(): Promise<void> {
-        if (!this.localVideoTrack) {
-            this.localVideoTrack = await AgoraRTC.createCameraVideoTrack()
-            await this.client.publish([this.localVideoTrack])
-            console.log("publishing camera")
+        if (this.joined) {
+            await this.joinedPromise
+            if (!this.localVideoTrack) {
+                this.localVideoTrack = await AgoraRTC.createCameraVideoTrack()
+                await this.client.publish([this.localVideoTrack])
+                console.log("publishing camera")
+                this.screenIsPublished = false
+                this.cameraIsPublished = true
+            }
         }
     }
     async publishScreen(): Promise<void> {
-        if (!this.localVideoTrack) {
-            this.localVideoTrack = await AgoraRTC.createScreenVideoTrack({}, "disable")
-            await this.client.publish([this.localVideoTrack])
-            console.log("publishing screen")
+        if (this.joined) {
+            await this.joinedPromise
+            if (!this.localVideoTrack) {
+                this.localVideoTrack = await AgoraRTC.createScreenVideoTrack({}, "disable")
+                await this.client.publish([this.localVideoTrack])
+                console.log("publishing screen")
+                this.screenIsPublished = true
+                this.cameraIsPublished = false
+            }
         }
     }
     async unpublishVideo(): Promise<void> {
-        if (this.localVideoTrack) {
-            await this.client.unpublish([this.localVideoTrack])
-            this.localVideoTrack.close()
-            this.localVideoTrack = null
-            console.log("Un- publishing video")
+        if (this.joined) {
+            await this.joinedPromise
+            if (this.localVideoTrack) {
+                await this.client.unpublish([this.localVideoTrack])
+                this.localVideoTrack.close()
+                this.localVideoTrack = null
+                console.log("Un- publishing video")
+                this.screenIsPublished = false
+                this.cameraIsPublished = false
+            }
         }
     }
     addRemoteStreamPublishedCallback(callback: RemoteStreamPublishedCallback) {
