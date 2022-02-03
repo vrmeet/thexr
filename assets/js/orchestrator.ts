@@ -95,15 +95,19 @@ export class Orchestrator {
         })
 
         this.spaceChannel.on('presence_state', params => {
-            Object.keys(params).filter((id) => id !== this.memberId).map(id => {
-                BABYLON.MeshBuilder.CreateBox(`avatar_${id}`)
+            console.log('presence_state', JSON.stringify(params))
+            Object.keys(params).filter((id) => id !== this.memberId).forEach(id => {
+                this.findOrCreateAvatar(id, params[id].at.pos, params[id].at.rot)
             })
         })
 
         this.spaceChannel.on('presence_diff', params => {
-
-            Object.keys(params.joins).filter((id) => id !== this.memberId).map(id => {
-                BABYLON.MeshBuilder.CreateBox(`avatar_${id}`)
+            console.log('presence_diff', JSON.stringify(params))
+            Object.keys(params.joins).filter((id) => id !== this.memberId).forEach(id => {
+                this.findOrCreateAvatar(id, params.joins[id].at.pos, params.joins[id].at.rot)
+            })
+            Object.keys(params.leaves).map(id => {
+                this.removeAvatar(id)
             })
         })
 
@@ -116,6 +120,23 @@ export class Orchestrator {
 
         new App({ target: document.body, props: { canvasId: canvasId, webRTCClient: this.webRTCClient, signals: this.signals } });
 
+    }
+
+    removeAvatar(id) {
+        let box = this.scene.getMeshByName(`avatar_${id}`)
+        if (box) {
+            box.dispose()
+        }
+    }
+
+    findOrCreateAvatar(id: string, pos: number[], rot: number[]) {
+        let box = this.scene.getMeshByName(`avatar_${id}`)
+        if (!box) {
+            box = BABYLON.MeshBuilder.CreateBox(`avatar_${id}`)
+        }
+        box.position = BABYLON.Vector3.FromArray(pos)
+        box.rotationQuaternion = BABYLON.Quaternion.FromArray(rot)
+        return box
     }
 
     joinSpace(): Promise<any> {
