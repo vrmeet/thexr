@@ -1,24 +1,5 @@
 TODO:
 
-only enter a space after you click a button (if you don't join, then you haven't joined the channel)
-  set focus to the canvas
-
-
-hubs does this:
-  when page loads, there is a modal with 3 buttons: "join room", "enter on device", "spectate"
-  when clicking "join room", the entire page becomes a form:
-    top bar has a "< Back" link.  title is "Avatar setup"
-    there is text input for an avatar name
-    a 3d avatar preview, a change button avatar
-    an accept button
-  when accepting an avatar 
-    top bar has a "< Back" which takes you back to avatar setup
-    title is microphone setup
-    two panel layout
-    on left are microphone choices and levels (an option to mute)
-    on right is speaker choice and option to test
-  
-  if you click "enter on device", a modal says you can go to another link inside headset to hubs.link and enter a 4 digit code which will take you to the full url.  (not a bad idea if all your urls are insanely long) maybe have a private spaces tab and in there you can browse, but you need the code
 
   if i refresh i need to answer all the questions again, should save it in session storage
 

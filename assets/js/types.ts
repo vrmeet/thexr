@@ -1,4 +1,4 @@
-
+import type { Subject } from 'rxjs'
 export type SceneSettings = {
     use_skybox: boolean
     skybox_inclination: number
@@ -11,3 +11,9 @@ export type SignalEvent = {
     event: string
     payload: any
 }
+
+export type SignalHub = Subject<SignalEvent>
+
+export type SerializedSpace = { settings: SceneSettings, slug: string, entities: any[] }
+
+export const SESS_KEY_CAM_POSROT = 'camPosRot'

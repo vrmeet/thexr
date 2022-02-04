@@ -4,6 +4,7 @@
     // props
     export let confirmMicAndOutputCallback;
 
+    // state
     console.log("mic and output");
     let mics: MediaDeviceInfo[] = [];
     let outputs: MediaDeviceInfo[] = [];
