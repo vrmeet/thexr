@@ -16,4 +16,3 @@ export type SignalHub = Subject<SignalEvent>
 
 export type SerializedSpace = { settings: SceneSettings, slug: string, entities: any[] }
 
-export const SESS_KEY_CAM_POSROT = 'camPosRot'

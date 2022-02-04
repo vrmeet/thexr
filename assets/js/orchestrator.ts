@@ -1,27 +1,12 @@
 import { Socket, Channel } from 'phoenix'
-import { Subject } from 'rxjs'
 import { filter, throttleTime, skip } from 'rxjs/operators'
 import { WebRTCClientAgora } from './web-rtc-client-agora';
 import { signalHub } from './signalHub'
 import { SceneManager } from './sceneManager'
 import App from "./App.svelte";
+import { sessionPersistance } from './sessionPersistance';
 
 import type { SceneSettings, SerializedSpace, SignalHub } from './types'
-
-
-
-// type SceneSettings = {
-//     use_skybox: boolean
-//     skybox_inclination: number
-//     clear_color: string
-//     fog_color: string
-//     fog_density: number
-// }
-
-// type SignalEvent = {
-//     event: string
-//     payload: any
-// }
 
 export class Orchestrator {
     public canvas;
@@ -42,15 +27,12 @@ export class Orchestrator {
         this.slug = serializedSpace.slug;
         this.webRTCClient = new WebRTCClientAgora(this.slug, this.memberId)
 
-        // memberID: string,
-        // mediaType: "audio" | "video",
-        // playable: IPlayable,
-        // mediaStreamTrack: MediaStreamTrack) => void
-
+        // default audio playback behavior
         this.webRTCClient.addRemoteStreamPublishedCallback((memberId, mediaType, playable, mediaStreamTrack) => {
             console.log('this user is now publishing audio', memberId);
             playable.play()
         })
+
         this.sceneManager = new SceneManager(canvasId, memberId, this.signalHub, serializedSpace)
 
         this.spaceChannel = this.socket.channel(`space:${serializedSpace.slug}`, { pos_rot: this.sceneManager.getMyPosRot() })
@@ -105,15 +87,12 @@ export class Orchestrator {
             throttleTime(100)
         ).subscribe(msg => {
             this.spaceChannel.push(msg.event, msg.payload)
-            this.sceneManager.saveMyPosRot(msg.payload)
+            sessionPersistance.saveCameraPosRot(msg.payload)
         })
     }
 
 
     async start() {
-
-
-
         this.sceneManager.createScene()
         // parse the scene for states
 

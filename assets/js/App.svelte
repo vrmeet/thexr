@@ -4,7 +4,7 @@
     import MenuOverlay from "./components/MenuOverlay.svelte";
     import type { WebRTCClient } from "./web-rtc-client";
     import { signalHub } from "./signalHub";
-    const MIC_CONFIRMED = "micConfirmed";
+    import { sessionPersistance } from "./sessionPersistance";
 
     //props
     export let canvasId: string;
@@ -17,13 +17,12 @@
     let showMenuOverlay = false;
 
     const micConfirmed = () => {
-        const micSettingsString = window.sessionStorage.getItem(MIC_CONFIRMED);
-        if (micSettingsString === null) {
+        const micChoice = sessionPersistance.getMicAndOutputChoice();
+        if (micChoice === null) {
             return false;
         } else {
-            const micSettings = JSON.parse(micSettingsString);
             const constraints = {
-                audio: { deviceId: { exact: micSettings.micDeviceId } },
+                audio: { deviceId: { exact: micChoice.micDeviceId } },
             };
             navigator.mediaDevices.getUserMedia(constraints);
 
@@ -60,11 +59,10 @@
             "and output",
             outputDeviceId
         );
-        window.sessionStorage.setItem(
-            MIC_CONFIRMED,
-            JSON.stringify({ micDeviceId, outputDeviceId })
-        );
-
+        sessionPersistance.saveMicAndOutputChoice({
+            micDeviceId,
+            outputDeviceId,
+        });
         showMicAndOutputForm = false;
         ready();
     };

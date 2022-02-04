@@ -29,7 +29,6 @@ defmodule ThexrWeb.SpaceChannel do
   end
 
   @impl true
-  @spec handle_info({:after_join, map}, Phoenix.Socket.t()) :: {:noreply, Phoenix.Socket.t()}
   def handle_info(
         {:after_join,
          %{"pos_rot" => %{"pos" => [px, py, pz], "rot" => [rx, ry, rz, rw]}} = pos_rot},

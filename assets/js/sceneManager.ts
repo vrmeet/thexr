@@ -1,7 +1,8 @@
 import * as BABYLON from 'babylonjs'
 import * as MAT from 'babylonjs-materials'
 import type { Channel } from 'phoenix';
-import { SignalHub, SceneSettings, SerializedSpace, SESS_KEY_CAM_POSROT } from './types'
+import type { SignalHub, SceneSettings, SerializedSpace } from './types'
+import { sessionPersistance } from './sessionPersistance';
 
 
 export class SceneManager {
@@ -137,18 +138,15 @@ export class SceneManager {
     }
 
     getMyPosRot() {
-        let camPosRotString = window.sessionStorage.getItem(SESS_KEY_CAM_POSROT)
-        if (!camPosRotString) {
+        const camPosRot = sessionPersistance.getCameraPosRot()
+
+        if (!camPosRot) {
             let spawnPoint = this.findSpawnPoint()
-            window.sessionStorage.setItem(SESS_KEY_CAM_POSROT, JSON.stringify(spawnPoint))
+            sessionPersistance.saveCameraPosRot(spawnPoint)
             return spawnPoint
         } else {
-            return JSON.parse(camPosRotString)
+            return camPosRot
         }
-    }
-
-    saveMyPosRot(payload) {
-        window.sessionStorage.setItem(SESS_KEY_CAM_POSROT, JSON.stringify(payload))
     }
 
     async createCamera() {
