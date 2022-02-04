@@ -1,26 +1,19 @@
 TODO:
 
 
-  if i refresh i need to answer all the questions again, should save it in session storage
-
-  but i like the idea of not joining the room (automatically) until you take some action
-
-- consider getting rid of the edit 'slug' for a space.  people don't know what it means.  and it is subject to 
-  abuse if people reserve the best short slugs or spell things we don't want.  What if every space was
-  browsible but was public or private.  the slug is still there but not changable except by admin.
-
-- when sending presence diff or presence state, there is no initial position so we have no idea where to draw
-  the other person
+- try to port iframe menu -> svelte
 
 - add back teleportation
-- restore audio webrtc (but to create the UI, would we use react?)
-   - svelte is promising, let's try to add a splash screen to 'Enter' the room, and only when
-   they click do we track them with phoenix presence
+   - track left and right hand controllers
+   - move the immersive button from right hand corner into the menu area
+   - keep track of teleporatable floors
+   - add pick/up and throwable objects
 
 - build a UI to manage muting/ and audio/video state
 - also need a way to select the mic and cam and submit it to agora
 - render skybox behind everything
 
+- add video/cam and screen sharing 
 
 - add cylinder type
 
@@ -44,3 +37,6 @@ TODO:
 - add thexr.space domain to gigalixr
 - add some intro text about how this is beta test
 
+- consider getting rid of the edit 'slug' for a space.  people don't know what it means.  and it is subject to 
+  abuse if people reserve the best short slugs or spell things we don't want.  What if every space was
+  browsible but was public or private.  the slug is still there but not changable except by admin.
