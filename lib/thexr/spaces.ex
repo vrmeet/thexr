@@ -446,6 +446,13 @@ defmodule Thexr.Spaces do
   """
   def get_component!(id), do: Repo.get!(Component, id)
 
+  def get_component_by_entity_id(entity_id, type) do
+    case Repo.get_by(Component, entity_id: entity_id, type: type) do
+      nil -> {:error, :not_found}
+      component -> {:ok, component}
+    end
+  end
+
   @doc """
   Creates a component.
 
@@ -520,198 +527,6 @@ defmodule Thexr.Spaces do
     Component.changeset(component, attrs)
   end
 
-  alias Thexr.Spaces.Plugin
-
-  @doc """
-  Returns the list of plugins.
-
-  ## Examples
-
-      iex> list_plugins()
-      [%Plugin{}, ...]
-
-  """
-  def list_plugins do
-    Repo.all(Plugin)
-  end
-
-  @doc """
-  Gets a single plugin.
-
-  Raises `Ecto.NoResultsError` if the Plugin does not exist.
-
-  ## Examples
-
-      iex> get_plugin!(123)
-      %Plugin{}
-
-      iex> get_plugin!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_plugin!(id), do: Repo.get!(Plugin, id)
-
-  @doc """
-  Creates a plugin.
-
-  ## Examples
-
-      iex> create_plugin(%{field: value})
-      {:ok, %Plugin{}}
-
-      iex> create_plugin(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_plugin(attrs \\ %{}) do
-    %Plugin{}
-    |> Plugin.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Updates a plugin.
-
-  ## Examples
-
-      iex> update_plugin(plugin, %{field: new_value})
-      {:ok, %Plugin{}}
-
-      iex> update_plugin(plugin, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_plugin(%Plugin{} = plugin, attrs) do
-    plugin
-    |> Plugin.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a plugin.
-
-  ## Examples
-
-      iex> delete_plugin(plugin)
-      {:ok, %Plugin{}}
-
-      iex> delete_plugin(plugin)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_plugin(%Plugin{} = plugin) do
-    Repo.delete(plugin)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking plugin changes.
-
-  ## Examples
-
-      iex> change_plugin(plugin)
-      %Ecto.Changeset{data: %Plugin{}}
-
-  """
-  def change_plugin(%Plugin{} = plugin, attrs \\ %{}) do
-    Plugin.changeset(plugin, attrs)
-  end
-
-  alias Thexr.Spaces.Template
-
-  @doc """
-  Returns the list of templates.
-
-  ## Examples
-
-      iex> list_templates()
-      [%Template{}, ...]
-
-  """
-  def list_templates do
-    Repo.all(Template)
-  end
-
-  @doc """
-  Gets a single template.
-
-  Raises `Ecto.NoResultsError` if the Template does not exist.
-
-  ## Examples
-
-      iex> get_template!(123)
-      %Template{}
-
-      iex> get_template!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_template!(id), do: Repo.get!(Template, id)
-
-  @doc """
-  Creates a template.
-
-  ## Examples
-
-      iex> create_template(%{field: value})
-      {:ok, %Template{}}
-
-      iex> create_template(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_template(attrs \\ %{}) do
-    %Template{}
-    |> Template.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Updates a template.
-
-  ## Examples
-
-      iex> update_template(template, %{field: new_value})
-      {:ok, %Template{}}
-
-      iex> update_template(template, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_template(%Template{} = template, attrs) do
-    template
-    |> Template.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a template.
-
-  ## Examples
-
-      iex> delete_template(template)
-      {:ok, %Template{}}
-
-      iex> delete_template(template)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_template(%Template{} = template) do
-    Repo.delete(template)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking template changes.
-
-  ## Examples
-
-      iex> change_template(template)
-      %Ecto.Changeset{data: %Template{}}
-
-  """
-  def change_template(%Template{} = template, attrs \\ %{}) do
-    Template.changeset(template, attrs)
-  end
-
   # Serializing
 
   def serialize(space) do
@@ -719,5 +534,31 @@ defmodule Thexr.Spaces do
 
     %{entities: entities, slug: space.slug, settings: space.settings}
     |> Jason.encode!()
+  end
+
+  def add_entity_with_broadcast(space, entity_kind) do
+    attrs = %{"space_id" => space.id, "type" => entity_kind}
+    {:ok, entity} = create_entity(attrs)
+    entity = entity |> Repo.preload(components: from(c in Component, order_by: c.type))
+
+    ThexrWeb.Endpoint.broadcast(
+      "space:#{space.slug}",
+      "entity_created",
+      entity
+    )
+
+    {:ok, entity}
+  end
+
+  def modify_component_with_broadcast(space, entity_id, type, data) do
+    with {:ok, component} = get_component_by_entity_id(entity_id, type),
+         {:ok, component} =
+           Component.changeset(component, %{"type" => type, "data" => data}) |> Repo.update() do
+      ThexrWeb.Endpoint.broadcast("space:#{space.slug}", "component_changed", %{
+        "entity_id" => component.entity_id,
+        "type" => component.type,
+        "data" => component.data
+      })
+    end
   end
 end

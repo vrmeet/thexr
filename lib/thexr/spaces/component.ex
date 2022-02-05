@@ -27,11 +27,12 @@ defmodule Thexr.Spaces.Component do
 
   @doc false
   def changeset(component, attrs) do
-    # attrs = AtomicMap.convert(attrs)
+    attrs = AtomicMap.convert(attrs)
 
-    # type = attrs.type
-    # data = Map.put(attrs.data, :__type__, type)
-    # attrs = Map.put(attrs, :data, data)
+    # place __type__ in data if it's missing
+    type = attrs.type || component.type
+    data = Map.put(attrs.data, :__type__, type)
+    attrs = Map.put(attrs, :data, data)
 
     component
     |> remove_errors()

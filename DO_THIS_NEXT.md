@@ -2,6 +2,12 @@ TODO:
 
 
 - try to port iframe menu -> svelte
+  - a context (api)
+    x create a primative (box, cone, sphere ...etc)
+    - modify a component (update pos, rot, color, scale etc)
+    - delete entity
+
+- remove template and plugin models/migrations
 
 - add back teleportation
    - track left and right hand controllers
