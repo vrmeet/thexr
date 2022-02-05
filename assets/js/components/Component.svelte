@@ -1,5 +1,4 @@
 <script lang="ts">
-    export let id: string;
     export let data: any;
     export let type: string;
 </script>
@@ -7,7 +6,7 @@
 <div>{type}</div>
 <form
     on:change|preventDefault={(event) => {
-        console.log(data);
+        console.log({ type, data });
     }}
 >
     {#each Object.keys(data) as key}
