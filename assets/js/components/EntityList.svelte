@@ -1,4 +1,5 @@
 <script>
+    import Component from "./Component.svelte";
     export let toggleEntityList;
     let entities = window.serializedSpace.entities;
     let currentEntity = null;
@@ -27,8 +28,7 @@
     <hr />
     {#if currentEntity}
         {#each currentEntity.components as component}
-            <div>{component.type}</div>
-            <div>{component.data}</div>
+            <Component data={component.data} type={component.type} />
         {/each}
     {/if}
 </div>
@@ -43,6 +43,7 @@
         cursor: pointer;
     }
     .container {
+        overflow: scroll;
         width: 30%;
         background-color: black;
         border: 1px solid red;
