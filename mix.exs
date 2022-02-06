@@ -51,7 +51,9 @@ defmodule Thexr.MixProject do
       {:polymorphic_embed, "~> 1.7.2"},
       {:atomic_map, "~> 0.9"},
       {:honeybadger, "~> 0.18"},
-      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false}
+      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
+      {:absinthe, "~> 1.7"},
+      {:absinthe_plug, "~> 1.5.8"}
     ]
   end
 

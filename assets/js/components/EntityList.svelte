@@ -3,9 +3,24 @@
     export let toggleEntityList;
     let entities = window.serializedSpace.entities;
     let currentEntity = null;
+    let currentComponent = null;
+
+    $: isHighlighted = (component) => {
+        console.log("isHighlighted is called");
+        if (currentComponent) {
+            return currentComponent.type == component.type;
+        }
+        return false;
+    };
     // callbacks
-    const highlight = (entity) => {
+    const highlightEntity = (entity) => {
         currentEntity = entity;
+        currentComponent = null;
+    };
+
+    const highlightComponent = (component) => {
+        console.log("highlight component", JSON.stringify(component));
+        currentComponent = component;
     };
 </script>
 
@@ -18,7 +33,7 @@
             <li
                 on:click={() => {
                     console.log(entity);
-                    highlight(entity);
+                    highlightEntity(entity);
                 }}
             >
                 {entity.name}
@@ -28,7 +43,12 @@
     <hr />
     {#if currentEntity}
         {#each currentEntity.components as component}
-            <Component data={component.data} type={component.type} />
+            <Component
+                entity={currentEntity}
+                {component}
+                {highlightComponent}
+                highlighted={isHighlighted(component)}
+            />
         {/each}
     {/if}
 </div>

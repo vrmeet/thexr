@@ -18,6 +18,27 @@ defmodule ThexrWeb.Router do
     plug :accepts, ["json"]
   end
 
+  # Other scopes may use custom stacks.
+  # scope "/", ThexrWeb do
+  #   pipe_through :api
+  #   forward "/api", Absinthe.Plug, schema: Thexr.Schema
+
+  #   forward "/graphiql", Absinthe.Plug.GraphiQL,
+  #     schema: Thexr.Schema,
+  #     interface: :simple,
+  #     context: %{pubsub: ThexrWeb.Endpoint}
+  # end
+
+  scope "/" do
+    pipe_through :api
+
+    forward "/api", Absinthe.Plug, schema: ThexrWeb.Schema.Schema
+
+    forward "/graphiql", Absinthe.Plug.GraphiQL,
+      schema: ThexrWeb.Schema.Schema,
+      interface: :simple
+  end
+
   scope "/", ThexrWeb do
     pipe_through :browser
 
@@ -65,11 +86,6 @@ defmodule ThexrWeb.Router do
     # live "/components/:id", ComponentLive.Show, :show
     # live "/components/:id/show/edit", ComponentLive.Show, :edit
   end
-
-  # Other scopes may use custom stacks.
-  # scope "/api", ThexrWeb do
-  #   pipe_through :api
-  # end
 
   # Enables LiveDashboard only for development
   #

@@ -25,14 +25,21 @@ defmodule Thexr.Spaces.Component do
     timestamps()
   end
 
+  def put_type_into_data(type, %{data: %{}} = attrs) do
+    data = Map.put(attrs.data, :__type__, type)
+    Map.put(attrs, :data, data)
+  end
+
+  def put_type_into_data(_type, %{}) do
+    %{}
+  end
+
   @doc false
   def changeset(component, attrs) do
     attrs = AtomicMap.convert(attrs)
 
-    # place __type__ in data if it's missing
-    type = attrs.type || component.type
-    data = Map.put(attrs.data, :__type__, type)
-    attrs = Map.put(attrs, :data, data)
+    type = attrs[:type] || component.type
+    attrs = put_type_into_data(type, attrs)
 
     component
     |> remove_errors()
