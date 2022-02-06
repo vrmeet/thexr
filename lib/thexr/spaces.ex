@@ -9,7 +9,7 @@ defmodule Thexr.Spaces do
   alias Thexr.Repo
 
   alias Thexr.Spaces.Space
-  alias Thexr.Spaces.Entity
+  alias Thexr.Spaces.{Entity, Component}
   alias Thexr.Spaces.Treepath
 
   @doc """
@@ -213,7 +213,7 @@ defmodule Thexr.Spaces do
   def list_entities_for_space_with_components(space_id) do
     query = from(e in Entity, where: e.space_id == ^space_id)
     entities = Repo.all(query)
-    entities |> Repo.preload(:components)
+    entities |> Repo.preload(components: from(c in Component, order_by: c.type))
   end
 
   @doc """
@@ -299,6 +299,16 @@ defmodule Thexr.Spaces do
   """
   def delete_entity(%Entity{} = entity) do
     Repo.delete(entity)
+  end
+
+  def delete_entity_with_broadcast(space, entity_id) do
+    Repo.delete(%Entity{id: entity_id})
+
+    ThexrWeb.Endpoint.broadcast(
+      "space:#{space.slug}",
+      "entity_deleted",
+      %{id: entity_id}
+    )
   end
 
   @doc """
@@ -559,6 +569,8 @@ defmodule Thexr.Spaces do
         "type" => component.type,
         "data" => component.data
       })
+
+      {:ok, component}
     end
   end
 end

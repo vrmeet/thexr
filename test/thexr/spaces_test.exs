@@ -4,7 +4,7 @@ defmodule Thexr.SpacesTest do
   alias Thexr.Spaces
 
   describe "spaces" do
-    alias Thexr.Spaces.Space
+    alias Thexr.Spaces.{Space, Component}
 
     import Thexr.SpacesFixtures
 
@@ -61,6 +61,33 @@ defmodule Thexr.SpacesTest do
     test "change_space/1 returns a space changeset" do
       space = space_fixture()
       assert %Ecto.Changeset{} = Spaces.change_space(space)
+    end
+
+    test "create entity for space" do
+      space = space_fixture()
+      entities = Spaces.get_all_entities_for_space(space.id)
+
+      assert length(entities) == 0
+
+      Spaces.add_entity_with_broadcast(space, "box")
+      entities = Spaces.get_all_entities_for_space(space.id)
+      assert length(entities) > 0
+    end
+
+    test "update component for entity" do
+      space = space_fixture()
+      Spaces.add_entity_with_broadcast(space, "box")
+      entity = Spaces.get_all_entities_for_space(space.id) |> List.first()
+      Spaces.modify_component_with_broadcast(space, entity.id, "color", %{"value" => "#F0000F"})
+      component = Repo.get_by(Component, type: "color")
+      assert "#F0000F" == component.data.value
+    end
+
+    test "delete an entity" do
+      space = space_fixture()
+      {:ok, entity} = Spaces.add_entity_with_broadcast(space, "box")
+      Spaces.delete_entity_with_broadcast(space, entity.id)
+      assert [] == Spaces.get_all_entities_for_space(space.id)
     end
   end
 end
