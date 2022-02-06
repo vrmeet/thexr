@@ -28,6 +28,11 @@ defmodule ThexrWeb.SpaceChannel do
     {:noreply, socket}
   end
 
+  def handle_in("spaces_api", %{"func" => func, "args" => args}, socket) do
+    apply(Thexr.Spaces, String.to_atom(func), [socket.assigns.space | args])
+    {:noreply, socket}
+  end
+
   @impl true
   def handle_info(
         {:after_join,
@@ -49,6 +54,9 @@ defmodule ThexrWeb.SpaceChannel do
 
         push(socket, "presence_state", Presence.list(socket))
         socket = assign(socket, ets_ref: ets_ref)
+
+        space = Thexr.Spaces.get_space_by_slug(socket.assigns.slug)
+        socket = assign(socket, space: space)
         {:noreply, socket}
     end
   end
