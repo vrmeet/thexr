@@ -22,7 +22,7 @@ export class Orchestrator {
     public sceneManager: SceneManager
 
 
-    constructor(public signalHub: SignalHub, public canvasId: string, public memberId: string, public serializedSpace: SerializedSpace) {
+    constructor(public canvasId: string, public memberId: string, public serializedSpace: SerializedSpace) {
         this.socket = new Socket('/socket', { params: { token: window['userToken'] } })
         this.slug = serializedSpace.slug;
         this.webRTCClient = new WebRTCClientAgora(this.slug, this.memberId)
@@ -33,7 +33,7 @@ export class Orchestrator {
             playable.play()
         })
 
-        this.sceneManager = new SceneManager(canvasId, memberId, this.signalHub, serializedSpace)
+        this.sceneManager = new SceneManager(canvasId, memberId, signalHub, serializedSpace)
 
         this.spaceChannel = this.socket.channel(`space:${serializedSpace.slug}`, { pos_rot: this.sceneManager.getMyPosRot() })
         this.sceneManager.setChannel(this.spaceChannel)
@@ -42,7 +42,7 @@ export class Orchestrator {
 
         this.spaceChannel.onMessage = (event: string, payload: any) => {
             if (!event.startsWith('phx_') && !event.startsWith('chan_')) {
-                this.signalHub.next({ event, payload })
+                signalHub.next({ event, payload })
             }
             return payload;
         }
@@ -81,7 +81,7 @@ export class Orchestrator {
 
     forwardCameraMovement() {
         // forward camera movement
-        this.signalHub.pipe(
+        signalHub.pipe(
             skip(1), // first pos/rot may not be correct as we're still putting it in position, besides we'll send this during space_channel connect
             filter(msg => (msg.event === 'camera_moved')),
             throttleTime(100)
@@ -99,11 +99,18 @@ export class Orchestrator {
         this.sceneManager.run()
 
         // listen for clicked join button
-        this.signalHub.pipe(
+        signalHub.pipe(
             filter(msg => (msg.event == 'joined'))
         ).subscribe(async () => {
             await this.joinSpace();
             this.forwardCameraMovement()
+        })
+
+        // forward space_api to the channel
+        signalHub.pipe(
+            filter(msg => (msg.event == "spaces_api"))
+        ).subscribe(msg => {
+            this.spaceChannel.push(msg.event, msg.payload)
         })
 
 
@@ -113,7 +120,7 @@ export class Orchestrator {
 window.addEventListener('DOMContentLoaded', async () => {
     const serializedSpace = window['serializedSpace']
     const memberId = window['memberId']
-    const orchestrator = new Orchestrator(signalHub, 'spaceCanvas', memberId, serializedSpace)
+    const orchestrator = new Orchestrator('spaceCanvas', memberId, serializedSpace)
     orchestrator.start()
 })
 

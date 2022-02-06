@@ -15,6 +15,7 @@ defmodule Thexr.Spaces.Entity do
     timestamps()
   end
 
+  # TODO, can we remove this?  once we've migrated space edit to svelte?
   def kinds do
     ["box", "cone", "sphere", "grid", "plane", "spawn_point"]
   end
