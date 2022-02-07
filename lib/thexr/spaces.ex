@@ -561,8 +561,8 @@ defmodule Thexr.Spaces do
   end
 
   def modify_component_with_broadcast(space, entity_id, type, data) do
-    with {:ok, component} = get_component_by_entity_id(entity_id, type),
-         {:ok, component} =
+    with {:ok, component} <- get_component_by_entity_id(entity_id, type),
+         {:ok, component} <-
            Component.changeset(component, %{"type" => type, "data" => data}) |> Repo.update() do
       ThexrWeb.Endpoint.broadcast("space:#{space.slug}", "component_changed", %{
         "entity_id" => component.entity_id,
@@ -571,6 +571,8 @@ defmodule Thexr.Spaces do
       })
 
       {:ok, component}
+    else
+      err -> err
     end
   end
 end

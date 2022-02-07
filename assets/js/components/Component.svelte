@@ -1,5 +1,8 @@
 <script lang="ts">
     import { signalHub } from "../signalHub";
+    import Vector3ComponentForm from "./Vector3ComponentForm.svelte";
+    import ColorStringComponentForm from "./ColorStringComponentForm.svelte";
+    import ComponentForm from "./ComponentForm.svelte";
     export let component: { type: string; data: any };
     export let highlightComponent;
     export let highlighted: boolean;
@@ -16,22 +19,24 @@
     };
 </script>
 
-<div
-    on:click={() => {
-        highlightComponent(component);
-    }}
->
-    {component.type}
-</div>
-<form
-    on:submit|preventDefault={update}
-    on:change|preventDefault={update}
-    on:blur|preventDefault={update}
->
+<li>
+    <div
+        on:click={() => {
+            highlightComponent(component);
+        }}
+    >
+        {component.type}
+    </div>
+
     {#if highlighted}
-        {#each Object.keys(component.data) as key}
-            <div>{key}</div>
-            <input type="text" name={key} bind:value={component.data[key]} />
-        {/each}
+        <ul>
+            {#if ["position", "rotation", "scale"].includes(component.type)}
+                <Vector3ComponentForm {component} {update} />
+            {:else if ["color"].includes(component.type)}
+                <ColorStringComponentForm {component} {update} />
+            {:else}
+                <ComponentForm {component} />
+            {/if}
+        </ul>
     {/if}
-</form>
+</li>
