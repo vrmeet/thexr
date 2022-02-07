@@ -11,7 +11,7 @@
 </div>
 
 <style>
-    .modal {
+    :global(.modal) {
         /* display: none;*/ /* Hidden by default */
         position: fixed; /* Stay in place */
         z-index: 2; /* Sit on top */
@@ -27,7 +27,7 @@
     }
 
     /* Modal Content */
-    .modal-content {
+    :global(.modal-content) {
         background-color: #fefefe;
         margin: auto;
         padding: 20px;

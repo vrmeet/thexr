@@ -1,4 +1,25 @@
-<%= render "_edit_menu.html", space: @space %>
+<style>
+  html, body {
+      overflow: hidden;
+      width   : 100%;
+      height  : 100%;
+      margin  : 0;
+      padding : 0;
+
+      background: radial-gradient(ellipse at top, #201111, transparent),
+            radial-gradient(ellipse at bottom, #000021, transparent);
+  }
+
+  #spaceCanvas {
+      position: absolute;
+      width   : 100%;
+      height  : 100%;
+      touch-action: none;
+      outline: none;
+      z-index: 1;
+  }
+
+</style>
 
 <canvas id="spaceCanvas"></canvas>
 
