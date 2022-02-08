@@ -1,31 +1,43 @@
 TODO:
 
+
+- handle mic permission not given, error
+
 bug: entities list
-   - loads initial entity data from window.serializedSpace.entities, which isn't updated
+   - loads initial entity data from window.serializedSpace.entities, which isn't updated (when you close and reopen menu, entities should be the full list, not the original)
 
+the svelte side needs access to edit settings (we lost this functionality when we removed the iframe)
 
-
-
-- remove template and plugin models/migrations
+- edit mode should have a tools overlay in inline mode, a collapsable
+  hand menu in immersive-vr
+- add point to pick / select an entity
+- add gizmos so can edit by click and dragging
 
 - add back teleportation
-   - track left and right hand controllers
-   - move the immersive button from right hand corner into the menu area
-   - keep track of teleporatable floors
-   - add pick/up and throwable objects
+- keep track of teleporatable floors   
+- track left and right hand controllers
+- move the immersive button from right hand corner into the menu area
+- add pick/up and throwable objects
 
-- build a UI to manage muting/ and audio/video state
-- also need a way to select the mic and cam and submit it to agora
+Easy way to add image wall
+add some simple behavior
+add some sound
+add a gun
+add a monster
+
+
+
+
+ 
 - render skybox behind everything
 
 - add video/cam and screen sharing 
 
 - add cylinder type
 
-- animate changes
-- have edit mode where you can click and move with the pointer
+- animate changes so we see things slide into place
+- have edit mode where you can click and move with the pointer (on hover pull up menu to launch gizmos)
 
-- batch broadcast message to all connected users
 - mobile movement joystick
 
 
@@ -36,12 +48,11 @@ bug: entities list
 - click a primative button to place it in the scene
 - as long as 
 
-- add point to pick / select an entity
-- add gizmos so can edit by click and dragging
-- test editing in oculus
-- add thexr.space domain to gigalixr
-- add some intro text about how this is beta test
+
+
 
 - consider getting rid of the edit 'slug' for a space.  people don't know what it means.  and it is subject to 
   abuse if people reserve the best short slugs or spell things we don't want.  What if every space was
   browsible but was public or private.  the slug is still there but not changable except by admin.
+
+- remove template and plugin models/migrations

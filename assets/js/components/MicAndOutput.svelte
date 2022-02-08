@@ -19,19 +19,26 @@
     };
 
     // load initial devices
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-        navigator.mediaDevices
-            .enumerateDevices()
-            .then((devices) => {
-                console.log(devices);
-                populateLists(devices);
-                selectedMic = mics[0].deviceId;
-                selectedOutput = outputs[0].deviceId;
-            })
-            .catch((reason) => {
-                console.log("error", reason);
-            });
-    });
+    navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream) => {
+            navigator.mediaDevices
+                .enumerateDevices()
+                .then((devices) => {
+                    console.log(devices);
+                    populateLists(devices);
+                    selectedMic = mics[0].deviceId;
+                    selectedOutput = outputs[0].deviceId;
+                })
+                .catch((reason) => {
+                    console.log("error", reason);
+                });
+        })
+        .catch((reason) => {
+            alert(
+                "Some features may not work correctly without microphone permission"
+            );
+        });
 
     //callbacks
     const selectMic = (mic: MediaDeviceInfo) => {
