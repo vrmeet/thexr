@@ -16,7 +16,9 @@ export class SessionPersistance {
 
     }
     saveMicAndOutputChoice(data: { micDeviceId: string, outputDeviceId: string }) {
-        this.save(SESS_KEY_MIC_OPTIONS, data)
+        if (data.micDeviceId && data.outputDeviceId) {
+            this.save(SESS_KEY_MIC_OPTIONS, data)
+        }
     }
     getAndParseKey(key: string) {
         try {
