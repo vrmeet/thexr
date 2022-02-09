@@ -69,22 +69,6 @@ defmodule ThexrWeb.Router do
     live "/edit_space/:slug/edit", SpaceEditLive.Index, :edit
 
     # live "/spaces/:id/show/edit", SpaceLive.Show, :edit
-
-    # spaces have entities
-    # live "/entities", EntityLive.Index, :index
-    # live "/entities/new", EntityLive.Index, :new
-    # live "/entities/:id/edit", EntityLive.Index, :edit
-
-    # live "/entities/:id", EntityLive.Show, :show
-    # live "/entities/:id/show/edit", EntityLive.Show, :edit
-
-    # entities have components
-    # live "/components", ComponentLive.Index, :index
-    # live "/components/new", ComponentLive.Index, :new
-    # live "/components/:id/edit", ComponentLive.Index, :edit
-
-    # live "/components/:id", ComponentLive.Show, :show
-    # live "/components/:id/show/edit", ComponentLive.Show, :edit
   end
 
   # Enables LiveDashboard only for development

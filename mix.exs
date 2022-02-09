@@ -53,7 +53,8 @@ defmodule Thexr.MixProject do
       {:honeybadger, "~> 0.18"},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:absinthe, "~> 1.7"},
-      {:absinthe_plug, "~> 1.5.8"}
+      {:absinthe_plug, "~> 1.5.8"},
+      {:dataloader, "~> 1.0"}
     ]
   end
 

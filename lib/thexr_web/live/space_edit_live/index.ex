@@ -32,7 +32,7 @@ defmodule ThexrWeb.SpaceEditLive.Index do
   @impl true
 
   def handle_event("delete_entity", %{"id" => id}, socket) do
-    Spaces.delete_entity(%Entity{id: id})
+    Spaces.delete_entity(id: id)
     new_entities = Enum.filter(socket.assigns.entities, fn entity -> entity.id != id end)
     socket = assign(socket, entities: new_entities)
 

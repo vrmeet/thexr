@@ -287,28 +287,26 @@ defmodule Thexr.Spaces do
 
   @doc """
   Deletes a entity.
-
-  ## Examples
-
-      iex> delete_entity(entity)
-      {:ok, %Entity{}}
-
-      iex> delete_entity(entity)
-      {:error, %Ecto.Changeset{}}
-
   """
-  def delete_entity(%Entity{} = entity) do
+  def delete_entity(filters) do
+    entity = Repo.get_by(Entity, filters)
     Repo.delete(entity)
   end
 
-  def delete_entity_with_broadcast(space, entity_id) do
-    Repo.delete(%Entity{id: entity_id})
+  def delete_entity_with_broadcast(space, filters) do
+    filters = filters ++ [{:space_id, space.id}]
 
-    ThexrWeb.Endpoint.broadcast(
-      "space:#{space.slug}",
-      "entity_deleted",
-      %{id: entity_id}
-    )
+    with {:ok, entity} <- delete_entity(filters) do
+      ThexrWeb.Endpoint.broadcast(
+        "space:#{space.slug}",
+        "entity_deleted",
+        %{id: entity.id}
+      )
+
+      {:ok, entity}
+    else
+      err -> err
+    end
   end
 
   @doc """
