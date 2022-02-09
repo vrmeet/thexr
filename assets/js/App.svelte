@@ -5,6 +5,24 @@
     import type { WebRTCClient } from "./web-rtc-client";
     import { signalHub } from "./signalHub";
     import { sessionPersistance } from "./sessionPersistance";
+    import { initClient, operationStore, query } from "@urql/svelte";
+
+    initClient({
+        url: "/api",
+    });
+
+    const todos = operationStore(`
+query {
+  spaces {
+    id
+  }
+}
+`);
+
+    query(todos);
+    todos.subscribe((value) => {
+        console.log("value", value);
+    });
 
     //props
     export let canvasId: string;
@@ -67,6 +85,18 @@
         ready();
     };
 </script>
+
+{#if $todos.fetching}
+    <p>Loading...</p>
+{:else if $todos.error}
+    <p>Oh no... {$todos.error.message}</p>
+{:else}
+    <ul>
+        {#each $todos.data.spaces as space}
+            <li>{space.id}</li>
+        {/each}
+    </ul>
+{/if}
 
 {#if !didJoinSpace}
     <Welcome {joinedCallback} />
