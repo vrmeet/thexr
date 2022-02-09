@@ -1,16 +1,18 @@
 defmodule ThexrWeb.Schema.Schema do
   use Absinthe.Schema
+  import Absinthe.Resolution.Helpers, only: [dataloader: 1, dataloader: 3]
 
   import_types(Thexr.Schema.Types.Custom.JSON)
 
   alias ThexrWeb.Resolvers.SpaceResolver
+  alias Thexr.Spaces
 
   object :space do
     field :id, non_null(:id)
     field :slug, non_null(:string)
     field :description, non_null(:string)
     field :settings, :json
-    field :entities, non_null(list_of(:entity))
+    field :entities, non_null(list_of(:entity)), resolve: dataloader(Spaces)
   end
 
   # object :settings do
@@ -27,6 +29,7 @@ defmodule ThexrWeb.Schema.Schema do
     field :type, non_null(:string)
     field :space_id, non_null(:id)
     field :parent_id, :id
+    field :components, non_null(list_of(:component)), resolve: dataloader(Spaces)
 
     # has_many :components, Thexr.Spaces.Component
   end
@@ -55,5 +58,37 @@ defmodule ThexrWeb.Schema.Schema do
     #   arg(:entity_id, non_null(:id))
     #   resolve(&SpaceResolver.components/3)
     # end
+  end
+
+  mutation do
+    @desc "create entity for a space"
+    field :create_entity, :entity do
+      arg(:slug, non_null(:string))
+      arg(:type, non_null(:string))
+      resolve(&SpaceResolver.create_entity/3)
+    end
+
+    @desc "delete an entity from a space"
+    field :delete_entity, :id do
+      @desc "the slug of the space"
+      arg(:slug, non_null(:string))
+      @desc "the name of the entity"
+      arg(:name, non_null(:string))
+      resolve(&SpaceResolver.delete_entity/3)
+    end
+  end
+
+  def context(ctx) do
+    source = Dataloader.Ecto.new(Thexr.Repo)
+
+    loader =
+      Dataloader.new()
+      |> Dataloader.add_source(Spaces, source)
+
+    Map.put(ctx, :loader, loader)
+  end
+
+  def plugins do
+    [Absinthe.Middleware.Dataloader] ++ Absinthe.Plugin.defaults()
   end
 end

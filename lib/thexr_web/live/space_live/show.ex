@@ -50,7 +50,7 @@ defmodule ThexrWeb.SpaceLive.Show do
 
   def handle_event("delete_selected_entity", _, socket) do
     selected_entity_id = socket.assigns.selected_entity.id
-    Spaces.delete_entity(%Entity{id: selected_entity_id})
+    Spaces.delete_entity(id: selected_entity_id)
 
     socket =
       socket
