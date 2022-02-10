@@ -24,6 +24,10 @@ const globals = {
         varName: 'BABYLON',
         type: 'cjs'
     },
+    'babylonjs-gui': {
+        varName: 'BABYLON.GUI',
+        type: 'cjs'
+    },
     'agora-rtc-sdk-ng': {
         varName: 'AgoraRTC',
         namedExports: ['IAgoraRTCClient', 'IAgoraRTCRemoteUser', 'ILocalVideoTrack', 'IMicrophoneAudioTrack', 'IRemoteAudioTrack', 'IRemoteVideoTrack'],

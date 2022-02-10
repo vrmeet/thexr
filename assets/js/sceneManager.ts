@@ -3,6 +3,7 @@ import * as MAT from 'babylonjs-materials'
 import type { Channel } from 'phoenix';
 import type { SignalHub, SceneSettings, SerializedSpace } from './types'
 import { sessionPersistance } from './sessionPersistance';
+import { MenuManager } from './menuManager';
 
 
 export class SceneManager {
@@ -14,6 +15,7 @@ export class SceneManager {
     public settings: SceneSettings
     public slug: string;
     public spaceChannel: Channel
+    public menuManager: MenuManager
 
     constructor(public canvasId: string, public memberId: string, public signalHub: SignalHub, public serializedSpace: SerializedSpace) {
         this.slug = serializedSpace.slug
@@ -24,6 +26,7 @@ export class SceneManager {
         signalHub.subscribe(({ event, payload }) => {
             console.log('scene manager getting', event, payload)
         })
+        this.menuManager = new MenuManager(this.scene)
     }
 
     setChannel(spaceChannel: Channel) {
