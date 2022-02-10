@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { WebRTCClient } from "../web-rtc-client";
     import MainEditMenu from "./MainEditMenu.svelte";
+    import { signalHub } from "../signalHub";
     export let webRTCClient: WebRTCClient;
 
     // state
@@ -22,6 +23,7 @@
 
     const toggleShowMainMenu = () => {
         showMainMenu = !showMainMenu;
+        signalHub.next({ event: "open_menu", payload: {} });
     };
 </script>
 
@@ -29,11 +31,6 @@
     <div on:click={toggleShowMainMenu}>Menu</div>
     <div on:click={toggle}>{micState}</div>
 </div>
-
-{#if showMainMenu}
-    <h2>Main menu</h2>
-    <MainEditMenu {toggleShowMainMenu} />
-{/if}
 
 <style>
     .overlay {
