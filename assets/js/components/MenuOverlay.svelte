@@ -1,11 +1,11 @@
 <script lang="ts">
     import type { WebRTCClient } from "../web-rtc-client";
-    import EntityList from "./EntityList.svelte";
+    import MainEditMenu from "./MainEditMenu.svelte";
     export let webRTCClient: WebRTCClient;
 
     // state
     let micState = webRTCClient.audioIsPublished ? "Unmuted" : "Muted";
-    let showEntityList = false;
+    let showMainMenu = false;
 
     // callbacks
     const toggle = async () => {
@@ -20,18 +20,19 @@
         }
     };
 
-    const toggleEntityList = () => {
-        showEntityList = !showEntityList;
+    const toggleShowMainMenu = () => {
+        showMainMenu = !showMainMenu;
     };
 </script>
 
 <div class="overlay">
-    <div on:click={toggleEntityList}>Menu</div>
+    <div on:click={toggleShowMainMenu}>Menu</div>
     <div on:click={toggle}>{micState}</div>
 </div>
 
-{#if showEntityList}
-    <EntityList {toggleEntityList} />
+{#if showMainMenu}
+    <h2>Main menu</h2>
+    <MainEditMenu {toggleShowMainMenu} />
 {/if}
 
 <style>

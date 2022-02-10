@@ -33,4 +33,23 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
         end
     end
   end
+
+  def update_space(_, args, _) do
+    space = Spaces.get_space_by_slug(args.slug)
+
+    attributes =
+      cond do
+        Map.has_key?(args.attributes, :settings) ->
+          Map.put(
+            args.attributes,
+            :settings,
+            space.settings |> Map.from_struct() |> Map.merge(args.attributes.settings)
+          )
+
+        true ->
+          args.attributes
+      end
+
+    Spaces.update_space(space, attributes)
+  end
 end

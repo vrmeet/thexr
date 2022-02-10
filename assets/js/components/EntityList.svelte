@@ -1,11 +1,43 @@
 <script>
-    import Component from "./Component.svelte";
+    import { getContext } from "svelte";
+    import { query, operationStore } from "@urql/svelte";
     import Entity from "./Entity.svelte";
     import AddEntity from "./AddEntity.svelte";
+    import Settings from "./Settings.svelte";
     import { signalHub } from "../signalHub";
     import { filter } from "rxjs/operators";
-    export let toggleEntityList;
-    let entities = window.serializedSpace.entities;
+
+    let entities = [];
+
+    const slug = getContext("slug");
+
+    // onMount(async () => {
+    console.log("in on mount");
+    const space = operationStore(`
+query {
+  space(slug: "${slug}") {
+    id
+    entities {
+        id
+        name
+        type
+        components {
+            type
+            data
+        }
+    }
+  }
+}
+`);
+
+    query(space);
+    space.subscribe((value) => {
+        if (value.data) {
+            entities = value.data.space.entities;
+        }
+    });
+
+    // let entities = window.serializedSpace.entities;
     let currentEntity = null;
 
     signalHub
@@ -28,40 +60,21 @@
 </script>
 
 <div class="container">
-    <div class="close" on:click={toggleEntityList}>&times;</div>
-
-    <AddEntity />
-
-    <h2>Entity List</h2>
-    <ul>
-        {#each entities as entity}
-            <Entity
-                {entity}
-                {highlightEntity}
-                selected={currentEntity && currentEntity.id == entity.id}
-            />
-        {/each}
-    </ul>
+    {#if $space.fetching}
+        <p>Loading...</p>
+    {:else if $space.error}
+        <p>Oh no... {$space.error.message}</p>
+    {:else}
+        <h2>Entities</h2>
+        <ul>
+            {#each entities as entity}
+                <Entity
+                    {entity}
+                    {highlightEntity}
+                    selected={currentEntity && currentEntity.id == entity.id}
+                />
+            {/each}
+        </ul>
+        <AddEntity />
+    {/if}
 </div>
-
-<style>
-    .close {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        border: 1px solid green;
-        width: 10px;
-        cursor: pointer;
-    }
-    .container {
-        overflow: scroll;
-        width: 30%;
-        background-color: black;
-        border: 1px solid red;
-        height: 100%;
-        z-index: 2;
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
-</style>

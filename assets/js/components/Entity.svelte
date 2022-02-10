@@ -1,10 +1,21 @@
 <script lang="ts">
+    import { getContext } from "svelte";
+    import Component from "./Component.svelte";
+    import { signalHub } from "../signalHub";
+    import { query, mutation } from "@urql/svelte";
     export let entity;
     export let selected: boolean;
     export let highlightEntity;
-    import Component from "./Component.svelte";
-    import { signalHub } from "../signalHub";
+
     let currentComponent = null;
+    const slug = getContext("slug");
+    const deleteEntityMutation = mutation({
+        query: `
+      mutation ( $name: String!) {
+        deleteEntity (slug: "${slug}", name: $name) 
+      }
+    `,
+    });
 
     const highlightComponent = (component) => {
         console.log("highlight component", JSON.stringify(component));
@@ -12,13 +23,15 @@
     };
 
     const requestDeleteEntity = (entity) => {
-        signalHub.next({
-            event: "spaces_api",
-            payload: {
-                func: "delete_entity_with_broadcast",
-                args: [entity.id],
-            },
-        });
+        deleteEntityMutation({ name: entity.name });
+
+        // signalHub.next({
+        //     event: "spaces_api",
+        //     payload: {
+        //         func: "delete_entity_with_broadcast",
+        //         args: [entity.id],
+        //     },
+        // });
     };
 
     $: isHighlighted = (component) => {

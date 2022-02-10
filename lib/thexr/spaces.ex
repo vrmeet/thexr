@@ -151,6 +151,8 @@ defmodule Thexr.Spaces do
 
   """
   def update_space(%Space{} = space, attrs) do
+    IO.inspect(attrs, label: "update_space")
+
     space
     |> Space.edit_changeset(attrs)
     |> Repo.update()
