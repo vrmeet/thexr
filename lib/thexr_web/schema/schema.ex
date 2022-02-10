@@ -9,19 +9,27 @@ defmodule ThexrWeb.Schema.Schema do
 
   object :space do
     field :id, non_null(:id)
+    field :name, non_null(:string)
     field :slug, non_null(:string)
     field :description, non_null(:string)
     field :settings, :json
     field :entities, non_null(list_of(:entity)), resolve: dataloader(Spaces)
   end
 
-  # object :settings do
-  #   field :use_skybox, non_null(:boolean)
-  #   field :skybox_inclination, non_null(:float)
-  #   field :clear_color, non_null(:string)
-  #   field :fog_color, non_null(:string)
-  #   field :fog_density, non_null(:float)
-  # end
+  input_object :space_input do
+    field :slug, :string
+    field :name, :string
+    field :description, :string
+    field :settings, :settings_input
+  end
+
+  input_object :settings_input do
+    field :use_skybox, :boolean
+    field :skybox_inclination, :float
+    field :clear_color, :string
+    field :fog_color, :string
+    field :fog_density, :float
+  end
 
   object :entity do
     field :id, non_null(:id)
@@ -61,6 +69,13 @@ defmodule ThexrWeb.Schema.Schema do
   end
 
   mutation do
+    @desc "update  a space"
+    field :update_space, :space do
+      arg(:slug, non_null(:string))
+      arg(:attributes, non_null(:space_input))
+      resolve(&SpaceResolver.update_space/3)
+    end
+
     @desc "create entity for a space"
     field :create_entity, :entity do
       arg(:slug, non_null(:string))

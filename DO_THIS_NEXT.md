@@ -1,11 +1,5 @@
 TODO:
 
-
-X - handle mic permission not given, error
-
-bug: entities list
-   - loads initial entity data from window.serializedSpace.entities, which isn't updated (when you close and reopen menu, entities should be the full list, not the original)
-
 the svelte side needs access to edit settings (we lost this functionality when we removed the iframe)
 
 - edit mode should have a tools overlay in inline mode, a collapsable

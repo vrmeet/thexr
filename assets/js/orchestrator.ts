@@ -55,7 +55,7 @@ export class Orchestrator {
 
         window['orchestrator'] = this
 
-        new App({ target: document.body, props: { canvasId: canvasId, webRTCClient: this.webRTCClient } });
+        new App({ target: document.body, props: { canvasId, webRTCClient: this.webRTCClient, slug: this.slug } });
 
     }
 
