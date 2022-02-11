@@ -26,7 +26,7 @@ export class SceneManager {
         signalHub.subscribe(({ event, payload }) => {
             console.log('scene manager getting', event, payload)
         })
-        this.menuManager = new MenuManager(this.scene)
+        this.menuManager = new MenuManager(this.slug, this.scene)
     }
 
     setChannel(spaceChannel: Channel) {
