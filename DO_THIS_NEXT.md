@@ -1,5 +1,11 @@
 TODO:
 
+- be able to edit / place primatives in VR (color, delete)
+- VR Menu (open and close)
+  - switch between pages (primative list, color picker)
+
+  
+
 the svelte side needs access to edit settings (we lost this functionality when we removed the iframe)
 
 - edit mode should have a tools overlay in inline mode, a collapsable

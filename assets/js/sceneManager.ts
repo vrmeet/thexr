@@ -3,7 +3,7 @@ import * as MAT from 'babylonjs-materials'
 import type { Channel } from 'phoenix';
 import type { SignalHub, SceneSettings, SerializedSpace } from './types'
 import { sessionPersistance } from './sessionPersistance';
-import { MenuManager } from './menuManager';
+import { MenuManager } from './menu/menu-manager'
 
 
 export class SceneManager {
@@ -26,7 +26,7 @@ export class SceneManager {
         signalHub.subscribe(({ event, payload }) => {
             console.log('scene manager getting', event, payload)
         })
-        this.menuManager = new MenuManager(this.slug, this.scene)
+
     }
 
     setChannel(spaceChannel: Channel) {
@@ -88,7 +88,7 @@ export class SceneManager {
     async createScene() {
         // Create a basic BJS Scene object
         this.scene = new BABYLON.Scene(this.engine);
-
+        this.menuManager = new MenuManager(this.slug, this.scene)
         this.processSceneSettings(this.settings as SceneSettings)
         window['scene'] = this.scene
         this.createCamera()
@@ -289,6 +289,8 @@ export class SceneManager {
         window.addEventListener('resize', () => {
             this.engine.resize();
         });
+
+        // this.menuManager.test()
     }
 
 }
