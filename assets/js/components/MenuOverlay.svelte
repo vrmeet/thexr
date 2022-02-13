@@ -23,7 +23,7 @@
 
     const toggleShowMainMenu = () => {
         showMainMenu = !showMainMenu;
-        signalHub.next({ event: "open_menu", payload: {} });
+        signalHub.next({ event: "open_menu", payload: { target: "main" } });
     };
 </script>
 
