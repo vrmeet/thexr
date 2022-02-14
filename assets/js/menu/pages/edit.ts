@@ -4,25 +4,16 @@ import * as GUI from 'babylonjs-gui'
 import '../helpers'
 import { g, a } from '../helpers';
 
-export class MenuPageEdit {
-    public texture: GUI.AdvancedDynamicTexture
-    constructor(public name: string) {
-        this.texture = GUI.AdvancedDynamicTexture.CreateFullscreenUI(name);
-        this.texture.addControl(this.template())
+export class MenuPageEdit extends GUI.Container {
+    constructor() {
+        super()
+        this.addControl(g(GUI.Rectangle, {},
+            a({ target: "main" }, "< Back"),
+            a({ target: "transform" }, "Transform"),
+            "Primatives",
+            "Color"
+        ))
     }
 
-    template() {
-        return g(GUI.Rectangle, {},
-            "Edit Space",
-            "Box",
-            "Cone",
-            "Sphere",
-            "Plane",
-            "Grid"
-        )
-    }
 
-    dispose() {
-        this.texture.dispose()
-    }
 }
