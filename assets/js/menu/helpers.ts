@@ -1,5 +1,6 @@
 
 import * as GUI from 'babylonjs-gui'
+import type { string } from 'yup'
 import { signalHub } from '../signalHub'
 
 type child = GUI.Container | string
