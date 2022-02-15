@@ -7,7 +7,16 @@ import { g, a } from '../helpers';
 export class MenuPageMain extends GUI.Container {
     constructor() {
         super()
-        this.addControl(g(GUI.Rectangle, {},
+
+        let rectProps = {
+
+            cornerRadius: 20,
+            color: "Purple",
+            thickness: 4,
+            background: "gray",
+        }
+
+        this.addControl(g(GUI.Rectangle, rectProps,
             "Main Menu",
             a({ target: "about" }, "About"),
             a({ target: "edit" }, "Edit")

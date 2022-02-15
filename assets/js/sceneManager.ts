@@ -1,4 +1,5 @@
 import * as BABYLON from 'babylonjs'
+import * as GUI from 'babylonjs-gui'
 import * as MAT from 'babylonjs-materials'
 import type { Channel } from 'phoenix';
 import type { SignalHub, SceneSettings, SerializedSpace } from './types'
@@ -16,6 +17,7 @@ export class SceneManager {
     public slug: string;
     public spaceChannel: Channel
     public menuManager: MenuManager
+    public freeCamera: BABYLON.FreeCamera
 
     constructor(public canvasId: string, public memberId: string, public signalHub: SignalHub, public serializedSpace: SerializedSpace) {
         this.slug = serializedSpace.slug
@@ -23,9 +25,9 @@ export class SceneManager {
         this.engine = new BABYLON.Engine(this.canvas, true, { preserveDrawingBuffer: true, stencil: true });
         this.settings = serializedSpace.settings
         this.entities = serializedSpace.entities
-        signalHub.subscribe(({ event, payload }) => {
-            console.log('scene manager getting', event, payload)
-        })
+        // signalHub.subscribe(({ event, payload }) => {
+        //     console.log('scene manager getting', event, payload)
+        // })
 
     }
 
@@ -88,7 +90,6 @@ export class SceneManager {
     async createScene() {
         // Create a basic BJS Scene object
         this.scene = new BABYLON.Scene(this.engine);
-        this.menuManager = new MenuManager(this.slug, this.scene)
         this.processSceneSettings(this.settings as SceneSettings)
         window['scene'] = this.scene
         this.createCamera()
@@ -154,12 +155,13 @@ export class SceneManager {
 
     async createCamera() {
         let posRot = this.getMyPosRot()
-        var camera = new BABYLON.FreeCamera('freeCam', BABYLON.Vector3.FromArray(posRot.pos), this.scene);
-        camera.rotationQuaternion = BABYLON.Quaternion.FromArray(posRot.rot)
+        this.freeCamera = new BABYLON.FreeCamera('freeCam', BABYLON.Vector3.FromArray(posRot.pos), this.scene);
+        this.freeCamera.rotationQuaternion = BABYLON.Quaternion.FromArray(posRot.rot)
         // Attach the camera to the canvas
-        camera.attachControl(this.canvas, true);
-        camera.inertia = 0.7;
-        camera.onViewMatrixChangedObservable.add(cam => {
+        this.freeCamera.attachControl(this.canvas, true);
+        this.freeCamera.inertia = 0.7;
+        this.freeCamera.minZ = 0.05
+        this.freeCamera.onViewMatrixChangedObservable.add(cam => {
             let posArray = cam.position.asArray().map(this.reduceSigFigs)
             let rotArray = cam.absoluteRotation.asArray().map(this.reduceSigFigs)
             this.signalHub.next({ event: "camera_moved", payload: { pos: posArray, rot: rotArray } })
@@ -170,8 +172,20 @@ export class SceneManager {
         const xr = await this.scene.createDefaultXRExperienceAsync({
             //floorMeshes: [env.ground]
         });
+        this.menuManager = new MenuManager(this)
+
+
+
+        // this.tempMenu()
+
+
+
 
     }
+
+
+
+
     findOrCreateSkyBox() {
         if (!this.skyBox) {
             this.skyBox = BABYLON.MeshBuilder.CreateBox(`${this.slug}_skybox`, { size: 50 })
