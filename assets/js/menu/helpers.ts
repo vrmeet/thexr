@@ -36,7 +36,11 @@ export const g = (guiType: any, props: any, ...children: child[]): GUI.Container
     let el = new guiType() as GUI.Container
     el.clipChildren = false
     applyAttributes(el, props)
-    let nodes = children.map(child => ((typeof child === 'object') ? child : g(GUI.TextBlock, { text: child })))
+    let nodes = children.map(child => ((typeof child === 'object') ? child : g(GUI.TextBlock, {
+        text: child,
+        fontSize: 24,
+    }
+    )))
     switch (nodes.length) {
         case 0:
             break
@@ -45,9 +49,10 @@ export const g = (guiType: any, props: any, ...children: child[]): GUI.Container
             break;
         default:
             let panel = new GUI.StackPanel();
+            panel.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP
             nodes.forEach(child => {
                 if (child.height == "100%") {
-                    child.height = "20px"
+                    child.height = "50px"
                 }
                 panel.addControl(child)
             })
@@ -87,10 +92,19 @@ export const a = (props: any, text: string): GUI.Container => {
         console.error("no target on menu link")
     }
     let el = g(GUI.Button, {
+        name: `btn_${props['target']}`,
         hoverCursor: "pointer",
         horizontalAlignment: GUI.Control.HORIZONTAL_ALIGNMENT_LEFT,
-        isPointerBlocker: true, ...props
-    }, text)
+        isPointerBlocker: true, ...props,
+    }, g(GUI.TextBlock, {
+        name: `txt_${props['target']}`,
+        text: text,
+        fontSize: 24,
+        color: "#0000FF",
+        textHorizontalAlignment: GUI.Control.HORIZONTAL_ALIGNMENT_LEFT,
+        paddingLeft: "10px"
+    }
+    ))
 
     el.onPointerUpObservable.add(() => {
         signalHub.next({ event: 'open_menu', payload: { target: props["target"] } })

@@ -10,20 +10,29 @@ import { MenuPageEdit } from './pages/edit'
 import { MenuPageTransform } from './pages/edit/transform';
 
 export class MenuManager {
+    public scene: BABYLON.Scene
     public plane: BABYLON.Mesh
-    public texture: GUI.AdvancedDynamicTexture
+    public texture1: GUI.AdvancedDynamicTexture
+    public texture2: GUI.AdvancedDynamicTexture
     public currentMenu;
-    constructor(public sceneManager: SceneManager, public scene: BABYLON.Scene) {
+    constructor(public sceneManager: SceneManager) {
 
-        this.plane = BABYLON.MeshBuilder.CreatePlane("plane_for_box_maker_menu", { height: 0.3, width: 0.5 }, this.sceneManager.scene)
-        //this.plane = Mesh.CreatePlane("plane_for_box_maker_menu", 0.3, this.scene)
-        this.plane.position.z = 0.3
-        this.plane.position.y = 2
+        this.scene = this.sceneManager.scene
 
+        this.texture1 = GUI.AdvancedDynamicTexture.CreateFullscreenUI('ui')
+
+
+
+        this.plane = BABYLON.MeshBuilder.CreatePlane("plane_for_box_maker_menu", { height: 0.5, width: 0.5 }, this.scene)
+        this.plane.position.y = 0.1
         this.plane.showBoundingBox = true
+        this.plane.position.x = 0.2
+        this.plane.position.z = 1
 
-        this.texture = GUI.AdvancedDynamicTexture.CreateForMesh(this.plane)
-        this.texture.hasAlpha = true
+
+        this.texture2 = GUI.AdvancedDynamicTexture.CreateForMesh(this.plane)
+        // // // this.texture.hasAlpha = true
+        this.plane.parent = this.scene.activeCamera
 
 
         listen("open_menu").subscribe(msg => {
@@ -31,9 +40,23 @@ export class MenuManager {
                 console.error("Undefined menu link target", msg.payload)
                 return
             }
-            this.texture.rootContainer.dispose()
-            this.texture.addControl(this[msg.payload.target]())
+            this.texture1.rootContainer.dispose()
+            let fsc = new GUI.Container()
+            fsc.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM
+            fsc.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
+            fsc.width = 0.3
+            fsc.height = 0.5
+            fsc.addControl(this[msg.payload.target]())
+            this.texture1.addControl(fsc)
+            this.texture1.idealWidth = 2000
+
+
+            this.texture2.rootContainer.dispose()
+            this.texture2.idealWidth = 500
+            this.texture2.addControl(this[msg.payload.target]())
         })
+
+        signalHub.next({ event: "open_menu", payload: { target: "main" } });
     }
 
     about() {

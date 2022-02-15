@@ -78,6 +78,7 @@
     };
 </script>
 
+<!-- 
 {#if !didJoinSpace}
     <Welcome {joinedCallback} />
 {/if}
@@ -86,4 +87,4 @@
 {/if}
 {#if showMenuOverlay}
     <MenuOverlay {webRTCClient} />
-{/if}
+{/if} -->
