@@ -5,7 +5,8 @@ import type { Channel } from 'phoenix';
 import type { SignalHub, SceneSettings, SerializedSpace } from './types'
 import { sessionPersistance } from './sessionPersistance';
 import { MenuManager } from './menu/menu-manager'
-
+import { reduceSigFigs } from './utils';
+import { XRManager } from './xr-manager';
 
 export class SceneManager {
     public canvas: HTMLCanvasElement;
@@ -18,6 +19,7 @@ export class SceneManager {
     public spaceChannel: Channel
     public menuManager: MenuManager
     public freeCamera: BABYLON.FreeCamera
+    public xrManager: XRManager
 
     constructor(public canvasId: string, public memberId: string, public signalHub: SignalHub, public serializedSpace: SerializedSpace) {
         this.slug = serializedSpace.slug
@@ -25,9 +27,10 @@ export class SceneManager {
         this.engine = new BABYLON.Engine(this.canvas, true, { preserveDrawingBuffer: true, stencil: true });
         this.settings = serializedSpace.settings
         this.entities = serializedSpace.entities
-        // signalHub.subscribe(({ event, payload }) => {
-        //     console.log('scene manager getting', event, payload)
-        // })
+
+        signalHub.subscribe(({ event, payload }) => {
+            console.log('scene manager getting', event, payload)
+        })
 
     }
 
@@ -137,9 +140,7 @@ export class SceneManager {
 
     }
 
-    reduceSigFigs(value) {
-        return Math.round(value * 100000) / 100000
-    }
+
 
     getMyPosRot() {
         const camPosRot = sessionPersistance.getCameraPosRot()
@@ -162,16 +163,15 @@ export class SceneManager {
         this.freeCamera.inertia = 0.7;
         this.freeCamera.minZ = 0.05
         this.freeCamera.onViewMatrixChangedObservable.add(cam => {
-            let posArray = cam.position.asArray().map(this.reduceSigFigs)
-            let rotArray = cam.absoluteRotation.asArray().map(this.reduceSigFigs)
+            let posArray = cam.position.asArray().map(reduceSigFigs)
+            let rotArray = cam.absoluteRotation.asArray().map(reduceSigFigs)
             this.signalHub.next({ event: "camera_moved", payload: { pos: posArray, rot: rotArray } })
         })
 
         //  const env = this.scene.createDefaultEnvironment();
 
-        const xr = await this.scene.createDefaultXRExperienceAsync({
-            //floorMeshes: [env.ground]
-        });
+        this.xrManager = new XRManager(this.scene)
+        await this.xrManager.enableWebXRExperience()
         this.menuManager = new MenuManager(this)
 
 
