@@ -1,26 +1,41 @@
 import type * as BABYLON from 'babylonjs'
 import * as GUI from 'babylonjs-gui'
 
+import { CollaborativeEditManager } from '../../collaborative-edit-manager'
+
 import '../helpers'
-import { g, a } from '../helpers';
+import { span, a, div, toggle } from '../helpers';
 
 export class MenuPageMain extends GUI.Container {
-    constructor() {
+    public editManager: CollaborativeEditManager
+    constructor(public scene: BABYLON.Scene) {
         super()
 
-        let rectProps = {
 
-            cornerRadius: 20,
-            color: "Purple",
-            thickness: 4,
-            background: "gray",
-        }
-
-        this.addControl(g(GUI.Rectangle, rectProps,
+        this.editManager = new CollaborativeEditManager(this.scene)
+        this.addControl(div({},
             "Main Menu",
             a({ target: "about" }, "About"),
-            a({ target: "edit" }, "Edit")
+            this.editElement(),
         ))
     }
+
+    editElement() {
+        let editToggle = toggle({}) as unknown as GUI.Slider
+        editToggle.onValueChangedObservable.add(data => {
+            if (data == 0) {
+                console.log('off')
+                this.editManager.off()
+            } else {
+                console.log('on')
+                this.editManager.on()
+            }
+        })
+        return span({}, "Edit", editToggle as unknown as GUI.Container)
+
+
+    }
+
+
 
 }

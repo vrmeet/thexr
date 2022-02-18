@@ -82,7 +82,46 @@ export const button = (props: any, ...children: child[]): GUI.Container => {
 }
 
 export const div = (props: any, ...children: child[]): GUI.Container => {
-    return g(GUI.Rectangle, props, ...children)
+    let defaults = {
+        cornerRadius: 20,
+        color: "Purple",
+        thickness: 4,
+        background: "gray",
+    }
+    return g(GUI.Rectangle, { ...defaults, props }, ...children)
+}
+
+export const span = (props: any, ...children: child[]) => {
+    const stackDefaults = { name: 'hsp', isVertical: false, height: "40px", width: "400px", clipChildren: false }
+    let horizontalStackPanel = g(GUI.StackPanel, { ...stackDefaults, ...props })
+
+    let label = g(GUI.TextBlock, { name: 'editLabel', horizontalAlignment: GUI.Control.HORIZONTAL_ALIGNMENT_LEFT, text: "Edit", width: "40px" })
+    let nodes = children.map(child => ((typeof child === 'object') ? child : g(GUI.TextBlock, {
+        text: child,
+        fontSize: 24,
+    }
+    ))).forEach(child => {
+        child.width = "100px"
+        horizontalStackPanel.addControl(child)
+    })
+    return horizontalStackPanel
+}
+
+export const toggle = (props: any, ...children: child[]): GUI.Container => {
+    const defaults = {
+        value: 0,
+        isPointerBlocker: true,
+        horizontalAlignment: GUI.Control.HORIZONTAL_ALIGNMENT_LEFT,
+        width: "80px",
+        color: 'green',
+        background: 'red',
+        isThumbClamped: true,
+        isThumbCircle: true,
+        minimum: 0.0,
+        maximum: 1.0,
+        step: 1
+    }
+    return g(GUI.Slider, { ...defaults, ...props })
 }
 
 

@@ -18,7 +18,7 @@ export class MenuManager {
     constructor(public sceneManager: SceneManager) {
 
         this.scene = this.sceneManager.scene
-
+        console.log('the menu manager sasy scene is', this.scene)
         this.texture1 = GUI.AdvancedDynamicTexture.CreateFullscreenUI('ui')
 
 
@@ -64,7 +64,8 @@ export class MenuManager {
     }
 
     main() {
-        return new MenuPageMain()
+        console.log('sending main page main', this.scene)
+        return new MenuPageMain(this.scene)
     }
 
     edit() {
