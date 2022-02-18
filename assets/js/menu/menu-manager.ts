@@ -26,13 +26,21 @@ export class MenuManager {
         this.plane = BABYLON.MeshBuilder.CreatePlane("plane_for_box_maker_menu", { height: 0.5, width: 0.5 }, this.scene)
         this.plane.position.y = 0.1
         this.plane.showBoundingBox = true
-        this.plane.position.x = 0.2
-        this.plane.position.z = 1
+        // this.plane.position.x = 0.2
+        this.plane.position.z = 0.2
 
 
         this.texture2 = GUI.AdvancedDynamicTexture.CreateForMesh(this.plane)
-        // // // this.texture.hasAlpha = true
-        this.plane.parent = this.scene.activeCamera
+        /* controller_ready {hand: 'left'} */
+
+        listen("controller_ready").pipe(
+            filter(msg => (msg.payload.hand === 'left'))
+        ).subscribe(() => {
+            //  console.log('left grip', this.sceneManager.xrManager.left_input_source.grip)
+            this.plane.parent = this.sceneManager.xrManager.left_input_source.grip
+        })
+
+
 
 
         listen("open_menu").subscribe(msg => {

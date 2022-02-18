@@ -41,6 +41,11 @@ export class XRManager {
 
 
             xrInput.onControllerAddedObservable.add(inputSource => {
+                if (inputSource.inputSource.handedness === 'left') {
+                    this.left_input_source = inputSource
+                } else {
+                    this.right_input_source = inputSource
+                }
                 inputSource.onMotionControllerInitObservable.add(abstractMotionController => {
                     this.initController(inputSource, abstractMotionController)
                 })
