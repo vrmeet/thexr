@@ -1,4 +1,4 @@
-import type * as BABYLON from 'babylonjs'
+import * as BABYLON from 'babylonjs'
 import { signalHub } from './signalHub'
 import { reduceSigFigs } from './utils'
 import { Observable } from 'rxjs'
@@ -7,8 +7,9 @@ export class XRManager {
     public xrHelper: BABYLON.WebXRDefaultExperience
     public left_input_source: BABYLON.WebXRInputSource
     public right_input_source: BABYLON.WebXRInputSource
+    public inXR: boolean
     constructor(public scene: BABYLON.Scene) {
-
+        this.inXR = false
     }
 
     async enableWebXRExperience() {
@@ -21,11 +22,20 @@ export class XRManager {
 
 
             this.xrHelper.baseExperience.onStateChangedObservable.add(state => {
-                // if (state === WebXRState.ENTERING_XR) {
-                //   this.teleporationManager.populateTeleporationWithFloors()
+                console.log('xr state', state)
+                switch (state) {
+                    case BABYLON.WebXRState.IN_XR:
+                        this.inXR = true;
+                        break;
+                    case BABYLON.WebXRState.NOT_IN_XR:
+                        this.inXR = false;
+                        break;
+                }
+                // if (state === BABYLON.WebXRState.ENTERING_XR) {
+                //     //   this.teleporationManager.populateTeleporationWithFloors()
                 // }
-                // if (state === WebXRState.EXITING_XR) {
-                //   this.teleporationManager.unpopulateTeleporationFloors()
+                // if (state === BABYLON.WebXRState.EXITING_XR) {
+                //     // this.teleporationManager.unpopulateTeleporationFloors()
                 // }
             })
 

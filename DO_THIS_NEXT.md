@@ -4,9 +4,10 @@ TODO:
 - VR Menu (open and close)
   - switch between pages (primative list, color picker)
 
-  
+  - need to fix bug or uncleaned up observers accumulating when switching menu pages
 
 the svelte side needs access to edit settings (we lost this functionality when we removed the iframe)
+
 
 - edit mode should have a tools overlay in inline mode, a collapsable
   hand menu in immersive-vr

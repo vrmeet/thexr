@@ -8,38 +8,33 @@ import { MenuPageAbout } from './pages/about'
 import { MenuPageMain } from './pages/main'
 import { MenuPageEdit } from './pages/edit'
 import { MenuPageTransform } from './pages/edit/transform';
+import { div, button } from './helpers';
 
 export class MenuManager {
     public scene: BABYLON.Scene
     public plane: BABYLON.Mesh
-    public texture1: GUI.AdvancedDynamicTexture
-    public texture2: GUI.AdvancedDynamicTexture
+    public texture: GUI.AdvancedDynamicTexture
     public currentMenu;
     constructor(public sceneManager: SceneManager) {
 
         this.scene = this.sceneManager.scene
         console.log('the menu manager sasy scene is', this.scene)
-        this.texture1 = GUI.AdvancedDynamicTexture.CreateFullscreenUI('ui')
-
-
-
-        this.plane = BABYLON.MeshBuilder.CreatePlane("plane_for_box_maker_menu", { height: 0.5, width: 0.5 }, this.scene)
-        this.plane.position.y = 0.1
-        this.plane.showBoundingBox = true
-        // this.plane.position.x = 0.2
-        this.plane.position.z = 0.2
-
-
-        this.texture2 = GUI.AdvancedDynamicTexture.CreateForMesh(this.plane)
         /* controller_ready {hand: 'left'} */
 
         listen("controller_ready").pipe(
             filter(msg => (msg.payload.hand === 'left'))
         ).subscribe(() => {
             //  console.log('left grip', this.sceneManager.xrManager.left_input_source.grip)
-            this.plane.parent = this.sceneManager.xrManager.left_input_source.grip
+            this.createVRMenuOverlay()
+
         })
 
+        listen("close_menu").subscribe(() => {
+            if (this.texture) {
+                this.texture.dispose()
+                this.texture = null;
+            }
+        })
 
 
 
@@ -48,23 +43,78 @@ export class MenuManager {
                 console.error("Undefined menu link target", msg.payload)
                 return
             }
-            this.texture1.rootContainer.dispose()
+            if (!this.texture) {
+                this.createTexture()
+            }
+            const newContent = this[msg.payload.target]()
+            this.applyContent(newContent)
+
+
+        })
+
+
+    }
+
+
+    createVRMenuOverlay() {
+        let overlayPlane = BABYLON.MeshBuilder.CreatePlane("plane_for_vr_menu", { height: 0.2, width: 0.2 }, this.scene)
+        overlayPlane.position.y = 0.1
+        overlayPlane.position.z = 0.2
+        overlayPlane.showBoundingBox = true
+        overlayPlane.parent = this.sceneManager.xrManager.left_input_source.grip
+        let vrTexture = GUI.AdvancedDynamicTexture.CreateForMesh(overlayPlane)
+        const control = div({
+            name: "vrMenu"
+        },
+            button({ name: "vrOpenMenu" }, "Menu"),
+            button({ name: "vrAudioPublish" }, "Unmute")
+        )
+        vrTexture.addControl(control)
+
+    }
+
+    applyContent(newContent: GUI.Container) {
+        this.texture.rootContainer.dispose()
+        if (this.sceneManager.xrManager.inXR) {
+            this.texture.idealWidth = 500
+            this.texture.addControl(newContent)
+        } else {
             let fsc = new GUI.Container()
             fsc.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM
             fsc.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
             fsc.width = 0.3
             fsc.height = 0.5
-            fsc.addControl(this[msg.payload.target]())
-            this.texture1.addControl(fsc)
-            this.texture1.idealWidth = 2000
+            fsc.addControl(newContent)
+            this.texture.addControl(fsc)
+            this.texture.idealWidth = 2000
+        }
+    }
 
+    createMeshTexture() {
+        if (!this.plane) {
+            this.plane = BABYLON.MeshBuilder.CreatePlane("plane_for_box_maker_menu", { height: 0.5, width: 0.5 }, this.scene)
+            this.plane.position.y = 0.1
+            this.plane.showBoundingBox = true
+            // this.plane.position.x = 0.2
+            this.plane.position.z = 0.2
+        }
+        this.texture = GUI.AdvancedDynamicTexture.CreateForMesh(this.plane)
 
-            this.texture2.rootContainer.dispose()
-            this.texture2.idealWidth = 500
-            this.texture2.addControl(this[msg.payload.target]())
-        })
+    }
 
-        signalHub.next({ event: "open_menu", payload: { target: "main" } });
+    createFullScreenUI() {
+        this.texture = GUI.AdvancedDynamicTexture.CreateFullscreenUI('ui')
+        //  this.texture.rootContainer.isVisible = false
+
+    }
+
+    createTexture() {
+        if (this.sceneManager.xrManager.inXR) {
+            this.createMeshTexture()
+        } else {
+            this.createFullScreenUI()
+        }
+
     }
 
     about() {

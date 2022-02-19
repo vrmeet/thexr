@@ -29,7 +29,7 @@ export class SceneManager {
         this.entities = serializedSpace.entities
 
         signalHub.subscribe(({ event, payload }) => {
-            console.log('scene manager getting', event, payload)
+            console.info('scene manager getting', event, payload)
         })
 
     }
@@ -66,14 +66,12 @@ export class SceneManager {
         })
 
         this.spaceChannel.on('presence_state', params => {
-            console.log('presence_state', JSON.stringify(params))
             Object.keys(params).filter((id) => id !== this.memberId).forEach(id => {
                 this.findOrCreateAvatar(id, params[id].metas[0].pos_rot)
             })
         })
 
         this.spaceChannel.on('presence_diff', params => {
-            console.log('presence_diff', JSON.stringify(params))
             Object.keys(params.joins).filter((id) => id !== this.memberId).forEach(id => {
                 this.findOrCreateAvatar(id, params.joins[id].metas[0].pos_rot)
             })
@@ -130,7 +128,6 @@ export class SceneManager {
 
     findSpawnPoint() {
         const result = this.entities.filter(entity => entity.type === 'spawn_point')
-        console.log('result', JSON.stringify(result))
         if (result.length > 0) {
             let pos = result[0].components[0].data
             return { pos: [pos.x, pos.y, pos.z], rot: [0, 0, 0, 1] }
@@ -289,7 +286,7 @@ export class SceneManager {
                 mesh.material = mat;
                 break;
             default:
-                console.log('unknown component', component.type)
+                console.error('unknown component', component.type)
 
         }
     }
