@@ -6,7 +6,6 @@ export class CollaborativeEditManager {
     public selectedMesh: BABYLON.AbstractMesh
     public gizmoManager: BABYLON.GizmoManager
     constructor(public scene: BABYLON.Scene) {
-        console.log('the scen eis', this.scene)
     }
 
     off() {
@@ -56,7 +55,6 @@ export class CollaborativeEditManager {
 
         const rot = this.selectedMesh.rotationQuaternion.toEulerAngles()
 
-        console.log('new rotation', rot)
         signalHub.next({
             event: "spaces_api",
             payload: {

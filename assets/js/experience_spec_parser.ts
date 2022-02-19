@@ -41,12 +41,10 @@ export class ExperienceSpecParser {
     }
 
     findOrCreateMesh(entity: Element) {
-        console.log("entityNodeName", entity.nodeName, "properties", entity.attributes)
         let fullName = this.getFullName(entity)
         let mesh: BABYLON.AbstractMesh
         mesh = this.scene.getMeshByName(fullName)
         if (!mesh) {
-            console.log("attempting to create", fullName)
             if (entity.nodeName === 'box') {
                 mesh = BABYLON.MeshBuilder.CreateBox(fullName, {}, this.scene)
             } else if (entity.nodeName === 'plane') {
@@ -81,7 +79,6 @@ export class ExperienceSpecParser {
     }
 
     arrayFromAttr(attr: string) {
-        console.log('attr', attr)
         return attr.trim().split(' ').filter(el => el).map(el => parseFloat(el))
     }
 

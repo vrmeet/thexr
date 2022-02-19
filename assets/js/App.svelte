@@ -42,8 +42,6 @@
 
     //callbacks
     const joinedCallback = () => {
-        console.log("i called the join callback");
-
         signalHub.next({ event: "joined", payload: {} });
         didJoinSpace = true;
         if (!micConfirmed()) {
@@ -63,12 +61,6 @@
         micDeviceId: string,
         outputDeviceId: string
     ) => {
-        console.log(
-            "you confirmed mic",
-            micDeviceId,
-            "and output",
-            outputDeviceId
-        );
         sessionPersistance.saveMicAndOutputChoice({
             micDeviceId,
             outputDeviceId,

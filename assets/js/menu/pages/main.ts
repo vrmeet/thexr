@@ -22,7 +22,7 @@ export class MenuPageMain extends GUI.Container {
 
     editElement() {
         let editToggle = toggle({}) as unknown as GUI.Slider
-        editToggle.onValueChangedObservable.add(data => {
+        const callback = data => {
             if (data == 0) {
                 console.log('off')
                 this.editManager.off()
@@ -30,11 +30,18 @@ export class MenuPageMain extends GUI.Container {
                 console.log('on')
                 this.editManager.on()
             }
+        }
+        editToggle.onValueChangedObservable.add(callback)
+        this.onDisposeObservable.add(() => {
+            console.log('main is disposed')
+            editToggle.onValueChangedObservable.removeCallback(callback)
         })
         return span({}, "Edit", editToggle as unknown as GUI.Container)
 
 
     }
+
+
 
 
 
