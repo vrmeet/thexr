@@ -41,8 +41,13 @@ type stateType = {
 export class MenuManager {
     public state: stateType
     public fsGui: GUI.AdvancedDynamicTexture
+    public wristPlane: BABYLON.AbstractMesh
+    public browsePlane: BABYLON.AbstractMesh
+    public wristGui: GUI.AdvancedDynamicTexture
+    public browseGui: GUI.AdvancedDynamicTexture
     public scene: BABYLON.Scene
-    constructor(sceneManager: SceneManager) {
+
+    constructor(public sceneManager: SceneManager) {
         this.scene = sceneManager.scene
         this.state = {
             menu_opened: false,
@@ -52,16 +57,26 @@ export class MenuManager {
         }
         listen("camera_ready").subscribe(() => {
             this.createFullScreenUI()
-
         })
+
+        listen("controller_ready").pipe(
+            filter(msg => (msg.payload.hand === 'left'))
+        ).subscribe(() => {
+            this.createVRMenuOverlay()
+        })
+
         listen("xr_state_change").subscribe(msg => {
             switch (msg.payload.state) {
                 case BABYLON.WebXRState.EXITING_XR:
                     this.createFullScreenUI()
+                    this.wristPlane.dispose()
                     break;
                 case BABYLON.WebXRState.ENTERING_XR:
                     this.fsGui.dispose();
                     this.fsGui = null;
+
+
+
                     break;
             }
         })
@@ -91,17 +106,49 @@ export class MenuManager {
         })
     }
 
+
+    createVRMenuOverlay() {
+        this.wristPlane = BABYLON.MeshBuilder.CreatePlane("wrist_plane", { height: 0.1, width: 0.1 }, this.scene)
+        this.wristPlane.showBoundingBox = true
+
+        this.wristPlane.parent = this.sceneManager.xrManager.left_input_source.grip
+        this.wristGui = GUI.AdvancedDynamicTexture.CreateForMesh(this.wristPlane)
+
+        this.browsePlane = BABYLON.MeshBuilder.CreatePlane("wrist_plane", { height: 1, width: 1 }, this.scene)
+        this.browsePlane.showBoundingBox = true
+        this.browsePlane.position.z = 0.1
+        this.browsePlane.position.y = 0.2
+        this.browsePlane.parent = this.sceneManager.xrManager.left_input_source.grip
+
+        this.browseGui = GUI.AdvancedDynamicTexture.CreateForMesh(this.browsePlane)
+
+        this.render(this.stateToCtrls())
+
+    }
+
     createFullScreenUI() {
         this.fsGui = GUI.AdvancedDynamicTexture.CreateFullscreenUI("fsGui")
         this.render(this.stateToCtrls())
     }
 
     render(content: { menuCtrl: GUI.Container, browserCtrl: GUI.Container }) {
-        this.fsGui.rootContainer.dispose()
+        if (this.fsGui) {
+            this.fsGui.rootContainer.dispose()
 
-        this.fsGui.addControl(this.adaptMenuCtrlForFsGUI(content.menuCtrl))
-        if (this.state.menu_opened) {
-            this.fsGui.addControl(this.adaptBrowserCtrlForFsGUI(content.browserCtrl))
+            this.fsGui.addControl(this.adaptMenuCtrlForFsGUI(content.menuCtrl))
+            if (this.state.menu_opened) {
+                this.fsGui.addControl(this.adaptBrowserCtrlForFsGUI(content.browserCtrl))
+            }
+        }
+        if (this.sceneManager.xrManager.inXR) {
+            if (this.wristGui) {
+                this.wristGui.rootContainer.dispose()
+                this.wristGui.addControl(content.menuCtrl)
+            }
+            if (this.browseGui) {
+                this.browseGui.rootContainer.dispose()
+                this.browseGui.addControl(content.browserCtrl)
+            }
         }
     }
 
