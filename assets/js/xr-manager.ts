@@ -1,7 +1,7 @@
 import * as BABYLON from 'babylonjs'
 import { signalHub } from './signalHub'
 import { reduceSigFigs } from './utils'
-import { Observable } from 'rxjs'
+import { Observable, single } from 'rxjs'
 
 export class XRManager {
     public xrHelper: BABYLON.WebXRDefaultExperience
@@ -22,6 +22,7 @@ export class XRManager {
 
 
             this.xrHelper.baseExperience.onStateChangedObservable.add(state => {
+                signalHub.next({ event: 'xr_state_change', payload: { state } })
                 console.log('xr state', state)
                 switch (state) {
                     case BABYLON.WebXRState.IN_XR:

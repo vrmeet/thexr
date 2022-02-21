@@ -1,5 +1,14 @@
 TODO:
 
+X 1. (do we get rid of the svelte for the menu overlay)
+X 2. inline 'start button' and 'mic mute/unmute' (full screen UI texture)
+3. vr 'start button' and 'mic mute/unmute' (mesh texture)
+X 4. when click on menu -> launch or close the menu
+5. when click on mute/unmute, we'll toggle the mute/unmute text/status
+when click on about, show the about info
+
+
+
 - be able to edit / place primatives in VR (color, delete)
 - VR Menu (open and close)
   - switch between pages (primative list, color picker)

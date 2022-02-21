@@ -15,7 +15,7 @@ export class MenuPageMain extends GUI.Container {
         this.editManager = new CollaborativeEditManager(this.scene)
         this.addControl(div({},
             "Main Menu",
-            a({ target: "about" }, "About"),
+            a({ msg: { event: "menu_action", payload: { name: "goto_about" } } }, "About"),
             this.editElement(),
         ))
     }

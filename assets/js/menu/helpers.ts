@@ -2,6 +2,32 @@
 import * as GUI from 'babylonjs-gui'
 import type { string } from 'yup'
 import { signalHub } from '../signalHub'
+import type { SignalEvent } from '../types'
+
+/* patch to fix toggle snapping */
+BABYLON.GUI.BaseSlider.prototype['_updateValueFromPointer'] = function (x, y) {
+    console.log(x, y)
+    if (this.rotation != 0) {
+        this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
+        x = this._transformedPosition.x;
+        y = this._transformedPosition.y;
+    }
+
+    let value;
+    if (this._isVertical) {
+        value = this._minimum + (1 - ((y - this._currentMeasure.top) / this._currentMeasure.height)) * (this._maximum - this._minimum);
+    }
+    else {
+        value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
+    }
+
+    //this.value = this._step ? ((value / this._step) | 0) * this._step : value;
+    this.value = this._step ? Math.round(value / this._step) * this._step : value;
+    console.log('new value is ....', this.value)
+}
+
+
+
 
 type child = GUI.Container | string
 
@@ -127,16 +153,14 @@ export const toggle = (props: any, ...children: child[]): GUI.Container => {
 
 
 export const a = (props: any, text: string): GUI.Container => {
-    if (!props["target"]) {
-        console.error("no target on menu link")
+    if (!props["msg"]) {
+        console.error("msg is required", props)
     }
     let el = g(GUI.Button, {
-        name: `btn_${props['target']}`,
         hoverCursor: "pointer",
         horizontalAlignment: GUI.Control.HORIZONTAL_ALIGNMENT_LEFT,
         isPointerBlocker: true, ...props,
     }, g(GUI.TextBlock, {
-        name: `txt_${props['target']}`,
         text: text,
         fontSize: 24,
         color: "#0000FF",
@@ -146,7 +170,7 @@ export const a = (props: any, text: string): GUI.Container => {
     ))
 
     el.onPointerUpObservable.add(() => {
-        signalHub.next({ event: 'open_menu', payload: { target: props["target"] } })
+        signalHub.next(props.msg as SignalEvent)
     })
     return el
 }
