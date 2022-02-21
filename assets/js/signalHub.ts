@@ -9,3 +9,5 @@ export const listen = (event: string) => {
         filter(msg => (msg.event === event))
     )
 }
+
+window['signalHub'] = signalHub;

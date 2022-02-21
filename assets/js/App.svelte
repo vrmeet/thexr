@@ -2,8 +2,6 @@
     import { setContext } from "svelte";
     import Welcome from "./components/Welcome.svelte";
     import MicAndOutput from "./components/MicAndOutput.svelte";
-    import MenuOverlay from "./components/MenuOverlay.svelte";
-    import type { WebRTCClient } from "./web-rtc-client";
     import { signalHub } from "./signalHub";
     import { sessionPersistance } from "./sessionPersistance";
     import { initClient, operationStore, query } from "@urql/svelte";
@@ -15,7 +13,6 @@
 
     //props
     export let canvasId: string;
-    export let webRTCClient: WebRTCClient;
     export let slug: string;
 
     setContext("slug", slug);
@@ -24,7 +21,6 @@
     //state
     let didJoinSpace = false;
     let showMicAndOutputForm = false;
-    let showMenuOverlay = false;
 
     const micConfirmed = () => {
         const micChoice = sessionPersistance.getMicAndOutputChoice();
@@ -54,7 +50,6 @@
     const ready = () => {
         let canvas = document.getElementById(canvasId);
         canvas.focus();
-        showMenuOverlay = true;
     };
 
     const confirmMicAndOutputCallback = (
@@ -75,7 +70,4 @@
 {/if}
 {#if showMicAndOutputForm}
     <MicAndOutput {confirmMicAndOutputCallback} />
-{/if}
-{#if showMenuOverlay}
-    <MenuOverlay {webRTCClient} />
 {/if}

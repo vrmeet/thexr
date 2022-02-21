@@ -8,131 +8,301 @@ import { MenuPageAbout } from './pages/about'
 import { MenuPageMain } from './pages/main'
 import { MenuPageEdit } from './pages/edit'
 import { MenuPageTransform } from './pages/edit/transform';
-import { div, button } from './helpers';
+import { div, button, a } from './helpers';
+
+/*
+inline -mode
+  - 1 fullscreen gui  
+  (create when)
+    camera is ready
+    exiting VR
+  (remove when entering VR)
+
+immersive-mode
+   - 1 texture for menu
+   - 1 texture for browsing
+   (create when entering VR)
+   (remove when exiting VR)
+
+menuOpen: true | false
+muted: true | false
+content: .... (click )
+
+
+*/
+
+type stateType = {
+    menu_opened: boolean
+    muted: boolean
+    editing: boolean
+    browsing: string
+}
 
 export class MenuManager {
+    public state: stateType
+    public fsGui: GUI.AdvancedDynamicTexture
     public scene: BABYLON.Scene
-    public plane: BABYLON.Mesh
-    public texture: GUI.AdvancedDynamicTexture
-    public currentMenu;
-    constructor(public sceneManager: SceneManager) {
-
-        this.scene = this.sceneManager.scene
-        console.log('the menu manager sasy scene is', this.scene)
-        /* controller_ready {hand: 'left'} */
-
-        listen("controller_ready").pipe(
-            filter(msg => (msg.payload.hand === 'left'))
-        ).subscribe(() => {
-            //  console.log('left grip', this.sceneManager.xrManager.left_input_source.grip)
-            this.createVRMenuOverlay()
-
-        })
-
-        listen("close_menu").subscribe(() => {
-            if (this.texture) {
-                this.texture.dispose()
-                this.texture = null;
-            }
-        })
-
-
-
-        listen("open_menu").subscribe(msg => {
-            if (!msg.payload.target || !this[msg.payload.target]) {
-                console.error("Undefined menu link target", msg.payload)
-                return
-            }
-            if (!this.texture) {
-                this.createTexture()
-            }
-            const newContent = this[msg.payload.target]()
-            this.applyContent(newContent)
-
-
-        })
-
-
-    }
-
-
-    createVRMenuOverlay() {
-        let overlayPlane = BABYLON.MeshBuilder.CreatePlane("plane_for_vr_menu", { height: 0.2, width: 0.2 }, this.scene)
-        overlayPlane.position.y = 0.1
-        overlayPlane.position.z = 0.2
-        overlayPlane.showBoundingBox = true
-        overlayPlane.parent = this.sceneManager.xrManager.left_input_source.grip
-        let vrTexture = GUI.AdvancedDynamicTexture.CreateForMesh(overlayPlane)
-        const control = div({
-            name: "vrMenu"
-        },
-            button({ name: "vrOpenMenu" }, "Menu"),
-            button({ name: "vrAudioPublish" }, "Unmute")
-        )
-        vrTexture.addControl(control)
-
-    }
-
-    applyContent(newContent: GUI.Container) {
-        this.texture.rootContainer.dispose()
-        if (this.sceneManager.xrManager.inXR) {
-            this.texture.idealWidth = 500
-            this.texture.addControl(newContent)
-        } else {
-            let fsc = new GUI.Container()
-            fsc.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM
-            fsc.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
-            fsc.width = 0.3
-            fsc.height = 0.5
-            fsc.addControl(newContent)
-            this.texture.addControl(fsc)
-            this.texture.idealWidth = 2000
+    constructor(sceneManager: SceneManager) {
+        this.scene = sceneManager.scene
+        this.state = {
+            menu_opened: false,
+            muted: true,
+            editing: false,
+            browsing: "main"
         }
-    }
+        listen("camera_ready").subscribe(() => {
+            this.createFullScreenUI()
 
-    createMeshTexture() {
-        if (!this.plane) {
-            this.plane = BABYLON.MeshBuilder.CreatePlane("plane_for_box_maker_menu", { height: 0.5, width: 0.5 }, this.scene)
-            this.plane.position.y = 0.1
-            this.plane.showBoundingBox = true
-            // this.plane.position.x = 0.2
-            this.plane.position.z = 0.2
-        }
-        this.texture = GUI.AdvancedDynamicTexture.CreateForMesh(this.plane)
-
+        })
+        listen("xr_state_change").subscribe(msg => {
+            switch (msg.payload.state) {
+                case BABYLON.WebXRState.EXITING_XR:
+                    this.createFullScreenUI()
+                    break;
+                case BABYLON.WebXRState.ENTERING_XR:
+                    this.fsGui.dispose();
+                    this.fsGui = null;
+                    break;
+            }
+        })
+        listen("menu_action").subscribe(msg => {
+            let menuCtrl: GUI.Container
+            let browserCtrl: GUI.Container
+            if (msg.payload.name) {
+                // update state
+                switch (msg.payload.name) {
+                    case "close_menu":
+                        this.state = { ...this.state, menu_opened: false }
+                        break;
+                    case "open_menu":
+                        this.state = { ...this.state, menu_opened: true }
+                        break;
+                    case "goto_about":
+                        this.state = { ... this.state, browsing: "about" }
+                        break;
+                    case "goto_main":
+                        this.state = { ...this.state, browsing: "main" }
+                        break;
+                }
+            } else {
+                console.error('no such action handler', JSON.stringify(msg))
+            }
+            this.render(this.stateToCtrls())
+        })
     }
 
     createFullScreenUI() {
-        this.texture = GUI.AdvancedDynamicTexture.CreateFullscreenUI('ui')
-        //  this.texture.rootContainer.isVisible = false
-
+        this.fsGui = GUI.AdvancedDynamicTexture.CreateFullscreenUI("fsGui")
+        this.render(this.stateToCtrls())
     }
 
-    createTexture() {
-        if (this.sceneManager.xrManager.inXR) {
-            this.createMeshTexture()
+    render(content: { menuCtrl: GUI.Container, browserCtrl: GUI.Container }) {
+        this.fsGui.rootContainer.dispose()
+
+        this.fsGui.addControl(this.adaptMenuCtrlForFsGUI(content.menuCtrl))
+        if (this.state.menu_opened) {
+            this.fsGui.addControl(this.adaptBrowserCtrlForFsGUI(content.browserCtrl))
+        }
+    }
+
+    adaptBrowserCtrlForFsGUI(browserCtrl: GUI.Container) {
+        let fsc = new GUI.Container()
+        fsc.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM
+        fsc.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
+        fsc.left = "120px"
+        fsc.paddingBottom = "50px"
+        fsc.width = "500px"
+        fsc.height = "300px"
+        fsc.addControl(browserCtrl)
+        fsc.zIndex = 10;
+        return fsc
+    }
+
+    adaptMenuCtrlForFsGUI(menuCtrl: GUI.Container) {
+        let fsc = new GUI.Container()
+        fsc.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM
+        fsc.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
+        fsc.width = "100px"
+        fsc.height = "100px"
+        fsc.addControl(menuCtrl)
+        fsc.zIndex = 20;
+        return fsc
+    }
+
+    stateToCtrls() {
+
+        return {
+            menuCtrl: this.stateToMenuCtrl(),
+            browserCtrl: this[this.state.browsing]()
+        }
+    }
+
+    stateToMenuCtrl() {
+        let toggleMenu;
+        let label;
+        let muteOrUnmute;
+        let muteOrUnmuteLabel;
+        if (this.state.menu_opened) {
+            toggleMenu = "close_menu"
+            label = "Close Menu"
         } else {
-            this.createFullScreenUI()
+            toggleMenu = "open_menu"
+            label = "Menu"
+        }
+        if (this.state.muted) {
+            muteOrUnmute = "unmute"
+            muteOrUnmuteLabel = "Unmute"
+        } else {
+            muteOrUnmute = "mute"
+            muteOrUnmuteLabel = "Mute"
         }
 
+        return div({ name: 'menu-div' },
+            a({ name: 'menu-btn', msg: { event: "menu_action", payload: { name: toggleMenu } } }, label),
+            a({ name: 'mute-btn', msg: { event: "menu_action", payload: { name: muteOrUnmute } } }, muteOrUnmuteLabel),
+        )
+    }
+
+
+    // browsing functions
+
+    main() {
+        return new MenuPageMain(this.scene)
     }
 
     about() {
         return new MenuPageAbout()
     }
-
-    main() {
-        console.log('sending main page main', this.scene)
-        return new MenuPageMain(this.scene)
-    }
-
-    edit() {
-        return new MenuPageEdit()
-    }
-
-    transform() {
-        return new MenuPageTransform(this.sceneManager.scene)
-    }
-
-
 }
+
+
+
+// export class MenuManager {
+//     public scene: BABYLON.Scene
+//     public plane: BABYLON.Mesh
+//     public txtrBrowser: GUI.AdvancedDynamicTexture
+//     public txtrMenu: GUI.AdvancedDynamicTexture
+//     public menuOpen: boolean
+//     public muted: boolean
+//     constructor(public sceneManager: SceneManager) {
+//         this.menuOpen = false
+//         this.muted = true
+//         this.scene = this.sceneManager.scene
+//         console.log('the menu manager sasy scene is', this.scene)
+//         /* controller_ready {hand: 'left'} */
+
+//         listen("controller_ready").pipe(
+//             filter(msg => (msg.payload.hand === 'left'))
+//         ).subscribe(() => {
+//             //  console.log('left grip', this.sceneManager.xrManager.left_input_source.grip)
+//             this.createVRMenuOverlay()
+
+//         })
+
+//         listen("close_menu").subscribe(() => {
+//             if (this.texture) {
+//                 this.texture.dispose()
+//                 this.texture = null;
+//             }
+//         })
+
+
+
+//         listen("open_menu").subscribe(msg => {
+//             if (!msg.payload.target || !this[msg.payload.target]) {
+//                 console.error("Undefined menu link target", msg.payload)
+//                 return
+//             }
+//             if (!this.texture) {
+//                 this.createTexture()
+//             }
+//             const newContent = this[msg.payload.target]()
+//             this.applyContent(newContent)
+
+
+//         })
+
+
+//     }
+
+
+//     createVRMenuOverlay() {
+//         let overlayPlane = BABYLON.MeshBuilder.CreatePlane("plane_for_vr_menu", { height: 0.2, width: 0.2 }, this.scene)
+//         overlayPlane.position.y = 0.1
+//         overlayPlane.position.z = 0.2
+//         overlayPlane.showBoundingBox = true
+//         overlayPlane.parent = this.sceneManager.xrManager.left_input_source.grip
+//         let vrTexture = GUI.AdvancedDynamicTexture.CreateForMesh(overlayPlane)
+//         const control = div({
+//             name: "vrMenu"
+//         },
+//             button({ name: "vrOpenMenu" }, "Menu"),
+//             button({ name: "vrAudioPublish" }, "Unmute")
+//         )
+//         vrTexture.addControl(control)
+
+//     }
+
+//     applyContent(newContent: GUI.Container) {
+//         this.texture.rootContainer.dispose()
+//         if (this.sceneManager.xrManager.inXR) {
+//             this.texture.idealWidth = 500
+//             this.texture.addControl(newContent)
+//         } else {
+//             let fsc = new GUI.Container()
+//             fsc.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM
+//             fsc.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
+//             fsc.width = 0.3
+//             fsc.height = 0.5
+//             fsc.addControl(newContent)
+//             this.texture.addControl(fsc)
+//             this.texture.idealWidth = 2000
+//         }
+//     }
+
+//     createMeshTexture() {
+//         if (!this.plane) {
+//             this.plane = BABYLON.MeshBuilder.CreatePlane("plane_for_box_maker_menu", { height: 0.5, width: 0.5 }, this.scene)
+//             this.plane.position.y = 0.1
+//             this.plane.showBoundingBox = true
+//             // this.plane.position.x = 0.2
+//             this.plane.position.z = 0.2
+//         }
+//         this.texture = GUI.AdvancedDynamicTexture.CreateForMesh(this.plane)
+
+//     }
+
+//     createFullScreenUI() {
+//         this.texture = GUI.AdvancedDynamicTexture.CreateFullscreenUI('ui')
+//         //  this.texture.rootContainer.isVisible = false
+
+//     }
+
+//     createTexture() {
+//         if (this.sceneManager.xrManager.inXR) {
+//             this.createMeshTexture()
+//         } else {
+//             this.createFullScreenUI()
+//         }
+
+//     }
+
+//     about() {
+//         return new MenuPageAbout()
+//     }
+
+//     main() {
+//         console.log('sending main page main', this.scene)
+//         return new MenuPageMain(this.scene)
+//     }
+
+//     edit() {
+//         return new MenuPageEdit()
+//     }
+
+//     transform() {
+//         return new MenuPageTransform(this.sceneManager.scene)
+//     }
+
+
+// }

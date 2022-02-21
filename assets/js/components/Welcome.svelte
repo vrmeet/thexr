@@ -1,20 +1,55 @@
 <script lang="ts">
+    import { getContext } from "svelte";
+    import { query, operationStore } from "@urql/svelte";
     //props
     export let joinedCallback;
+    let name;
+    let description;
+
+    const slug = getContext("slug");
+
+    // onMount(async () => {
+
+    const space = operationStore(`
+query {
+  space(slug: "${slug}") {
+    name
+    description
+  }
+}
+`);
+
+    query(space);
+    // space.subscribe((value) => {
+    //     console.log("value", value);
+    //     if (value.data) {
+    //         name = value.data.space.name;
+    //         description = value.data.space.description;
+    //     }
+    // });
 </script>
 
-<div class="modal">
-    <div class="modal-content">
-        <h2>Welcome</h2>
-        <button on:click={joinedCallback}>Join Space</button>
+{#if $space.fetching}
+    <p>Loading...</p>
+{:else if $space.error}
+    <p>Oh no... {$space.error.message}</p>
+{:else}
+    <div class="modal">
+        <div class="modal-content">
+            <h2>Welcome to {$space.data.space.name}</h2>
+            <p>
+                {$space.data.space.description}
+            </p>
+            <button on:click={joinedCallback}>Join Space</button>
+        </div>
     </div>
-</div>
+{/if}
 
 <style>
     :global(.modal) {
         /* display: none;*/ /* Hidden by default */
         position: fixed; /* Stay in place */
-        z-index: 2; /* Sit on top */
+        z-index: 12; /* Sit on top */
         padding-top: 100px; /* Location of the box */
         left: 0;
         top: 0;

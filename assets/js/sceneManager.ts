@@ -171,7 +171,7 @@ export class SceneManager {
         await this.xrManager.enableWebXRExperience()
         this.menuManager = new MenuManager(this)
 
-
+        this.signalHub.next({ event: 'camera_ready', payload: {} })
 
         // this.tempMenu()
 
