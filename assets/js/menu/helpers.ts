@@ -4,30 +4,6 @@ import type { string } from 'yup'
 import { signalHub } from '../signalHub'
 import type { SignalEvent } from '../types'
 
-/* patch to fix toggle snapping */
-BABYLON.GUI.BaseSlider.prototype['_updateValueFromPointer'] = function (x, y) {
-    console.log(x, y)
-    if (this.rotation != 0) {
-        this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
-        x = this._transformedPosition.x;
-        y = this._transformedPosition.y;
-    }
-
-    let value;
-    if (this._isVertical) {
-        value = this._minimum + (1 - ((y - this._currentMeasure.top) / this._currentMeasure.height)) * (this._maximum - this._minimum);
-    }
-    else {
-        value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
-    }
-
-    //this.value = this._step ? ((value / this._step) | 0) * this._step : value;
-    this.value = this._step ? Math.round(value / this._step) * this._step : value;
-    console.log('new value is ....', this.value)
-}
-
-
-
 
 type child = GUI.Container | string
 
@@ -46,10 +22,11 @@ export function createElement(type, configObject, ...args) {
   }
 */
 
-export const applyAttributes = (el: any, props: any) => {
+export const applyAttributes = (el: any, props: { [key: string]: any }) => {
     if (typeof props === 'object' && props !== null) {
         Object.keys(props).forEach(key => {
             try {
+                console.log('trying to assign', key, props[key], 'to', el)
                 el[key] = props[key]
             } catch (e) {
                 console.log(e)
@@ -58,13 +35,12 @@ export const applyAttributes = (el: any, props: any) => {
     }
 }
 
-export const g = (guiType: any, props: any, ...children: child[]): GUI.Container => {
+export const g = (guiType: any, props: { [key: string]: any }, ...children: child[]): GUI.Container => {
     let el = new guiType() as GUI.Container
     el.clipChildren = false
     applyAttributes(el, props)
     let nodes = children.map(child => ((typeof child === 'object') ? child : g(GUI.TextBlock, {
-        text: child,
-        fontSize: 24,
+        text: child
     }
     )))
     switch (nodes.length) {
@@ -74,6 +50,7 @@ export const g = (guiType: any, props: any, ...children: child[]): GUI.Container
             el.addControl(nodes[0])
             break;
         default:
+            console.log('parent el of stack panel', el.height)
             let panel = new GUI.StackPanel();
             panel.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP
             nodes.forEach(child => {
@@ -89,42 +66,44 @@ export const g = (guiType: any, props: any, ...children: child[]): GUI.Container
 
 
 
-export const styleByName = (texture: GUI.AdvancedDynamicTexture, guiName: string, props: any) => {
+export const styleByName = (texture: GUI.AdvancedDynamicTexture, guiName: string, props: { [key: string]: any }) => {
     const el = texture.getControlByName(guiName)
     if (el) {
         applyAttributes(el, props)
     }
 }
 
-export const styleByType = (texture: GUI.AdvancedDynamicTexture, guiType: string, props: any) => {
+export const styleByType = (texture: GUI.AdvancedDynamicTexture, guiType: string, props: { [key: string]: any }) => {
     texture.getControlsByType(guiType).forEach(el => {
         applyAttributes(el, props)
     })
 }
 
 
-export const button = (props: any, ...children: child[]): GUI.Container => {
+export const button = (props: { [key: string]: any }, ...children: child[]): GUI.Container => {
     return g(GUI.Button, props, ...children)
 }
 
-export const div = (props: any, ...children: child[]): GUI.Container => {
+export const div = (props: { [key: string]: any }, ...children: child[]): GUI.Container => {
     let defaults = {
         cornerRadius: 20,
         color: "Purple",
         thickness: 4,
         background: "gray",
+        adaptHeightToChildren: true,
+        adaptWidthToChildren: true,
     }
-    return g(GUI.Rectangle, { ...defaults, props }, ...children)
+    console.log('creating rectangle with props', JSON.stringify(props))
+    return g(GUI.Rectangle, { ...defaults, ...props }, ...children)
 }
 
-export const span = (props: any, ...children: child[]) => {
+export const span = (props: { [key: string]: any }, ...children: child[]) => {
     const stackDefaults = { name: 'hsp', isVertical: false, height: "40px", width: "400px", clipChildren: false }
     let horizontalStackPanel = g(GUI.StackPanel, { ...stackDefaults, ...props })
 
     let label = g(GUI.TextBlock, { name: 'editLabel', horizontalAlignment: GUI.Control.HORIZONTAL_ALIGNMENT_LEFT, text: "Edit", width: "40px" })
     let nodes = children.map(child => ((typeof child === 'object') ? child : g(GUI.TextBlock, {
-        text: child,
-        fontSize: 24,
+        text: child
     }
     ))).forEach(child => {
         child.width = "100px"
@@ -133,7 +112,7 @@ export const span = (props: any, ...children: child[]) => {
     return horizontalStackPanel
 }
 
-export const toggle = (props: any, ...children: child[]): GUI.Container => {
+export const toggle = (props: { [key: string]: any }, ...children: child[]): GUI.Container => {
     const defaults = {
         value: 0,
         isPointerBlocker: true,
@@ -152,7 +131,7 @@ export const toggle = (props: any, ...children: child[]): GUI.Container => {
 
 
 
-export const a = (props: any, text: string): GUI.Container => {
+export const a = (props: { [key: string]: any }, text: string): GUI.Container => {
     if (!props["msg"]) {
         console.error("msg is required", props)
     }
@@ -162,7 +141,6 @@ export const a = (props: any, text: string): GUI.Container => {
         isPointerBlocker: true, ...props,
     }, g(GUI.TextBlock, {
         text: text,
-        fontSize: 24,
         color: "#0000FF",
         textHorizontalAlignment: GUI.Control.HORIZONTAL_ALIGNMENT_LEFT,
         paddingLeft: "10px"

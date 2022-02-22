@@ -247,12 +247,15 @@ export class SceneManager {
         if (!mesh) {
             if (entity.type === 'box') {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, {}, this.scene)
+                BABYLON.Tags.AddTagsTo(mesh, "teleportable")
             } else if (entity.type === 'plane') {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
             } else if (entity.type === 'grid') {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { size: 25, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
                 const gridMat = this.findOrCreateMaterial({ type: 'grid' })
                 mesh.material = gridMat;
+                BABYLON.Tags.AddTagsTo(mesh, "teleportable")
+
             } else if (entity.type === 'sphere') {
                 mesh = BABYLON.MeshBuilder.CreateSphere(entity.name, {}, this.scene)
             } else if (entity.type === 'cone') {

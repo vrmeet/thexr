@@ -2,12 +2,14 @@ import * as BABYLON from 'babylonjs'
 import { signalHub } from './signalHub'
 import { reduceSigFigs } from './utils'
 import { Observable, single } from 'rxjs'
+import { TeleportationManager } from './teleportation-manager'
 
 export class XRManager {
     public xrHelper: BABYLON.WebXRDefaultExperience
     public left_input_source: BABYLON.WebXRInputSource
     public right_input_source: BABYLON.WebXRInputSource
     public inXR: boolean
+    public teleportationManager: TeleportationManager
     constructor(public scene: BABYLON.Scene) {
         this.inXR = false
     }
@@ -17,7 +19,7 @@ export class XRManager {
 
             this.xrHelper = await this.scene.createDefaultXRExperienceAsync({})
 
-            //this.teleportationManager = new TeleportationManager(this.signal_hub, this.xrHelper, this.scene)
+            this.teleportationManager = new TeleportationManager(this.xrHelper, this.scene)
 
 
 
