@@ -110,9 +110,13 @@ export class MenuManager {
     createVRMenuOverlay() {
         this.wristPlane = BABYLON.MeshBuilder.CreatePlane("wrist_plane", { height: 0.1, width: 0.1 }, this.scene)
         this.wristPlane.showBoundingBox = true
+        this.wristPlane.position.z = 0.05
+        this.wristPlane.position.x = 0.05
+        this.wristPlane.position.y = 0.08
+
 
         this.wristPlane.parent = this.sceneManager.xrManager.left_input_source.grip
-        this.wristGui = GUI.AdvancedDynamicTexture.CreateForMesh(this.wristPlane)
+        this.wristGui = GUI.AdvancedDynamicTexture.CreateForMesh(this.wristPlane, 256, 256)
 
         this.browsePlane = BABYLON.MeshBuilder.CreatePlane("wrist_plane", { height: 1, width: 1 }, this.scene)
         this.browsePlane.showBoundingBox = true
@@ -120,7 +124,7 @@ export class MenuManager {
         this.browsePlane.position.y = 0.2
         this.browsePlane.parent = this.sceneManager.xrManager.left_input_source.grip
 
-        this.browseGui = GUI.AdvancedDynamicTexture.CreateForMesh(this.browsePlane)
+        this.browseGui = GUI.AdvancedDynamicTexture.CreateForMesh(this.browsePlane, 640, 640)
 
         this.render(this.stateToCtrls())
 
@@ -147,13 +151,15 @@ export class MenuManager {
             }
             if (this.browseGui) {
                 this.browseGui.rootContainer.dispose()
-                this.browseGui.addControl(content.browserCtrl)
+                if (this.state.menu_opened) {
+                    this.browseGui.addControl(content.browserCtrl)
+                }
             }
         }
     }
 
     adaptBrowserCtrlForFsGUI(browserCtrl: GUI.Container) {
-        let fsc = new GUI.Container()
+        let fsc = new GUI.Container("adapted-browse")
         fsc.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM
         fsc.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
         fsc.left = "120px"
@@ -166,7 +172,7 @@ export class MenuManager {
     }
 
     adaptMenuCtrlForFsGUI(menuCtrl: GUI.Container) {
-        let fsc = new GUI.Container()
+        let fsc = new GUI.Container("adapted-menu")
         fsc.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM
         fsc.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
         fsc.width = "100px"
@@ -178,9 +184,11 @@ export class MenuManager {
 
     stateToCtrls() {
 
+        const browserCtrl = (this.state.menu_opened) ? this[this.state.browsing]() : null
+
         return {
             menuCtrl: this.stateToMenuCtrl(),
-            browserCtrl: this[this.state.browsing]()
+            browserCtrl
         }
     }
 
