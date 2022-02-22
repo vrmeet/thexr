@@ -5,7 +5,10 @@ import { signalHub } from './signalHub'
 export class CollaborativeEditManager {
     public selectedMesh: BABYLON.AbstractMesh
     public gizmoManager: BABYLON.GizmoManager
+    public ignoreMeshNames: string[]
     constructor(public scene: BABYLON.Scene) {
+
+        this.ignoreMeshNames = this.scene.getMeshesByTags("vr_menu_gui").map(mesh => mesh.name)
     }
 
     off() {
@@ -16,6 +19,12 @@ export class CollaborativeEditManager {
 
     on() {
         this.gizmoManager = new BABYLON.GizmoManager(this.scene);
+        this.gizmoManager.onAttachedToMeshObservable.add(mesh => {
+            console.log('mesh', mesh)
+            if (mesh && this.ignoreMeshNames.includes(mesh.name)) {
+                this.gizmoManager.attachToMesh(null)
+            }
+        })
         this.gizmoManager.positionGizmoEnabled = true;
         this.gizmoManager.rotationGizmoEnabled = true;
         this.gizmoManager.boundingBoxGizmoEnabled = true;
