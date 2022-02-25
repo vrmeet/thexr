@@ -31,7 +31,7 @@ content: .... (click )
 
 */
 
-type stateType = {
+export type stateType = {
     menu_opened: boolean
     muted: boolean
     editing: boolean
@@ -68,15 +68,14 @@ export class MenuManager {
         listen("xr_state_change").subscribe(msg => {
             switch (msg.payload.state) {
                 case BABYLON.WebXRState.EXITING_XR:
+                    this.state = { ... this.state, menu_opened: false, editing: false }
                     this.createFullScreenUI()
                     this.wristPlane.dispose()
                     break;
                 case BABYLON.WebXRState.ENTERING_XR:
+                    this.state = { ... this.state, menu_opened: false, editing: false }
                     this.fsGui.dispose();
                     this.fsGui = null;
-
-
-
                     break;
             }
         })
@@ -119,12 +118,13 @@ export class MenuManager {
         this.wristPlane.parent = this.sceneManager.xrManager.left_input_source.grip
         this.wristGui = GUI.AdvancedDynamicTexture.CreateForMesh(this.wristPlane, 256, 256)
 
-        this.browsePlane = BABYLON.MeshBuilder.CreatePlane("wrist_plane", { height: 1, width: 1 }, this.scene)
+        this.browsePlane = BABYLON.MeshBuilder.CreatePlane("browse_plane", { height: 1, width: 1 }, this.scene)
         BABYLON.Tags.AddTagsTo(this.browsePlane, "vr_menu_gui")
         this.browsePlane.showBoundingBox = true
         this.browsePlane.position.z = 0.1
         this.browsePlane.position.y = 0.2
         this.browsePlane.parent = this.sceneManager.xrManager.left_input_source.grip
+        BABYLON.Tags.AddTagsTo(this.browsePlane.parent, "vr_menu_gui")
 
         this.browseGui = GUI.AdvancedDynamicTexture.CreateForMesh(this.browsePlane, 640, 640)
 
@@ -224,7 +224,7 @@ export class MenuManager {
     // browsing functions
 
     main() {
-        return new MenuPageMain(this.scene)
+        return new MenuPageMain(this.scene, this.state)
     }
 
     about() {

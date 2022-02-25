@@ -1,12 +1,13 @@
 
 import * as BABYLON from 'babylonjs'
 import { signalHub } from './signalHub'
+import type { stateType } from './menu/menu-manager'
 
 export class CollaborativeEditManager {
     public selectedMesh: BABYLON.AbstractMesh
     public gizmoManager: BABYLON.GizmoManager
     public ignoreMeshNames: string[]
-    constructor(public scene: BABYLON.Scene) {
+    constructor(public scene: BABYLON.Scene, public state: stateType) {
 
         this.ignoreMeshNames = this.scene.getMeshesByTags("vr_menu_gui").map(mesh => mesh.name)
     }
@@ -20,7 +21,6 @@ export class CollaborativeEditManager {
     on() {
         this.gizmoManager = new BABYLON.GizmoManager(this.scene);
         this.gizmoManager.onAttachedToMeshObservable.add(mesh => {
-            console.log('mesh', mesh)
             if (mesh && this.ignoreMeshNames.includes(mesh.name)) {
                 this.gizmoManager.attachToMesh(null)
             }
