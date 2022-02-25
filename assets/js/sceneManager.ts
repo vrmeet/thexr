@@ -7,6 +7,8 @@ import { sessionPersistance } from './sessionPersistance';
 import { MenuManager } from './menu/menu-manager'
 import { reduceSigFigs } from './utils';
 import { XRManager } from './xr-manager';
+import type { Orchestrator } from './orchestrator';
+import { signalHub } from './signalHub';
 
 export class SceneManager {
     public canvas: HTMLCanvasElement;
@@ -20,13 +22,20 @@ export class SceneManager {
     public menuManager: MenuManager
     public freeCamera: BABYLON.FreeCamera
     public xrManager: XRManager
+    public canvasId: string
+    public memberId: string
+    public serializedSpace: SerializedSpace
 
-    constructor(public canvasId: string, public memberId: string, public signalHub: SignalHub, public serializedSpace: SerializedSpace) {
-        this.slug = serializedSpace.slug
+
+    constructor(public orchestrator: Orchestrator) {
+        this.canvasId = orchestrator.canvasId
+        this.memberId = orchestrator.memberId
+        this.serializedSpace = orchestrator.serializedSpace
+        this.slug = this.serializedSpace.slug
         this.canvas = document.getElementById(this.canvasId) as HTMLCanvasElement;
         this.engine = new BABYLON.Engine(this.canvas, true, { preserveDrawingBuffer: true, stencil: true });
-        this.settings = serializedSpace.settings
-        this.entities = serializedSpace.entities
+        this.settings = this.serializedSpace.settings
+        this.entities = this.serializedSpace.entities
 
         signalHub.subscribe(({ event, payload }) => {
             console.info('scene manager getting', event, payload)
@@ -162,16 +171,16 @@ export class SceneManager {
         this.freeCamera.onViewMatrixChangedObservable.add(cam => {
             let posArray = cam.position.asArray().map(reduceSigFigs)
             let rotArray = cam.absoluteRotation.asArray().map(reduceSigFigs)
-            this.signalHub.next({ event: "camera_moved", payload: { pos: posArray, rot: rotArray } })
+            signalHub.next({ event: "camera_moved", payload: { pos: posArray, rot: rotArray } })
         })
 
         //  const env = this.scene.createDefaultEnvironment();
 
         this.xrManager = new XRManager(this.scene)
         await this.xrManager.enableWebXRExperience()
-        this.menuManager = new MenuManager(this)
+        this.menuManager = new MenuManager(this.orchestrator)
 
-        this.signalHub.next({ event: 'camera_ready', payload: {} })
+        signalHub.next({ event: 'camera_ready', payload: {} })
 
         // this.tempMenu()
 

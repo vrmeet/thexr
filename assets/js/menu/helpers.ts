@@ -26,7 +26,6 @@ export const applyAttributes = (el: any, props: { [key: string]: any }) => {
     if (typeof props === 'object' && props !== null) {
         Object.keys(props).forEach(key => {
             try {
-                console.log('trying to assign', key, props[key], 'to', el)
                 el[key] = props[key]
             } catch (e) {
                 console.log(e)
@@ -50,7 +49,6 @@ export const g = (guiType: any, props: { [key: string]: any }, ...children: chil
             el.addControl(nodes[0])
             break;
         default:
-            console.log('parent el of stack panel', el.height)
             let panel = new GUI.StackPanel();
             panel.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP
             nodes.forEach(child => {
@@ -93,7 +91,6 @@ export const div = (props: { [key: string]: any }, ...children: child[]): GUI.Co
         adaptHeightToChildren: true,
         adaptWidthToChildren: true,
     }
-    console.log('creating rectangle with props', JSON.stringify(props))
     return g(GUI.Rectangle, { ...defaults, ...props }, ...children)
 }
 

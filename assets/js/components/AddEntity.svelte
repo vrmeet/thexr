@@ -12,7 +12,6 @@
 </select>
 <button
     on:click={() => {
-        console.log(selected);
         signalHub.next({
             event: "spaces_api",
             payload: { func: "add_entity_with_broadcast", args: [selected] },
