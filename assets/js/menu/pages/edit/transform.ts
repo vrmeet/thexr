@@ -58,7 +58,6 @@ export class MenuPageTransform extends GUI.Container {
 
         const rot = this.selectedMesh.rotationQuaternion.toEulerAngles()
 
-        console.log('new rotation', rot)
         signalHub.next({
             event: "spaces_api",
             payload: {

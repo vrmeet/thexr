@@ -1,5 +1,13 @@
 TODO:
 
+X attach the mute/unmute button to do something
+add a menu for primative creation
+add a listener for when dragging the bounding box gizmo
+
+fix bug where when exiting XR, and edit toggle may be off but the gizmo remains
+
+attach edit state to the toggle switch
+
 X 1. (do we get rid of the svelte for the menu overlay)
 X 2. inline 'start button' and 'mic mute/unmute' (full screen UI texture)
 3. vr 'start button' and 'mic mute/unmute' (mesh texture)

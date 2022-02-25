@@ -1,7 +1,7 @@
 import { Socket, Channel } from 'phoenix'
 import { filter, throttleTime, skip } from 'rxjs/operators'
 import { WebRTCClientAgora } from './web-rtc-client-agora';
-import { signalHub } from './signalHub'
+import { listen, signalHub } from './signalHub'
 import { SceneManager } from './sceneManager'
 import App from "./App.svelte";
 import { sessionPersistance } from './sessionPersistance';
@@ -27,13 +27,9 @@ export class Orchestrator {
         this.slug = serializedSpace.slug;
         this.webRTCClient = new WebRTCClientAgora(this.slug, this.memberId)
 
-        // default audio playback behavior
-        this.webRTCClient.addRemoteStreamPublishedCallback((memberId, mediaType, playable, mediaStreamTrack) => {
-            console.log('this user is now publishing audio', memberId);
-            playable.play()
-        })
+        this.setupWebRTCEvents()
 
-        this.sceneManager = new SceneManager(canvasId, memberId, signalHub, serializedSpace)
+        this.sceneManager = new SceneManager(this)
 
         this.spaceChannel = this.socket.channel(`space:${serializedSpace.slug}`, { pos_rot: this.sceneManager.getMyPosRot() })
         this.sceneManager.setChannel(this.spaceChannel)
@@ -55,7 +51,17 @@ export class Orchestrator {
 
         window['orchestrator'] = this
 
-        new App({ target: document.body, props: { canvasId, webRTCClient: this.webRTCClient, slug: this.slug } });
+        new App({ target: document.body, props: { canvasId, slug: this.slug } });
+
+    }
+
+    setupWebRTCEvents() {
+
+        // default audio playback behavior
+        this.webRTCClient.addRemoteStreamPublishedCallback((memberId, mediaType, playable, mediaStreamTrack) => {
+            console.log('this user is now publishing audio', memberId);
+            playable.play()
+        })
 
     }
 

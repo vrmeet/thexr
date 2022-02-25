@@ -14,11 +14,13 @@ export class MenuPageMain extends GUI.Container {
 
 
         this.editManager = new CollaborativeEditManager(this.scene, this.state)
-        this.addControl(div({ name: "main-page-container" },
-            "Main Menu",
-            a({ msg: { event: "menu_action", payload: { name: "goto_about" } } }, "About"),
-            this.editElement(),
-        ))
+        this.addControl(
+            div({ name: "main-page-container" },
+                "Main Menu",
+                a({ msg: { event: "menu_action", payload: { name: "goto_about" } } }, "About"),
+                this.editElement(),
+                a({ msg: { event: "menu_action", payload: { name: "goto_primitives" } } }, "Primitives"),
+            ))
     }
 
     editElement() {
@@ -36,7 +38,6 @@ export class MenuPageMain extends GUI.Container {
         }
         editToggle.onValueChangedObservable.add(callback)
         this.onDisposeObservable.add(() => {
-            console.log('main is disposed')
             editToggle.onValueChangedObservable.removeCallback(callback)
         })
         return span({}, "Edit", editToggle as unknown as GUI.Container)

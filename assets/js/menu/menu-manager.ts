@@ -6,9 +6,11 @@ import { signalHub, listen } from "../signalHub";
 import { filter } from 'rxjs/operators'
 import { MenuPageAbout } from './pages/about'
 import { MenuPageMain } from './pages/main'
+import { MenuPagePrimitives } from './pages/primitives'
 import { MenuPageEdit } from './pages/edit'
 import { MenuPageTransform } from './pages/edit/transform';
 import { div, button, a } from './helpers';
+import type { Orchestrator } from '../orchestrator';
 
 /*
 inline -mode
@@ -46,9 +48,11 @@ export class MenuManager {
     public wristGui: GUI.AdvancedDynamicTexture
     public browseGui: GUI.AdvancedDynamicTexture
     public scene: BABYLON.Scene
+    public sceneManager: SceneManager
 
-    constructor(public sceneManager: SceneManager) {
-        this.scene = sceneManager.scene
+    constructor(public orchestrator: Orchestrator) {
+        this.sceneManager = orchestrator.sceneManager
+        this.scene = orchestrator.sceneManager.scene
         this.state = {
             menu_opened: false,
             muted: true,
@@ -68,12 +72,20 @@ export class MenuManager {
         listen("xr_state_change").subscribe(msg => {
             switch (msg.payload.state) {
                 case BABYLON.WebXRState.EXITING_XR:
-                    this.state = { ... this.state, menu_opened: false, editing: false }
-                    this.createFullScreenUI()
+                    // this.state = { ... this.state, menu_opened: false, editing: false }
+
+                    this.browsePlane.dispose()
                     this.wristPlane.dispose()
+                    this.wristGui.dispose()
+                    this.browseGui.dispose()
+                    this.browsePlane = null
+                    this.wristPlane = null;
+                    this.wristGui = null;
+                    this.browseGui = null;
+                    this.createFullScreenUI()
                     break;
                 case BABYLON.WebXRState.ENTERING_XR:
-                    this.state = { ... this.state, menu_opened: false, editing: false }
+                    //  this.state = { ... this.state, menu_opened: false, editing: false }
                     this.fsGui.dispose();
                     this.fsGui = null;
                     break;
@@ -97,9 +109,28 @@ export class MenuManager {
                     case "goto_main":
                         this.state = { ...this.state, browsing: "main" }
                         break;
+                    case "goto_primitives":
+                        this.state = { ...this.state, browsing: "primitives" }
+                        break;
+                    case "create_primitive":
+                        signalHub.next({
+                            event: "spaces_api",
+                            payload: { func: "add_entity_with_broadcast", args: [msg.payload.type] },
+                        });
+                        break;
+                    case "unmute":
+                        this.orchestrator.webRTCClient.publishAudio()
+                        this.state = { ...this.state, muted: false }
+                        break;
+                    case "mute":
+                        this.orchestrator.webRTCClient.publishAudio()
+                        this.state = { ...this.state, muted: true }
+                        break;
+                    default:
+                        console.error('no such action handler', JSON.stringify(msg))
                 }
             } else {
-                console.error('no such action handler', JSON.stringify(msg))
+                console.error('malformed message', JSON.stringify(msg))
             }
             this.render(this.stateToCtrls())
         })
@@ -229,6 +260,10 @@ export class MenuManager {
 
     about() {
         return new MenuPageAbout()
+    }
+
+    primitives() {
+        return new MenuPagePrimitives()
     }
 }
 
