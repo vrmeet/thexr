@@ -8,7 +8,7 @@ export class SessionPersistance {
     getCameraPosRot() {
         return this.getAndParseKey(SESS_KEY_CAM_POSROT)
     }
-    saveCameraPosRot(data: any) {
+    saveCameraPosRot(data: { pos: number[], rot: number[] }) {
         this.save(SESS_KEY_CAM_POSROT, data)
     }
     getMicAndOutputChoice(): { micDeviceId: string, outputDeviceId: string } | null {

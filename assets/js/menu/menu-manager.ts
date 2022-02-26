@@ -95,6 +95,11 @@ export class MenuManager {
             }
         })
 
+        signalHub.on('editing').subscribe(value => {
+            this.state.editing = value
+            this.render(this.stateToCtrls())
+        })
+
         signalHub.on('menu_action').subscribe(msg => {
             let menuCtrl: GUI.Container
             let browserCtrl: GUI.Container

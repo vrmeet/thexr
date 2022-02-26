@@ -2,12 +2,13 @@ import * as BABYLON from 'babylonjs'
 import * as GUI from 'babylonjs-gui'
 import * as MAT from 'babylonjs-materials'
 import type { Channel } from 'phoenix';
-import type { SignalHub, SceneSettings, SerializedSpace } from './types'
+import type { SceneSettings, SerializedSpace } from './types'
 import { sessionPersistance } from './sessionPersistance';
 import { MenuManager } from './menu/menu-manager'
 import { reduceSigFigs } from './utils';
 import { XRManager } from './xr-manager';
 import type { Orchestrator } from './orchestrator';
+import { CollaborativeEditManager } from './collaborative-edit-manager';
 import { signalHub } from './signalHub';
 
 export class SceneManager {
@@ -25,6 +26,7 @@ export class SceneManager {
     public canvasId: string
     public memberId: string
     public serializedSpace: SerializedSpace
+    public collabEditManager: CollaborativeEditManager
 
 
     constructor(public orchestrator: Orchestrator) {
@@ -71,12 +73,15 @@ export class SceneManager {
         })
 
         this.spaceChannel.on('presence_state', params => {
+            console.log('presence_state', JSON.stringify(params))
             Object.keys(params).filter((id) => id !== this.memberId).forEach(id => {
                 this.findOrCreateAvatar(id, params[id].metas[0].pos_rot)
             })
         })
 
         this.spaceChannel.on('presence_diff', params => {
+            console.log('presence_diff', JSON.stringify(params))
+
             Object.keys(params.joins).filter((id) => id !== this.memberId).forEach(id => {
                 this.findOrCreateAvatar(id, params.joins[id].metas[0].pos_rot)
             })
@@ -103,6 +108,7 @@ export class SceneManager {
         // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
         var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), this.scene);
         this.parseInitialScene(this.entities)
+        this.collabEditManager = new CollaborativeEditManager(this.scene)
         return this.scene;
 
 

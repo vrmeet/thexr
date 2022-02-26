@@ -5,12 +5,12 @@ import { signalHub } from './signalHub'
 import { SceneManager } from './sceneManager'
 import App from "./App.svelte";
 import { sessionPersistance } from './sessionPersistance';
+import { reduceSigFigs } from './utils';
 
 import type { SceneSettings, SerializedSpace, SignalHub } from './types'
 
 export class Orchestrator {
     public canvas;
-    public scene: BABYLON.Scene;
     public engine;
     public socket: Socket;
     public spaceChannel: Channel
@@ -93,7 +93,7 @@ export class Orchestrator {
         ).subscribe(msg => {
             this.spaceChannel.push('camera_moved', msg)
             // TODO, do this once when page is being unloaded?
-            sessionPersistance.saveCameraPosRot(msg)
+            // sessionPersistance.saveCameraPosRot(msg)
         })
     }
 
@@ -106,8 +106,15 @@ export class Orchestrator {
 
         // listen for clicked join button
         signalHub.on('joined').subscribe(async () => {
+            console.log('joined')
             await this.joinSpace();
             this.forwardCameraMovement()
+            addEventListener("beforeunload", () => {
+                let cam = this.sceneManager.scene.activeCamera
+                let pos = cam.position.asArray().map(reduceSigFigs)
+                let rot = cam.absoluteRotation.asArray().map(reduceSigFigs)
+                sessionPersistance.saveCameraPosRot({ pos, rot })
+            }, { capture: true });
         })
 
         // signalHub.pipe(

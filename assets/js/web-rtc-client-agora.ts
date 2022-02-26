@@ -26,7 +26,7 @@ export class WebRTCClientAgora implements WebRTCClient {
         this.otherMemberVideoTracks = {}
         this.onPublishedCallbacks = []
         this.onUnpublishedCallbacks = []
-        AgoraRTC.setLogLevel(4)
+        AgoraRTC.setLogLevel(0)
         this.client = AgoraRTC.createClient({ mode: "live", codec: "vp8" })
         this.client.setClientRole("host")
         this.setupClientSubscriptions()

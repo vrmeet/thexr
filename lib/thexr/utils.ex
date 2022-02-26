@@ -5,4 +5,8 @@ defmodule Thexr.Utils do
     end)
     |> to_string()
   end
+
+  def rand_int() do
+    Enum.random(-2_147_483_648..2_147_483_647)
+  end
 end
