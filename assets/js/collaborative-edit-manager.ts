@@ -7,9 +7,19 @@ export class CollaborativeEditManager {
     public selectedMesh: BABYLON.AbstractMesh
     public gizmoManager: BABYLON.GizmoManager
     public ignoreMeshNames: string[]
-    constructor(public scene: BABYLON.Scene, public state: stateType) {
-
+    constructor(public scene: BABYLON.Scene) {
         this.ignoreMeshNames = this.scene.getMeshesByTags("vr_menu_gui").map(mesh => mesh.name)
+        signalHub.on('editing').subscribe(value => {
+            if (value) {
+                this.on()
+            } else {
+                this.off()
+            }
+        })
+    }
+
+    dispose() {
+        this.gizmoManager.dispose()
     }
 
     off() {

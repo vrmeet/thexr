@@ -1,8 +1,8 @@
 TODO:
 
-X attach the mute/unmute button to do something
-X add a menu for primative creation
-make emitter on signal Hub for edit gizmo on/off
+x. make emitter on signal Hub for edit gizmo on/off
+add color picker
+logs
 
 add a listener for when dragging the bounding box gizmo
 fix bug where agora voice would stop publishing
