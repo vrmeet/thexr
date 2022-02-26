@@ -27,7 +27,8 @@ export class WebRTCClientAgora implements WebRTCClient {
         this.onPublishedCallbacks = []
         this.onUnpublishedCallbacks = []
         AgoraRTC.setLogLevel(4)
-        this.client = AgoraRTC.createClient({ mode: "rtc", codec: "h264" })
+        this.client = AgoraRTC.createClient({ mode: "live", codec: "vp8" })
+        this.client.setClientRole("host")
         this.setupClientSubscriptions()
     }
 
@@ -129,6 +130,7 @@ export class WebRTCClientAgora implements WebRTCClient {
         }
     }
     async unpublishAudio(): Promise<void> {
+        console.log('in unpublish audio')
         if (this.joined) {
             await this.joinedPromise
             if (this.localAudioTrack) {

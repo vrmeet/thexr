@@ -8,7 +8,7 @@ export class MenuPageAbout extends GUI.Container {
     constructor() {
         super()
         this.addControl(div({ name: "about_div" },
-            a({ msg: { event: "menu_action", payload: { name: "goto_main" } } }, "< Back"),
+            a({ menu_action: { name: "goto_main" } }, "< Back"),
             "Hello About Me"))
     }
 

@@ -8,7 +8,7 @@ export class MenuPagePrimitives extends GUI.Container {
     constructor() {
         super()
 
-        let options = [a({ msg: { event: "menu_action", payload: { name: "goto_main" } } }, "< Main"), ...this.primOptions()]
+        let options = [a({ menu_action: { name: "goto_main" } }, "< Main"), ...this.primOptions()]
 
 
         this.addControl(
@@ -20,7 +20,7 @@ export class MenuPagePrimitives extends GUI.Container {
     primOptions() {
         const options = ["box", "cone", "sphere", "grid", "plane"];
         return options.map(prim => {
-            return a({ msg: { event: "menu_action", payload: { name: "create_primitive", type: prim } } }, prim)
+            return a({ menu_action: { name: "create_primitive", payload: { type: prim } } }, prim)
         })
     }
 

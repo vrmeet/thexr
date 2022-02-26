@@ -37,10 +37,6 @@ export class SceneManager {
         this.settings = this.serializedSpace.settings
         this.entities = this.serializedSpace.entities
 
-        signalHub.subscribe(({ event, payload }) => {
-            console.info('scene manager getting', event, payload)
-        })
-
     }
 
     setChannel(spaceChannel: Channel) {
@@ -171,7 +167,8 @@ export class SceneManager {
         this.freeCamera.onViewMatrixChangedObservable.add(cam => {
             let posArray = cam.position.asArray().map(reduceSigFigs)
             let rotArray = cam.absoluteRotation.asArray().map(reduceSigFigs)
-            signalHub.next({ event: "camera_moved", payload: { pos: posArray, rot: rotArray } })
+            signalHub.emit('camera_moved', { pos: posArray, rot: rotArray })
+            //signalHub.next({ event: "camera_moved", payload: { pos: posArray, rot: rotArray } })
         })
 
         //  const env = this.scene.createDefaultEnvironment();
@@ -180,8 +177,8 @@ export class SceneManager {
         await this.xrManager.enableWebXRExperience()
         this.menuManager = new MenuManager(this.orchestrator)
 
-        signalHub.next({ event: 'camera_ready', payload: {} })
-
+        // signalHub.next({ event: 'camera_ready', payload: {} })
+        signalHub.emit('camera_ready', {})
         // this.tempMenu()
 
 

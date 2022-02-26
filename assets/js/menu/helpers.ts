@@ -129,8 +129,8 @@ export const toggle = (props: { [key: string]: any }, ...children: child[]): GUI
 
 
 export const a = (props: { [key: string]: any }, text: string): GUI.Container => {
-    if (!props["msg"]) {
-        console.error("msg is required", props)
+    if (!props["menu_action"]) {
+        console.error("menu_action is required", props)
     }
     let el = g(GUI.Button, {
         hoverCursor: "pointer",
@@ -145,7 +145,7 @@ export const a = (props: { [key: string]: any }, text: string): GUI.Container =>
     ))
 
     el.onPointerUpObservable.add(() => {
-        signalHub.next(props.msg as SignalEvent)
+        signalHub.emit('menu_action', props.menu_action)
     })
     return el
 }

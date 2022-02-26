@@ -17,9 +17,9 @@ export class MenuPageMain extends GUI.Container {
         this.addControl(
             div({ name: "main-page-container" },
                 "Main Menu",
-                a({ msg: { event: "menu_action", payload: { name: "goto_about" } } }, "About"),
+                a({ menu_action: { name: "goto_about" } }, "About"),
                 this.editElement(),
-                a({ msg: { event: "menu_action", payload: { name: "goto_primitives" } } }, "Primitives"),
+                a({ menu_action: { name: "goto_primitives" } }, "Primitives"),
             ))
     }
 
@@ -28,11 +28,11 @@ export class MenuPageMain extends GUI.Container {
         const callback = data => {
             if (data == 0) {
                 console.log('off')
-                this.state = { ...this.state, editing: false }
+                this.state.editing = false
                 this.editManager.off()
             } else {
                 console.log('on')
-                this.state = { ...this.state, editing: true }
+                this.state.editing = true
                 this.editManager.on()
             }
         }

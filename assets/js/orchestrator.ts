@@ -1,7 +1,7 @@
 import { Socket, Channel } from 'phoenix'
 import { filter, throttleTime, skip } from 'rxjs/operators'
 import { WebRTCClientAgora } from './web-rtc-client-agora';
-import { listen, signalHub } from './signalHub'
+import { signalHub } from './signalHub'
 import { SceneManager } from './sceneManager'
 import App from "./App.svelte";
 import { sessionPersistance } from './sessionPersistance';
@@ -36,12 +36,13 @@ export class Orchestrator {
 
         window['channel'] = this.spaceChannel
 
-        this.spaceChannel.onMessage = (event: string, payload: any) => {
-            if (!event.startsWith('phx_') && !event.startsWith('chan_')) {
-                signalHub.next({ event, payload })
-            }
-            return payload;
-        }
+        // this.spaceChannel.onMessage = (event: string, payload: any) => {
+        //     if (!event.startsWith('phx_') && !event.startsWith('chan_')) {
+        //         signalHub.next({ event, payload })
+        //         signalHub.emit(event, payload)
+        //     }
+        //     return payload;
+        // }
 
 
         this.spaceChannel.on("server_lost", () => {
@@ -87,13 +88,12 @@ export class Orchestrator {
 
     forwardCameraMovement() {
         // forward camera movement
-        signalHub.pipe(
-            skip(1), // first pos/rot may not be correct as we're still putting it in position, besides we'll send this during space_channel connect
-            filter(msg => (msg.event === 'camera_moved')),
+        signalHub.on('camera_moved').pipe(
             throttleTime(100)
         ).subscribe(msg => {
-            this.spaceChannel.push(msg.event, msg.payload)
-            sessionPersistance.saveCameraPosRot(msg.payload)
+            this.spaceChannel.push('camera_moved', msg)
+            // TODO, do this once when page is being unloaded?
+            sessionPersistance.saveCameraPosRot(msg)
         })
     }
 
@@ -105,19 +105,28 @@ export class Orchestrator {
         this.sceneManager.run()
 
         // listen for clicked join button
-        signalHub.pipe(
-            filter(msg => (msg.event == 'joined'))
-        ).subscribe(async () => {
+        signalHub.on('joined').subscribe(async () => {
             await this.joinSpace();
             this.forwardCameraMovement()
         })
 
+        // signalHub.pipe(
+        //     filter(msg => (msg.event == 'joined'))
+        // ).subscribe(async () => {
+        //     await this.joinSpace();
+        //     this.forwardCameraMovement()
+        // })
+
         // forward space_api to the channel
-        signalHub.pipe(
-            filter(msg => (msg.event == "spaces_api"))
-        ).subscribe(msg => {
-            this.spaceChannel.push(msg.event, msg.payload)
+        signalHub.on('spaces_api').subscribe(payload => {
+            this.spaceChannel.push('spaces_api', payload)
         })
+
+        // signalHub.pipe(
+        //     filter(msg => (msg.event == "spaces_api"))
+        // ).subscribe(msg => {
+        //     this.spaceChannel.push(msg.event, msg.payload)
+        // })
 
 
 

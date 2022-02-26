@@ -1,14 +1,13 @@
 import * as BABYLON from 'babylonjs'
 import * as GUI from 'babylonjs-gui'
 import type { SceneManager } from '../sceneManager'
-import { signalHub, listen } from "../signalHub";
+import { signalHub } from "../signalHub";
 
 import { filter } from 'rxjs/operators'
 import { MenuPageAbout } from './pages/about'
 import { MenuPageMain } from './pages/main'
 import { MenuPagePrimitives } from './pages/primitives'
-import { MenuPageEdit } from './pages/edit'
-import { MenuPageTransform } from './pages/edit/transform';
+
 import { div, button, a } from './helpers';
 import type { Orchestrator } from '../orchestrator';
 
@@ -59,18 +58,22 @@ export class MenuManager {
             editing: false,
             browsing: "main"
         }
-        listen("camera_ready").subscribe(() => {
+        signalHub.on('camera_ready').subscribe(() => {
             this.createFullScreenUI()
         })
 
-        listen("controller_ready").pipe(
-            filter(msg => (msg.payload.hand === 'left'))
+        // listen("camera_ready").subscribe(() => {
+        //     this.createFullScreenUI()
+        // })
+
+        signalHub.on('controller_ready').pipe(
+            filter(payload => (payload.hand === 'left'))
         ).subscribe(() => {
             this.createVRMenuOverlay()
         })
 
-        listen("xr_state_change").subscribe(msg => {
-            switch (msg.payload.state) {
+        signalHub.on('xr_state_changed').subscribe(state => {
+            switch (state) {
                 case BABYLON.WebXRState.EXITING_XR:
                     // this.state = { ... this.state, menu_opened: false, editing: false }
 
@@ -91,47 +94,43 @@ export class MenuManager {
                     break;
             }
         })
-        listen("menu_action").subscribe(msg => {
+
+        signalHub.on('menu_action').subscribe(msg => {
             let menuCtrl: GUI.Container
             let browserCtrl: GUI.Container
-            if (msg.payload.name) {
-                // update state
-                switch (msg.payload.name) {
-                    case "close_menu":
-                        this.state = { ...this.state, menu_opened: false }
-                        break;
-                    case "open_menu":
-                        this.state = { ...this.state, menu_opened: true }
-                        break;
-                    case "goto_about":
-                        this.state = { ... this.state, browsing: "about" }
-                        break;
-                    case "goto_main":
-                        this.state = { ...this.state, browsing: "main" }
-                        break;
-                    case "goto_primitives":
-                        this.state = { ...this.state, browsing: "primitives" }
-                        break;
-                    case "create_primitive":
-                        signalHub.next({
-                            event: "spaces_api",
-                            payload: { func: "add_entity_with_broadcast", args: [msg.payload.type] },
-                        });
-                        break;
-                    case "unmute":
-                        this.orchestrator.webRTCClient.publishAudio()
-                        this.state = { ...this.state, muted: false }
-                        break;
-                    case "mute":
-                        this.orchestrator.webRTCClient.publishAudio()
-                        this.state = { ...this.state, muted: true }
-                        break;
-                    default:
-                        console.error('no such action handler', JSON.stringify(msg))
-                }
-            } else {
-                console.error('malformed message', JSON.stringify(msg))
+            // update state
+            console.log('receiving menu_action', JSON.stringify(msg))
+            switch (msg.name) {
+                case "close_menu":
+                    this.state = { ...this.state, menu_opened: false }
+                    break;
+                case "open_menu":
+                    this.state = { ...this.state, menu_opened: true }
+                    break;
+                case "goto_about":
+                    this.state = { ... this.state, browsing: "about" }
+                    break;
+                case "goto_main":
+                    this.state = { ...this.state, browsing: "main" }
+                    break;
+                case "goto_primitives":
+                    this.state = { ...this.state, browsing: "primitives" }
+                    break;
+                case "create_primitive":
+                    signalHub.emit('spaces_api', { func: "add_entity_with_broadcast", args: [msg.payload.type] })
+                    break;
+                case "unmute":
+                    this.orchestrator.webRTCClient.publishAudio()
+                    this.state = { ...this.state, muted: false }
+                    break;
+                case "mute":
+                    this.orchestrator.webRTCClient.unpublishAudio()
+                    this.state = { ...this.state, muted: true }
+                    break;
+                default:
+                    console.error('no such action handler', JSON.stringify(msg))
             }
+
             this.render(this.stateToCtrls())
         })
     }
@@ -246,8 +245,8 @@ export class MenuManager {
         }
 
         return div({ name: 'menu-div' },
-            a({ name: 'menu-btn', msg: { event: "menu_action", payload: { name: toggleMenu } } }, label),
-            a({ name: 'mute-btn', msg: { event: "menu_action", payload: { name: muteOrUnmute } } }, muteOrUnmuteLabel),
+            a({ name: 'menu-btn', menu_action: { name: toggleMenu } }, label),
+            a({ name: 'mute-btn', menu_action: { name: muteOrUnmute } }, muteOrUnmuteLabel),
         )
     }
 
