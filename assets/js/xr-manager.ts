@@ -24,8 +24,10 @@ export class XRManager {
 
 
             this.xrHelper.baseExperience.onStateChangedObservable.add(state => {
-                signalHub.next({ event: 'xr_state_change', payload: { state } })
-                console.log('xr state', state)
+                signalHub.emit('xr_state_changed', state)
+                //signalHub.next({ event: 'xr_state_change', payload: { state } })
+
+                //console.log('xr state', state)
                 switch (state) {
                     case BABYLON.WebXRState.IN_XR:
                         this.inXR = true;
@@ -74,7 +76,8 @@ export class XRManager {
         this.xrHelper.baseExperience.camera.onViewMatrixChangedObservable.add(cam => {
             let posArray = cam.position.asArray().map(reduceSigFigs)
             let rotArray = cam.absoluteRotation.asArray().map(reduceSigFigs)
-            signalHub.next({ event: "camera_moved", payload: { pos: posArray, rot: rotArray } })
+            signalHub.emit('camera_moved', { pos: posArray, rot: rotArray })
+            //   signalHub.next({ event: "camera_moved", payload: { pos: posArray, rot: rotArray } })
         })
     }
 
@@ -84,12 +87,14 @@ export class XRManager {
         const payload = {
             hand: motionController.handedness
         }
-        signalHub.next({ event: "controller_ready", payload })
+        //signalHub.next({ event: "controller_ready", payload })
+        signalHub.emit('controller_ready', payload)
     }
 
     setupSendHandPosRot(inputSource: BABYLON.WebXRInputSource) {
         this.xrHelper.baseExperience.sessionManager.onXRFrameObservable.add(() => {
-            signalHub.next({ event: "hand_movement", payload: { hand: inputSource.inputSource.handedness, pos: inputSource.pointer.position.asArray(), rot: inputSource.pointer.rotationQuaternion.asArray() } })
+            signalHub.emit('hand_movement', { hand: inputSource.inputSource.handedness, pos: inputSource.pointer.position.asArray(), rot: inputSource.pointer.rotationQuaternion.asArray() })
+            //  signalHub.next({ event: "hand_movement", payload: { hand: inputSource.inputSource.handedness, pos: inputSource.pointer.position.asArray(), rot: inputSource.pointer.rotationQuaternion.asArray() } })
         })
     }
 
@@ -113,14 +118,14 @@ export class XRManager {
                     value: component.value,
                     id: component.id
                 }
-                subscriber.next({ event: "component_changed", payload })
+                subscriber.next(payload)
             })
             return () => {
                 component.onButtonStateChangedObservable.remove(babylonObserver)
             }
         })
-        componentObservable$.subscribe(data => {
-            signalHub.next(data)
+        componentObservable$.subscribe(payload => {
+            signalHub.emit('xr_component_changed', payload)
         })
     }
 

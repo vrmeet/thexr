@@ -51,12 +51,9 @@ export class CollaborativeEditManager {
 
     broadcastNewPosition() {
         const pos = this.selectedMesh.position
-        signalHub.next({
-            event: "spaces_api",
-            payload: {
-                func: "modify_component_with_broadcast",
-                args: [this.selectedMesh.id, "position", { x: pos.x, y: pos.y, z: pos.z }],
-            },
+        signalHub.emit('spaces_api', {
+            func: "modify_component_with_broadcast",
+            args: [this.selectedMesh.id, "position", { x: pos.x, y: pos.y, z: pos.z }],
         });
     }
 
@@ -64,26 +61,18 @@ export class CollaborativeEditManager {
 
         const rot = this.selectedMesh.rotationQuaternion.toEulerAngles()
 
-        signalHub.next({
-            event: "spaces_api",
-            payload: {
-                func: "modify_component_with_broadcast",
-                args: [this.selectedMesh.id, "rotation", { x: rot.x, y: rot.y, z: rot.z }],
-            },
+        signalHub.emit('spaces_api', {
+            func: "modify_component_with_broadcast",
+            args: [this.selectedMesh.id, "rotation", { x: rot.x, y: rot.y, z: rot.z }],
         });
     }
 
     broadcastNewScale() {
-
         const scale = this.selectedMesh.scaling
-        signalHub.next({
-            event: "spaces_api",
-            payload: {
-                func: "modify_component_with_broadcast",
-                args: [this.selectedMesh.id, "scale", { x: scale.x, y: scale.y, z: scale.z }],
-            },
+        signalHub.emit('spaces_api', {
+            func: "modify_component_with_broadcast",
+            args: [this.selectedMesh.id, "scale", { x: scale.x, y: scale.y, z: scale.z }],
         });
-
     }
 
 

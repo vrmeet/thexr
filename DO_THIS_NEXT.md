@@ -1,9 +1,11 @@
 TODO:
 
 X attach the mute/unmute button to do something
-add a menu for primative creation
-add a listener for when dragging the bounding box gizmo
+X add a menu for primative creation
+make emitter on signal Hub for edit gizmo on/off
 
+add a listener for when dragging the bounding box gizmo
+fix bug where agora voice would stop publishing
 fix bug where when exiting XR, and edit toggle may be off but the gizmo remains
 
 attach edit state to the toggle switch
