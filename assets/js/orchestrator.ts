@@ -6,6 +6,7 @@ import { SceneManager } from './sceneManager'
 import App from "./App.svelte";
 import { sessionPersistance } from './sessionPersistance';
 import { reduceSigFigs } from './utils';
+import { LogManager } from './log-manager';
 
 import type { SceneSettings, SerializedSpace, SignalHub } from './types'
 
@@ -20,9 +21,12 @@ export class Orchestrator {
     public skyBox: BABYLON.Mesh
     public webRTCClient: WebRTCClientAgora
     public sceneManager: SceneManager
+    public logManager: LogManager
+
 
 
     constructor(public canvasId: string, public memberId: string, public serializedSpace: SerializedSpace) {
+        this.logManager = new LogManager()
         this.socket = new Socket('/socket', { params: { token: window['userToken'] } })
         this.slug = serializedSpace.slug;
         this.webRTCClient = new WebRTCClientAgora(this.slug, this.memberId)
@@ -139,6 +143,8 @@ export class Orchestrator {
 
     }
 }
+
+
 window.addEventListener('DOMContentLoaded', async () => {
     const serializedSpace = window['serializedSpace']
     const memberId = window['memberId']

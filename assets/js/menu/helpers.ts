@@ -90,8 +90,19 @@ export const div = (props: { [key: string]: any }, ...children: child[]): GUI.Co
         background: "gray",
         adaptHeightToChildren: true,
         adaptWidthToChildren: true,
+        isPointerBlocker: true
     }
     return g(GUI.Rectangle, { ...defaults, ...props }, ...children)
+}
+
+export const pre = (props: { [key: string]: any }, ...children: child[]) => {
+    const defaults = {
+        width: 1,
+        height: "600px",
+        background: "red"
+    }
+    return g(GUI.ScrollViewer, { ...defaults, ...props }, ...children)
+
 }
 
 export const span = (props: { [key: string]: any }, ...children: child[]) => {

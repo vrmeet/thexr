@@ -1,5 +1,4 @@
 import * as BABYLON from 'babylonjs'
-import * as GUI from 'babylonjs-gui'
 import * as MAT from 'babylonjs-materials'
 import type { Channel } from 'phoenix';
 import type { SceneSettings, SerializedSpace } from './types'

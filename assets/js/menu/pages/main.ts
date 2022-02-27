@@ -20,6 +20,7 @@ export class MenuPageMain extends GUI.Container {
                 "Main Menu",
                 a({ menu_action: { name: "goto_about" } }, "About"),
                 this.editElement(),
+                a({ menu_action: { name: "goto_logs" } }, "Logs"),
                 a({ menu_action: { name: "goto_primitives" } }, "Primitives"),
             ))
     }

@@ -7,6 +7,7 @@ import { filter } from 'rxjs/operators'
 import { MenuPageAbout } from './pages/about'
 import { MenuPageMain } from './pages/main'
 import { MenuPagePrimitives } from './pages/primitives'
+import { MenuPageLogs } from './pages/logs'
 
 import { div, button, a } from './helpers';
 import type { Orchestrator } from '../orchestrator';
@@ -117,6 +118,9 @@ export class MenuManager {
                     break;
                 case "goto_main":
                     this.state = { ...this.state, browsing: "main" }
+                    break;
+                case "goto_logs":
+                    this.state = { ... this.state, browsing: "logs" }
                     break;
                 case "goto_primitives":
                     this.state = { ...this.state, browsing: "primitives" }
@@ -264,6 +268,10 @@ export class MenuManager {
 
     about() {
         return new MenuPageAbout()
+    }
+
+    logs() {
+        return new MenuPageLogs(this.orchestrator.logManager)
     }
 
     primitives() {
