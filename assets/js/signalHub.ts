@@ -16,7 +16,8 @@ type Events = {
     xr_state_changed: BABYLON.WebXRState
     spaces_api: { func: string, args: any[] }
     menu_action: { name: string, payload: any }
-    editing: boolean
+    editing: boolean,
+    new_log: any
 
 
 }
