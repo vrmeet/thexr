@@ -28,6 +28,7 @@ export class WebRTCClientAgora implements WebRTCClient {
         this.onUnpublishedCallbacks = []
         AgoraRTC.setLogLevel(0)
         this.client = AgoraRTC.createClient({ mode: "live", codec: "vp8" })
+        // this.client.enableAudioVolumeIndicator()
         this.client.setClientRole("host")
         this.setupClientSubscriptions()
     }

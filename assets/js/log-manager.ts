@@ -1,3 +1,5 @@
+import { signalHub } from "./signalHub";
+
 enum LogLevel {
     DEBUG,
     INFO,
@@ -54,6 +56,7 @@ export class LogManager {
 
     addLog(...args) {
         this.recentLogs = [args, ...this.recentLogs.slice(0, 99)]
+        signalHub.emit('new_log', {})
     }
 
     getTimestamp() {

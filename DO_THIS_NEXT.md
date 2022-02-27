@@ -1,5 +1,31 @@
 TODO:
 
+x if log menu is open, whenever there is a new log, update the text
+
+create a presence manager in js that keeps track of how many active users 
+ and if they are muted or not, and what their nick name is
+
+This will allow us to join the agora channel at the last minute, no need to join for one person
+allow us to display labels over head people's head
+show an indicator if they are muted
+show an indicator over who is talking
+
+localMicAndVideoPrefs
+
+{
+  micPref: "on" | "off"
+  videoPref: "screen" | "camera" | "off"
+  audioActual: {volume: 0} | "unpublished" | {error: msg}
+  videoActual: "published" | "unpublished" | {error: msg}
+  nickname: string
+  handraised: boolean
+  avatar: {...}
+}
+
+only join an agora channel if there is someone else unmuted
+disconnect if countOfOtherPublishingMembers is 0
+
+
 x. make emitter on signal Hub for edit gizmo on/off
 add color picker
 logs
