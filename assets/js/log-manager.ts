@@ -18,30 +18,30 @@ export class LogManager {
             case LogLevel.DEBUG:
                 window.console.debug = (...args) => {
                     const newArgs = [this.getTimestamp(), ...args]
-                    old_console_debug(...newArgs)
+                    old_console_debug(...args)
                     this.addLog(...newArgs)
                 }
             case LogLevel.INFO:
                 window.console.info = (...args) => {
                     const newArgs = [this.getTimestamp(), ...args]
-                    old_console_info(...newArgs)
+                    old_console_info(...args)
                     this.addLog(...newArgs)
                 }
                 window.console.log = (...args) => {
                     const newArgs = [this.getTimestamp(), ...args]
-                    old_console_log(...newArgs)
+                    old_console_log(...args)
                     this.addLog(...newArgs)
                 }
             case LogLevel.WARN:
                 window.console.warn = (...args) => {
                     const newArgs = [this.getTimestamp(), ...args]
-                    old_console_warn(...newArgs)
+                    old_console_warn(...args)
                     this.addLog(...newArgs)
                 }
             case LogLevel.ERROR:
                 window.console.error = (...args) => {
                     const newArgs = [this.getTimestamp(), ...args]
-                    old_console_error(...newArgs)
+                    old_console_error(...args)
                     this.addLog(...newArgs)
                 }
 

@@ -98,8 +98,10 @@ export const div = (props: { [key: string]: any }, ...children: child[]): GUI.Co
 export const pre = (props: { [key: string]: any }, ...children: child[]) => {
     const defaults = {
         width: 1,
-        height: "600px",
-        background: "red"
+        height: "200px",
+        background: "white",
+        horizontalAlignment: GUI.Control.HORIZONTAL_ALIGNMENT_LEFT,
+        verticalAlignment: GUI.Control.VERTICAL_ALIGNMENT_TOP
     }
     return g(GUI.ScrollViewer, { ...defaults, ...props }, ...children)
 
