@@ -21,8 +21,7 @@
     "phoenix_live_view": "file:../deps/phoenix_live_view",
     "rxjs": "^7.5.4",
     "svelte-forms-lib": "^2.0.1",
-    "typed-rx-emitter": "^1.2.0",
-    "yup": "^0.32.11"
+    "typed-rx-emitter": "^1.2.0"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^8.0.0",
