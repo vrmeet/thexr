@@ -1,8 +1,7 @@
 
 import * as GUI from 'babylonjs-gui'
-import type { string } from 'yup'
 import { signalHub } from '../signalHub'
-import type { SignalEvent } from '../types'
+
 
 
 type child = GUI.Container | string
@@ -26,7 +25,9 @@ export const applyAttributes = (el: any, props: { [key: string]: any }) => {
     if (typeof props === 'object' && props !== null) {
         Object.keys(props).forEach(key => {
             try {
-                el[key] = props[key]
+                if (key != 'callback') {
+                    el[key] = props[key]
+                }
             } catch (e) {
                 console.log(e)
             }
@@ -142,8 +143,8 @@ export const toggle = (props: { [key: string]: any }, ...children: child[]): GUI
 
 
 export const a = (props: { [key: string]: any }, text: string): GUI.Container => {
-    if (!props["menu_action"]) {
-        console.error("menu_action is required", props)
+    if (!props["callback"]) {
+        console.error("callback is required", props)
     }
     let el = g(GUI.Button, {
         hoverCursor: "pointer",
@@ -157,8 +158,6 @@ export const a = (props: { [key: string]: any }, text: string): GUI.Container =>
     }
     ))
 
-    el.onPointerUpObservable.add(() => {
-        signalHub.emit('menu_action', props.menu_action)
-    })
+    el.onPointerUpObservable.add(props.callback)
     return el
 }

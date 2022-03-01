@@ -9,6 +9,8 @@ import { XRManager } from './xr-manager';
 import type { Orchestrator } from './orchestrator';
 import { CollaborativeEditManager } from './collaborative-edit-manager';
 import { signalHub } from './signalHub';
+import { take } from 'rxjs/operators'
+
 
 export class SceneManager {
     public canvas: HTMLCanvasElement;
@@ -28,6 +30,8 @@ export class SceneManager {
     public collabEditManager: CollaborativeEditManager
 
 
+
+
     constructor(public orchestrator: Orchestrator) {
         this.canvasId = orchestrator.canvasId
         this.memberId = orchestrator.memberId
@@ -37,11 +41,17 @@ export class SceneManager {
         this.engine = new BABYLON.Engine(this.canvas, true, { preserveDrawingBuffer: true, stencil: true });
         this.settings = this.serializedSpace.settings
         this.entities = this.serializedSpace.entities
+        signalHub.on('space_channel_connected').pipe(
+            take(1)
+        ).subscribe(() => {
+            this.setChannelListeners()
+        })
+
 
     }
 
-    setChannel(spaceChannel: Channel) {
-        this.spaceChannel = spaceChannel
+    setChannelListeners() {
+        this.spaceChannel = this.orchestrator.spaceBroker.spaceChannel
         this.spaceChannel.on("member_moved", ({ member_id, pos, rot }) => {
             let mesh = this.scene.getMeshByName(`avatar_${member_id}`)
 
@@ -149,7 +159,7 @@ export class SceneManager {
 
 
 
-    getMyPosRot() {
+    getLastPosRot() {
         const camPosRot = sessionPersistance.getCameraPosRot()
 
         if (!camPosRot) {
@@ -162,7 +172,7 @@ export class SceneManager {
     }
 
     async createCamera() {
-        let posRot = this.getMyPosRot()
+        let posRot = this.getLastPosRot()
         this.freeCamera = new BABYLON.FreeCamera('freeCam', BABYLON.Vector3.FromArray(posRot.pos), this.scene);
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.FromArray(posRot.rot)
         // Attach the camera to the canvas
@@ -183,10 +193,15 @@ export class SceneManager {
         this.menuManager = new MenuManager(this.orchestrator)
 
         // signalHub.next({ event: 'camera_ready', payload: {} })
-        signalHub.emit('camera_ready', {})
+        signalHub.emit('camera_ready', posRot)
         // this.tempMenu()
 
-
+        addEventListener("beforeunload", () => {
+            let cam = this.scene.activeCamera
+            let pos = cam.position.asArray().map(reduceSigFigs)
+            let rot = cam.absoluteRotation.asArray().map(reduceSigFigs)
+            sessionPersistance.saveCameraPosRot({ pos, rot })
+        }, { capture: true });
 
 
     }

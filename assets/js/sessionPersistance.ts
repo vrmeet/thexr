@@ -5,7 +5,7 @@ export const SESS_KEY_MIC_OPTIONS = 'micOption'
 export class SessionPersistance {
     constructor() { }
 
-    getCameraPosRot() {
+    getCameraPosRot(): { pos: number[], rot: number[] } {
         return this.getAndParseKey(SESS_KEY_CAM_POSROT)
     }
     saveCameraPosRot(data: { pos: number[], rot: number[] }) {
