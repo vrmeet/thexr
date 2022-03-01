@@ -12,9 +12,11 @@ export class MenuPageLogs extends GUI.Container {
         this.name = "menu_page_logs"
         this.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
         this.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP
+        const callback = () => { signalHub.emit('menu_action', { name: "goto_main" }) }
+
         this.addControl(
             div({ name: "logs_div" },
-                a({ menu_action: { name: "goto_main" } }, "< Back"),
+                a({ name: "back_to_main", callback }, "< Back"),
                 pre({ name: "logs_scroll_view" }, this.getLogs())
             )
         )

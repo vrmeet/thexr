@@ -18,11 +18,15 @@ export class MenuPageMain extends GUI.Container {
         this.addControl(
             div({ name: "main-page-container" },
                 "Main Menu",
-                a({ menu_action: { name: "goto_about" } }, "About"),
+                a({ callback: this.cb("goto_about") }, "About"),
                 this.editElement(),
-                a({ menu_action: { name: "goto_logs" } }, "Logs"),
-                a({ menu_action: { name: "goto_primitives" } }, "Primitives"),
+                a({ callback: this.cb("goto_logs") }, "Logs"),
+                a({ callback: this.cb("goto_primitives") }, "Primitives"),
             ))
+    }
+
+    cb(dest: string) {
+        return () => { signalHub.emit('menu_action', { name: dest }) }
     }
 
     editElement() {

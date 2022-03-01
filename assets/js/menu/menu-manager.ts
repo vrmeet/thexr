@@ -34,8 +34,10 @@ content: .... (click )
 */
 
 export type stateType = {
-    menu_opened: boolean
-    muted: boolean
+    menuOpened: boolean
+    menuLabel: "Menu" | "Close Menu"
+    mic: "on" | "off"
+    micLabel: "Unmute" | "Mute" | "..."
     editing: boolean
     browsing: string
 }
@@ -54,8 +56,10 @@ export class MenuManager {
         this.sceneManager = orchestrator.sceneManager
         this.scene = orchestrator.sceneManager.scene
         this.state = {
-            menu_opened: false,
-            muted: true,
+            menuOpened: false,
+            menuLabel: "Menu",
+            mic: "off",
+            micLabel: "Unmute",
             editing: false,
             browsing: "main"
         }
@@ -101,6 +105,12 @@ export class MenuManager {
             this.render(this.stateToCtrls())
         })
 
+        signalHub.on('mic').subscribe(value => {
+            this.state.micLabel = '...'
+            this.state.mic = value
+            this.render(this.stateToCtrls())
+        })
+
         signalHub.on('menu_action').subscribe(msg => {
             let menuCtrl: GUI.Container
             let browserCtrl: GUI.Container
@@ -108,10 +118,10 @@ export class MenuManager {
             console.log('receiving menu_action', JSON.stringify(msg))
             switch (msg.name) {
                 case "close_menu":
-                    this.state = { ...this.state, menu_opened: false }
+                    this.state = { ...this.state, menuOpened: false, menuLabel: "Menu" }
                     break;
                 case "open_menu":
-                    this.state = { ...this.state, menu_opened: true }
+                    this.state = { ...this.state, menuOpened: true, menuLabel: "Close Menu" }
                     break;
                 case "goto_about":
                     this.state = { ... this.state, browsing: "about" }
@@ -128,16 +138,16 @@ export class MenuManager {
                 case "create_primitive":
                     signalHub.emit('spaces_api', { func: "add_entity_with_broadcast", args: [msg.payload.type] })
                     break;
-                case "unmute":
-                    this.orchestrator.webRTCClient.publishAudio()
-                    this.state = { ...this.state, muted: false }
-                    break;
-                case "mute":
-                    this.orchestrator.webRTCClient.unpublishAudio()
-                    this.state = { ...this.state, muted: true }
-                    break;
+                // case "unmute":
+                //     this.orchestrator.webRTCClient.publishAudio()
+                //     this.state = { ...this.state, muted: false }
+                //     break;
+                // case "mute":
+                //     this.orchestrator.webRTCClient.unpublishAudio()
+                //     this.state = { ...this.state, muted: true }
+                //     break;
                 default:
-                    console.error('no such action handler', JSON.stringify(msg))
+                    console.warn('no such action handler', JSON.stringify(msg))
             }
 
             this.render(this.stateToCtrls())
@@ -181,7 +191,7 @@ export class MenuManager {
             this.fsGui.rootContainer.dispose()
 
             this.fsGui.addControl(this.adaptMenuCtrlForFsGUI(content.menuCtrl))
-            if (this.state.menu_opened) {
+            if (this.state.menuOpened) {
                 this.fsGui.addControl(this.adaptBrowserCtrlForFsGUI(content.browserCtrl))
             }
         }
@@ -192,7 +202,7 @@ export class MenuManager {
             }
             if (this.browseGui) {
                 this.browseGui.rootContainer.dispose()
-                if (this.state.menu_opened) {
+                if (this.state.menuOpened) {
                     this.browseGui.addControl(content.browserCtrl)
                 }
             }
@@ -225,7 +235,7 @@ export class MenuManager {
 
     stateToCtrls() {
 
-        const browserCtrl = (this.state.menu_opened) ? this[this.state.browsing]() : null
+        const browserCtrl = (this.state.menuOpened) ? this[this.state.browsing]() : null
 
         return {
             menuCtrl: this.stateToMenuCtrl(),
@@ -234,28 +244,23 @@ export class MenuManager {
     }
 
     stateToMenuCtrl() {
-        let toggleMenu;
-        let label;
-        let muteOrUnmute;
-        let muteOrUnmuteLabel;
-        if (this.state.menu_opened) {
-            toggleMenu = "close_menu"
-            label = "Close Menu"
+        let menuCallback, micCallback;
+
+        if (this.state.menuOpened) {
+            menuCallback = () => { signalHub.emit('menu_action', { name: 'close_menu' }) }
+
         } else {
-            toggleMenu = "open_menu"
-            label = "Menu"
+            menuCallback = () => { signalHub.emit('menu_action', { name: 'open_menu' }) }
         }
-        if (this.state.muted) {
-            muteOrUnmute = "unmute"
-            muteOrUnmuteLabel = "Unmute"
+        if (this.state.mic == "off") {
+            micCallback = () => { signalHub.emit('mic', "on"); }
         } else {
-            muteOrUnmute = "mute"
-            muteOrUnmuteLabel = "Mute"
+            micCallback = () => { signalHub.emit('mic', "off"); }
         }
 
         return div({ name: 'menu-div' },
-            a({ name: 'menu-btn', menu_action: { name: toggleMenu } }, label),
-            a({ name: 'mute-btn', menu_action: { name: muteOrUnmute } }, muteOrUnmuteLabel),
+            a({ name: 'menu-btn', callback: menuCallback }, this.state.menuLabel),
+            a({ name: 'mute-btn', callback: micCallback }, this.state.micLabel),
         )
     }
 
@@ -280,133 +285,3 @@ export class MenuManager {
 }
 
 
-
-// export class MenuManager {
-//     public scene: BABYLON.Scene
-//     public plane: BABYLON.Mesh
-//     public txtrBrowser: GUI.AdvancedDynamicTexture
-//     public txtrMenu: GUI.AdvancedDynamicTexture
-//     public menuOpen: boolean
-//     public muted: boolean
-//     constructor(public sceneManager: SceneManager) {
-//         this.menuOpen = false
-//         this.muted = true
-//         this.scene = this.sceneManager.scene
-//         console.log('the menu manager sasy scene is', this.scene)
-//         /* controller_ready {hand: 'left'} */
-
-//         listen("controller_ready").pipe(
-//             filter(msg => (msg.payload.hand === 'left'))
-//         ).subscribe(() => {
-//             //  console.log('left grip', this.sceneManager.xrManager.left_input_source.grip)
-//             this.createVRMenuOverlay()
-
-//         })
-
-//         listen("close_menu").subscribe(() => {
-//             if (this.texture) {
-//                 this.texture.dispose()
-//                 this.texture = null;
-//             }
-//         })
-
-
-
-//         listen("open_menu").subscribe(msg => {
-//             if (!msg.payload.target || !this[msg.payload.target]) {
-//                 console.error("Undefined menu link target", msg.payload)
-//                 return
-//             }
-//             if (!this.texture) {
-//                 this.createTexture()
-//             }
-//             const newContent = this[msg.payload.target]()
-//             this.applyContent(newContent)
-
-
-//         })
-
-
-//     }
-
-
-//     createVRMenuOverlay() {
-//         let overlayPlane = BABYLON.MeshBuilder.CreatePlane("plane_for_vr_menu", { height: 0.2, width: 0.2 }, this.scene)
-//         overlayPlane.position.y = 0.1
-//         overlayPlane.position.z = 0.2
-//         overlayPlane.showBoundingBox = true
-//         overlayPlane.parent = this.sceneManager.xrManager.left_input_source.grip
-//         let vrTexture = GUI.AdvancedDynamicTexture.CreateForMesh(overlayPlane)
-//         const control = div({
-//             name: "vrMenu"
-//         },
-//             button({ name: "vrOpenMenu" }, "Menu"),
-//             button({ name: "vrAudioPublish" }, "Unmute")
-//         )
-//         vrTexture.addControl(control)
-
-//     }
-
-//     applyContent(newContent: GUI.Container) {
-//         this.texture.rootContainer.dispose()
-//         if (this.sceneManager.xrManager.inXR) {
-//             this.texture.idealWidth = 500
-//             this.texture.addControl(newContent)
-//         } else {
-//             let fsc = new GUI.Container()
-//             fsc.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM
-//             fsc.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
-//             fsc.width = 0.3
-//             fsc.height = 0.5
-//             fsc.addControl(newContent)
-//             this.texture.addControl(fsc)
-//             this.texture.idealWidth = 2000
-//         }
-//     }
-
-//     createMeshTexture() {
-//         if (!this.plane) {
-//             this.plane = BABYLON.MeshBuilder.CreatePlane("plane_for_box_maker_menu", { height: 0.5, width: 0.5 }, this.scene)
-//             this.plane.position.y = 0.1
-//             this.plane.showBoundingBox = true
-//             // this.plane.position.x = 0.2
-//             this.plane.position.z = 0.2
-//         }
-//         this.texture = GUI.AdvancedDynamicTexture.CreateForMesh(this.plane)
-
-//     }
-
-//     createFullScreenUI() {
-//         this.texture = GUI.AdvancedDynamicTexture.CreateFullscreenUI('ui')
-//         //  this.texture.rootContainer.isVisible = false
-
-//     }
-
-//     createTexture() {
-//         if (this.sceneManager.xrManager.inXR) {
-//             this.createMeshTexture()
-//         } else {
-//             this.createFullScreenUI()
-//         }
-
-//     }
-
-//     about() {
-//         return new MenuPageAbout()
-//     }
-
-//     main() {
-//         console.log('sending main page main', this.scene)
-//         return new MenuPageMain(this.scene)
-//     }
-
-//     edit() {
-//         return new MenuPageEdit()
-//     }
-
-//     transform() {
-//         return new MenuPageTransform(this.sceneManager.scene)
-//     }
-
-
-// }
