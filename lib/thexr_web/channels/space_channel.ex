@@ -60,4 +60,20 @@ defmodule ThexrWeb.SpaceChannel do
         {:noreply, socket}
     end
   end
+
+  @impl true
+  def terminate(_reason, socket) do
+    case Thexr.SpaceServer.ets_ref(socket.assigns.slug) do
+      {:error, _} ->
+        push(socket, "server_lost", %{})
+        {:noreply, socket}
+
+      ets_ref ->
+        :ets.delete(ets_ref, socket.assigns.member_id)
+
+        :ets.tab2list(ets_ref) |> IO.inspect()
+    end
+
+    {:noreply, socket}
+  end
 end

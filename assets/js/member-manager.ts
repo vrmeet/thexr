@@ -7,17 +7,15 @@ import type { MemberState, PresenceDiff, PresenceState } from "./types";
 
 export class MemberManager {
     public presentSet: Set<string>
-    public memberStates: { [memberId: string]: MemberState }
     // subscribable version of memberStates
-    public memberState$: BehaviorSubject<{ [memberId: string]: MemberState }>
+    public memberState: { [memberId: string]: MemberState }
     public channel: Channel
     public presenceState$: Observable<PresenceState>
     public presenceDiff$: Observable<PresenceDiff>
 
     constructor(public orchestrator: Orchestrator) {
         this.presentSet = new Set()
-        this.memberStates = { [this.orchestrator.memberId]: this.myInitialState() }
-        this.memberState$ = new BehaviorSubject(this.memberStates)
+        this.memberState = { [this.orchestrator.memberId]: this.myInitialState() }
         this.channel = this.orchestrator.spaceBroker.spaceChannel
         this.listenToMemberUpdates()
 
@@ -76,17 +74,14 @@ export class MemberManager {
         })
 
         signalHub.on('mic').subscribe(value => {
-            this.updateSelf('micPref', value)
-            this.memberState$.next(this.memberStates)
+            this.updateMember(this.orchestrator.memberId, 'micPref', value)
+
         })
-
-
 
     }
 
-    updateSelf(key, value) {
-        this.memberStates[this.orchestrator.memberId][key] = value
-        console.log(this.memberStates)
+    updateMember(memberId, key, value) {
+        this.memberState[memberId][key] = value
     }
 
 }
