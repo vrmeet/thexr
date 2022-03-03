@@ -1,5 +1,15 @@
 TODO:
 
+create new ets_ref table for space_server so we can store member state
+about mic, nickname, avatar etc, so that when a new user joins the space
+we can tell them all about the existing members in the space
+
+(or, when a new user joins, they can query about existing members once)
+
+We can create a table for member info, when a new user joins, ask for the previous state of all members
+
+===
+
 create a member manager in js that keeps track of how many active users 
  and if they are muted or not, and what their nick name is
 
