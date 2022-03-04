@@ -21,9 +21,9 @@ defmodule ThexrWeb.Presence do
 
   @impl true
   def fetch("space:" <> slug, presences) do
-    ets_ref = Thexr.SpaceServer.ets_ref(slug)
+    {member_movements, member_states} = Thexr.SpaceServer.ets_refs(slug)
 
-    :ets.tab2list(ets_ref)
+    :ets.tab2list(member_movements)
     |> Enum.reduce(
       presences,
       fn {member_id, {p0, p1, p2, r0, r1, r2, r3}}, acc ->
@@ -36,6 +36,8 @@ defmodule ThexrWeb.Presence do
               "rot" => [r0, r1, r2, r3]
             })
 
+          meta = Map.put(meta, "state", get_member_state(member_states, member_id))
+
           put_in(presences, [member_id, :metas], [meta])
         else
           acc
@@ -44,8 +46,25 @@ defmodule ThexrWeb.Presence do
     )
   end
 
-  # def get_members_last_pos_rots(_member_ids, ets_ref) do
-  #   for {member_id, p0, p1, p2, r0, r1, r2, r3, left, right} <- :ets.tab2list(ets_ref),
+  def get_member_state(member_states, member_id) do
+    case :ets.lookup(member_states, member_id) do
+      [{^member_id, payload}] ->
+        payload
+
+      _ ->
+        %{
+          "micPref" => "off",
+          "videoPref" => "off",
+          "audioActual" => "unpublished",
+          "videoActual" => "unpublished",
+          "nickname" => "unknown",
+          "handraised" => false
+        }
+    end
+  end
+
+  # def get_members_last_pos_rots(_member_ids, ets_refs) do
+  #   for {member_id, p0, p1, p2, r0, r1, r2, r3, left, right} <- :ets.tab2list(ets_refs),
   #       into: %{} do
   #     {member_id,
   #      %{

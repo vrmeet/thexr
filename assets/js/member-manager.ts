@@ -1,5 +1,5 @@
 import type { Channel } from "phoenix";
-import { BehaviorSubject, Observable } from "rxjs";
+import { Subject, Observable } from "rxjs";
 import { take } from "rxjs/operators";
 import type { Orchestrator } from "./orchestrator";
 import { signalHub } from "./signalHub";
@@ -9,13 +9,15 @@ export class MemberManager {
     public presentSet: Set<string>
     // subscribable version of memberStates
     public memberState: { [memberId: string]: MemberState }
+    public memberStatesUpdated: Subject<any>
     public channel: Channel
     public presenceState$: Observable<PresenceState>
     public presenceDiff$: Observable<PresenceDiff>
 
     constructor(public orchestrator: Orchestrator) {
         this.presentSet = new Set()
-        this.memberState = { [this.orchestrator.memberId]: this.myInitialState() }
+        this.memberStatesUpdated = new Subject()
+        this.memberState = {}
         this.channel = this.orchestrator.spaceBroker.spaceChannel
         this.listenToMemberUpdates()
 
@@ -33,6 +35,14 @@ export class MemberManager {
     }
 
     listenToMemberUpdates() {
+
+        signalHub.on('space_channel_connected').subscribe(() => {
+            const state = this.myInitialState()
+            this.memberState[this.orchestrator.memberId] = state
+            this.channel.push('member_state_changed', state)
+            this.memberStatesUpdated.next(null)
+
+        })
 
         this.presenceState$ = new Observable<PresenceState>(subscriber => {
             // wrap the channel observable
@@ -70,18 +80,28 @@ export class MemberManager {
             })
             Object.keys(msg.leaves).forEach(memberId => {
                 this.presentSet.delete(memberId)
+                delete this.memberState[memberId]
+                this.memberStatesUpdated.next(null)
             })
+        })
+
+        this.channel.on("member_state_updated", (payload) => {
+            this.memberState[payload.member_id] = payload['new_state']
+            this.memberStatesUpdated.next(null)
         })
 
         signalHub.on('mic').subscribe(value => {
             this.updateMember(this.orchestrator.memberId, 'micPref', value)
-
+            this.memberStatesUpdated.next(null)
         })
 
     }
 
     updateMember(memberId, key, value) {
         this.memberState[memberId][key] = value
+        if (memberId == this.orchestrator.memberId) {
+            this.channel.push('member_state_changed', this.memberState[memberId])
+        }
     }
 
 }

@@ -26,8 +26,12 @@
                 .then((devices) => {
                     console.log(devices);
                     populateLists(devices);
-                    selectedMic = mics[0].deviceId;
-                    selectedOutput = outputs[0].deviceId;
+                    if (mics && mics.length > 0) {
+                        selectedMic = mics[0].deviceId;
+                    }
+                    if (selectedOutput && selectedOutput.length > 0) {
+                        selectedOutput = outputs[0].deviceId;
+                    }
                 })
                 .catch((reason) => {
                     console.log("error", reason);
