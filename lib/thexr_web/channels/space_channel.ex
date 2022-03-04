@@ -56,6 +56,18 @@ defmodule ThexrWeb.SpaceChannel do
         {:noreply, socket}
 
       {member_movements, member_states} ->
+        :ets.insert(member_states, {
+          socket.assigns.member_id,
+          %{
+            "micPref" => "off",
+            "videoPref" => "off",
+            "audioActual" => "unpublished",
+            "videoActual" => "unpublished",
+            "nickname" => "unknown",
+            "handraised" => false
+          }
+        })
+
         :ets.insert(
           member_movements,
           {socket.assigns.member_id, {px, py, pz, rx, ry, rz, rw}}

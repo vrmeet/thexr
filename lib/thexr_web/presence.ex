@@ -39,27 +39,23 @@ defmodule ThexrWeb.Presence do
           meta = Map.put(meta, "state", get_member_state(member_states, member_id))
 
           put_in(presences, [member_id, :metas], [meta])
+          |> IO.inspect(label: "put_in #{member_id}")
         else
-          acc
+          acc |> IO.inspect(label: "else #{member_id}")
         end
       end
     )
   end
 
   def get_member_state(member_states, member_id) do
-    case :ets.lookup(member_states, member_id) do
-      [{^member_id, payload}] ->
+    result = :ets.lookup(member_states, member_id) |> IO.inspect(label: "result for #{member_id}")
+
+    case result do
+      [{_member_id, payload}] ->
         payload
 
-      _ ->
-        %{
-          "micPref" => "off",
-          "videoPref" => "off",
-          "audioActual" => "unpublished",
-          "videoActual" => "unpublished",
-          "nickname" => "unknown",
-          "handraised" => false
-        }
+      a ->
+        %{"error" => a}
     end
   end
 
