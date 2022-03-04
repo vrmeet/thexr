@@ -1,5 +1,8 @@
 TODO:
 
+on join, front end sends mic defaults, nickname to channel for join so we can track presence
+
+
 create new ets_refs table for space_server so we can store member state
 about mic, nickname, avatar etc, so that when a new user joins the space
 we can tell them all about the existing members in the space
