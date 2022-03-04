@@ -10,12 +10,13 @@ export class SpaceBroker {
     public socket: Socket
     public spaceChannel: Channel
     public initialized: Promise<any>
-    public cameraPosRot: PosRot
+    public channelParams: any
 
     constructor(public orchestrator: Orchestrator) {
         this.slug = orchestrator.slug
         this.socket = new Socket('/socket', { params: { token: window['userToken'] } })
-        this.spaceChannel = this.socket.channel(`space:${this.slug}`, () => { return { pos_rot: this.cameraPosRot } })
+        this.channelParams = {}
+        this.spaceChannel = this.socket.channel(`space:${this.slug}`, () => { return this.channelParams })
 
         // listen for clicked join button
         const $cameraReady = signalHub.on('camera_ready')
@@ -24,7 +25,15 @@ export class SpaceBroker {
 
         combineLatest([$cameraReady, $joined]).subscribe(([posRot, _]) => {
             // set this value for channel params as we join
-            this.cameraPosRot = posRot
+            this.channelParams['pos_rot'] = posRot
+            this.channelParams['state'] = {
+                micPref: "off",
+                videoPref: "off",
+                audioActual: "unpublished",
+                videoActual: "unpublished",
+                nickname: "string",
+                handraised: false
+            }
             this.connectToChannel()
             this.forwardCameraMovement()
 

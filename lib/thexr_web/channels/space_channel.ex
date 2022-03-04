@@ -47,7 +47,8 @@ defmodule ThexrWeb.SpaceChannel do
   @impl true
   def handle_info(
         {:after_join,
-         %{"pos_rot" => %{"pos" => [px, py, pz], "rot" => [rx, ry, rz, rw]}} = pos_rot},
+         %{"pos_rot" => %{"pos" => [px, py, pz], "rot" => [rx, ry, rz, rw]}, "state" => state} =
+           params},
         socket
       ) do
     case Thexr.SpaceServer.ets_refs(socket.assigns.slug) do
@@ -58,14 +59,7 @@ defmodule ThexrWeb.SpaceChannel do
       {member_movements, member_states} ->
         :ets.insert(member_states, {
           socket.assigns.member_id,
-          %{
-            "micPref" => "off",
-            "videoPref" => "off",
-            "audioActual" => "unpublished",
-            "videoActual" => "unpublished",
-            "nickname" => "unknown",
-            "handraised" => false
-          }
+          state
         })
 
         :ets.insert(
@@ -73,7 +67,7 @@ defmodule ThexrWeb.SpaceChannel do
           {socket.assigns.member_id, {px, py, pz, rx, ry, rz, rw}}
         )
 
-        {:ok, _} = Presence.track(socket, socket.assigns.member_id, pos_rot)
+        {:ok, _} = Presence.track(socket, socket.assigns.member_id, params)
 
         push(socket, "presence_state", Presence.list(socket))
         socket = assign(socket, member_movements: member_movements)
