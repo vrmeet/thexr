@@ -39,8 +39,8 @@ defmodule Thexr.SpaceServer do
     |> GenServer.whereis()
   end
 
-  def ets_ref(slug) do
-    safe_call(pid(slug), :get_ets_ref)
+  def ets_refs(slug) do
+    safe_call(pid(slug), :get_ets_refs)
   end
 
   def safe_call(pid, payload) when is_pid(pid) do
@@ -56,8 +56,16 @@ defmodule Thexr.SpaceServer do
   #################################################################
 
   def init({:ok, slug}) do
-    ets_ref =
+    member_movements =
       :ets.new(:member_movements, [
+        :set,
+        :public,
+        {:write_concurrency, true},
+        {:read_concurrency, true}
+      ])
+
+    member_states =
+      :ets.new(:member_states, [
         :set,
         :public,
         {:write_concurrency, true},
@@ -67,12 +75,13 @@ defmodule Thexr.SpaceServer do
     {:ok,
      %{
        slug: slug,
-       ets_ref: ets_ref
+       member_movements: member_movements,
+       member_states: member_states
      }, @timeout}
   end
 
   # :ets.insert(
-  #   socket.assigns.ets_ref,
+  #   socket.assigns.ets_refs,
   #   {socket.assigns.member_id, p0, p1, p2, r0, r1, r2, r3, left, right}
   # )
 
@@ -80,8 +89,8 @@ defmodule Thexr.SpaceServer do
     {:reply, state, state, @timeout}
   end
 
-  def handle_call(:get_ets_ref, _from, state) do
-    {:reply, state.ets_ref, state, @timeout}
+  def handle_call(:get_ets_refs, _from, state) do
+    {:reply, {state.member_movements, state.member_states}, state, @timeout}
   end
 
   def handle_info(:timeout, state) do

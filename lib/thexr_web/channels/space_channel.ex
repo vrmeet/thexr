@@ -21,7 +21,7 @@ defmodule ThexrWeb.SpaceChannel do
     [rx, ry, rz, rw] = rot
 
     :ets.insert(
-      socket.assigns.ets_ref,
+      socket.assigns.member_movements,
       {socket.assigns.member_id, {px, py, pz, rx, ry, rz, rw}}
     )
 
@@ -33,27 +33,39 @@ defmodule ThexrWeb.SpaceChannel do
     {:noreply, socket}
   end
 
+  def handle_in("member_state_changed", new_state, socket) do
+    :ets.insert(socket.assigns.member_states, {socket.assigns.member_id, new_state})
+
+    broadcast_from(socket, "member_state_updated", %{
+      "member_id" => socket.assigns.member_id,
+      "new_state" => new_state
+    })
+
+    {:noreply, socket}
+  end
+
   @impl true
   def handle_info(
         {:after_join,
          %{"pos_rot" => %{"pos" => [px, py, pz], "rot" => [rx, ry, rz, rw]}} = pos_rot},
         socket
       ) do
-    case Thexr.SpaceServer.ets_ref(socket.assigns.slug) do
+    case Thexr.SpaceServer.ets_refs(socket.assigns.slug) do
       {:error, _} ->
         push(socket, "server_lost", %{})
         {:noreply, socket}
 
-      ets_ref ->
+      {member_movements, member_states} ->
         :ets.insert(
-          ets_ref,
+          member_movements,
           {socket.assigns.member_id, {px, py, pz, rx, ry, rz, rw}}
         )
 
         {:ok, _} = Presence.track(socket, socket.assigns.member_id, pos_rot)
 
         push(socket, "presence_state", Presence.list(socket))
-        socket = assign(socket, ets_ref: ets_ref)
+        socket = assign(socket, member_movements: member_movements)
+        socket = assign(socket, member_states: member_states)
 
         space = Thexr.Spaces.get_space_by_slug(socket.assigns.slug)
         socket = assign(socket, space: space)
@@ -63,15 +75,17 @@ defmodule ThexrWeb.SpaceChannel do
 
   @impl true
   def terminate(_reason, socket) do
-    case Thexr.SpaceServer.ets_ref(socket.assigns.slug) do
-      {:error, _} ->
+    try do
+      if socket.assigns.member_movements do
+        :ets.delete(socket.assigns.member_movements, socket.assigns.member_id)
+      end
+
+      if socket.assigns.member_states do
+        :ets.delete(socket.assigns.member_states, socket.assigns.member_id)
+      end
+    rescue
+      _e ->
         push(socket, "server_lost", %{})
-        {:noreply, socket}
-
-      ets_ref ->
-        :ets.delete(ets_ref, socket.assigns.member_id)
-
-        :ets.tab2list(ets_ref) |> IO.inspect()
     end
 
     {:noreply, socket}

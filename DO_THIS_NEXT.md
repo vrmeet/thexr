@@ -1,12 +1,14 @@
 TODO:
 
-create new ets_ref table for space_server so we can store member state
+create new ets_refs table for space_server so we can store member state
 about mic, nickname, avatar etc, so that when a new user joins the space
 we can tell them all about the existing members in the space
 
 (or, when a new user joins, they can query about existing members once)
 
 We can create a table for member info, when a new user joins, ask for the previous state of all members
+
+add audio profile for agora
 
 ===
 

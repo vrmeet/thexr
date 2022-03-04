@@ -27,6 +27,7 @@ export type PosRot = {
 export interface PresenceMeta {
     phx_ref: string
     pos_rot: PosRot
+    state: MemberState
 }
 // {"SvKXtc":{"metas":[{"phx_ref":"FtfKtCZDEAA7IQTD","pos_rot":{"pos":[0,1.7,-8],"rot":[-0.06444,0.06164,0.00399,0.99601]}}]}}
 export type PresenceState = {
