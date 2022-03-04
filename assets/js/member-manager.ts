@@ -23,26 +23,9 @@ export class MemberManager {
 
     }
 
-    myInitialState(): MemberState {
-        return {
-            micPref: "off",
-            videoPref: "off",
-            audioActual: "unpublished",
-            videoActual: "unpublished",
-            handraised: false,
-            nickname: this.orchestrator.memberId
-        }
-    }
+
 
     listenToMemberUpdates() {
-
-        signalHub.on('space_channel_connected').subscribe(() => {
-            const state = this.myInitialState()
-            this.memberState[this.orchestrator.memberId] = state
-            this.channel.push('member_state_changed', state)
-            this.memberStatesUpdated.next(null)
-
-        })
 
         this.presenceState$ = new Observable<PresenceState>(subscriber => {
             // wrap the channel observable
@@ -68,15 +51,19 @@ export class MemberManager {
             }
         })
 
-        this.presenceState$.subscribe(msg => {
-            Object.keys(msg).forEach(memberId => {
+        this.presenceState$.subscribe((states: PresenceState) => {
+
+            Object.keys(states).forEach(memberId => {
                 this.presentSet.add(memberId)
+                this.memberState[memberId] = states[memberId].metas[0].state
             })
         })
 
         this.presenceDiff$.subscribe(msg => {
             Object.keys(msg.joins).forEach(memberId => {
                 this.presentSet.add(memberId)
+                this.memberState[memberId] = msg.joins[memberId].metas[0].state
+                this.memberStatesUpdated.next(null)
             })
             Object.keys(msg.leaves).forEach(memberId => {
                 this.presentSet.delete(memberId)
