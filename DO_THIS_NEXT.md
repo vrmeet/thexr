@@ -4,7 +4,8 @@ move default member state  from space-broker to be a function from member-manage
 
 ---
 
-fix webxr error if no web xr
+
+after unmuting, menu should say 'mute' to go back to muting, store actual publish status
 
 
 verify click mute or unmute sends new state to server and everyone else

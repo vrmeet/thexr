@@ -37,7 +37,7 @@ export type stateType = {
     menuOpened: boolean
     menuLabel: "Menu" | "Close Menu"
     mic: "on" | "off"
-    micLabel: "Unmute" | "Mute" | "..."
+    micLabel: "Unmute" | "Mute" | "..." | "MUTE"
     editing: boolean
     browsing: string
 }

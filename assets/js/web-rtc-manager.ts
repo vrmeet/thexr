@@ -1,3 +1,4 @@
+import { BehaviorSubject } from "rxjs";
 import { map, take } from "rxjs/operators";
 import type { Orchestrator } from "./orchestrator";
 import { signalHub } from "./signalHub";
@@ -6,8 +7,12 @@ import { WebRTCClientAgora } from "./web-rtc-client-agora";
 export class WebRTCManager {
     public webRTCClient: WebRTCClientAgora
     public agora_app_id: string
+    public micMuted: BehaviorSubject<boolean>
+    public publishingAudio: BehaviorSubject<boolean>
 
     constructor(public orchestrator: Orchestrator) {
+        this.micMuted = new BehaviorSubject(true)
+        this.publishingAudio = new BehaviorSubject(false)
         this.webRTCClient = new WebRTCClientAgora(this.orchestrator.slug, this.orchestrator.member_id)
         signalHub.on('space_channel_connected').pipe(
             take(1)
@@ -30,12 +35,18 @@ export class WebRTCManager {
                 }, { unMuteCount: 0, memberCount: 0 })
 
             })
-        ).subscribe(result => {
+        ).subscribe(async result => {
             if (result.unMuteCount > 0 && result.memberCount > 1) {
                 this.webRTCClient.join(this.agora_app_id)
+                if (!this.micMuted.getValue()) {
+                    await this.webRTCClient.publishAudio()
+                    this.publishingAudio.next(true)
+                }
                 console.log("join web rtc channel")
             } else {
-                this.webRTCClient.leave()
+
+                await this.webRTCClient.leave()
+                this.publishingAudio.next(false)
                 console.log("unjoin web rtc channel")
             }
         })
