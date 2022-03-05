@@ -15,61 +15,60 @@ export class XRManager {
     }
 
     async enableWebXRExperience() {
-        try {
-
-            this.xrHelper = await this.scene.createDefaultXRExperienceAsync({})
-
-            this.teleportationManager = new TeleportationManager(this.xrHelper, this.scene)
-
-
-
-            this.xrHelper.baseExperience.onStateChangedObservable.add(state => {
-                signalHub.emit('xr_state_changed', state)
-                //signalHub.next({ event: 'xr_state_change', payload: { state } })
-
-                //console.log('xr state', state)
-                switch (state) {
-                    case BABYLON.WebXRState.IN_XR:
-                        this.inXR = true;
-                        break;
-                    case BABYLON.WebXRState.NOT_IN_XR:
-                        this.inXR = false;
-                        break;
-                }
-                // if (state === BABYLON.WebXRState.ENTERING_XR) {
-                //     //   this.teleporationManager.populateTeleporationWithFloors()
-                // }
-                // if (state === BABYLON.WebXRState.EXITING_XR) {
-                //     // this.teleporationManager.unpopulateTeleporationFloors()
-                // }
-            })
-
-
-            this.setupEmitCameraMovement()
-
-
-
-
-            // setup each controller
-            let xrInput = this.xrHelper.input
-
-
-
-            xrInput.onControllerAddedObservable.add(inputSource => {
-                if (inputSource.inputSource.handedness === 'left') {
-                    this.left_input_source = inputSource
-                } else {
-                    this.right_input_source = inputSource
-                }
-                inputSource.onMotionControllerInitObservable.add(abstractMotionController => {
-                    this.initController(inputSource, abstractMotionController)
-                })
-            })
-
-
-        } catch (e) {
-            console.log(e, "web XR is not supported")
+        if (!navigator['xr']) {
+            return
         }
+        this.xrHelper = await this.scene.createDefaultXRExperienceAsync({})
+
+        this.teleportationManager = new TeleportationManager(this.xrHelper, this.scene)
+
+
+
+        this.xrHelper.baseExperience.onStateChangedObservable.add(state => {
+            signalHub.emit('xr_state_changed', state)
+            //signalHub.next({ event: 'xr_state_change', payload: { state } })
+
+            //console.log('xr state', state)
+            switch (state) {
+                case BABYLON.WebXRState.IN_XR:
+                    this.inXR = true;
+                    break;
+                case BABYLON.WebXRState.NOT_IN_XR:
+                    this.inXR = false;
+                    break;
+            }
+            // if (state === BABYLON.WebXRState.ENTERING_XR) {
+            //     //   this.teleporationManager.populateTeleporationWithFloors()
+            // }
+            // if (state === BABYLON.WebXRState.EXITING_XR) {
+            //     // this.teleporationManager.unpopulateTeleporationFloors()
+            // }
+        })
+
+
+        this.setupEmitCameraMovement()
+
+
+
+
+        // setup each controller
+        let xrInput = this.xrHelper.input
+
+
+
+        xrInput.onControllerAddedObservable.add(inputSource => {
+            if (inputSource.inputSource.handedness === 'left') {
+                this.left_input_source = inputSource
+            } else {
+                this.right_input_source = inputSource
+            }
+            inputSource.onMotionControllerInitObservable.add(abstractMotionController => {
+                this.initController(inputSource, abstractMotionController)
+            })
+        })
+
+
+
     }
 
     setupEmitCameraMovement() {

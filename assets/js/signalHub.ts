@@ -25,6 +25,12 @@ type Events = {
 
 }
 
-export const signalHub = new Emitter<Events>()
+interface SignalHub {
+    local: Emitter<Events>
+    incoming?: any
+    outgoing?: any
+}
+
+export const signalHub: SignalHub = { local: new Emitter<Events>() }
 
 window['signalHub'] = signalHub;
