@@ -38,8 +38,8 @@
 
     //callbacks
     const joinedCallback = () => {
-        signalHub.emit("joined", {});
-        // signalHub.next(new EventJoined());
+        signalHub.local.emit("joined", {});
+        // signalHub.local.next(new EventJoined());
         didJoinSpace = true;
         if (!micConfirmed()) {
             showMicAndOutputForm = true;

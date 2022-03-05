@@ -9,7 +9,7 @@ export class CollaborativeEditManager {
     public ignoreMeshNames: string[]
     constructor(public scene: BABYLON.Scene) {
         this.ignoreMeshNames = this.scene.getMeshesByTags("vr_menu_gui").map(mesh => mesh.name)
-        signalHub.on('editing').subscribe(value => {
+        signalHub.local.on('editing').subscribe(value => {
             if (value) {
                 this.on()
             } else {
@@ -61,7 +61,7 @@ export class CollaborativeEditManager {
 
     broadcastNewPosition() {
         const pos = this.selectedMesh.position
-        signalHub.emit('spaces_api', {
+        signalHub.local.emit('spaces_api', {
             func: "modify_component_with_broadcast",
             args: [this.selectedMesh.id, "position", { x: pos.x, y: pos.y, z: pos.z }],
         });
@@ -71,7 +71,7 @@ export class CollaborativeEditManager {
 
         const rot = this.selectedMesh.rotationQuaternion.toEulerAngles()
 
-        signalHub.emit('spaces_api', {
+        signalHub.local.emit('spaces_api', {
             func: "modify_component_with_broadcast",
             args: [this.selectedMesh.id, "rotation", { x: rot.x, y: rot.y, z: rot.z }],
         });
@@ -79,7 +79,7 @@ export class CollaborativeEditManager {
 
     broadcastNewScale() {
         const scale = this.selectedMesh.scaling
-        signalHub.emit('spaces_api', {
+        signalHub.local.emit('spaces_api', {
             func: "modify_component_with_broadcast",
             args: [this.selectedMesh.id, "scale", { x: scale.x, y: scale.y, z: scale.z }],
         });

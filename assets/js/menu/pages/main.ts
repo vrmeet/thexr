@@ -26,14 +26,14 @@ export class MenuPageMain extends GUI.Container {
     }
 
     cb(dest: string) {
-        return () => { signalHub.emit('menu_action', { name: dest }) }
+        return () => { signalHub.local.emit('menu_action', { name: dest }) }
     }
 
     editElement() {
         let editToggle = toggle({ value: (this.state.editing ? 1 : 0) }) as unknown as GUI.Slider
         const callback = data => {
             if (data == 0) {
-                signalHub.emit('editing', false)
+                signalHub.local.emit('editing', false)
                 // console.log('off')
                 // this.state.editing = false
                 // this.editManager.off()
@@ -41,7 +41,7 @@ export class MenuPageMain extends GUI.Container {
                 // console.log('on')
                 // this.state.editing = true
                 // this.editManager.on()
-                signalHub.emit('editing', true)
+                signalHub.local.emit('editing', true)
             }
         }
         editToggle.onValueChangedObservable.add(callback)

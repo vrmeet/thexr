@@ -20,7 +20,6 @@ export class SceneManager {
     public skyBox: BABYLON.Mesh
     public settings: scene_settings
     public slug: string;
-    public spaceChannel: Channel
     public menuManager: MenuManager
     public freeCamera: BABYLON.FreeCamera
     public xrManager: XRManager
@@ -45,8 +44,7 @@ export class SceneManager {
     }
 
     setChannelListeners() {
-        this.spaceChannel = this.orchestrator.spaceBroker.spaceChannel
-        this.spaceChannel.on("member_moved", ({ member_id, pos, rot }) => {
+        signalHub.incoming.on("member_moved").subscribe(({ member_id, pos, rot }) => {
             let mesh = this.scene.getMeshByName(`avatar_${member_id}`)
 
             if (mesh) {
@@ -59,29 +57,29 @@ export class SceneManager {
             }
 
         })
-        this.spaceChannel.on('component_changed', params => {
+        signalHub.incoming.on('component_changed').subscribe(params => {
             let meshes = this.scene.getMeshesById(params.entity_id)
             meshes.forEach(mesh => {
                 this.processComponent(mesh, { type: params.type, data: params.data })
             })
         })
-        this.spaceChannel.on('entity_created', entity => {
+        signalHub.incoming.on('entity_created').subscribe(entity => {
             this.findOrCreateMesh(entity)
         })
-        this.spaceChannel.on('entity_deleted', params => {
+        signalHub.incoming.on('entity_deleted').subscribe(params => {
             let meshes = this.scene.getMeshesById(params.id)
             meshes.forEach(mesh => {
                 mesh.dispose()
             })
         })
 
-        this.spaceChannel.on('new_member', ({ member_id, pos_rot }) => {
+        signalHub.incoming.on('new_member').subscribe(({ member_id, pos_rot }) => {
             this.findOrCreateAvatar(member_id, pos_rot)
 
         })
 
 
-        this.spaceChannel.on('presence_diff', params => {
+        signalHub.incoming.on('presence_diff').subscribe(params => {
             console.log('presence_diff', JSON.stringify(params))
 
             // Object.keys(params.joins).filter((id) => id !== this.member_id).forEach(id => {
@@ -92,7 +90,7 @@ export class SceneManager {
             })
         })
 
-        this.spaceChannel.on('space_settings_changed', params => {
+        signalHub.incoming.on('space_settings_changed').subscribe(params => {
             this.processscene_settings(params as scene_settings)
 
         })
@@ -175,8 +173,8 @@ export class SceneManager {
         this.freeCamera.onViewMatrixChangedObservable.add(cam => {
             let posArray = cam.position.asArray().map(reduceSigFigs)
             let rotArray = cam.absoluteRotation.asArray().map(reduceSigFigs)
-            signalHub.emit('camera_moved', { pos: posArray, rot: rotArray })
-            //signalHub.next({ event: "camera_moved", payload: { pos: posArray, rot: rotArray } })
+            signalHub.local.emit('camera_moved', { pos: posArray, rot: rotArray })
+            //signalHub.local.next({ event: "camera_moved", payload: { pos: posArray, rot: rotArray } })
         })
 
         //  const env = this.scene.createDefaultEnvironment();
@@ -185,8 +183,8 @@ export class SceneManager {
         await this.xrManager.enableWebXRExperience()
         this.menuManager = new MenuManager(this.orchestrator)
 
-        // signalHub.next({ event: 'camera_ready', payload: {} })
-        signalHub.emit('camera_ready', posRot)
+        // signalHub.local.next({ event: 'camera_ready', payload: {} })
+        signalHub.local.emit('camera_ready', posRot)
         // this.tempMenu()
 
         addEventListener("beforeunload", () => {

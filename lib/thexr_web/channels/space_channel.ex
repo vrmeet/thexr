@@ -36,7 +36,7 @@ defmodule ThexrWeb.SpaceChannel do
   def handle_in("member_state_changed", new_state, socket) do
     :ets.insert(socket.assigns.member_states, {socket.assigns.member_id, new_state})
 
-    broadcast_from(socket, "member_state_updated", %{
+    broadcast(socket, "member_state_updated", %{
       "member_id" => socket.assigns.member_id,
       "new_state" => new_state
     })

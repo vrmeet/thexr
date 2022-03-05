@@ -1,9 +1,10 @@
 import { Socket, Channel } from 'phoenix'
 import type { Orchestrator } from './orchestrator'
 import { signalHub } from './signalHub'
-import { throttleTime } from 'rxjs/operators'
-import { combineLatest, merge } from 'rxjs'
+import { throttleTime, withLatestFrom } from 'rxjs/operators'
+import { combineLatest, map, filter } from 'rxjs'
 import type { PosRot } from './types'
+import type { IncomingEvents } from './signalHub'
 
 export class SpaceBroker {
     public slug: string
@@ -19,8 +20,8 @@ export class SpaceBroker {
         this.spaceChannel = this.socket.channel(`space:${this.slug}`, () => { return this.channelParams })
 
         // listen for clicked join button
-        const $cameraReady = signalHub.on('camera_ready')
-        const $joined = signalHub.on('joined')
+        const $cameraReady = signalHub.local.on('camera_ready')
+        const $joined = signalHub.local.on('joined')
         this.setupChannelSubscriptions()
 
         combineLatest([$cameraReady, $joined]).subscribe(([posRot, _]) => {
@@ -37,6 +38,7 @@ export class SpaceBroker {
             }
             this.connectToChannel()
             this.forwardCameraMovement()
+            this.forwardMicPrefAsState()
 
         })
 
@@ -44,11 +46,26 @@ export class SpaceBroker {
 
 
     setupChannelSubscriptions() {
-        this.spaceChannel.on("server_lost", () => {
+
+        // forward incoming from channel to event bus
+        this.spaceChannel.onMessage = (event: keyof IncomingEvents, payload) => {
+            if (!event.startsWith('phx_') && !event.startsWith('chan_')) {
+                signalHub.incoming.emit(event, payload)
+            }
+            return payload
+        }
+
+        // forward outgoing from eventbus to channel
+        signalHub.outgoing.on('member_state_changed').subscribe(new_state => {
+            this.spaceChannel.push('member_state_changed', new_state)
+        })
+
+        signalHub.incoming.on("server_lost").subscribe(() => {
             window.location.href = '/';
         })
 
-        signalHub.on('spaces_api').subscribe(payload => {
+        // TODO move to outgoing
+        signalHub.local.on('spaces_api').subscribe(payload => {
             this.spaceChannel.push('spaces_api', payload)
         })
     }
@@ -58,7 +75,7 @@ export class SpaceBroker {
         this.spaceChannel.join()
             .receive('ok', resp => {
                 console.log('Joined successfully', resp)
-                signalHub.emit('space_channel_connected', resp)
+                signalHub.local.emit('space_channel_connected', resp)
                 window['channel'] = this.spaceChannel
             })
             .receive('error', resp => {
@@ -68,11 +85,32 @@ export class SpaceBroker {
 
     forwardCameraMovement() {
         // forward camera movement
-        signalHub.on('camera_moved').pipe(
+        signalHub.local.on('camera_moved').pipe(
             throttleTime(100)
         ).subscribe(msg => {
             this.spaceChannel.push('camera_moved', msg)
         })
+    }
+
+    forwardMicPrefAsState() {
+        // snap shot of memberStates
+        const ownState = signalHub.observables.memberStates.pipe(
+            map(states => {
+                return states[this.orchestrator.member_id]
+            }),
+            filter(value => !!value),
+        )
+        const micPref = signalHub.local.on('mic').pipe(
+            withLatestFrom(ownState),
+            map(([mic_pref, state]) => {
+                state.mic_pref = mic_pref
+                return state
+            })
+        ).subscribe(newLocalState => {
+            signalHub.outgoing.emit('member_state_changed', newLocalState)
+            console.log('new local state', newLocalState)
+        })
+
     }
 
 }

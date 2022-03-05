@@ -63,7 +63,7 @@ export class MenuManager {
             editing: false,
             browsing: "main"
         }
-        signalHub.on('camera_ready').subscribe(() => {
+        signalHub.local.on('camera_ready').subscribe(() => {
             this.createFullScreenUI()
         })
 
@@ -71,13 +71,13 @@ export class MenuManager {
         //     this.createFullScreenUI()
         // })
 
-        signalHub.on('controller_ready').pipe(
+        signalHub.local.on('controller_ready').pipe(
             filter(payload => (payload.hand === 'left'))
         ).subscribe(() => {
             this.createVRMenuOverlay()
         })
 
-        signalHub.on('xr_state_changed').subscribe(state => {
+        signalHub.local.on('xr_state_changed').subscribe(state => {
             switch (state) {
                 case BABYLON.WebXRState.EXITING_XR:
                     // this.state = { ... this.state, menu_opened: false, editing: false }
@@ -100,18 +100,18 @@ export class MenuManager {
             }
         })
 
-        signalHub.on('editing').subscribe(value => {
+        signalHub.local.on('editing').subscribe(value => {
             this.state.editing = value
             this.render(this.stateToCtrls())
         })
 
-        signalHub.on('mic').subscribe(value => {
+        signalHub.local.on('mic').subscribe(value => {
             this.state.micLabel = '...'
             this.state.mic = value
             this.render(this.stateToCtrls())
         })
 
-        signalHub.on('menu_action').subscribe(msg => {
+        signalHub.local.on('menu_action').subscribe(msg => {
             let menuCtrl: GUI.Container
             let browserCtrl: GUI.Container
             // update state
@@ -136,7 +136,7 @@ export class MenuManager {
                     this.state = { ...this.state, browsing: "primitives" }
                     break;
                 case "create_primitive":
-                    signalHub.emit('spaces_api', { func: "add_entity_with_broadcast", args: [msg.payload.type] })
+                    signalHub.local.emit('spaces_api', { func: "add_entity_with_broadcast", args: [msg.payload.type] })
                     break;
                 // case "unmute":
                 //     this.orchestrator.webRTCClient.publishAudio()
@@ -247,15 +247,15 @@ export class MenuManager {
         let menuCallback, micCallback;
 
         if (this.state.menuOpened) {
-            menuCallback = () => { signalHub.emit('menu_action', { name: 'close_menu' }) }
+            menuCallback = () => { signalHub.local.emit('menu_action', { name: 'close_menu' }) }
 
         } else {
-            menuCallback = () => { signalHub.emit('menu_action', { name: 'open_menu' }) }
+            menuCallback = () => { signalHub.local.emit('menu_action', { name: 'open_menu' }) }
         }
         if (this.state.mic == "off") {
-            micCallback = () => { signalHub.emit('mic', "on"); }
+            micCallback = () => { signalHub.local.emit('mic', "on"); }
         } else {
-            micCallback = () => { signalHub.emit('mic', "off"); }
+            micCallback = () => { signalHub.local.emit('mic', "off"); }
         }
 
         return div({ name: 'menu-div' },

@@ -56,7 +56,7 @@ export class LogManager {
 
     addLog(...args) {
         this.recentLogs = [args, ...this.recentLogs.slice(0, 99)]
-        signalHub.emit('new_log', {})
+        signalHub.local.emit('new_log', {})
     }
 
     getTimestamp() {
