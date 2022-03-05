@@ -5,13 +5,13 @@ export interface IPlayable {
 }
 
 export type RemoteStreamPublishedCallback = (
-    memberID: string,
+    member_id: string,
     mediaType: "audio" | "video",
     playable: IPlayable,
     mediaStreamTrack: MediaStreamTrack) => void
 
 export type RemoteStreamUnpublishedCallback =
-    (memberID: string, mediaType: "audio" | "video") => void
+    (member_id: string, mediaType: "audio" | "video") => void
 
 
 

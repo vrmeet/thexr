@@ -67,9 +67,19 @@ defmodule ThexrWeb.SpaceChannel do
           {socket.assigns.member_id, {px, py, pz, rx, ry, rz, rw}}
         )
 
-        {:ok, _} = Presence.track(socket, socket.assigns.member_id, params)
+        {:ok, _} = Presence.track(socket, socket.assigns.member_id, %{})
 
-        push(socket, "presence_state", Presence.list(socket))
+        broadcast_from(
+          socket,
+          "new_member",
+          Map.put(params, "member_id", socket.assigns.member_id)
+        )
+
+        push(socket, "members", %{
+          "states" => member_states_to_map(member_states),
+          "movements" => movements_to_map(member_movements)
+        })
+
         socket = assign(socket, member_movements: member_movements)
         socket = assign(socket, member_states: member_states)
 
@@ -96,4 +106,50 @@ defmodule ThexrWeb.SpaceChannel do
 
     {:noreply, socket}
   end
+
+  def member_states_to_map(ets_ref) do
+    :ets.tab2list(ets_ref)
+    |> Enum.reduce(%{}, fn {member_id, payload}, acc ->
+      Map.put(acc, member_id, payload)
+    end)
+  end
+
+  def movements_to_map(ets_ref) do
+    :ets.tab2list(ets_ref)
+    |> Enum.reduce(%{}, fn {member_id, {p0, p1, p2, r0, r1, r2, r3}}, acc ->
+      payload = %{
+        "pos_rot" => %{
+          "pos" => [p0, p1, p2],
+          "rot" => [r0, r1, r2, r3]
+        }
+      }
+
+      Map.put(acc, member_id, payload)
+    end)
+  end
+
+  # def get_pos_rot(member_id, ets_ref) do
+  #   case :ets.lookup(ets_ref, member_id) do
+  #     [{^member_id, {p0, p1, p2, r0, r1, r2, r3}}] ->
+  #       %{
+  #         "pos_rot" => %{
+  #           "pos" => [p0, p1, p2],
+  #           "rot" => [r0, r1, r2, r3]
+  #         }
+  #       }
+
+  #     _ ->
+  #       %{"error" => "not_found"}
+  #   end
+  # end
+
+  # def get_state(member_id, ets_ref) do
+  #   case :ets.lookup(ets_ref, member_id) do
+  #     [{^member_id, payload}] ->
+  #       payload
+
+  #     _ ->
+  #       %{"error" => "not_found"}
+  #   end
+  # end
 end
