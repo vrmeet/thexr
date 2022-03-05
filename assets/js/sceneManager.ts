@@ -1,7 +1,7 @@
 import * as BABYLON from 'babylonjs'
 import * as MAT from 'babylonjs-materials'
 import type { Channel } from 'phoenix';
-import type { SceneSettings, SerializedSpace } from './types'
+import type { scene_settings, serialized_space } from './types'
 import { sessionPersistance } from './sessionPersistance';
 import { MenuManager } from './menu/menu-manager'
 import { reduceSigFigs } from './utils';
@@ -18,15 +18,15 @@ export class SceneManager {
     public engine: BABYLON.Engine;
     public entities: any[]
     public skyBox: BABYLON.Mesh
-    public settings: SceneSettings
+    public settings: scene_settings
     public slug: string;
     public spaceChannel: Channel
     public menuManager: MenuManager
     public freeCamera: BABYLON.FreeCamera
     public xrManager: XRManager
     public canvasId: string
-    public memberId: string
-    public serializedSpace: SerializedSpace
+    public member_id: string
+    public serializedSpace: serialized_space
     public collabEditManager: CollaborativeEditManager
 
 
@@ -34,20 +34,14 @@ export class SceneManager {
 
     constructor(public orchestrator: Orchestrator) {
         this.canvasId = orchestrator.canvasId
-        this.memberId = orchestrator.memberId
+        this.member_id = orchestrator.member_id
         this.serializedSpace = orchestrator.serializedSpace
         this.slug = this.serializedSpace.slug
         this.canvas = document.getElementById(this.canvasId) as HTMLCanvasElement;
         this.engine = new BABYLON.Engine(this.canvas, true, { preserveDrawingBuffer: true, stencil: true });
         this.settings = this.serializedSpace.settings
         this.entities = this.serializedSpace.entities
-        signalHub.on('space_channel_connected').pipe(
-            take(1)
-        ).subscribe(() => {
-            this.setChannelListeners()
-        })
-
-
+        this.setChannelListeners()
     }
 
     setChannelListeners() {
@@ -81,26 +75,25 @@ export class SceneManager {
             })
         })
 
-        this.spaceChannel.on('presence_state', params => {
-            console.log('presence_state', JSON.stringify(params))
-            Object.keys(params).filter((id) => id !== this.memberId).forEach(id => {
-                this.findOrCreateAvatar(id, params[id].metas[0].pos_rot)
-            })
+        this.spaceChannel.on('new_member', ({ member_id, pos_rot }) => {
+            this.findOrCreateAvatar(member_id, pos_rot)
+
         })
+
 
         this.spaceChannel.on('presence_diff', params => {
             console.log('presence_diff', JSON.stringify(params))
 
-            Object.keys(params.joins).filter((id) => id !== this.memberId).forEach(id => {
-                this.findOrCreateAvatar(id, params.joins[id].metas[0].pos_rot)
-            })
+            // Object.keys(params.joins).filter((id) => id !== this.member_id).forEach(id => {
+            //     this.findOrCreateAvatar(id, params.joins[id].metas[0].pos_rot)
+            // })
             Object.keys(params.leaves).map(id => {
                 this.removeAvatar(id)
             })
         })
 
         this.spaceChannel.on('space_settings_changed', params => {
-            this.processSceneSettings(params as SceneSettings)
+            this.processscene_settings(params as scene_settings)
 
         })
 
@@ -110,7 +103,7 @@ export class SceneManager {
     async createScene() {
         // Create a basic BJS Scene object
         this.scene = new BABYLON.Scene(this.engine);
-        this.processSceneSettings(this.settings as SceneSettings)
+        this.processscene_settings(this.settings as scene_settings)
         window['scene'] = this.scene
         this.createCamera()
 
@@ -233,7 +226,7 @@ export class SceneManager {
         }
     }
 
-    processSceneSettings(settings: SceneSettings) {
+    processscene_settings(settings: scene_settings) {
         this.scene.clearColor = BABYLON.Color4.FromHexString(settings.clear_color)
         this.processSkybox(settings.use_skybox, settings.skybox_inclination)
         this.scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;

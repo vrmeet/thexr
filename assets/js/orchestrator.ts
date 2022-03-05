@@ -7,7 +7,7 @@ import App from "./App.svelte";
 import { LogManager } from './log-manager';
 import { SpaceBroker } from './space-broker';
 
-import type { SceneSettings, SerializedSpace } from './types'
+import type { scene_settings, serialized_space } from './types'
 import { MemberManager } from './member-manager';
 import { WebRTCManager } from './web-rtc-manager';
 
@@ -16,7 +16,7 @@ export class Orchestrator {
     public engine;
     public slug: string
     public entities: any[]
-    public settings: SceneSettings
+    public settings: scene_settings
     public skyBox: BABYLON.Mesh
     public sceneManager: SceneManager
     public logManager: LogManager
@@ -26,7 +26,7 @@ export class Orchestrator {
 
 
 
-    constructor(public canvasId: string, public memberId: string, public serializedSpace: SerializedSpace) {
+    constructor(public canvasId: string, public member_id: string, public serializedSpace: serialized_space) {
         this.logManager = new LogManager()
         this.slug = serializedSpace.slug;
         this.spaceBroker = new SpaceBroker(this)
@@ -67,8 +67,8 @@ export class Orchestrator {
 
 window.addEventListener('DOMContentLoaded', async () => {
     const serializedSpace = window['serializedSpace']
-    const memberId = window['memberId']
-    const orchestrator = new Orchestrator('spaceCanvas', memberId, serializedSpace)
+    const member_id = window['member_id']
+    const orchestrator = new Orchestrator('spaceCanvas', member_id, serializedSpace)
     orchestrator.start()
 
 })

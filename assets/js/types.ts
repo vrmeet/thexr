@@ -1,5 +1,5 @@
 
-export type SceneSettings = {
+export type scene_settings = {
     use_skybox: boolean
     skybox_inclination: number
     clear_color: string
@@ -7,16 +7,17 @@ export type SceneSettings = {
     fog_density: number
 }
 
-export type SerializedSpace = { settings: SceneSettings, slug: string, entities: any[] }
+export type serialized_space = { settings: scene_settings, slug: string, entities: any[] }
 
-export type MemberState =
+export type member_state =
     {
-        micPref: "on" | "off"
-        videoPref: "screen" | "camera" | "off"
-        audioActual: { volume: number } | "unpublished" | { error: string }
-        videoActual: "published" | "unpublished" | { error: string }
+        mic_pref: "on" | "off"
+        video_pref: "screen" | "camera" | "off"
+        audio_actual: { volume: number } | "unpublished" | { error: string }
+        video_actual: "published" | "unpublished" | { error: string }
         nickname: string
         handraised: boolean
+        updated_at: number
     }
 
 export type PosRot = {
@@ -24,18 +25,10 @@ export type PosRot = {
     rot: number[]
 }
 
-export interface PresenceMeta {
-    phx_ref: string
-    pos_rot: PosRot
-    state: MemberState
-}
-// {"SvKXtc":{"metas":[{"phx_ref":"FtfKtCZDEAA7IQTD","pos_rot":{"pos":[0,1.7,-8],"rot":[-0.06444,0.06164,0.00399,0.99601]}}]}}
 export type PresenceState = {
-    [memberId: string]: { metas: PresenceMeta[] }
+    [member_id: string]: { metas: any }
 }
 
-
-//presence_diff {"joins":{"SvKXtc":{"metas":[{"phx_ref":"FtfKtCZDEAA7IQTD","pos_rot":{"pos":[0,1.7,-8],"rot":[-0.06444,0.06164,0.00399,0.99601]}}]}},"leaves":{}}
 export type PresenceDiff = {
     joins: PresenceState,
     leaves: PresenceState

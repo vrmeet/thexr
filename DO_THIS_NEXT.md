@@ -1,7 +1,17 @@
 TODO:
 
-on join, front end sends mic defaults, nickname to channel for join so we can track presence
+move default member state  from space-broker to be a function from member-manager?
 
+---
+
+fix webxr error if no web xr
+
+
+verify click mute or unmute sends new state to server and everyone else
+
+grab a nickname from user if there isn't one in session storage
+
+move camera movements and hand movements out of signal hub and into dedicated observables (too much noise for every subscriber of signal hub)
 
 create new ets_refs table for space_server so we can store member state
 about mic, nickname, avatar etc, so that when a new user joins the space
@@ -29,13 +39,13 @@ allow us to display labels over head people's head
 show an indicator if they are muted
 show an indicator over who is talking
 
-localMicAndVideoPrefs
+localMicAndvideo_prefs
 
 {
-  micPref: "on" | "off"
-  videoPref: "screen" | "camera" | "off"
-  audioActual: {volume: 0} | "unpublished" | {error: msg}
-  videoActual: "published" | "unpublished" | {error: msg}
+  mic_pref: "on" | "off"
+  video_pref: "screen" | "camera" | "off"
+  audio_actual: {volume: 0} | "unpublished" | {error: msg}
+  video_actual: "published" | "unpublished" | {error: msg}
   nickname: string
   handraised: boolean
   avatar: {...}

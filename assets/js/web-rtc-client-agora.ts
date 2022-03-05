@@ -6,8 +6,8 @@ export class WebRTCClientAgora implements WebRTCClient {
     public client: IAgoraRTCClient
     public localAudioTrack: IMicrophoneAudioTrack
     public localVideoTrack: ILocalVideoTrack
-    public otherMemberAudioTracks: { [memberID: string]: IRemoteAudioTrack }
-    public otherMemberVideoTracks: { [memberID: string]: IRemoteVideoTrack }
+    public otherMemberAudioTracks: { [member_id: string]: IRemoteAudioTrack }
+    public otherMemberVideoTracks: { [member_id: string]: IRemoteVideoTrack }
     public onPublishedCallbacks: RemoteStreamPublishedCallback[]
     public onUnpublishedCallbacks: RemoteStreamUnpublishedCallback[]
     public joined: boolean
@@ -106,6 +106,9 @@ export class WebRTCClientAgora implements WebRTCClient {
         }
     }
     async leave() {
+        if (this.joined === false) {
+            return
+        }
         await this.client.leave()
         this.joined = false
     }

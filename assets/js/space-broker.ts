@@ -27,12 +27,13 @@ export class SpaceBroker {
             // set this value for channel params as we join
             this.channelParams['pos_rot'] = posRot
             this.channelParams['state'] = {
-                micPref: "off",
-                videoPref: "off",
-                audioActual: "unpublished",
-                videoActual: "unpublished",
+                mic_pref: "off",
+                video_pref: "off",
+                audio_actual: "unpublished",
+                video_actual: "unpublished",
                 nickname: "string",
-                handraised: false
+                handraised: false,
+                updated_at: Date.now()
             }
             this.connectToChannel()
             this.forwardCameraMovement()
@@ -57,7 +58,7 @@ export class SpaceBroker {
         this.spaceChannel.join()
             .receive('ok', resp => {
                 console.log('Joined successfully', resp)
-                signalHub.emit('space_channel_connected', true)
+                signalHub.emit('space_channel_connected', resp)
                 window['channel'] = this.spaceChannel
             })
             .receive('error', resp => {
