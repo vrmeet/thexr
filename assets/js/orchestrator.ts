@@ -8,7 +8,6 @@ import { LogManager } from './log-manager';
 import { SpaceBroker } from './space-broker';
 
 import type { scene_settings, serialized_space } from './types'
-import { MemberManager } from './member-manager';
 import { WebRTCManager } from './web-rtc-manager';
 
 export class Orchestrator {
@@ -21,7 +20,6 @@ export class Orchestrator {
     public sceneManager: SceneManager
     public logManager: LogManager
     public spaceBroker: SpaceBroker
-    public memberManager: MemberManager
     public webRTCManager: WebRTCManager
 
 
@@ -32,12 +30,7 @@ export class Orchestrator {
         this.spaceBroker = new SpaceBroker(this)
 
         this.sceneManager = new SceneManager(this)
-        this.memberManager = new MemberManager(this)
         this.webRTCManager = new WebRTCManager(this)
-
-
-
-
 
         window['orchestrator'] = this
 

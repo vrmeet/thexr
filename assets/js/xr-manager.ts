@@ -25,8 +25,8 @@ export class XRManager {
 
 
         this.xrHelper.baseExperience.onStateChangedObservable.add(state => {
-            signalHub.emit('xr_state_changed', state)
-            //signalHub.next({ event: 'xr_state_change', payload: { state } })
+            signalHub.local.emit('xr_state_changed', state)
+            //signalHub.local.next({ event: 'xr_state_change', payload: { state } })
 
             //console.log('xr state', state)
             switch (state) {
@@ -75,8 +75,8 @@ export class XRManager {
         this.xrHelper.baseExperience.camera.onViewMatrixChangedObservable.add(cam => {
             let posArray = cam.position.asArray().map(reduceSigFigs)
             let rotArray = cam.absoluteRotation.asArray().map(reduceSigFigs)
-            signalHub.emit('camera_moved', { pos: posArray, rot: rotArray })
-            //   signalHub.next({ event: "camera_moved", payload: { pos: posArray, rot: rotArray } })
+            signalHub.local.emit('camera_moved', { pos: posArray, rot: rotArray })
+            //   signalHub.local.next({ event: "camera_moved", payload: { pos: posArray, rot: rotArray } })
         })
     }
 
@@ -86,14 +86,14 @@ export class XRManager {
         const payload = {
             hand: motionController.handedness
         }
-        //signalHub.next({ event: "controller_ready", payload })
-        signalHub.emit('controller_ready', payload)
+        //signalHub.local.next({ event: "controller_ready", payload })
+        signalHub.local.emit('controller_ready', payload)
     }
 
     setupSendHandPosRot(inputSource: BABYLON.WebXRInputSource) {
         this.xrHelper.baseExperience.sessionManager.onXRFrameObservable.add(() => {
-            signalHub.emit('hand_movement', { hand: inputSource.inputSource.handedness, pos: inputSource.pointer.position.asArray(), rot: inputSource.pointer.rotationQuaternion.asArray() })
-            //  signalHub.next({ event: "hand_movement", payload: { hand: inputSource.inputSource.handedness, pos: inputSource.pointer.position.asArray(), rot: inputSource.pointer.rotationQuaternion.asArray() } })
+            signalHub.local.emit('hand_movement', { hand: inputSource.inputSource.handedness, pos: inputSource.pointer.position.asArray(), rot: inputSource.pointer.rotationQuaternion.asArray() })
+            //  signalHub.local.next({ event: "hand_movement", payload: { hand: inputSource.inputSource.handedness, pos: inputSource.pointer.position.asArray(), rot: inputSource.pointer.rotationQuaternion.asArray() } })
         })
     }
 
@@ -124,7 +124,7 @@ export class XRManager {
             }
         })
         componentObservable$.subscribe(payload => {
-            signalHub.emit('xr_component_changed', payload)
+            signalHub.local.emit('xr_component_changed', payload)
         })
     }
 

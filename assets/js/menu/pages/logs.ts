@@ -12,7 +12,7 @@ export class MenuPageLogs extends GUI.Container {
         this.name = "menu_page_logs"
         this.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
         this.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP
-        const callback = () => { signalHub.emit('menu_action', { name: "goto_main" }) }
+        const callback = () => { signalHub.local.emit('menu_action', { name: "goto_main" }) }
 
         this.addControl(
             div({ name: "logs_div" },
@@ -20,7 +20,7 @@ export class MenuPageLogs extends GUI.Container {
                 pre({ name: "logs_scroll_view" }, this.getLogs())
             )
         )
-        const subscription = signalHub.on('new_log').subscribe(() => {
+        const subscription = signalHub.local.on('new_log').subscribe(() => {
             this.textBlock.text = this.logManager.recentLogsAsText()
         })
         this.onDisposeObservable.addOnce(() => {

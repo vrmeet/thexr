@@ -8,7 +8,7 @@ import { span, a, div, toggle } from '../helpers';
 export class MenuPagePrimitives extends GUI.Container {
     constructor() {
         super()
-        const callback = () => { signalHub.emit('menu_action', { name: "goto_main" }) }
+        const callback = () => { signalHub.local.emit('menu_action', { name: "goto_main" }) }
 
         let options = [a({ callback }, "< Main"), ...this.primOptions()]
 
@@ -24,7 +24,7 @@ export class MenuPagePrimitives extends GUI.Container {
 
         return options.map(prim => {
             const callback = () => {
-                signalHub.emit('spaces_api', { func: "add_entity_with_broadcast", args: [prim] })
+                signalHub.local.emit('spaces_api', { func: "add_entity_with_broadcast", args: [prim] })
             }
             return a({ callback }, prim)
         })
