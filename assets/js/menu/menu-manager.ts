@@ -36,7 +36,6 @@ content: .... (click )
 export type stateType = {
     menuOpened: boolean
     menuLabel: "Menu" | "Close Menu"
-    mic: "on" | "off"
     micLabel: "Unmute" | "Mute" | "..." | "MUTE"
     editing: boolean
     browsing: string
@@ -58,7 +57,6 @@ export class MenuManager {
         this.state = {
             menuOpened: false,
             menuLabel: "Menu",
-            mic: "off",
             micLabel: "Unmute",
             editing: false,
             browsing: "main"
@@ -105,9 +103,9 @@ export class MenuManager {
             this.render(this.stateToCtrls())
         })
 
-        signalHub.local.on('mic').subscribe(value => {
-            this.state.micLabel = '...'
-            this.state.mic = value
+        signalHub.observables.mic_muted_pref.subscribe(value => {
+            console.log('receiving mic muted_pref', value)
+            this.state.micLabel = value ? "Unmute" : "Mute"
             this.render(this.stateToCtrls())
         })
 
@@ -252,10 +250,10 @@ export class MenuManager {
         } else {
             menuCallback = () => { signalHub.local.emit('menu_action', { name: 'open_menu' }) }
         }
-        if (this.state.mic == "off") {
-            micCallback = () => { signalHub.local.emit('mic', "on"); }
-        } else {
-            micCallback = () => { signalHub.local.emit('mic', "off"); }
+
+        micCallback = () => {
+            const newValue = !signalHub.observables.mic_muted_pref.getValue()
+            signalHub.observables.mic_muted_pref.next(newValue)
         }
 
         return div({ name: 'menu-div' },

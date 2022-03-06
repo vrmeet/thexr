@@ -42,6 +42,7 @@ export class WebRTCManager {
             if (result.mic_on_count > 0 && result.member_count > 1) {
                 this.webRTCClient.join(this.agora_app_id)
                 await this.webRTCClient.publishAudio()
+                // signalHub.outgoing.emit('member_state_changed', )
             } else {
 
                 await this.webRTCClient.leave()
