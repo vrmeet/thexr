@@ -75,8 +75,7 @@ export class XRManager {
         this.xrHelper.baseExperience.camera.onViewMatrixChangedObservable.add(cam => {
             let posArray = cam.position.asArray().map(reduceSigFigs)
             let rotArray = cam.absoluteRotation.asArray().map(reduceSigFigs)
-            signalHub.local.emit('camera_moved', { pos: posArray, rot: rotArray })
-            //   signalHub.local.next({ event: "camera_moved", payload: { pos: posArray, rot: rotArray } })
+            signalHub.observables.camera_moved.next({ pos: posArray, rot: rotArray })
         })
     }
 
@@ -92,8 +91,7 @@ export class XRManager {
 
     setupSendHandPosRot(inputSource: BABYLON.WebXRInputSource) {
         this.xrHelper.baseExperience.sessionManager.onXRFrameObservable.add(() => {
-            signalHub.local.emit('hand_movement', { hand: inputSource.inputSource.handedness, pos: inputSource.pointer.position.asArray(), rot: inputSource.pointer.rotationQuaternion.asArray() })
-            //  signalHub.local.next({ event: "hand_movement", payload: { hand: inputSource.inputSource.handedness, pos: inputSource.pointer.position.asArray(), rot: inputSource.pointer.rotationQuaternion.asArray() } })
+            signalHub.observables.hand_movement.next({ hand: inputSource.inputSource.handedness, pos: inputSource.pointer.position.asArray(), rot: inputSource.pointer.rotationQuaternion.asArray() })
         })
     }
 

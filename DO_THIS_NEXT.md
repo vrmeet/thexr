@@ -4,9 +4,20 @@ move default member state  from space-broker to be a function from member-manage
 
 ---
 
+bug: open browser a, open browser b, look for avatar from a (it is missing)
+
+not sure we need to maintain all the member states as an observable 
+if we only need the member count and unmic count, we just need
+an object of 
+{ "id1": "on", "id2": "off" }
+... hmmm
 
 after unmuting, menu should say 'mute' to go back to muting, store actual publish status
+webrtc manager should update a audioActual eventbus emitter
+when it is changed then broadcast a new state again to space channel
+which will update own state
 
+menu can subscribe to own state and update menu upon member state change, mapping it to menu state change
 
 verify click mute or unmute sends new state to server and everyone else
 

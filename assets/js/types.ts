@@ -14,7 +14,7 @@ export type member_state =
         mic_pref: "on" | "off"
         video_pref: "screen" | "camera" | "off"
         audio_actual: { volume: number } | "unpublished" | { error: string }
-        video_actual: "published" | "unpublished" | { error: string }
+        video_actual: "published" | "unpublished" | { error: string } | "forced_mute"
         nickname: string
         handraised: boolean
         updated_at: number

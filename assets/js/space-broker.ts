@@ -3,7 +3,6 @@ import type { Orchestrator } from './orchestrator'
 import { signalHub } from './signalHub'
 import { throttleTime, withLatestFrom } from 'rxjs/operators'
 import { combineLatest, map, filter } from 'rxjs'
-import type { PosRot } from './types'
 import type { IncomingEvents } from './signalHub'
 
 export class SpaceBroker {
@@ -85,7 +84,7 @@ export class SpaceBroker {
 
     forwardCameraMovement() {
         // forward camera movement
-        signalHub.local.on('camera_moved').pipe(
+        signalHub.observables.camera_moved.pipe(
             throttleTime(100)
         ).subscribe(msg => {
             this.spaceChannel.push('camera_moved', msg)
