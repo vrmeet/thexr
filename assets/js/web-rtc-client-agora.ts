@@ -109,6 +109,7 @@ export class WebRTCClientAgora implements WebRTCClient {
         if (this.joined === false) {
             return
         }
+        this.joinedPromise = null
         await this.client.leave()
         this.joined = false
     }
