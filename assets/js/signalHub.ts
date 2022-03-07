@@ -34,11 +34,12 @@ export type IncomingEvents = {
     server_lost: any
     new_member: { member_id: string, pos_rot: types.PosRot, state: types.member_state }
     members: { movements: { [member_id: string]: { pos_rot: types.PosRot } }, states: { [member_id: string]: types.member_state } }
-    member_state_updated: { member_id: string, new_state: types.member_state }
+    member_state_updated: { member_id: string, state: types.member_state }
 
 }
 
 export type OutgoingEvents = {
+    member_state_patched: types.member_state
     member_state_changed: types.member_state
 }
 
@@ -46,7 +47,7 @@ export type OutgoingEvents = {
 interface SignalHub {
     observables: {
         mic_muted_pref: BehaviorSubject<boolean>
-        memberStates?: Observable<{ [member_id: string]: types.member_state }>
+        //    memberStates?: Observable<{ [member_id: string]: types.member_state }>
         camera_moved: Subject<{ pos: number[], rot: number[] }>
         hand_movement: Subject<{ hand: string, pos: number[], rot: number[] }>
     }
@@ -67,7 +68,7 @@ export const signalHub: SignalHub = {
 }
 
 // transforming incoming into local
-
+/*
 signalHub.incoming.on('new_member').subscribe(({ member_id, state }) => {
     signalHub.local.emit('member_state', { member_id, state, op: "new" })
 })
@@ -102,7 +103,7 @@ signalHub.observables.memberStates = signalHub.local.on('member_state').pipe(
 )
 
 
-
+*/
 
 
 

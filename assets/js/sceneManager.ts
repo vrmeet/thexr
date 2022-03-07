@@ -1,7 +1,7 @@
 import * as BABYLON from 'babylonjs'
 import * as MAT from 'babylonjs-materials'
 import type { Channel } from 'phoenix';
-import type { scene_settings, serialized_space } from './types'
+import type { PosRot, scene_settings, serialized_space } from './types'
 import { sessionPersistance } from './sessionPersistance';
 import { MenuManager } from './menu/menu-manager'
 import { reduceSigFigs } from './utils';
@@ -75,7 +75,14 @@ export class SceneManager {
 
         signalHub.incoming.on('new_member').subscribe(({ member_id, pos_rot }) => {
             this.findOrCreateAvatar(member_id, pos_rot)
+        })
 
+        signalHub.incoming.on('members').subscribe(({ movements }) => {
+            Object.entries(movements).forEach(([member_id, payload]) => {
+                if (member_id != this.member_id) {
+                    this.findOrCreateAvatar(member_id, payload.pos_rot)
+                }
+            })
         })
 
 
@@ -122,7 +129,7 @@ export class SceneManager {
         }
     }
 
-    findOrCreateAvatar(id: string, posRot: any) {
+    findOrCreateAvatar(id: string, posRot: PosRot) {
         let box = this.scene.getMeshByName(`avatar_${id}`)
         if (!box) {
             box = BABYLON.MeshBuilder.CreateBox(`avatar_${id}`)

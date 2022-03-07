@@ -33,12 +33,25 @@ defmodule ThexrWeb.SpaceChannel do
     {:noreply, socket}
   end
 
-  def handle_in("member_state_changed", new_state, socket) do
-    :ets.insert(socket.assigns.member_states, {socket.assigns.member_id, new_state})
+  def handle_in("member_state_patched", patch, socket) do
+    payload = get_state(socket.assigns.member_id, socket.assigns.member_states)
+    state = Map.merge(payload, patch)
+    :ets.insert(socket.assigns.member_states, {socket.assigns.member_id, state})
 
     broadcast(socket, "member_state_updated", %{
       "member_id" => socket.assigns.member_id,
-      "new_state" => new_state
+      "state" => state
+    })
+
+    {:noreply, socket}
+  end
+
+  def handle_in("member_state_changed", state, socket) do
+    :ets.insert(socket.assigns.member_states, {socket.assigns.member_id, state})
+
+    broadcast(socket, "member_state_updated", %{
+      "member_id" => socket.assigns.member_id,
+      "state" => state
     })
 
     {:noreply, socket}
@@ -69,12 +82,14 @@ defmodule ThexrWeb.SpaceChannel do
 
         {:ok, _} = Presence.track(socket, socket.assigns.member_id, %{})
 
+        # tell existing members about us, so they can draw us as an avatar
         broadcast_from(
           socket,
           "new_member",
           Map.put(params, "member_id", socket.assigns.member_id)
         )
 
+        # tell us about existing members, so we can draw their avatars
         push(socket, "members", %{
           "states" => member_states_to_map(member_states),
           "movements" => movements_to_map(member_movements)
@@ -143,13 +158,13 @@ defmodule ThexrWeb.SpaceChannel do
   #   end
   # end
 
-  # def get_state(member_id, ets_ref) do
-  #   case :ets.lookup(ets_ref, member_id) do
-  #     [{^member_id, payload}] ->
-  #       payload
+  def get_state(member_id, ets_ref) do
+    case :ets.lookup(ets_ref, member_id) do
+      [{^member_id, payload}] ->
+        payload
 
-  #     _ ->
-  #       %{"error" => "not_found"}
-  #   end
-  # end
+      _ ->
+        {:error, "not_found"}
+    end
+  end
 end

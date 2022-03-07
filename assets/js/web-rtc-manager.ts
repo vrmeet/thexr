@@ -1,5 +1,5 @@
-import { BehaviorSubject } from "rxjs";
-import { scan, map, take } from "rxjs/operators";
+import { BehaviorSubject, merge } from "rxjs";
+import { scan, map, take, tap, distinctUntilChanged, mergeAll } from "rxjs/operators";
 import type { Orchestrator } from "./orchestrator";
 import { signalHub } from "./signalHub";
 import { WebRTCClientAgora } from "./web-rtc-client-agora";
@@ -7,12 +7,8 @@ import { WebRTCClientAgora } from "./web-rtc-client-agora";
 export class WebRTCManager {
     public webRTCClient: WebRTCClientAgora
     public agora_app_id: string
-    public micMuted: BehaviorSubject<boolean>
-    public publishingAudio: BehaviorSubject<boolean>
 
     constructor(public orchestrator: Orchestrator) {
-        this.micMuted = new BehaviorSubject(true)
-        this.publishingAudio = new BehaviorSubject(false)
         this.webRTCClient = new WebRTCClientAgora(this.orchestrator.slug, this.orchestrator.member_id)
         signalHub.local.on('space_channel_connected').pipe(
             take(1)
@@ -23,23 +19,56 @@ export class WebRTCManager {
     }
 
     setupWebRTCEvents() {
-
+        console.log('web rtc events setting up')
         // join conditions:
         // (unmuted member count > 0 && member count > 1)
+        /*
+        listen for
+          members
+          new_member
+          member_state_updated
+          presence_diff
+        */
+        const members = signalHub.incoming.on('members')
+        const new_member = signalHub.incoming.on('new_member')
+        const member_state_updated = signalHub.incoming.on('member_state_updated')
+        const presence_diff = signalHub.incoming.on('presence_diff')
 
-        signalHub.observables.memberStates.pipe(
-            map(memberStates => {
-                return Object.entries(memberStates).reduce((acc, [member_id, state]) => {
+
+        merge([members, new_member, member_state_updated, presence_diff]).pipe(
+            mergeAll(),
+            scan((acc, value) => {
+                if (value['member_id'] && value['state']) {
+                    console.log('either new member or member_state updated')
+                    acc[value['member_id']] = value['state']['mic_pref']
+                } else if (value['states']) {
+                    console.log('members')
+                    Object.entries(value['states']).forEach(([member_id, state]) => {
+                        acc[member_id] = state['mic_pref']
+                    })
+                } else if (value['leaves']) {
+                    console.log('diff')
+                    Object.entries(value['leaves']).forEach(([member_id, _]) => {
+                        delete acc[member_id]
+                    })
+                }
+                console.log(value, 'the acc', acc)
+                return acc
+            }, {}),
+            map((allMicPrefs: { [member_id: string]: "on" | "off" }) => {
+                return Object.entries(allMicPrefs).reduce((acc, [member_id, mic_pref]) => {
                     acc.member_count += 1
-                    if (state.mic_pref === 'on') {
+                    if (mic_pref === "on") {
                         acc.mic_on_count += 1
                     }
+                    console.log('first map', acc)
                     return acc
                 }, { mic_on_count: 0, member_count: 0 })
-            })
-        ).subscribe(async result => {
-            console.log('web rtc manager', result)
-            if (result.mic_on_count > 0 && result.member_count > 1) {
+            }),
+            map(obj => (obj.mic_on_count > 0 && obj.member_count > 1)),
+            distinctUntilChanged()
+        ).subscribe(async should_join => {
+            if (should_join) {
                 this.webRTCClient.join(this.agora_app_id)
                 await this.webRTCClient.publishAudio()
                 // signalHub.outgoing.emit('member_state_changed', )
@@ -48,6 +77,30 @@ export class WebRTCManager {
                 await this.webRTCClient.leave()
             }
         })
+
+
+
+        // signalHub.observables.memberStates.pipe(
+        //     map(memberStates => {
+        //         return Object.entries(memberStates).reduce((acc, [member_id, state]) => {
+        //             acc.member_count += 1
+        //             if (state.mic_pref === 'on') {
+        //                 acc.mic_on_count += 1
+        //             }
+        //             return acc
+        //         }, { mic_on_count: 0, member_count: 0 })
+        //     })
+        // ).subscribe(async result => {
+        //     console.log('web rtc manager', result)
+        //     if (result.mic_on_count > 0 && result.member_count > 1) {
+        //         this.webRTCClient.join(this.agora_app_id)
+        //         await this.webRTCClient.publishAudio()
+        //         // signalHub.outgoing.emit('member_state_changed', )
+        //     } else {
+
+        //         await this.webRTCClient.leave()
+        //     }
+        // })
 
         // this.orchestrator.memberManager.memberStatesUpdated.pipe(
         //     map(() => {
