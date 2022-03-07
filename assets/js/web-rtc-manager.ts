@@ -69,7 +69,7 @@ export class WebRTCManager {
             distinctUntilChanged()
         ).subscribe(async should_join => {
             if (should_join) {
-                this.webRTCClient.join(this.agora_app_id)
+                await this.webRTCClient.join(this.agora_app_id)
                 await this.webRTCClient.publishAudio()
                 // signalHub.outgoing.emit('member_state_changed', )
             } else {
