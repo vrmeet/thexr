@@ -62,15 +62,15 @@ export class SpaceBroker {
         signalHub.outgoing.on('member_state_patched').subscribe(state => {
             this.spaceChannel.push('member_state_patched', state)
         })
+        signalHub.outgoing.on('spaces_api').subscribe(payload => {
+            this.spaceChannel.push('spaces_api', payload)
+        })
 
         signalHub.incoming.on("server_lost").subscribe(() => {
             window.location.href = '/';
         })
 
-        // TODO move to outgoing
-        signalHub.local.on('spaces_api').subscribe(payload => {
-            this.spaceChannel.push('spaces_api', payload)
-        })
+
     }
 
     connectToChannel() {

@@ -24,7 +24,7 @@ export class MenuPagePrimitives extends GUI.Container {
 
         return options.map(prim => {
             const callback = () => {
-                signalHub.local.emit('spaces_api', { func: "add_entity_with_broadcast", args: [prim] })
+                signalHub.outgoing.emit('spaces_api', { func: "add_entity_with_broadcast", args: [prim] })
             }
             return a({ callback }, prim)
         })

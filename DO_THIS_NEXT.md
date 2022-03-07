@@ -2,8 +2,6 @@ TODO:
 
 debug: have a way of checking if we are publishing audio and which members we are receiving audio from
 
-BUG: open browser a, open browser b, look for avatar from a (it is missing)
-
 (bug)
 fix bug where agora voice would stop publishing
 
