@@ -15,7 +15,6 @@ type LocalEvents = {
         id: string
     }
     xr_state_changed: BABYLON.WebXRState
-    spaces_api: { func: string, args: any[] }
     menu_action: { name: string, payload?: any }
     editing: boolean,
     new_log: any,
@@ -41,6 +40,7 @@ export type IncomingEvents = {
 export type OutgoingEvents = {
     member_state_patched: types.member_state
     member_state_changed: types.member_state
+    spaces_api: { func: string, args: any[] }
 }
 
 

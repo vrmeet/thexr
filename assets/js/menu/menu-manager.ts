@@ -133,9 +133,6 @@ export class MenuManager {
                 case "goto_primitives":
                     this.state = { ...this.state, browsing: "primitives" }
                     break;
-                case "create_primitive":
-                    signalHub.local.emit('spaces_api', { func: "add_entity_with_broadcast", args: [msg.payload.type] })
-                    break;
                 // case "unmute":
                 //     this.orchestrator.webRTCClient.publishAudio()
                 //     this.state = { ...this.state, muted: false }
