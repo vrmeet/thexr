@@ -9,16 +9,15 @@ export type scene_settings = {
 
 export type serialized_space = { settings: scene_settings, slug: string, entities: any[] }
 
-export type member_state =
-    {
-        mic_pref: "on" | "off"
-        video_pref: "screen" | "camera" | "off"
-        audio_actual: { volume: number } | "unpublished" | { error: string }
-        video_actual: "published" | "unpublished" | { error: string } | "forced_mute"
-        nickname: string
-        handraised: boolean
-        updated_at: number
-    }
+export interface member_state {
+    mic_pref?: "on" | "off"
+    video_pref?: "screen" | "camera" | "off"
+    audio_actual?: { volume: number } | "unpublished" | { error: string }
+    video_actual?: "published" | "unpublished" | { error: string } | "forced_mute"
+    nickname?: string
+    handraised?: boolean
+    updated_at?: number
+}
 
 export type PosRot = {
     pos: number[],

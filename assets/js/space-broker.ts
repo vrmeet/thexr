@@ -55,8 +55,12 @@ export class SpaceBroker {
         }
 
         // forward outgoing from eventbus to channel
-        signalHub.outgoing.on('member_state_changed').subscribe(new_state => {
-            this.spaceChannel.push('member_state_changed', new_state)
+        // TODO, this is kinda redundant
+        signalHub.outgoing.on('member_state_changed').subscribe(state => {
+            this.spaceChannel.push('member_state_changed', state)
+        })
+        signalHub.outgoing.on('member_state_patched').subscribe(state => {
+            this.spaceChannel.push('member_state_patched', state)
         })
 
         signalHub.incoming.on("server_lost").subscribe(() => {
@@ -93,21 +97,8 @@ export class SpaceBroker {
 
     forwardMicPrefAsState() {
         // snap shot of memberStates
-        const ownState = signalHub.observables.memberStates.pipe(
-            map(states => {
-                return states[this.orchestrator.member_id]
-            }),
-            filter(value => !!value),
-        )
-        const micPref = signalHub.local.on('mic').pipe(
-            withLatestFrom(ownState),
-            map(([mic_pref, state]) => {
-                state.mic_pref = mic_pref
-                return state
-            })
-        ).subscribe(newLocalState => {
-            signalHub.outgoing.emit('member_state_changed', newLocalState)
-            console.log('new local state', newLocalState)
+        signalHub.observables.mic_muted_pref.subscribe(isMuted => {
+            signalHub.outgoing.emit('member_state_patched', { mic_pref: isMuted ? "off" : "on" })
         })
 
     }
