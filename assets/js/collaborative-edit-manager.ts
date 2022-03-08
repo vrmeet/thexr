@@ -1,7 +1,6 @@
 
 import * as BABYLON from 'babylonjs'
 import { signalHub } from './signalHub'
-import type { stateType } from './menu/menu-manager'
 
 export class CollaborativeEditManager {
     public selectedMesh: BABYLON.AbstractMesh
@@ -9,7 +8,7 @@ export class CollaborativeEditManager {
     public ignoreMeshNames: string[]
     constructor(public scene: BABYLON.Scene) {
         this.ignoreMeshNames = this.scene.getMeshesByTags("vr_menu_gui").map(mesh => mesh.name)
-        signalHub.local.on('editing').subscribe(value => {
+        signalHub.observables.editing.subscribe(value => {
             if (value) {
                 this.on()
             } else {
@@ -46,7 +45,6 @@ export class CollaborativeEditManager {
         this.gizmoManager.gizmos.rotationGizmo.onDragEndObservable.add((data, state) => {
             this.broadcastNewRotation()
         })
-
 
         this.gizmoManager.gizmos.boundingBoxGizmo.onScaleBoxDragEndObservable.add((data, state) => {
             this.broadcastNewPosition()

@@ -8,7 +8,7 @@ import { span, a, div, toggle } from '../helpers';
 export class MenuPagePrimitives extends GUI.Container {
     constructor() {
         super()
-        const callback = () => { signalHub.local.emit('menu_action', { name: "goto_main" }) }
+        const callback = () => { signalHub.observables.menu_page.next("main") }
 
         let options = [a({ callback }, "< Main"), ...this.primOptions()]
 

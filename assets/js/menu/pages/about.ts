@@ -8,11 +8,12 @@ import { div, g, a } from '../helpers';
 export class MenuPageAbout extends GUI.Container {
     constructor() {
         super()
-        const callback = () => { signalHub.local.emit('menu_action', { name: "goto_main" }) }
-
-        this.addControl(div({ name: "about_div" },
-            a({ name: "back_to_main", callback }, "< Back"),
-            "Hello About Me"))
+        const callback = () => { signalHub.observables.menu_page.next('main') }
+        this.addControl(
+            div({ name: "about_div" },
+                a({ name: "back_to_main", callback }, "< Back"),
+                "Hello About Me")
+        )
     }
 
 

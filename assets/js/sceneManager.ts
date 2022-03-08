@@ -87,11 +87,7 @@ export class SceneManager {
 
 
         signalHub.incoming.on('presence_diff').subscribe(params => {
-            console.log('presence_diff', JSON.stringify(params))
 
-            // Object.keys(params.joins).filter((id) => id !== this.member_id).forEach(id => {
-            //     this.findOrCreateAvatar(id, params.joins[id].metas[0].pos_rot)
-            // })
             Object.keys(params.leaves).map(id => {
                 this.removeAvatar(id)
             })

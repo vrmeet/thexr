@@ -29,7 +29,7 @@ export const applyAttributes = (el: any, props: { [key: string]: any }) => {
                     el[key] = props[key]
                 }
             } catch (e) {
-                console.log(e)
+                console.error(e)
             }
         })
     }

@@ -22,13 +22,7 @@ export class WebRTCManager {
         console.log('web rtc events setting up')
         // join conditions:
         // (unmuted member count > 0 && member count > 1)
-        /*
-        listen for
-          members
-          new_member
-          member_state_updated
-          presence_diff
-        */
+
         const members = signalHub.incoming.on('members')
         const new_member = signalHub.incoming.on('new_member')
         const member_state_updated = signalHub.incoming.on('member_state_updated')
@@ -39,20 +33,16 @@ export class WebRTCManager {
             mergeAll(),
             scan((acc, value) => {
                 if (value['member_id'] && value['state']) {
-                    console.log('either new member or member_state updated')
                     acc[value['member_id']] = value['state']['mic_pref']
                 } else if (value['states']) {
-                    console.log('members')
                     Object.entries(value['states']).forEach(([member_id, state]) => {
                         acc[member_id] = state['mic_pref']
                     })
                 } else if (value['leaves']) {
-                    console.log('diff')
                     Object.entries(value['leaves']).forEach(([member_id, _]) => {
                         delete acc[member_id]
                     })
                 }
-                console.log(value, 'the acc', acc)
                 return acc
             }, {}),
             map((allMicPrefs: { [member_id: string]: "on" | "off" }) => {
@@ -61,7 +51,6 @@ export class WebRTCManager {
                     if (mic_pref === "on") {
                         acc.mic_on_count += 1
                     }
-                    console.log('first map', acc)
                     return acc
                 }, { mic_on_count: 0, member_count: 0 })
             }),
@@ -73,71 +62,11 @@ export class WebRTCManager {
                 await this.webRTCClient.publishAudio()
                 // signalHub.outgoing.emit('member_state_changed', )
             } else {
-
+                await this.webRTCClient.unpublishAudio()
                 await this.webRTCClient.leave()
             }
         })
 
-
-
-        // signalHub.observables.memberStates.pipe(
-        //     map(memberStates => {
-        //         return Object.entries(memberStates).reduce((acc, [member_id, state]) => {
-        //             acc.member_count += 1
-        //             if (state.mic_pref === 'on') {
-        //                 acc.mic_on_count += 1
-        //             }
-        //             return acc
-        //         }, { mic_on_count: 0, member_count: 0 })
-        //     })
-        // ).subscribe(async result => {
-        //     console.log('web rtc manager', result)
-        //     if (result.mic_on_count > 0 && result.member_count > 1) {
-        //         this.webRTCClient.join(this.agora_app_id)
-        //         await this.webRTCClient.publishAudio()
-        //         // signalHub.outgoing.emit('member_state_changed', )
-        //     } else {
-
-        //         await this.webRTCClient.leave()
-        //     }
-        // })
-
-        // this.orchestrator.memberManager.memberStatesUpdated.pipe(
-        //     map(() => {
-        //         return Object.entries(this.orchestrator.memberManager.memberState).reduce((acc, [member_id, state]) => {
-        //             if (state.mic_pref === "on") {
-        //                 return { ...acc, unMuteCount: acc.unMuteCount + 1, memberCount: acc.memberCount + 1 }
-        //             } else {
-        //                 return { ...acc, memberCount: acc.memberCount + 1 }
-        //             }
-        //         }, { unMuteCount: 0, memberCount: 0 })
-
-        //     })
-        // ).subscribe(async result => {
-        //     if (result.unMuteCount > 0 && result.memberCount > 1) {
-        //         this.webRTCClient.join(this.agora_app_id)
-        //         if (!this.micMuted.getValue()) {
-        //             await this.webRTCClient.publishAudio()
-        //             this.publishingAudio.next(true)
-        //         }
-        //         console.log("join web rtc channel")
-        //     } else {
-
-        //         await this.webRTCClient.leave()
-        //         this.publishingAudio.next(false)
-        //         console.log("unjoin web rtc channel")
-        //     }
-        // })
-
-
-
-        // this.orchestrator.memberManager.memberState$.pipe(
-        //     scan((acc, newStates) => {
-        //         return Object.keys(newStates).reduce(member_id => { }, {})
-        //     }, { memberCount: 0, unmutedCount: 0 })
-        // ).subscribe(state => {
-        //     console.log('memberStates', state)
-        // })
 
         // default audio playback behavior
         this.webRTCClient.addRemoteStreamPublishedCallback((member_id, mediaType, playable, mediaStreamTrack) => {

@@ -3,7 +3,7 @@ import * as GUI from 'babylonjs-gui'
 import type { SceneManager } from '../sceneManager'
 import { signalHub } from "../signalHub";
 
-import { filter } from 'rxjs/operators'
+import { filter, map, mergeAll } from 'rxjs/operators'
 import { MenuPageAbout } from './pages/about'
 import { MenuPageMain } from './pages/main'
 import { MenuPagePrimitives } from './pages/primitives'
@@ -11,6 +11,7 @@ import { MenuPageLogs } from './pages/logs'
 
 import { div, button, a } from './helpers';
 import type { Orchestrator } from '../orchestrator';
+import { combineLatest, merge } from 'rxjs';
 
 /*
 inline -mode
@@ -33,16 +34,8 @@ content: .... (click )
 
 */
 
-export type stateType = {
-    menuOpened: boolean
-    menuLabel: "Menu" | "Close Menu"
-    micLabel: "Unmute" | "Mute" | "..." | "MUTE"
-    editing: boolean
-    browsing: string
-}
 
 export class MenuManager {
-    public state: stateType
     public fsGui: GUI.AdvancedDynamicTexture
     public wristPlane: BABYLON.AbstractMesh
     public browsePlane: BABYLON.AbstractMesh
@@ -54,20 +47,10 @@ export class MenuManager {
     constructor(public orchestrator: Orchestrator) {
         this.sceneManager = orchestrator.sceneManager
         this.scene = orchestrator.sceneManager.scene
-        this.state = {
-            menuOpened: false,
-            menuLabel: "Menu",
-            micLabel: "Unmute",
-            editing: false,
-            browsing: "main"
-        }
+
         signalHub.local.on('camera_ready').subscribe(() => {
             this.createFullScreenUI()
         })
-
-        // listen("camera_ready").subscribe(() => {
-        //     this.createFullScreenUI()
-        // })
 
         signalHub.local.on('controller_ready').pipe(
             filter(payload => (payload.hand === 'left'))
@@ -78,8 +61,7 @@ export class MenuManager {
         signalHub.local.on('xr_state_changed').subscribe(state => {
             switch (state) {
                 case BABYLON.WebXRState.EXITING_XR:
-                    // this.state = { ... this.state, menu_opened: false, editing: false }
-
+                    // tear down plane and advanced gui textures
                     this.browsePlane.dispose()
                     this.wristPlane.dispose()
                     this.wristGui.dispose()
@@ -88,63 +70,23 @@ export class MenuManager {
                     this.wristPlane = null;
                     this.wristGui = null;
                     this.browseGui = null;
+                    // recreate fullscreen gui
                     this.createFullScreenUI()
                     break;
                 case BABYLON.WebXRState.ENTERING_XR:
-                    //  this.state = { ... this.state, menu_opened: false, editing: false }
+                    //tear down full screen gui    
                     this.fsGui.dispose();
                     this.fsGui = null;
                     break;
             }
         })
 
-        signalHub.local.on('editing').subscribe(value => {
-            this.state.editing = value
-            this.render(this.stateToCtrls())
-        })
+        // listen to menu states
+        const mic_muted_pref = signalHub.observables.mic_muted_pref
+        const menu_opened = signalHub.observables.menu_opened
+        const menu_page = signalHub.observables.menu_page
 
-        signalHub.observables.mic_muted_pref.subscribe(value => {
-            console.log('receiving mic muted_pref', value)
-            this.state.micLabel = value ? "Unmute" : "Mute"
-            this.render(this.stateToCtrls())
-        })
-
-        signalHub.local.on('menu_action').subscribe(msg => {
-            let menuCtrl: GUI.Container
-            let browserCtrl: GUI.Container
-            // update state
-            console.log('receiving menu_action', JSON.stringify(msg))
-            switch (msg.name) {
-                case "close_menu":
-                    this.state = { ...this.state, menuOpened: false, menuLabel: "Menu" }
-                    break;
-                case "open_menu":
-                    this.state = { ...this.state, menuOpened: true, menuLabel: "Close Menu" }
-                    break;
-                case "goto_about":
-                    this.state = { ... this.state, browsing: "about" }
-                    break;
-                case "goto_main":
-                    this.state = { ...this.state, browsing: "main" }
-                    break;
-                case "goto_logs":
-                    this.state = { ... this.state, browsing: "logs" }
-                    break;
-                case "goto_primitives":
-                    this.state = { ...this.state, browsing: "primitives" }
-                    break;
-                // case "unmute":
-                //     this.orchestrator.webRTCClient.publishAudio()
-                //     this.state = { ...this.state, muted: false }
-                //     break;
-                // case "mute":
-                //     this.orchestrator.webRTCClient.unpublishAudio()
-                //     this.state = { ...this.state, muted: true }
-                //     break;
-                default:
-                    console.warn('no such action handler', JSON.stringify(msg))
-            }
-
+        combineLatest([mic_muted_pref, menu_opened, menu_page]).subscribe(value => {
             this.render(this.stateToCtrls())
         })
     }
@@ -186,7 +128,7 @@ export class MenuManager {
             this.fsGui.rootContainer.dispose()
 
             this.fsGui.addControl(this.adaptMenuCtrlForFsGUI(content.menuCtrl))
-            if (this.state.menuOpened) {
+            if (signalHub.observables.menu_opened.getValue()) {
                 this.fsGui.addControl(this.adaptBrowserCtrlForFsGUI(content.browserCtrl))
             }
         }
@@ -197,7 +139,7 @@ export class MenuManager {
             }
             if (this.browseGui) {
                 this.browseGui.rootContainer.dispose()
-                if (this.state.menuOpened) {
+                if (signalHub.observables.menu_opened.getValue()) {
                     this.browseGui.addControl(content.browserCtrl)
                 }
             }
@@ -230,7 +172,7 @@ export class MenuManager {
 
     stateToCtrls() {
 
-        const browserCtrl = (this.state.menuOpened) ? this[this.state.browsing]() : null
+        const browserCtrl = (signalHub.observables.menu_opened.getValue()) ? this[signalHub.observables.menu_page.getValue()]() : null
 
         return {
             menuCtrl: this.stateToMenuCtrl(),
@@ -239,23 +181,21 @@ export class MenuManager {
     }
 
     stateToMenuCtrl() {
-        let menuCallback, micCallback;
-
-        if (this.state.menuOpened) {
-            menuCallback = () => { signalHub.local.emit('menu_action', { name: 'close_menu' }) }
-
-        } else {
-            menuCallback = () => { signalHub.local.emit('menu_action', { name: 'open_menu' }) }
+        const menuCallback = () => {
+            const newValue = !signalHub.observables.menu_opened.getValue()
+            signalHub.observables.menu_opened.next(newValue)
         }
 
-        micCallback = () => {
+        const micCallback = () => {
             const newValue = !signalHub.observables.mic_muted_pref.getValue()
             signalHub.observables.mic_muted_pref.next(newValue)
         }
 
+        const menuLabel = signalHub.observables.menu_opened.getValue() ? "close" : "menu"
+        const micLabel = signalHub.observables.mic_muted_pref.getValue() ? "Unmute" : "Mute"
         return div({ name: 'menu-div' },
-            a({ name: 'menu-btn', callback: menuCallback }, this.state.menuLabel),
-            a({ name: 'mute-btn', callback: micCallback }, this.state.micLabel),
+            a({ name: 'menu-btn', callback: menuCallback }, menuLabel),
+            a({ name: 'mute-btn', callback: micCallback }, micLabel),
         )
     }
 
@@ -263,7 +203,7 @@ export class MenuManager {
     // browsing functions
 
     main() {
-        return new MenuPageMain(this.scene, this.state)
+        return new MenuPageMain(this.scene)
     }
 
     about() {

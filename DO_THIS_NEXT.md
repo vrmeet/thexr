@@ -1,10 +1,5 @@
 TODO:
 
-debug: have a way of checking if we are publishing audio and which members we are receiving audio from
-
-(bug)
-fix bug where agora voice would stop publishing
-
 (feature)
 log the logs into the backend so we can view them off line later
 can log commands and event stream to correlate with log timestamps

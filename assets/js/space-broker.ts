@@ -77,12 +77,11 @@ export class SpaceBroker {
         this.socket.connect()
         this.spaceChannel.join()
             .receive('ok', resp => {
-                console.log('Joined successfully', resp)
                 signalHub.local.emit('space_channel_connected', resp)
                 window['channel'] = this.spaceChannel
             })
             .receive('error', resp => {
-                console.log('Unable to join space channel', resp)
+                console.error('Unable to join space channel', resp)
             })
     }
 
