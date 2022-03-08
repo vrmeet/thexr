@@ -26,9 +26,7 @@ export class XRManager {
 
         this.xrHelper.baseExperience.onStateChangedObservable.add(state => {
             signalHub.local.emit('xr_state_changed', state)
-            //signalHub.local.next({ event: 'xr_state_change', payload: { state } })
 
-            //console.log('xr state', state)
             switch (state) {
                 case BABYLON.WebXRState.IN_XR:
                     this.inXR = true;

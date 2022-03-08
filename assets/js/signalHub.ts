@@ -15,11 +15,8 @@ type LocalEvents = {
         id: string
     }
     xr_state_changed: BABYLON.WebXRState
-    menu_action: { name: string, payload?: any }
-    editing: boolean,
     new_log: any,
     member_state: { member_id: string, op: "new" | "updated" | "removed", state: types.member_state }
-
 }
 
 export type IncomingEvents = {
@@ -50,6 +47,10 @@ interface SignalHub {
         //    memberStates?: Observable<{ [member_id: string]: types.member_state }>
         camera_moved: Subject<{ pos: number[], rot: number[] }>
         hand_movement: Subject<{ hand: string, pos: number[], rot: number[] }>
+        menu_opened: BehaviorSubject<boolean>
+        editing: BehaviorSubject<boolean>
+        menu_page: BehaviorSubject<string>
+
     }
     local: Emitter<LocalEvents>
     incoming: Emitter<IncomingEvents>
@@ -60,51 +61,14 @@ export const signalHub: SignalHub = {
     observables: {
         mic_muted_pref: new BehaviorSubject<boolean>(true),
         camera_moved: new Subject<{ pos: number[], rot: number[] }>(),
-        hand_movement: new Subject<{ hand: string, pos: number[], rot: number[] }>()
+        hand_movement: new Subject<{ hand: string, pos: number[], rot: number[] }>(),
+        menu_opened: new BehaviorSubject<boolean>(false),
+        editing: new BehaviorSubject<boolean>(false),
+        menu_page: new BehaviorSubject<string>("main")
     },
     local: new Emitter<LocalEvents>(),
     incoming: new Emitter<IncomingEvents>(),
     outgoing: new Emitter<OutgoingEvents>()
 }
-
-// transforming incoming into local
-/*
-signalHub.incoming.on('new_member').subscribe(({ member_id, state }) => {
-    signalHub.local.emit('member_state', { member_id, state, op: "new" })
-})
-signalHub.incoming.on('members').subscribe(({ states, movements }) => {
-    Object.entries(states).forEach(([member_id, state]) => {
-        signalHub.local.emit('member_state', { member_id, state, op: "new" })
-    })
-})
-signalHub.incoming.on('member_state_updated').subscribe(({ member_id, new_state }) => {
-    signalHub.local.emit('member_state', { member_id, state: new_state, op: "updated" })
-})
-signalHub.incoming.on('presence_diff').subscribe(presence_diff => {
-    Object.entries(presence_diff.leaves).forEach(([member_id, _meta]) => {
-        signalHub.local.emit('member_state', { member_id, state: null, op: "removed" })
-    })
-})
-
-signalHub.local.on('member_state').subscribe(m => {
-    console.log('member_state', m)
-})
-
-
-signalHub.observables.memberStates = signalHub.local.on('member_state').pipe(
-    scan((acc, { member_id, op, state }) => {
-        if (op === 'removed') {
-            delete acc[member_id]
-        } else {
-            acc[member_id] = state
-        }
-        return acc;
-    }, {})
-)
-
-
-*/
-
-
 
 window['signalHub'] = signalHub;
