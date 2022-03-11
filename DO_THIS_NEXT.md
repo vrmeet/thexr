@@ -1,12 +1,22 @@
 TODO:
 
+- remove browse texture until menu is open
+- make primitives a scrollable list
+- parent, unparent an object in VR
+
+show spawn points when entering edit mode
+
+- show nickname
+- pick avatar
+
+
+may not need typed emitter, maybe can just use rxjs subject,
+then usage of rxjs becomes more uniform
+
 (feature)
 log the logs into the backend so we can view them off line later
 can log commands and event stream to correlate with log timestamps
 - event sourcing
-
-(refactor)
-menu manager, state can be made into an observable so updates to it trigger menu redraw
 
 (refactor)
 move default member state  from space-broker to somewhere else?
