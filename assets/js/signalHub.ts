@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable, scan, Subject } from 'rxjs'
+import { BehaviorSubject, bufferCount, filter, map, Observable, scan, Subject, tap } from 'rxjs'
 import { Emitter } from 'typed-rx-emitter'
 import type * as types from './types'
 
@@ -51,6 +51,7 @@ interface SignalHub {
         editing: BehaviorSubject<boolean>
         menu_page: BehaviorSubject<string>
 
+
     }
     local: Emitter<LocalEvents>
     incoming: Emitter<IncomingEvents>
@@ -64,11 +65,13 @@ export const signalHub: SignalHub = {
         hand_movement: new Subject<{ hand: string, pos: number[], rot: number[] }>(),
         menu_opened: new BehaviorSubject<boolean>(false),
         editing: new BehaviorSubject<boolean>(false),
-        menu_page: new BehaviorSubject<string>("main")
+        menu_page: new BehaviorSubject<string>("main"),
+
     },
     local: new Emitter<LocalEvents>(),
     incoming: new Emitter<IncomingEvents>(),
     outgoing: new Emitter<OutgoingEvents>()
 }
+
 
 window['signalHub'] = signalHub;

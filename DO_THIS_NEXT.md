@@ -1,7 +1,11 @@
 TODO:
 
+- create scene level double pick observable
+- delete menu
+- change color menu
+
 - remove browse texture until menu is open
-- make primitives a scrollable list
+
 - parent, unparent an object in VR
 
 show spawn points when entering edit mode

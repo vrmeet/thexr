@@ -8,11 +8,21 @@ export class CollaborativeEditManager {
     public ignoreMeshNames: string[]
     constructor(public scene: BABYLON.Scene) {
         this.ignoreMeshNames = this.scene.getMeshesByTags("vr_menu_gui").map(mesh => mesh.name)
+        const delFcn = (info) => {
+            if (info.type === BABYLON.PointerEventTypes.POINTERDOUBLETAP) {
+                if (info.pickInfo.pickedMesh) {
+                    info.pickInfo.pickedMesh.dispose()
+                }
+            }
+        }
+        let obs;
         signalHub.observables.editing.subscribe(value => {
             if (value) {
                 this.on()
+                obs = this.scene.onPointerObservable.add(delFcn)
             } else {
                 this.off()
+                this.scene.onPointerObservable.remove(obs)
             }
         })
     }
