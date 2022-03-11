@@ -2,7 +2,7 @@ import type * as BABYLON from 'babylonjs'
 import * as GUI from 'babylonjs-gui'
 import { signalHub } from '../../signalHub';
 
-import { span, a, div, toggle } from '../helpers';
+import { span, a, div, toggle, pre } from '../helpers';
 
 
 export class MenuPagePrimitives extends GUI.Container {
@@ -10,13 +10,17 @@ export class MenuPagePrimitives extends GUI.Container {
         super()
         const callback = () => { signalHub.observables.menu_page.next("main") }
 
-        let options = [a({ callback }, "< Main"), ...this.primOptions()]
+        let options = [a({ callback }, "< Main"), this.scrollablePrimOptions()]
 
 
         this.addControl(
             div({ name: "primitives-container" },
                 ...options
             ))
+    }
+
+    scrollablePrimOptions() {
+        return pre({ name: "scrollable-prim-options" }, ...this.primOptions())
     }
 
     primOptions() {
