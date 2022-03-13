@@ -22,7 +22,8 @@ defmodule Thexr.Spaces do
 
   """
   def list_spaces do
-    Repo.all(Space)
+    query = from Space, order_by: [desc: :inserted_at]
+    Repo.all(query)
   end
 
   @doc """

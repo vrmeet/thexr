@@ -1,5 +1,24 @@
 TODO:
 
+ 
+- create an entity gizmo that brings up all the menu
+   - delete
+   - color
+   - lock/unlock
+   - duplicate
+   - parent to
+
+- file upload
+  - upload a glb file
+
+- image upload
+  - create a texture
+
+- set sink id of audio output selection 
+https://stackoverflow.com/questions/46523466/html-js-select-audio-output-device-in-browser'
+
+- create new entities in front end fast by choosing the uuid
+
 - create scene level double pick observable
 - delete menu
 - change color menu
