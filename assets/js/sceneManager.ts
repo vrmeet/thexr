@@ -306,6 +306,9 @@ export class SceneManager {
             }
             if (mesh) {
                 mesh.id = entity.id
+                if (entity.type != 'grid') {
+                    BABYLON.Tags.AddTagsTo(mesh, "editable")
+                }
             }
         }
         if (mesh) {

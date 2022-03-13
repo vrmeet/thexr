@@ -94,7 +94,6 @@ export class MenuManager {
 
     createVRMenuOverlay() {
         this.wristPlane = BABYLON.MeshBuilder.CreatePlane("wrist_plane", { height: 0.1, width: 0.1 }, this.scene)
-        BABYLON.Tags.AddTagsTo(this.wristPlane, "vr_menu_gui")
         this.wristPlane.showBoundingBox = true
         // this.wristPlane.position.z = 0.1
         // this.wristPlane.position.x = 0.05
@@ -106,13 +105,11 @@ export class MenuManager {
         this.wristGui = GUI.AdvancedDynamicTexture.CreateForMesh(this.wristPlane, 256, 256)
 
         this.browsePlane = BABYLON.MeshBuilder.CreatePlane("browse_plane", { height: 1, width: 1 }, this.scene)
-        BABYLON.Tags.AddTagsTo(this.browsePlane, "vr_menu_gui")
         this.browsePlane.showBoundingBox = true
         this.browsePlane.position.z = 0.6
         this.browsePlane.position.y = 0.2
         this.browsePlane.rotation.x = 1.06
         this.browsePlane.parent = this.sceneManager.xrManager.left_input_source.grip
-        BABYLON.Tags.AddTagsTo(this.browsePlane.parent, "vr_menu_gui")
 
         this.browseGui = GUI.AdvancedDynamicTexture.CreateForMesh(this.browsePlane, 640, 640)
 
