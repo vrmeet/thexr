@@ -309,6 +309,7 @@ export class SceneManager {
                 if (entity.type != 'grid') {
                     BABYLON.Tags.AddTagsTo(mesh, "editable")
                 }
+                signalHub.local.emit('mesh_built', { name: mesh.name })
             }
         }
         if (mesh) {

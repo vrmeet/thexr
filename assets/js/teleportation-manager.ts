@@ -1,4 +1,5 @@
 import * as BABYLON from 'babylonjs'
+import { signalHub } from './signalHub'
 
 
 export class TeleportationManager {
@@ -10,6 +11,12 @@ export class TeleportationManager {
         this.enableTeleporationFeature()
         this.floorMeshes.forEach(mesh => {
             this.teleportation.addFloorMesh(mesh)
+        })
+        signalHub.local.on('mesh_built').subscribe(({ name }) => {
+            let mesh = scene.getMeshByName(name)
+            if (mesh && BABYLON.Tags.MatchesQuery(mesh, "teleportable")) {
+                this.teleportation.addFloorMesh(mesh)
+            }
         })
 
 
