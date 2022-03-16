@@ -11,7 +11,7 @@ defmodule ThexrWeb.Schema.Schema do
     field :id, non_null(:id)
     field :name, non_null(:string)
     field :slug, non_null(:string)
-    field :description, non_null(:string)
+    field :description, :string
     field :settings, :json
     field :entities, non_null(list_of(:entity)), resolve: dataloader(Spaces)
   end
