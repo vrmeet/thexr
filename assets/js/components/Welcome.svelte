@@ -37,9 +37,11 @@ query {
     <div class="modal">
         <div class="modal-content">
             <h2>Welcome to {$space.data.space.name}</h2>
-            <p>
-                {$space.data.space.description}
-            </p>
+            {#if $space.data.space.description}
+                <p>
+                    {$space.data.space.description}
+                </p>
+            {/if}
             <button on:click={joinedCallback}>Join Space</button>
         </div>
     </div>

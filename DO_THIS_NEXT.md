@@ -1,6 +1,7 @@
 TODO:
 
- 
+- skip select mic and output if on quest (enhancement)
+
 - create an entity gizmo that brings up all the menu
    - delete
    - color
