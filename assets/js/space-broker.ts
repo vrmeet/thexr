@@ -63,6 +63,7 @@ export class SpaceBroker {
             this.spaceChannel.push('member_state_patched', state)
         })
         signalHub.outgoing.on('spaces_api').subscribe(payload => {
+
             this.spaceChannel.push('spaces_api', payload)
         })
 

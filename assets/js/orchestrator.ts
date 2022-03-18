@@ -1,4 +1,5 @@
 
+/// <reference types="svelte" />
 import { filter, throttleTime, skip } from 'rxjs/operators'
 import { WebRTCClientAgora } from './web-rtc-client-agora';
 import { signalHub } from './signalHub'
