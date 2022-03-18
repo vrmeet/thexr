@@ -547,6 +547,23 @@ defmodule Thexr.Spaces do
     |> Jason.encode!()
   end
 
+  # when entity is precreated in frontend
+  def added_entity_with_broadcast(space, uuid, name, entity_kind, components) do
+    attrs = %{"space_id" => space.id, "type" => entity_kind, "id" => uuid, "name" => name}
+    attrs = Entity.set_components_in_attrs(attrs, components)
+    {:ok, entity} = create_entity(attrs)
+
+    entity = entity |> Repo.preload(components: from(c in Component, order_by: c.type))
+
+    ThexrWeb.Endpoint.broadcast(
+      "space:#{space.slug}",
+      "entity_created",
+      entity
+    )
+
+    {:ok, entity}
+  end
+
   def add_entity_with_broadcast(space, entity_kind) do
     attrs = %{"space_id" => space.id, "type" => entity_kind}
     {:ok, entity} = create_entity(attrs)

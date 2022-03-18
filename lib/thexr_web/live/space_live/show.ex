@@ -43,8 +43,7 @@ defmodule ThexrWeb.SpaceLive.Show do
 
   @impl true
   def handle_event("add_entity", %{"entity_kind" => entity_kind}, socket) do
-    attrs = %{space_id: socket.assigns.space.id, type: entity_kind}
-    Spaces.create_entity(attrs)
+    Spaces.add_entity_with_broadcast(socket.assigns.space, entity_kind)
     {:noreply, reload_tree(socket)}
   end
 

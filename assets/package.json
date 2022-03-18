@@ -21,12 +21,14 @@
     "phoenix_live_view": "file:../deps/phoenix_live_view",
     "rxjs": "^7.5.4",
     "svelte-forms-lib": "^2.0.1",
-    "typed-rx-emitter": "^1.2.0"
+    "typed-rx-emitter": "^1.2.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^8.0.0",
     "@tsconfig/svelte": "^2.0.1",
     "@types/phoenix": "^1.5.4",
+    "@types/uuid": "^8.3.4",
     "esbuild": "^0.14.8",
     "esbuild-svelte": "^0.6.2",
     "svelte-check": "^2.3.0",

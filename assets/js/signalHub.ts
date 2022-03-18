@@ -17,7 +17,6 @@ type LocalEvents = {
     xr_state_changed: BABYLON.WebXRState
     new_log: any,
     member_state: { member_id: string, op: "new" | "updated" | "removed", state: types.member_state }
-    mesh_built: { name: string }
 }
 
 export type IncomingEvents = {
