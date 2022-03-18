@@ -28,7 +28,8 @@ config :thexr, ThexrWeb.Endpoint,
     # esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
 
     # the above default was replaced with https://cloudless.studio/wrapping-your-head-around-assets-in-phoenix-1-6
-    node: ["esbuild.js", "--watch", cd: Path.expand("../assets", __DIR__)]
+    npm: ["run", "typecheck", cd: Path.expand("../assets", __DIR__)],
+    npm: ["run", "watch", cd: Path.expand("../assets", __DIR__)]
   ]
 
 config :honeybadger,

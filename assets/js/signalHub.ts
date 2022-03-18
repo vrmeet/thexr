@@ -18,7 +18,6 @@ type LocalEvents = {
     new_log: any,
     member_state: { member_id: string, op: "new" | "updated" | "removed", state: types.member_state }
     mesh_built: { name: string } // required to add new meshes to teleport manager
-
 }
 
 export type IncomingEvents = {

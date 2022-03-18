@@ -9,4 +9,7 @@
         "__sapper__/*",
         "public/*"
     ],
+    "compilerOptions": {
+        "noEmit": true
+    }
 }
