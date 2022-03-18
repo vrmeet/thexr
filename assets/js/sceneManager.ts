@@ -315,6 +315,7 @@ export class SceneManager {
                 mesh.rotation.set(component.data.x, component.data.y, component.data.z)
                 break;
             case 'color':
+                console.log('component', component)
                 const mat = this.findOrCreateMaterial({ type: 'color', colorString: component.data.value })
                 mesh.material = mat;
                 break;
