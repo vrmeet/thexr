@@ -74,6 +74,28 @@ defmodule Thexr.SpacesTest do
       assert length(entities) > 0
     end
 
+    test "pre-create entity for space" do
+      space = space_fixture()
+
+      components = %{
+        "position" => %{"x" => 10, "y" => 10, "z" => 10},
+        "rotation" => %{"x" => 20, "y" => 20, "z" => 20},
+        "scale" => %{"x" => 1, "y" => 2, "z" => 3},
+        "color" => "#FF0000"
+      }
+
+      Spaces.added_entity_with_broadcast(
+        space,
+        Ecto.UUID.generate(),
+        "box_#{Thexr.Utils.random_id(5)}",
+        "box",
+        components
+      )
+
+      component = Repo.get_by(Component, type: "color")
+      assert "#FF0000" == component.data.value
+    end
+
     test "update component for entity" do
       space = space_fixture()
       Spaces.add_entity_with_broadcast(space, "box")
@@ -86,7 +108,7 @@ defmodule Thexr.SpacesTest do
     test "delete an entity" do
       space = space_fixture()
       {:ok, entity} = Spaces.add_entity_with_broadcast(space, "box")
-      Spaces.delete_entity_with_broadcast(space, entity.id)
+      Spaces.delete_entity_with_broadcast(space, id: entity.id)
       assert [] == Spaces.get_all_entities_for_space(space.id)
     end
   end

@@ -158,6 +158,8 @@ export const a = (props: { [key: string]: any }, text: string): GUI.Container =>
     }
     ))
 
-    el.onPointerUpObservable.add(props.callback)
+    el.onPointerUpObservable.add((eventData, eventState) => {
+        props.callback()
+    })
     return el
 }

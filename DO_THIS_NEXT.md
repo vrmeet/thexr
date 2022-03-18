@@ -1,5 +1,9 @@
 TODO:
 
+
+
+- delete menu, delete the mesh you click on
+
 - skip select mic and output if on quest (enhancement)
 
 - create an entity gizmo that brings up all the menu

@@ -44,7 +44,11 @@ defmodule Thexr.Spaces.Entity do
   end
 
   def build_default_components(%{"type" => type} = attrs) do
-    set_components_in_attrs(attrs, default_components(type))
+    if !Map.has_key?(attrs, "components") do
+      set_components_in_attrs(attrs, default_components(type))
+    else
+      attrs
+    end
   end
 
   def build_default_components(attrs) do
@@ -52,7 +56,7 @@ defmodule Thexr.Spaces.Entity do
     raise "build_default_components requires a map with a type key"
   end
 
-  defp set_components_in_attrs(attrs, given_components) do
+  def set_components_in_attrs(attrs, given_components) do
     components =
       Enum.map(given_components, fn {component_type, component_value} ->
         %{
@@ -74,7 +78,7 @@ defmodule Thexr.Spaces.Entity do
 
   def changeset(entity, attrs) do
     entity
-    |> cast(attrs, [:name, :type, :space_id, :parent_id])
+    |> cast(attrs, [:id, :name, :type, :space_id, :parent_id])
     |> validate_required([:type])
     |> cast_assoc(:components, with: &Thexr.Spaces.Component.changeset/2)
     |> create_name_if_missing()

@@ -105,28 +105,11 @@ export class SceneManager {
         // Create a basic BJS Scene object
         this.scene = new BABYLON.Scene(this.engine);
 
-        /*
-        fromEvent(document, 'click').pipe(
-    map(() => new Date().getTime()),
-    // Emit the last `clickCount` timestamps.
-    bufferCount(clickCount, 1),
-    // `timestamps` is an array the length of `clickCount` containing the last added `timestamps`.
-    filter((timestamps) => {
-      // `timestamps[0]` contains the timestamp `clickCount` clicks ago.
-      // Check if `timestamp[0]` was within the `clickTimespan`.
-      return timestamps[0] > new Date().getTime() - clickTimespan;
-    })
-  )
-        */
 
 
 
 
 
-
-        // signalHub.observables.scene_pick_event.subscribe(value => {
-        //     console.log('i see a pick event', value)
-        // })
 
         this.processscene_settings(this.settings as scene_settings)
         window['scene'] = this.scene

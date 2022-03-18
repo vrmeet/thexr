@@ -214,7 +214,7 @@ export class MenuManager {
     }
 
     primitives() {
-        return new MenuPagePrimitives()
+        return new MenuPagePrimitives(this.orchestrator)
     }
 }
 
