@@ -12,6 +12,8 @@ import { MenuPageLogs } from './pages/logs'
 import { div, button, a } from './helpers';
 import type { Orchestrator } from '../orchestrator';
 import { combineLatest, merge } from 'rxjs';
+import { MenuTools } from './pages/tools';
+import { MenuColor } from './pages/color';
 
 /*
 inline -mode
@@ -122,7 +124,7 @@ export class MenuManager {
         this.render(this.stateToCtrls())
     }
 
-    render(content: { menuCtrl: GUI.Container, browserCtrl: GUI.Container }) {
+    render(content: { menuCtrl: GUI.Control, browserCtrl: GUI.Control }) {
         if (this.fsGui) {
             this.fsGui.rootContainer.dispose()
 
@@ -145,7 +147,7 @@ export class MenuManager {
         }
     }
 
-    adaptBrowserCtrlForFsGUI(browserCtrl: GUI.Container) {
+    adaptBrowserCtrlForFsGUI(browserCtrl: GUI.Control) {
         let fsc = new GUI.Container("adapted-browse")
         fsc.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM
         fsc.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
@@ -158,7 +160,7 @@ export class MenuManager {
         return fsc
     }
 
-    adaptMenuCtrlForFsGUI(menuCtrl: GUI.Container) {
+    adaptMenuCtrlForFsGUI(menuCtrl: GUI.Control) {
         let fsc = new GUI.Container("adapted-menu")
         fsc.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM
         fsc.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
@@ -211,6 +213,14 @@ export class MenuManager {
 
     logs() {
         return new MenuPageLogs(this.orchestrator.logManager)
+    }
+
+    tools() {
+        return new MenuTools()
+    }
+
+    color() {
+        return new MenuColor(this.orchestrator)
     }
 
     primitives() {

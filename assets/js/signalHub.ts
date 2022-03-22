@@ -49,7 +49,7 @@ interface SignalHub {
         camera_moved: Subject<{ pos: number[], rot: number[] }>
         hand_movement: Subject<{ hand: string, pos: number[], rot: number[] }>
         menu_opened: BehaviorSubject<boolean>
-        editing: BehaviorSubject<boolean>
+        editing: BehaviorSubject<types.EditMode>
         menu_page: BehaviorSubject<string>
 
 
@@ -65,7 +65,7 @@ export const signalHub: SignalHub = {
         camera_moved: new Subject<{ pos: number[], rot: number[] }>(),
         hand_movement: new Subject<{ hand: string, pos: number[], rot: number[] }>(),
         menu_opened: new BehaviorSubject<boolean>(false),
-        editing: new BehaviorSubject<boolean>(false),
+        editing: new BehaviorSubject<types.EditMode>(null),
         menu_page: new BehaviorSubject<string>("main"),
 
     },

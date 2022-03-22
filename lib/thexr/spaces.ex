@@ -296,6 +296,10 @@ defmodule Thexr.Spaces do
     Repo.delete(entity)
   end
 
+  def delete_entity_with_broadcast(space, %{"id" => entity_id}) do
+    delete_entity_with_broadcast(space, id: entity_id)
+  end
+
   def delete_entity_with_broadcast(space, filters) do
     filters = filters ++ [{:space_id, space.id}]
 
@@ -590,6 +594,8 @@ defmodule Thexr.Spaces do
 
       {:ok, component}
     else
+      # TODO do multiple error values match here?  Pls check
+      {:error, :not_found} -> create_component_for_entity(entity_id, type, data)
       err -> err
     end
   end

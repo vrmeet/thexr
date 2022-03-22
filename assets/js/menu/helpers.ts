@@ -4,7 +4,7 @@ import { signalHub } from '../signalHub'
 
 
 
-type child = GUI.Container | string
+type child = GUI.Control | string
 
 /*
 
@@ -35,7 +35,7 @@ export const applyAttributes = (el: any, props: { [key: string]: any }) => {
     }
 }
 
-export const g = (guiType: any, props: { [key: string]: any }, ...children: child[]): GUI.Container => {
+export const g = (guiType: any, props: { [key: string]: any }, ...children: child[]): GUI.Control => {
     let el = new guiType() as GUI.Container
     el.clipChildren = false
     applyAttributes(el, props)
@@ -79,11 +79,11 @@ export const styleByType = (texture: GUI.AdvancedDynamicTexture, guiType: string
 }
 
 
-export const button = (props: { [key: string]: any }, ...children: child[]): GUI.Container => {
+export const button = (props: { [key: string]: any }, ...children: child[]): GUI.Control => {
     return g(GUI.Button, props, ...children)
 }
 
-export const div = (props: { [key: string]: any }, ...children: child[]): GUI.Container => {
+export const div = (props: { [key: string]: any }, ...children: child[]): GUI.Control => {
     let defaults = {
         cornerRadius: 20,
         color: "Purple",
@@ -110,7 +110,7 @@ export const pre = (props: { [key: string]: any }, ...children: child[]) => {
 
 export const span = (props: { [key: string]: any }, ...children: child[]) => {
     const stackDefaults = { name: 'hsp', isVertical: false, height: "40px", width: "400px", clipChildren: false }
-    let horizontalStackPanel = g(GUI.StackPanel, { ...stackDefaults, ...props })
+    let horizontalStackPanel = g(GUI.StackPanel, { ...stackDefaults, ...props }) as GUI.Container
 
     let label = g(GUI.TextBlock, { name: 'editLabel', horizontalAlignment: GUI.Control.HORIZONTAL_ALIGNMENT_LEFT, text: "Edit", width: "40px" })
     let nodes = children.map(child => ((typeof child === 'object') ? child : g(GUI.TextBlock, {
@@ -123,7 +123,7 @@ export const span = (props: { [key: string]: any }, ...children: child[]) => {
     return horizontalStackPanel
 }
 
-export const toggle = (props: { [key: string]: any }, ...children: child[]): GUI.Container => {
+export const toggle = (props: { [key: string]: any }, ...children: child[]): GUI.Control => {
     const defaults = {
         value: 0,
         isPointerBlocker: true,
@@ -142,7 +142,7 @@ export const toggle = (props: { [key: string]: any }, ...children: child[]): GUI
 
 
 
-export const a = (props: { [key: string]: any }, text: string): GUI.Container => {
+export const a = (props: { [key: string]: any }, text: string): GUI.Control => {
     if (!props["callback"]) {
         console.error("callback is required", props)
     }

@@ -73,9 +73,15 @@ export class LogManager {
             if (typeof col === 'string') {
                 return col
             } else {
-                return JSON.stringify(col)
+
+                try {
+                    return JSON.stringify(col)
+                } catch (e) {
+                    return `${e} - ${col}`
+                }
             }
         }).join(" ")
+
     }
 
 

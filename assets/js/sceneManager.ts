@@ -7,9 +7,10 @@ import { MenuManager } from './menu/menu-manager'
 import { reduceSigFigs } from './utils';
 import { XRManager } from './xr-manager';
 import type { Orchestrator } from './orchestrator';
-import { CollaborativeEditManager } from './collaborative-edit-manager';
 import { signalHub } from './signalHub';
 import { buffer, bufferCount, debounceTime, filter, map, take } from 'rxjs/operators'
+import { CollaborativeEditTransformManager } from './collab-edit/transform';
+import { CollabEditDeleteManager } from './collab-edit/delete';
 
 
 export class SceneManager {
@@ -26,8 +27,8 @@ export class SceneManager {
     public canvasId: string
     public member_id: string
     public serializedSpace: serialized_space
-    public collabEditManager: CollaborativeEditManager
-
+    public collabEditManager: CollaborativeEditTransformManager
+    public collabDeleteManager: CollabEditDeleteManager
 
 
 
@@ -118,7 +119,8 @@ export class SceneManager {
         // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
         var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), this.scene);
         this.parseInitialScene(this.entities)
-        this.collabEditManager = new CollaborativeEditManager(this.scene)
+        this.collabEditManager = new CollaborativeEditTransformManager(this.scene)
+        this.collabDeleteManager = new CollabEditDeleteManager(this.scene)
         return this.scene;
 
 
@@ -289,9 +291,8 @@ export class SceneManager {
             }
             if (mesh) {
                 mesh.id = entity.id
-                if (entity.type != 'grid') {
-                    BABYLON.Tags.AddTagsTo(mesh, "editable")
-                }
+                BABYLON.Tags.AddTagsTo(mesh, "editable")
+
                 signalHub.local.emit('mesh_built', { name: mesh.name })
             }
         }
