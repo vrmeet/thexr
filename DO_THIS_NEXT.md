@@ -1,6 +1,25 @@
 TODO:
 
 
+- color
+
+
+UI Tools
+  - List of tools that are one click away
+  - after selecting the tool, there is sometimes a parameter(s)
+     - maintained by the tool
+  - a primitive is a kind of brush tip, so you paint with it
+
+
+- way to delete and color primitives
+  tools
+    primitives
+    delete
+    color
+    pen
+    thicken
+
+- console log button presses on controllers
 
 - delete menu, delete the mesh you click on
 

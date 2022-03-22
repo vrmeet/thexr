@@ -1,10 +1,10 @@
 
 import * as BABYLON from 'babylonjs'
 import * as GUI from 'babylonjs-gui'
-import { div } from './menu/helpers'
-import { signalHub } from './signalHub'
+import { signalHub } from '../signalHub'
 
-export class CollaborativeEditManager {
+
+export class CollaborativeEditTransformManager {
     public selectedMesh: BABYLON.AbstractMesh
     public gizmoManager: BABYLON.GizmoManager
     public pointerObs: BABYLON.Observer<BABYLON.PointerInfo>
@@ -12,7 +12,7 @@ export class CollaborativeEditManager {
     constructor(public scene: BABYLON.Scene) {
 
         signalHub.observables.editing.subscribe(value => {
-            if (value) {
+            if (value === 'transform') {
                 this.on()
             } else {
                 this.off()

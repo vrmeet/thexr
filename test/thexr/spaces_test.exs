@@ -111,5 +111,12 @@ defmodule Thexr.SpacesTest do
       Spaces.delete_entity_with_broadcast(space, id: entity.id)
       assert [] == Spaces.get_all_entities_for_space(space.id)
     end
+
+    test "delete an entity with input from frontend" do
+      space = space_fixture()
+      {:ok, entity} = Spaces.add_entity_with_broadcast(space, "box")
+      Spaces.delete_entity_with_broadcast(space, %{"id" => entity.id})
+      assert [] == Spaces.get_all_entities_for_space(space.id)
+    end
   end
 end

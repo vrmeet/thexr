@@ -15,9 +15,9 @@ export class MenuPagePrimitives extends GUI.Container {
         super()
         this.scene = this.orchestrator.sceneManager.scene
 
-        const callback = () => { signalHub.observables.menu_page.next("main") }
+        const callback = () => { signalHub.observables.menu_page.next("tools") }
 
-        let options = [a({ callback }, "< Main"), this.scrollablePrimOptions()]
+        let options = [a({ callback }, "< Tools"), this.scrollablePrimOptions()]
 
         this.addControl(
             div({ name: "primitives-container" },
@@ -38,12 +38,16 @@ export class MenuPagePrimitives extends GUI.Container {
                 let dest = ray.origin.add(ray.direction)
                 const name = `${prim}_${random_id(6)}`
                 const uuid = uuidv4()
-                const components = {
+                let components = {
                     position: { x: dest.x, y: dest.y, z: dest.z },
                     rotation: { x: 0, y: 0, z: 0 },
                     scale: { x: 1, y: 1, z: 1 },
-                    color: "#FFFFFF"
                 }
+                if (prim === 'grid') {
+                    components.position = { x: 0, y: -0.01, z: 0 }
+                    components.rotation = { x: 1.5708, y: 0, z: 0 }
+                }
+
                 this.orchestrator.sceneManager.findOrCreateMesh({
                     type: prim,
                     name,

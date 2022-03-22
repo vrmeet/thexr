@@ -33,4 +33,6 @@ export type PresenceDiff = {
     leaves: PresenceState
 }
 
+export type EditMode = "transform" | "delete" | null
+
 
