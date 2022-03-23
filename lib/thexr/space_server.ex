@@ -22,6 +22,10 @@ defmodule Thexr.SpaceServer do
     )
   end
 
+  def process_event(slug, event) do
+    GenServer.cast(pid(slug), {:event, event})
+  end
+
   @doc """
   Returns a tuple used to register and lookup a game server process by name.
   """
@@ -76,7 +80,8 @@ defmodule Thexr.SpaceServer do
      %{
        slug: slug,
        member_movements: member_movements,
-       member_states: member_states
+       member_states: member_states,
+       events: []
      }, @timeout}
   end
 
@@ -84,6 +89,12 @@ defmodule Thexr.SpaceServer do
   #   socket.assigns.ets_refs,
   #   {socket.assigns.member_id, p0, p1, p2, r0, r1, r2, r3, left, right}
   # )
+
+  def handle_cast({:event, event}, state) do
+    IO.inspect(event, label: "got event")
+    state = %{state | events: [event | state.events]}
+    {:noreply, state}
+  end
 
   def handle_call(:summary, _from, state) do
     {:reply, state, state, @timeout}
