@@ -1,7 +1,11 @@
 TODO:
 
+Event sourcing
 
-- color
+events are the 1st class citizen
+- persist the events
+
+
 
 
 UI Tools
