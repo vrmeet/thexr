@@ -152,8 +152,6 @@ defmodule Thexr.Spaces do
 
   """
   def update_space(%Space{} = space, attrs) do
-    IO.inspect(attrs, label: "update_space")
-
     space
     |> Space.edit_changeset(attrs)
     |> Repo.update()
@@ -598,5 +596,55 @@ defmodule Thexr.Spaces do
       {:error, :not_found} -> create_component_for_entity(entity_id, type, data)
       err -> err
     end
+  end
+
+  alias Thexr.Spaces.Event
+
+  @doc """
+  Returns the list of events.
+
+  ## Examples
+
+      iex> list_events()
+      [%Event{}, ...]
+
+  """
+  def list_events(space_id) do
+    q = from(e in Event, where: e.space_id == ^space_id, order_by: e.sequence)
+    Repo.all(q)
+  end
+
+  @doc """
+  Gets a single event.
+
+  Raises `Ecto.NoResultsError` if the Event does not exist.
+
+  ## Examples
+
+      iex> get_event!(123)
+      %Event{}
+
+      iex> get_event!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_event!(id), do: Repo.get!(Event, id)
+
+  @doc """
+  Creates a event.
+
+  ## Examples
+
+      iex> create_event(%{field: value})
+      {:ok, %Event{}}
+
+      iex> create_event(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_event(attrs \\ %{}) do
+    %Event{}
+    |> Event.changeset(attrs)
+    |> Repo.insert()
   end
 end

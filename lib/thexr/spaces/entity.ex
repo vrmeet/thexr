@@ -52,7 +52,6 @@ defmodule Thexr.Spaces.Entity do
   end
 
   def build_default_components(attrs) do
-    IO.inspect(attrs)
     raise "build_default_components requires a map with a type key"
   end
 

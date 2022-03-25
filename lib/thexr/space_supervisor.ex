@@ -16,8 +16,13 @@ defmodule Thexr.SpaceSupervisor do
   Starts a `GameServer` process and supervises it.
   """
 
+  def start_space(space = %Thexr.Spaces.Space{}) do
+    DynamicSupervisor.start_child(__MODULE__, {SpaceServer, space})
+  end
+
   def start_space(slug) do
-    DynamicSupervisor.start_child(__MODULE__, {SpaceServer, slug})
+    space = Thexr.Spaces.get_space_by_slug(slug)
+    DynamicSupervisor.start_child(__MODULE__, {SpaceServer, space})
   end
 
   @doc """
