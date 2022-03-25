@@ -14,11 +14,11 @@ defmodule Thexr.SpaceServer do
   Spawns a new space server process registered under the given `space_slug`.
   options are passed to initialize the space state
   """
-  def start_link(slug) do
+  def start_link(space) do
     GenServer.start_link(
       __MODULE__,
-      {:ok, slug},
-      name: via_tuple(slug)
+      {:ok, space},
+      name: via_tuple(space.slug)
     )
   end
 
@@ -59,7 +59,7 @@ defmodule Thexr.SpaceServer do
   # Server Callbacks
   #################################################################
 
-  def init({:ok, slug}) do
+  def init({:ok, space}) do
     member_movements =
       :ets.new(:member_movements, [
         :set,
@@ -78,7 +78,7 @@ defmodule Thexr.SpaceServer do
 
     {:ok,
      %{
-       slug: slug,
+       space: space,
        member_movements: member_movements,
        member_states: member_states,
        events: []
@@ -91,8 +91,15 @@ defmodule Thexr.SpaceServer do
   # )
 
   def handle_cast({:event, event}, state) do
-    IO.inspect(event, label: "got event")
     state = %{state | events: [event | state.events]}
+
+    Thexr.Spaces.create_event(%{
+      space_id: state.space.id,
+      type: to_string(event.__struct__),
+      sequence: 0,
+      payload: Map.from_struct(event)
+    })
+
     {:noreply, state}
   end
 

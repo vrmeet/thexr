@@ -29,6 +29,6 @@ defmodule ThexrWeb.SpaceController do
   end
 
   def nudge_space(space) do
-    Thexr.SpaceSupervisor.start_space(space.slug)
+    Thexr.SpaceSupervisor.start_space(space)
   end
 end

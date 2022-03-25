@@ -122,7 +122,6 @@ defmodule ThexrWeb.SpaceEditLive.Index do
   end
 
   def handle_event("component_change", %{"component" => component}, socket) do
-    IO.inspect("in component change")
     socket = debounce_autosave(socket)
     component_changeset = Component.changeset(socket.assigns.component_changeset, component)
 
