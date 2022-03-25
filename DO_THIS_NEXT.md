@@ -1,5 +1,24 @@
 TODO:
 
+context has api for commands: 
+  member_join_space
+  member_move
+  member_mute
+  ...
+
+The context creates the event -> sends to genserver
+
+genserver - appends the event to a log
+  - first in memory
+  - then to disk (maybe use genstage when the consumer gives producer a demand)
+
+subscribers:
+  - eventstream to disk writer
+  - member states (could be either memory (:ets) or db)
+  - member positions/rotations (hands)
+
+
+
 Event sourcing
 
 events are the 1st class citizen

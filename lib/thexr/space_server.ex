@@ -81,7 +81,8 @@ defmodule Thexr.SpaceServer do
        space: space,
        member_movements: member_movements,
        member_states: member_states,
-       events: []
+       events: [],
+       sequence: 0
      }, @timeout}
   end
 
@@ -91,12 +92,12 @@ defmodule Thexr.SpaceServer do
   # )
 
   def handle_cast({:event, event}, state) do
-    state = %{state | events: [event | state.events]}
+    state = %{state | events: [event | state.events], sequence: state.sequence + 1}
 
     Thexr.Spaces.create_event(%{
       space_id: state.space.id,
       type: to_string(event.__struct__),
-      sequence: 0,
+      sequence: state.sequence,
       payload: Map.from_struct(event)
     })
 
