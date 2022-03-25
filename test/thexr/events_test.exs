@@ -16,7 +16,11 @@ defmodule Thexr.EventsTest do
     end)
 
     Process.sleep(50)
+    stored_events = Thexr.Spaces.list_events(space.id) |> IO.inspect()
+    assert(stored_events |> length() == 2)
 
-    assert(Thexr.Spaces.list_events(space.id) |> length() == 2)
+    first = List.first(stored_events)
+    last = List.last(stored_events)
+    assert(first.sequence < last.sequence)
   end
 end
