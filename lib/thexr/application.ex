@@ -19,7 +19,9 @@ defmodule Thexr.Application do
       # Start the Endpoint (http/https)
       ThexrWeb.Endpoint,
       {Registry, keys: :unique, name: Thexr.SpaceRegistry},
-      Thexr.SpaceSupervisor
+      Thexr.SpaceSupervisor,
+      Thexr.QueueBroadcaster,
+      Thexr.EventWriter
       # Start a worker by calling: Thexr.Worker.start_link(arg)
       # {Thexr.Worker, arg}
     ]

@@ -54,7 +54,8 @@ defmodule Thexr.MixProject do
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:absinthe, "~> 1.7"},
       {:absinthe_plug, "~> 1.5.8"},
-      {:dataloader, "~> 1.0"}
+      {:dataloader, "~> 1.0"},
+      {:gen_stage, "~> 1.1"}
     ]
   end
 
