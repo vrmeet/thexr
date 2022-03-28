@@ -47,6 +47,14 @@ defmodule Thexr.SpaceServer do
     safe_call(pid(slug), :get_ets_refs)
   end
 
+  def summary(slug) do
+    GenServer.call(pid(slug), :summary)
+  end
+
+  def pop_events(slug) do
+    GenServer.call(pid(slug), :pop_events)
+  end
+
   def safe_call(pid, payload) when is_pid(pid) do
     GenServer.call(pid, payload)
   end
@@ -81,7 +89,6 @@ defmodule Thexr.SpaceServer do
        space: space,
        member_movements: member_movements,
        member_states: member_states,
-       events: [],
        sequence: 0
      }, @timeout}
   end
@@ -92,9 +99,9 @@ defmodule Thexr.SpaceServer do
   # )
 
   def handle_cast({:event, event}, state) do
-    state = %{state | events: [event | state.events], sequence: state.sequence + 1}
+    state = %{state | sequence: state.sequence + 1}
 
-    Thexr.Spaces.create_event(%{
+    Thexr.QueueBroadcaster.async_notify(%{
       space_id: state.space.id,
       type: to_string(event.__struct__),
       sequence: state.sequence,
@@ -106,6 +113,10 @@ defmodule Thexr.SpaceServer do
 
   def handle_call(:summary, _from, state) do
     {:reply, state, state, @timeout}
+  end
+
+  def handle_call(:pop_events, _from, state) do
+    {:reply, state.events, %{state | events: []}, @timeout}
   end
 
   def handle_call(:get_ets_refs, _from, state) do

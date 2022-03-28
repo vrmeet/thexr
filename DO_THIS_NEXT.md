@@ -6,7 +6,11 @@ context has api for commands:
   member_mute
   ...
 
-The context creates the event -> sends to genserver
+The context creates the event -> sends to the space genserver
+  - genserver forward them to queued_broadcaster (producer)
+  - 
+
+Use genstage consumer that subscribes to the producer (above), and write to a db
 
 genserver - appends the event to a log
   - first in memory
