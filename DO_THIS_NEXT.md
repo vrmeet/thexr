@@ -1,5 +1,33 @@
 TODO:
 
+handle joining and leaving a space separately then joining a space channel
+ - and turn joining and leaving a space into explicit events
+
+- frontend:
+    1) js -> signalHub -> channel.push 
+    2) graphQL -> mutation -> command
+    - folder of command interfaces/types
+    - folder of event interfaces/types
+
+Both can send a command struct to a handler
+  - multiple function heads {command_name, payload} -> {event_name, payload}
+  - persist events to DB
+  - create snapshots every X events
+  - doesn't need type, just pattern match on the value in the tuple to create snapshot
+
+
+use quaternion_rotation every where
+store as array everywhere
+
+send all updates via events, including member join, member leave, mic mutes, entity creation
+
+create a web page for viewing list of events
+remove id from list of events, remove inserted at and updated at
+
+create a snap shot mechanism so can load prior state quickly, and without member movements
+
+
+
 context has api for commands: 
   member_join_space
   member_move

@@ -35,4 +35,26 @@ export type PresenceDiff = {
 
 export type EditMode = "transform" | "delete" | null
 
+/**
+ * commands
+ */
+
+export type command =
+    ["member_join", { member_id: string }] |
+    ["member_leave", { member_id: string }] |
+    ["member_move", { member_id: string, pos_rot: PosRot }]
+
+
+
+
+/**
+ * events
+ */
+
+export type event =
+    ["member_joined", { member_id: string }] |
+    ["member_left", { member_id: string }] |
+    ["member_moved", { member_id: string, pos_rot: PosRot }]
+
+
 

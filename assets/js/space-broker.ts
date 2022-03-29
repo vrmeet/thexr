@@ -4,18 +4,44 @@ import { signalHub } from './signalHub'
 import { throttleTime, withLatestFrom } from 'rxjs/operators'
 import { combineLatest, map, filter } from 'rxjs'
 import type { IncomingEvents } from './signalHub'
+import type { PosRot } from './types'
+
+type ChannelParams = {
+    pos_rot: PosRot,
+    state: {
+        mic_pref: string,
+        video_pref: string,
+        audio_actual: string,
+        video_actual: string,
+        nickname: string,
+        handraised: boolean,
+        updated_at: number
+    }
+}
+
 
 export class SpaceBroker {
     public slug: string
     public socket: Socket
     public spaceChannel: Channel
     public initialized: Promise<any>
-    public channelParams: any
+    public channelParams: ChannelParams
 
     constructor(public orchestrator: Orchestrator) {
         this.slug = orchestrator.slug
         this.socket = new Socket('/socket', { params: { token: window['userToken'] } })
-        this.channelParams = {}
+        this.channelParams = {
+            pos_rot: undefined,
+            state: {
+                mic_pref: "off",
+                video_pref: "off",
+                audio_actual: "unpublished",
+                video_actual: "unpublished",
+                nickname: "string",
+                handraised: false,
+                updated_at: Date.now()
+            }
+        }
         this.spaceChannel = this.socket.channel(`space:${this.slug}`, () => { return this.channelParams })
 
         // listen for clicked join button
@@ -25,16 +51,8 @@ export class SpaceBroker {
 
         combineLatest([$cameraReady, $joined]).subscribe(([posRot, _]) => {
             // set this value for channel params as we join
-            this.channelParams['pos_rot'] = posRot
-            this.channelParams['state'] = {
-                mic_pref: "off",
-                video_pref: "off",
-                audio_actual: "unpublished",
-                video_actual: "unpublished",
-                nickname: "string",
-                handraised: false,
-                updated_at: Date.now()
-            }
+            this.channelParams.pos_rot = posRot
+            this.channelParams.state.updated_at = Date.now()
             this.connectToChannel()
             this.forwardCameraMovement()
             this.forwardMicPrefAsState()
