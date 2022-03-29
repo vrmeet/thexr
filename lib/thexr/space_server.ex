@@ -108,6 +108,8 @@ defmodule Thexr.SpaceServer do
       payload: Map.from_struct(event)
     })
 
+    broadcast(state.space, to_string(event.__struct__), Map.from_struct(event))
+
     {:noreply, state}
   end
 
@@ -133,5 +135,9 @@ defmodule Thexr.SpaceServer do
 
   def terminate(_reason, _game) do
     :ok
+  end
+
+  def broadcast(space, message, payload) do
+    ThexrWeb.Endpoint.broadcast("space:#{space.slug}", message, payload)
   end
 end

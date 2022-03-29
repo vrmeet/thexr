@@ -32,6 +32,7 @@ export type IncomingEvents = {
     new_member: { member_id: string, pos_rot: types.PosRot, state: types.member_state }
     members: { movements: { [member_id: string]: { pos_rot: types.PosRot } }, states: { [member_id: string]: types.member_state } }
     member_state_updated: { member_id: string, state: types.member_state }
+    "Elixir.Thexr.Events.BoxCreated": { id: string, name: string, position: any, rotation: any, scaling: any }
 
 }
 

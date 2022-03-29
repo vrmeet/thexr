@@ -49,6 +49,7 @@ export class SpaceBroker {
         // forward incoming from channel to event bus
         this.spaceChannel.onMessage = (event: keyof IncomingEvents, payload) => {
             if (!event.startsWith('phx_') && !event.startsWith('chan_')) {
+                console.log('channel incoming', event, payload)
                 signalHub.incoming.emit(event, payload)
             }
             return payload
