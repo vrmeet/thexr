@@ -1,7 +1,7 @@
 import { Socket, Channel } from 'phoenix'
 import type { Orchestrator } from './orchestrator'
 import { signalHub } from './signalHub'
-import { throttleTime, withLatestFrom } from 'rxjs/operators'
+import { merge, mergeWith, take, throttleTime, withLatestFrom } from 'rxjs/operators'
 import { combineLatest, map, filter } from 'rxjs'
 import type { IncomingEvents } from './signalHub'
 import type { PosRot } from './types'
@@ -30,30 +30,41 @@ export class SpaceBroker {
     constructor(public orchestrator: Orchestrator) {
         this.slug = orchestrator.slug
         this.socket = new Socket('/socket', { params: { token: window['userToken'] } })
-        this.channelParams = {
-            pos_rot: undefined,
-            state: {
-                mic_pref: "off",
-                video_pref: "off",
-                audio_actual: "unpublished",
-                video_actual: "unpublished",
-                nickname: "string",
-                handraised: false,
-                updated_at: Date.now()
-            }
-        }
-        this.spaceChannel = this.socket.channel(`space:${this.slug}`, () => { return this.channelParams })
+        // this.channelParams = {
+        //     pos_rot: undefined,
+        //     state: {
+        //         mic_pref: "off",
+        //         video_pref: "off",
+        //         audio_actual: "unpublished",
+        //         video_actual: "unpublished",
+        //         nickname: "string",
+        //         handraised: false,
+        //         updated_at: Date.now()
+        //     }
+        // }
+        this.spaceChannel = this.socket.channel(`space:${this.slug}`)
 
         // listen for clicked join button
         const $cameraReady = signalHub.local.on('camera_ready')
-        const $joined = signalHub.local.on('joined')
+        const $enter = signalHub.local.on('enter')
+        const $observe = signalHub.local.on('observe')
+
+        $enter.pipe(
+            mergeWith($observe),
+            take(1)
+        ).subscribe(event => {
+            this.connectToChannel()
+        })
+
+
+
         this.setupChannelSubscriptions()
 
-        combineLatest([$cameraReady, $joined]).subscribe(([posRot, _]) => {
+        combineLatest([$cameraReady, $enter]).subscribe(([posRot, _]) => {
             // set this value for channel params as we join
-            this.channelParams.pos_rot = posRot
-            this.channelParams.state.updated_at = Date.now()
-            this.connectToChannel()
+            // this.channelParams.pos_rot = posRot
+            // this.channelParams.state.updated_at = Date.now()
+            // this.connectToChannel()
             this.forwardCameraMovement()
             this.forwardMicPrefAsState()
 

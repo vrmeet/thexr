@@ -19,7 +19,7 @@
     // message bus with orchestrator
 
     //state
-    let didJoinSpace = false;
+    let didInteract = false;
     let showMicAndOutputForm = false;
 
     const micConfirmed = () => {
@@ -37,15 +37,22 @@
     };
 
     //callbacks
-    const joinedCallback = () => {
-        signalHub.local.emit("joined", {});
+    const enterCallback = () => {
+        signalHub.local.emit("enter", {});
         // signalHub.local.next(new EventJoined());
-        didJoinSpace = true;
+        didInteract = true;
         if (!micConfirmed()) {
             showMicAndOutputForm = true;
         } else {
             ready();
         }
+    };
+
+    const observeCallback = () => {
+        signalHub.local.emit("observe", {});
+        // signalHub.local.next(new EventJoined());
+        didInteract = true;
+        ready();
     };
 
     const ready = () => {
@@ -66,8 +73,8 @@
     };
 </script>
 
-{#if !didJoinSpace}
-    <Welcome {joinedCallback} />
+{#if !didInteract}
+    <Welcome {enterCallback} {observeCallback} />
 {/if}
 {#if showMicAndOutputForm}
     <MicAndOutput {confirmMicAndOutputCallback} />

@@ -2,7 +2,8 @@
     import { getContext } from "svelte";
     import { query, operationStore } from "@urql/svelte";
     //props
-    export let joinedCallback;
+    export let enterCallback;
+    export let observeCallback;
     let name;
     let description;
 
@@ -42,7 +43,8 @@ query {
                     {$space.data.space.description}
                 </p>
             {/if}
-            <button on:click={joinedCallback}>Join Space</button>
+            <button on:click={enterCallback}>Enter</button>
+            <button on:click={observeCallback}>Observe</button>
         </div>
     </div>
 {/if}
