@@ -64,14 +64,14 @@ export class SceneManager {
                 this.processComponent(mesh, { type: params.type, data: params.data })
             })
         })
-        signalHub.incoming.on('Elixir.Thexr.Events.BoxCreated').subscribe(event => {
+        signalHub.incoming.on('BoxCreated').subscribe(event => {
             let mesh: BABYLON.AbstractMesh
             mesh = this.scene.getMeshById(event.id)
             if (!mesh) {
                 mesh = BABYLON.MeshBuilder.CreateBox(event.name, {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable")
             }
-            const { position, rotation, scaling } = event
+            const { position, rotation, scaling } = event.components
             mesh.position.copyFromFloats(position.x, position.y, position.z)
         })
 

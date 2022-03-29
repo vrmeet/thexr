@@ -1,3 +1,3 @@
 defmodule Thexr.Events.BoxCreated do
-  defstruct [:id, :name, :position, :rotation, :scaling]
+  defstruct [:id, :name, :components]
 end
