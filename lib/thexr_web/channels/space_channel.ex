@@ -4,7 +4,7 @@ defmodule ThexrWeb.SpaceChannel do
 
   @impl true
   def join("space:" <> slug, _params, socket) do
-    # send(self(), :after_join)
+    send(self(), :after_join)
     socket = assign(socket, :slug, slug)
     {:ok, %{agora_app_id: System.get_env("AGORA_APP_ID")}, socket}
   end
@@ -34,6 +34,7 @@ defmodule ThexrWeb.SpaceChannel do
   end
 
   def handle_in("member_state_patched", patch, socket) do
+    IO.inspect(patch, label: "what's the data")
     payload = get_state(socket.assigns.member_id, socket.assigns.member_states)
     state = Map.merge(payload, patch)
     :ets.insert(socket.assigns.member_states, {socket.assigns.member_id, state})
@@ -58,6 +59,13 @@ defmodule ThexrWeb.SpaceChannel do
   end
 
   @impl true
+
+  def handle_info(:after_join, socket) do
+    {:ok, _} = Presence.track(socket, socket.assigns.member_id, %{})
+    push(socket, "presence_state", Presence.list(socket))
+    {:noreply, socket}
+  end
+
   def handle_info(
         {:after_join,
          %{"pos_rot" => %{"pos" => [px, py, pz], "rot" => [rx, ry, rz, rw]}, "state" => state} =

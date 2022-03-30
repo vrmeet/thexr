@@ -38,7 +38,7 @@
 
     //callbacks
     const enterCallback = () => {
-        signalHub.local.emit("enter", {});
+        signalHub.local.emit("interaction_choice", "enter");
         // signalHub.local.next(new EventJoined());
         didInteract = true;
         if (!micConfirmed()) {
@@ -49,7 +49,7 @@
     };
 
     const observeCallback = () => {
-        signalHub.local.emit("observe", {});
+        signalHub.local.emit("interaction_choice", "observe");
         // signalHub.local.next(new EventJoined());
         didInteract = true;
         ready();

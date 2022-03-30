@@ -3,8 +3,7 @@ import { Emitter } from 'typed-rx-emitter'
 import type * as types from './types'
 
 type LocalEvents = {
-    enter: any // user clicked enter button
-    observe: any // user clicked observe button
+    interaction_choice: 'enter' | 'observe'
     space_channel_connected: { agora_app_id: string }
     camera_ready: { pos: number[], rot: number[] }
     controller_ready: { hand: string }
