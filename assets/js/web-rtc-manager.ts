@@ -10,12 +10,15 @@ export class WebRTCManager {
 
     constructor(public orchestrator: Orchestrator) {
         this.webRTCClient = new WebRTCClientAgora(this.orchestrator.slug, this.orchestrator.member_id)
+        // first setup listeners/behaviors for joining leaving agora client
+        this.setupWebRTCEvents()
+        // listeners only work if there is an app id
         signalHub.local.on('space_channel_connected').pipe(
             take(1)
         ).subscribe(resp => {
             this.agora_app_id = resp.agora_app_id
         })
-        this.setupWebRTCEvents()
+
     }
 
     setupWebRTCEvents() {

@@ -46,17 +46,15 @@ export class SpaceBroker {
 
         // listen for clicked join button
         const $cameraReady = signalHub.local.on('camera_ready')
-        const $enter = signalHub.local.on('enter')
-        const $observe = signalHub.local.on('observe')
+        const $interaction_choice = signalHub.local.on('interaction_choice')
 
-        $enter.pipe(
-            mergeWith($observe),
-            take(1)
-        ).subscribe(event => {
+        $interaction_choice.subscribe(() => {
             this.connectToChannel()
         })
 
-
+        const $enter = $interaction_choice.pipe(
+            filter(value => (value === 'enter'))
+        )
 
         this.setupChannelSubscriptions()
 
@@ -65,9 +63,16 @@ export class SpaceBroker {
             // this.channelParams.pos_rot = posRot
             // this.channelParams.state.updated_at = Date.now()
             // this.connectToChannel()
-            this.forwardCameraMovement()
-            this.forwardMicPrefAsState()
+            // this.forwardCameraMovement()
+            // this.forwardMicPrefAsState()
+            console.log('start forwarding camera movement')
 
+        })
+
+        // send a command to enter | observe after we've joined the channel
+        const $space_channel_connected = signalHub.local.on('space_channel_connected')
+        combineLatest([$interaction_choice, $space_channel_connected]).subscribe(([choice, _]) => {
+            console.log('send command', choice)
         })
 
     }
@@ -90,7 +95,8 @@ export class SpaceBroker {
             this.spaceChannel.push('member_state_changed', state)
         })
         signalHub.outgoing.on('member_state_patched').subscribe(state => {
-            this.spaceChannel.push('member_state_patched', state)
+            console.log('receive member state patched', state)
+            //this.spaceChannel.push('member_state_patched', state)
         })
         signalHub.outgoing.on('spaces_api').subscribe(payload => {
 
@@ -128,6 +134,7 @@ export class SpaceBroker {
     forwardMicPrefAsState() {
         // snap shot of memberStates
         signalHub.observables.mic_muted_pref.subscribe(isMuted => {
+            console.log('this emitted called')
             signalHub.outgoing.emit('member_state_patched', { mic_pref: isMuted ? "off" : "on" })
         })
 
