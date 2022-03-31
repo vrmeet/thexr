@@ -40,9 +40,10 @@ export type EditMode = "transform" | "delete" | null
  */
 
 export type command =
-    ["member_join", { member_id: string }] |
-    ["member_leave", { member_id: string }] |
-    ["member_move", { member_id: string, pos_rot: PosRot }]
+    ["enter", { member_id: string }] |
+    ["observe", { member_id: string }] |
+    ["leave", { member_id: string }] |
+    ["move", { member_id: string, pos_rot: PosRot }]
 
 
 

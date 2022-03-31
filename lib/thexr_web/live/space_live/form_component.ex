@@ -29,17 +29,6 @@ defmodule ThexrWeb.SpaceLive.FormComponent do
   end
 
   def handle_event("save", %{"space" => space_params}, socket) do
-    space_params =
-      case socket.assigns.selected_template_id do
-        nil ->
-          space_params
-
-        template_id ->
-          template = Spaces.get_template!(template_id)
-          Map.put(space_params, "data", template.data)
-      end
-      |> IO.inspect(label: "space_params")
-
     save_space(socket, socket.assigns.action, space_params)
   end
 

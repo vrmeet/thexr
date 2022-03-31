@@ -5,7 +5,6 @@ defmodule ThexrWeb.SpaceController do
   import ThexrWeb.Plugs.Identity, only: [user_token: 1]
 
   alias Thexr.Spaces
-  alias Thexr.Spaces.Space
 
   def show(conn, %{"slug" => slug}) do
     space = Spaces.get_space_by_slug(slug)

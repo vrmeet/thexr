@@ -1,5 +1,7 @@
 TODO:
 
+send a proper timestamp when creating a command
+
 handle joining and leaving a space separately then joining a space channel
  - and turn joining and leaving a space into explicit events
 
