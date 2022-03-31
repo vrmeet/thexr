@@ -24,10 +24,13 @@ export class SpaceBroker {
     public slug: string
     public socket: Socket
     public spaceChannel: Channel
-    public initialized: Promise<any>
-    public channelParams: ChannelParams
+    public member_id: string
+
+    // public initialized: Promise<any>
+    // public channelParams: ChannelParams
 
     constructor(public orchestrator: Orchestrator) {
+        this.member_id = orchestrator.member_id
         this.slug = orchestrator.slug
         this.socket = new Socket('/socket', { params: { token: window['userToken'] } })
         // this.channelParams = {
@@ -73,6 +76,8 @@ export class SpaceBroker {
         const $space_channel_connected = signalHub.local.on('space_channel_connected')
         combineLatest([$interaction_choice, $space_channel_connected]).subscribe(([choice, _]) => {
             console.log('send command', choice)
+
+            signalHub.outgoing.emit('command', [choice, { member_id: this.member_id }])
         })
 
     }
@@ -89,18 +94,24 @@ export class SpaceBroker {
             return payload
         }
 
+
+
         // forward outgoing from eventbus to channel
         // TODO, this is kinda redundant
-        signalHub.outgoing.on('member_state_changed').subscribe(state => {
-            this.spaceChannel.push('member_state_changed', state)
-        })
-        signalHub.outgoing.on('member_state_patched').subscribe(state => {
-            console.log('receive member state patched', state)
-            //this.spaceChannel.push('member_state_patched', state)
-        })
-        signalHub.outgoing.on('spaces_api').subscribe(payload => {
+        // signalHub.outgoing.on('member_state_changed').subscribe(state => {
+        //     this.spaceChannel.push('member_state_changed', state)
+        // })
+        // signalHub.outgoing.on('member_state_patched').subscribe(state => {
+        //     console.log('receive member state patched', state)
+        //     //this.spaceChannel.push('member_state_patched', state)
+        // })
+        // signalHub.outgoing.on('spaces_api').subscribe(payload => {
 
-            this.spaceChannel.push('spaces_api', payload)
+        //     this.spaceChannel.push('spaces_api', payload)
+        // })
+
+        signalHub.outgoing.on('command').subscribe(tuple => {
+            this.spaceChannel.push('command', [...tuple, (new Date()).getTime()])
         })
 
         signalHub.incoming.on("server_lost").subscribe(() => {

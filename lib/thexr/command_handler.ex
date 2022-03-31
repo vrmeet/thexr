@@ -1,5 +1,5 @@
 defmodule Thexr.CommandHandler do
-  def handle_command({"member_join", payload}) do
-    {"member_joined", payload}
+  def handle_command("enter", payload, time_in_ms) do
+    {"member_entered", payload, time_in_ms}
   end
 end

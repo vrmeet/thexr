@@ -10,6 +10,12 @@ defmodule ThexrWeb.SpaceChannel do
   end
 
   @impl true
+  def handle_in("command", [command_name, payload, time_in_ms], socket) do
+    event = Thexr.CommandHandler.handle_command(command_name, payload, time_in_ms)
+    Thexr.SpaceServer.process_event(socket.assigns.slug, event)
+    {:noreply, socket}
+  end
+
   def handle_in("camera_moved", %{"pos" => pos, "rot" => rot}, socket) do
     broadcast_from(socket, "member_moved", %{
       member_id: socket.assigns.member_id,

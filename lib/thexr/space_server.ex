@@ -98,17 +98,19 @@ defmodule Thexr.SpaceServer do
   #   {socket.assigns.member_id, p0, p1, p2, r0, r1, r2, r3, left, right}
   # )
 
-  def handle_cast({:event, event}, state) do
+  def handle_cast({:event, {event_name, payload, time_in_ms}}, state) do
     state = %{state | sequence: state.sequence + 1}
 
-    Thexr.QueueBroadcaster.async_notify(%{
+    event_attrs = %{
       space_id: state.space.id,
-      type: to_string(event.__struct__),
+      type: event_name,
       sequence: state.sequence,
-      payload: Map.from_struct(event)
-    })
+      payload: payload
+    }
 
-    broadcast(state.space, event)
+    Thexr.QueueBroadcaster.async_notify(event_attrs)
+
+    broadcast_event(state.space, event_attrs)
 
     {:noreply, state}
   end
@@ -137,9 +139,10 @@ defmodule Thexr.SpaceServer do
     :ok
   end
 
-  def broadcast(space, event) do
-    message = String.split(to_string(event.__struct__), ".") |> List.last()
-    payload = Map.from_struct(event)
-    ThexrWeb.Endpoint.broadcast("space:#{space.slug}", message, payload)
+  def broadcast_event(space, event_attrs) do
+    ThexrWeb.Endpoint.broadcast("space:#{space.slug}", "event", %{
+      event: event_attrs.type,
+      payload: event_attrs.payload
+    })
   end
 end
