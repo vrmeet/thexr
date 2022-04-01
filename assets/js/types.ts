@@ -53,11 +53,9 @@ export type command =
  */
 
 export type event =
-    ["member_entered", { member_id: string }] |
-    ["member_observing", { member_id: string }] |
-
-    ["member_left", { member_id: string }] |
-    ["member_moved", { member_id: string, pos_rot: PosRot }]
-
+    { m: "member_entered", p: { member_id: string, pos_rot: PosRot }, ts?: number } |
+    { m: "member_observed", p: { member_id: string }, ts?: number }
+    // ["member_left", { member_id: string }] |
+    // ["member_moved", { member_id: string, pos_rot: PosRot }]
 
 

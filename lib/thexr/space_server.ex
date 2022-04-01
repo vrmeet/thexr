@@ -22,8 +22,8 @@ defmodule Thexr.SpaceServer do
     )
   end
 
-  def process_event(slug, name, payload, time_in_ms, pid) do
-    GenServer.cast(pid(slug), {:event, name, payload, time_in_ms, pid})
+  def process_event(slug, payload, pid) do
+    GenServer.cast(pid(slug), {:event, payload, pid})
   end
 
   # def process_event(slug, event) do
@@ -103,12 +103,12 @@ defmodule Thexr.SpaceServer do
   #   {socket.assigns.member_id, p0, p1, p2, r0, r1, r2, r3, left, right}
   # )
 
-  def handle_cast({:event, name, payload, time_in_ms, pid}, state) do
+  def handle_cast({:event, %{"m" => msg, "p" => payload, "ts" => time_in_ms} = data, pid}, state) do
     state = %{state | sequence: state.sequence + 1}
 
     event_stream_attrs = %{
       space_id: state.space.id,
-      type: name,
+      type: msg,
       sequence: state.sequence,
       payload: payload,
       event_timestamp: time_in_ms
@@ -116,7 +116,7 @@ defmodule Thexr.SpaceServer do
 
     Thexr.QueueBroadcaster.async_notify(event_stream_attrs)
 
-    broadcast_event(state.space, event_stream_attrs, pid)
+    broadcast_event(state.space, data, pid)
 
     {:noreply, state}
   end
@@ -145,13 +145,8 @@ defmodule Thexr.SpaceServer do
     :ok
   end
 
-  def broadcast_event(space, event_attrs, from) do
-    ThexrWeb.Endpoint.broadcast_from(from, "space:#{space.slug}", "event", %{
-      event: event_attrs.type,
-      payload: event_attrs.payload,
-      sequence: event_attrs.sequence,
-      event_timestamp: event_attrs.event_timestamp
-    })
+  def broadcast_event(space, payload, from) do
+    ThexrWeb.Endpoint.broadcast_from(from, "space:#{space.slug}", "event", payload)
 
     # ThexrWeb.Endpoint.broadcast("space:#{space.slug}", "event", %{
     #   event: event_attrs.type,

@@ -21,18 +21,20 @@ type LocalEvents = {
 }
 
 export type IncomingEvents = {
-    member_moved: { member_id: string, pos: number[], rot: number[] }
-    component_changed: { entity_id: string, type: string, data: any }
-    entity_created: any
-    entity_deleted: { id: string }
+    event: types.event
+
+    // member_moved: { member_id: string, pos: number[], rot: number[] }
+    // component_changed: { entity_id: string, type: string, data: any }
+    // entity_created: any
+    // entity_deleted: { id: string }
     presence_diff: types.PresenceDiff
     presence_state: types.PresenceState
     space_settings_changed: types.scene_settings
     server_lost: any
-    new_member: { member_id: string, pos_rot: types.PosRot, state: types.member_state }
-    members: { movements: { [member_id: string]: { pos_rot: types.PosRot } }, states: { [member_id: string]: types.member_state } }
-    member_state_updated: { member_id: string, state: types.member_state }
-    "BoxCreated": { id: string, name: string, components: any }
+    // new_member: { member_id: string, pos_rot: types.PosRot, state: types.member_state }
+    // members: { movements: { [member_id: string]: { pos_rot: types.PosRot } }, states: { [member_id: string]: types.member_state } }
+    // member_state_updated: { member_id: string, state: types.member_state }
+    // "BoxCreated": { id: string, name: string, components: any }
 
 }
 
