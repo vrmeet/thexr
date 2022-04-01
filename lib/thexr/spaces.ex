@@ -598,7 +598,7 @@ defmodule Thexr.Spaces do
     end
   end
 
-  alias Thexr.Spaces.Event
+  alias Thexr.Spaces.EventStream
 
   @doc """
   Returns the list of events.
@@ -609,26 +609,10 @@ defmodule Thexr.Spaces do
       [%Event{}, ...]
 
   """
-  def list_events(space_id) do
-    q = from(e in Event, where: e.space_id == ^space_id, order_by: e.sequence)
+  def event_stream(space_id) do
+    q = from(e in EventStream, where: e.space_id == ^space_id, order_by: e.sequence)
     Repo.all(q)
   end
-
-  @doc """
-  Gets a single event.
-
-  Raises `Ecto.NoResultsError` if the Event does not exist.
-
-  ## Examples
-
-      iex> get_event!(123)
-      %Event{}
-
-      iex> get_event!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_event!(id), do: Repo.get!(Event, id)
 
   @doc """
   Creates a event.
@@ -643,8 +627,8 @@ defmodule Thexr.Spaces do
 
   """
   def create_event(attrs \\ %{}) do
-    %Event{}
-    |> Event.changeset(attrs)
+    %EventStream{}
+    |> EventStream.changeset(attrs)
     |> Repo.insert()
   end
 end

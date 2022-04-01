@@ -40,7 +40,7 @@ export type OutgoingEvents = {
     member_state_patched: types.member_state
     member_state_changed: types.member_state
     spaces_api: { func: string, args: any[] }
-    command: types.command
+    event: types.event
 }
 
 
