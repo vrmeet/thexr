@@ -74,11 +74,14 @@ export class SpaceBroker {
 
         // send a command to enter | observe after we've joined the channel
         const $space_channel_connected = signalHub.local.on('space_channel_connected')
-        combineLatest([$interaction_choice, $space_channel_connected]).subscribe(([choice, _]) => {
+        combineLatest([$cameraReady, $interaction_choice, $space_channel_connected]).subscribe(([pos_rot, choice, _]) => {
             console.log('send command', choice)
-            const event_name = (choice === 'enter') ? 'member_entered' : 'member_observing'
+            if (choice === 'enter') {
+                signalHub.outgoing.emit('event', { m: 'member_entered', p: { member_id: this.member_id, pos_rot: pos_rot } })
+            } else {
+                signalHub.outgoing.emit('event', { m: 'member_observed', p: { member_id: this.member_id } })
+            }
 
-            signalHub.outgoing.emit('event', [event_name, { member_id: this.member_id }])
         })
 
     }
@@ -111,9 +114,11 @@ export class SpaceBroker {
         //     this.spaceChannel.push('spaces_api', payload)
         // })
 
-        signalHub.outgoing.on('event').subscribe(tuple => {
-            this.spaceChannel.push('event', [...tuple, (new Date()).getTime()])
+        signalHub.outgoing.on('event').subscribe(mp => {
+            this.spaceChannel.push('event', { ...mp, ts: (new Date()).getTime() })
         })
+
+
 
         signalHub.incoming.on("server_lost").subscribe(() => {
             window.location.href = '/';

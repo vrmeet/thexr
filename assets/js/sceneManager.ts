@@ -45,57 +45,65 @@ export class SceneManager {
     }
 
     setChannelListeners() {
-        signalHub.incoming.on("member_moved").subscribe(({ member_id, pos, rot }) => {
-            let mesh = this.scene.getMeshByName(`avatar_${member_id}`)
 
-            if (mesh) {
-                mesh.position.fromArray(pos)
-                if (!mesh.rotationQuaternion) {
-                    mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(rot)
-                } else {
-                    mesh.rotationQuaternion.copyFromFloats(rot[0], rot[1], rot[2], rot[3])
-                }
+        signalHub.incoming.on('event').subscribe((mpts) => {
+            console.log('incoming receved an event', mpts)
+            if (mpts.m === 'member_entered') {
+                this.findOrCreateAvatar(mpts.p.member_id, mpts.p.pos_rot)
             }
-
-        })
-        signalHub.incoming.on('component_changed').subscribe(params => {
-            let meshes = this.scene.getMeshesById(params.entity_id)
-            meshes.forEach(mesh => {
-                this.processComponent(mesh, { type: params.type, data: params.data })
-            })
-        })
-        signalHub.incoming.on('BoxCreated').subscribe(event => {
-            let mesh: BABYLON.AbstractMesh
-            mesh = this.scene.getMeshById(event.id)
-            if (!mesh) {
-                mesh = BABYLON.MeshBuilder.CreateBox(event.name, {}, this.scene)
-                BABYLON.Tags.AddTagsTo(mesh, "teleportable")
-            }
-            const { position, rotation, scaling } = event.components
-            mesh.position.copyFromFloats(position.x, position.y, position.z)
         })
 
-        signalHub.incoming.on('entity_created').subscribe(entity => {
-            this.findOrCreateMesh(entity)
-        })
-        signalHub.incoming.on('entity_deleted').subscribe(params => {
-            let meshes = this.scene.getMeshesById(params.id)
-            meshes.forEach(mesh => {
-                mesh.dispose()
-            })
-        })
+        // signalHub.incoming.on("member_moved").subscribe(({ member_id, pos, rot }) => {
+        //     let mesh = this.scene.getMeshByName(`avatar_${member_id}`)
 
-        signalHub.incoming.on('new_member').subscribe(({ member_id, pos_rot }) => {
-            this.findOrCreateAvatar(member_id, pos_rot)
-        })
+        //     if (mesh) {
+        //         mesh.position.fromArray(pos)
+        //         if (!mesh.rotationQuaternion) {
+        //             mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(rot)
+        //         } else {
+        //             mesh.rotationQuaternion.copyFromFloats(rot[0], rot[1], rot[2], rot[3])
+        //         }
+        //     }
 
-        signalHub.incoming.on('members').subscribe(({ movements }) => {
-            Object.entries(movements).forEach(([member_id, payload]) => {
-                if (member_id != this.member_id) {
-                    this.findOrCreateAvatar(member_id, payload.pos_rot)
-                }
-            })
-        })
+        // })
+        // signalHub.incoming.on('component_changed').subscribe(params => {
+        //     let meshes = this.scene.getMeshesById(params.entity_id)
+        //     meshes.forEach(mesh => {
+        //         this.processComponent(mesh, { type: params.type, data: params.data })
+        //     })
+        // })
+        // signalHub.incoming.on('BoxCreated').subscribe(event => {
+        //     let mesh: BABYLON.AbstractMesh
+        //     mesh = this.scene.getMeshById(event.id)
+        //     if (!mesh) {
+        //         mesh = BABYLON.MeshBuilder.CreateBox(event.name, {}, this.scene)
+        //         BABYLON.Tags.AddTagsTo(mesh, "teleportable")
+        //     }
+        //     const { position, rotation, scaling } = event.components
+        //     mesh.position.copyFromFloats(position.x, position.y, position.z)
+        // })
+
+        // signalHub.incoming.on('entity_created').subscribe(entity => {
+        //     this.findOrCreateMesh(entity)
+        // })
+        // signalHub.incoming.on('entity_deleted').subscribe(params => {
+        //     let meshes = this.scene.getMeshesById(params.id)
+        //     meshes.forEach(mesh => {
+        //         mesh.dispose()
+        //     })
+        // })
+
+        // signalHub.incoming.on('new_member').subscribe(({ member_id, pos_rot }) => {
+        //     this.findOrCreateAvatar(member_id, pos_rot)
+        // })
+
+        // signalHub.incoming.on('members').subscribe(({ movements }) => {
+        //     Object.entries(movements).forEach(([member_id, payload]) => {
+        //         if (member_id != this.member_id) {
+        //             this.findOrCreateAvatar(member_id, payload.pos_rot)
+        //         }
+        //     })
+        // })
 
 
         signalHub.incoming.on('presence_diff').subscribe(params => {
