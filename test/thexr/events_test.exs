@@ -7,28 +7,20 @@ defmodule Thexr.EventsTest do
     Thexr.SpaceSupervisor.start_space(space)
 
     events = [
-      %Thexr.Events.MemberEntered{space_id: space.id, id: "abc"},
-      %Thexr.Events.GridCreated{}
+      {"name1", %{}, 23_432_423_432, self()},
+      {"name2", %{}, 2_343_223_432, self()}
     ]
 
-    Enum.each(events, fn event ->
-      Thexr.SpaceServer.process_event(space.slug, event)
+    Enum.each(events, fn {n, p, t, pid} ->
+      Thexr.SpaceServer.process_event(space.slug, n, p, t, pid)
     end)
 
     Process.sleep(50)
-    stored_events = Thexr.Spaces.list_events(space.id)
+    stored_events = Thexr.Spaces.event_stream(space.id)
     assert(stored_events |> length() == 2)
 
     first = List.first(stored_events)
     last = List.last(stored_events)
     assert(first.sequence < last.sequence)
-  end
-
-  test "create event from command" do
-    space = space_fixture()
-    Thexr.SpaceSupervisor.start_space(space)
-    Thexr.SpaceCommand.create_box(space.slug, Ecto.UUID.generate(), "box_abc", %{}, %{}, %{})
-    Process.sleep(50)
-    stored_events = Thexr.Spaces.list_events(space.id) |> IO.inspect()
   end
 end

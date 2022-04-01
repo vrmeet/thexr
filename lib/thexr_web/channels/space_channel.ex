@@ -10,9 +10,8 @@ defmodule ThexrWeb.SpaceChannel do
   end
 
   @impl true
-  def handle_in("command", [command_name, payload, time_in_ms], socket) do
-    event = Thexr.CommandHandler.handle_command(command_name, payload, time_in_ms)
-    Thexr.SpaceServer.process_event(socket.assigns.slug, event)
+  def handle_in("event", [name, payload, time_in_ms], socket) do
+    Thexr.SpaceServer.process_event(socket.assigns.slug, name, payload, time_in_ms, self())
     {:noreply, socket}
   end
 

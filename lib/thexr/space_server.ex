@@ -22,10 +22,15 @@ defmodule Thexr.SpaceServer do
     )
   end
 
-  def process_event(slug, event) do
-    GenServer.cast(pid(slug), {:event, event})
+  def process_event(slug, name, payload, time_in_ms, pid) do
+    GenServer.cast(pid(slug), {:event, name, payload, time_in_ms, pid})
   end
 
+  # def process_event(slug, event) do
+  #   GenServer.cast(pid(slug), {:event, event})
+  # end
+
+  @spec via_tuple(any) :: {:via, Registry, {Thexr.SpaceRegistry, any}}
   @doc """
   Returns a tuple used to register and lookup a game server process by name.
   """
@@ -98,19 +103,20 @@ defmodule Thexr.SpaceServer do
   #   {socket.assigns.member_id, p0, p1, p2, r0, r1, r2, r3, left, right}
   # )
 
-  def handle_cast({:event, {event_name, payload, time_in_ms}}, state) do
+  def handle_cast({:event, name, payload, time_in_ms, pid}, state) do
     state = %{state | sequence: state.sequence + 1}
 
-    event_attrs = %{
+    event_stream_attrs = %{
       space_id: state.space.id,
-      type: event_name,
+      type: name,
       sequence: state.sequence,
-      payload: payload
+      payload: payload,
+      event_timestamp: time_in_ms
     }
 
-    Thexr.QueueBroadcaster.async_notify(event_attrs)
+    Thexr.QueueBroadcaster.async_notify(event_stream_attrs)
 
-    broadcast_event(state.space, event_attrs)
+    broadcast_event(state.space, event_stream_attrs, pid)
 
     {:noreply, state}
   end
@@ -139,10 +145,19 @@ defmodule Thexr.SpaceServer do
     :ok
   end
 
-  def broadcast_event(space, event_attrs) do
-    ThexrWeb.Endpoint.broadcast("space:#{space.slug}", "event", %{
+  def broadcast_event(space, event_attrs, from) do
+    ThexrWeb.Endpoint.broadcast_from(from, "space:#{space.slug}", "event", %{
       event: event_attrs.type,
-      payload: event_attrs.payload
+      payload: event_attrs.payload,
+      sequence: event_attrs.sequence,
+      event_timestamp: event_attrs.event_timestamp
     })
+
+    # ThexrWeb.Endpoint.broadcast("space:#{space.slug}", "event", %{
+    #   event: event_attrs.type,
+    #   payload: event_attrs.payload,
+    #   sequence: event_attrs.sequence,
+    #   event_timestamp: event_attrs.event_timestamp
+    # })
   end
 end

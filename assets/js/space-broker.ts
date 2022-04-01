@@ -76,8 +76,9 @@ export class SpaceBroker {
         const $space_channel_connected = signalHub.local.on('space_channel_connected')
         combineLatest([$interaction_choice, $space_channel_connected]).subscribe(([choice, _]) => {
             console.log('send command', choice)
+            const event_name = (choice === 'enter') ? 'member_entered' : 'member_observing'
 
-            signalHub.outgoing.emit('command', [choice, { member_id: this.member_id }])
+            signalHub.outgoing.emit('event', [event_name, { member_id: this.member_id }])
         })
 
     }
@@ -110,8 +111,8 @@ export class SpaceBroker {
         //     this.spaceChannel.push('spaces_api', payload)
         // })
 
-        signalHub.outgoing.on('command').subscribe(tuple => {
-            this.spaceChannel.push('command', [...tuple, (new Date()).getTime()])
+        signalHub.outgoing.on('event').subscribe(tuple => {
+            this.spaceChannel.push('event', [...tuple, (new Date()).getTime()])
         })
 
         signalHub.incoming.on("server_lost").subscribe(() => {
