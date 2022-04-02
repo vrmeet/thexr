@@ -62,6 +62,8 @@ export class SceneManager {
                     }
                 }
 
+            } else if (mpts.m == 'member_left') {
+                this.removeAvatar(mpts.p.member_id)
             }
         })
 
@@ -118,12 +120,12 @@ export class SceneManager {
         // })
 
 
-        signalHub.incoming.on('presence_diff').subscribe(params => {
+        // signalHub.incoming.on('presence_diff').subscribe(params => {
 
-            Object.keys(params.leaves).map(id => {
-                this.removeAvatar(id)
-            })
-        })
+        //     Object.keys(params.leaves).map(id => {
+        //         this.removeAvatar(id)
+        //     })
+        // })
 
         signalHub.incoming.on('space_settings_changed').subscribe(params => {
             this.processscene_settings(params as scene_settings)

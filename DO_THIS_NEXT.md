@@ -1,5 +1,7 @@
 TODO:
 
+
+
 enable: 
 
 (figure out how to produce member leave event, - not 1:1 with momentary disconnection)
@@ -7,6 +9,9 @@ remove avatar on leave event
         ... re-enable all the simple primitive and movement
 
 redo logic for joining webrtc - don't think needs an event???
+
+- work on replay events
+- snapshot of state for late joiners
 
 local events should happen immediately in the client
   - tricky becauses it requires locally mapping command to event which is redundant to

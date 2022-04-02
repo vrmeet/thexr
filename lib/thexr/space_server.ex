@@ -7,6 +7,7 @@ defmodule Thexr.SpaceServer do
   require Logger
 
   @timeout :timer.minutes(25)
+  @kick_check_timeout :timer.seconds(5)
 
   # Client (Public) Interface
 
@@ -56,6 +57,14 @@ defmodule Thexr.SpaceServer do
     GenServer.call(pid(slug), :summary)
   end
 
+  def member_connected(slug, member_id) do
+    GenServer.cast(pid(slug), {:member_connected, member_id})
+  end
+
+  def member_disconnected(slug, member_id) do
+    GenServer.cast(pid(slug), {:member_disconnected, member_id})
+  end
+
   def pop_events(slug) do
     GenServer.call(pid(slug), :pop_events)
   end
@@ -94,7 +103,8 @@ defmodule Thexr.SpaceServer do
        space: space,
        member_movements: member_movements,
        member_states: member_states,
-       sequence: Thexr.Spaces.max_event_sequence(space.id)
+       sequence: Thexr.Spaces.max_event_sequence(space.id),
+       disconnected: MapSet.new()
      }, @timeout}
   end
 
@@ -115,9 +125,21 @@ defmodule Thexr.SpaceServer do
     }
 
     Thexr.QueueBroadcaster.async_notify(event_stream_attrs)
-
     broadcast_event(state.space, data, pid)
 
+    {:noreply, state}
+  end
+
+  def handle_cast({:member_connected, member_id}, state) do
+    new_disconnected = MapSet.delete(state.disconnected, member_id)
+    state = %{state | disconnected: new_disconnected}
+    {:noreply, state}
+  end
+
+  def handle_cast({:member_disconnected, member_id}, state) do
+    new_disconnected = MapSet.put(state.disconnected, member_id)
+    state = %{state | disconnected: new_disconnected}
+    Process.send_after(self(), :kick_check, @kick_check_timeout)
     {:noreply, state}
   end
 
@@ -137,6 +159,17 @@ defmodule Thexr.SpaceServer do
     {:noreply, state}
   end
 
+  def handle_info(:kick_check, state) do
+    Enum.each(state.disconnected, fn member_id ->
+      time_in_ms = DateTime.utc_now() |> DateTime.to_unix(:millisecond)
+      payload = %{"m" => "member_left", "p" => %{"member_id" => member_id}, "ts" => time_in_ms}
+      __MODULE__.process_event(state.space.slug, payload, nil)
+    end)
+
+    state = %{state | disconnected: MapSet.new()}
+    {:noreply, state}
+  end
+
   def terminate({:shutdown, :timeout}, _game) do
     :ok
   end
@@ -145,14 +178,11 @@ defmodule Thexr.SpaceServer do
     :ok
   end
 
+  def broadcast_event(space, payload, nil) do
+    ThexrWeb.Endpoint.broadcast("space:#{space.slug}", "event", payload)
+  end
+
   def broadcast_event(space, payload, from) do
     ThexrWeb.Endpoint.broadcast_from(from, "space:#{space.slug}", "event", payload)
-
-    # ThexrWeb.Endpoint.broadcast("space:#{space.slug}", "event", %{
-    #   event: event_attrs.type,
-    #   payload: event_attrs.payload,
-    #   sequence: event_attrs.sequence,
-    #   event_timestamp: event_attrs.event_timestamp
-    # })
   end
 end
