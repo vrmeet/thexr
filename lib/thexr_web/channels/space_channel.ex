@@ -2,6 +2,8 @@ defmodule ThexrWeb.SpaceChannel do
   use ThexrWeb, :channel
   alias ThexrWeb.Presence
 
+  alias Thexr.SpaceServer
+
   @impl true
   def join("space:" <> slug, _params, socket) do
     send(self(), :after_join)
@@ -11,7 +13,7 @@ defmodule ThexrWeb.SpaceChannel do
 
   @impl true
   def handle_in("event", payload, socket) do
-    Thexr.SpaceServer.process_event(socket.assigns.slug, payload, self())
+    SpaceServer.process_event(socket.assigns.slug, payload, self())
     {:noreply, socket}
   end
 
@@ -68,6 +70,7 @@ defmodule ThexrWeb.SpaceChannel do
   def handle_info(:after_join, socket) do
     {:ok, _} = Presence.track(socket, socket.assigns.member_id, %{})
     push(socket, "presence_state", Presence.list(socket))
+    SpaceServer.member_connected(socket.assigns.slug, socket.assigns.member_id)
     {:noreply, socket}
   end
 
@@ -119,6 +122,10 @@ defmodule ThexrWeb.SpaceChannel do
 
   @impl true
   def terminate(_reason, socket) do
+    if socket.assigns.member_id && socket.assigns.slug do
+      SpaceServer.member_disconnected(socket.assigns.slug, socket.assigns.member_id)
+    end
+
     try do
       if socket.assigns.member_movements do
         :ets.delete(socket.assigns.member_movements, socket.assigns.member_id)
