@@ -7,12 +7,20 @@ defmodule Thexr.EventsTest do
     Thexr.SpaceSupervisor.start_space(space)
 
     events = [
-      {"name1", %{}, 23_432_423_432, self()},
-      {"name2", %{}, 2_343_223_432, self()}
+      %{
+        "m" => "member_entered",
+        "p" => %{"member_id" => "jsdfk", "pos_rot" => %{}},
+        "ts" => 23423
+      },
+      %{
+        "m" => "member_entered",
+        "p" => %{"member_id" => "jsdfk", "pos_rot" => %{}},
+        "ts" => 34_789_723
+      }
     ]
 
-    Enum.each(events, fn {n, p, t, pid} ->
-      Thexr.SpaceServer.process_event(space.slug, n, p, t, pid)
+    Enum.each(events, fn payload ->
+      Thexr.SpaceServer.process_event(space.slug, payload, self())
     end)
 
     Process.sleep(50)
@@ -22,5 +30,7 @@ defmodule Thexr.EventsTest do
     first = List.first(stored_events)
     last = List.last(stored_events)
     assert(first.sequence < last.sequence)
+
+    assert Thexr.Spaces.max_event_sequence(space.id) == 2
   end
 end

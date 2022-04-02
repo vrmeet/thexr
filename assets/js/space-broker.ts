@@ -66,7 +66,7 @@ export class SpaceBroker {
             // this.channelParams.pos_rot = posRot
             // this.channelParams.state.updated_at = Date.now()
             // this.connectToChannel()
-            // this.forwardCameraMovement()
+            this.forwardCameraMovement()
             // this.forwardMicPrefAsState()
             console.log('start forwarding camera movement')
 
@@ -144,7 +144,8 @@ export class SpaceBroker {
         signalHub.observables.camera_moved.pipe(
             throttleTime(100)
         ).subscribe(msg => {
-            this.spaceChannel.push('camera_moved', msg)
+            signalHub.outgoing.emit('event', { m: 'member_moved', p: { member_id: this.member_id, pos_rot: msg } })
+            //this.spaceChannel.push('camera_moved', msg)
         })
     }
 

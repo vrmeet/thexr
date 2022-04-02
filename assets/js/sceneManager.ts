@@ -50,6 +50,18 @@ export class SceneManager {
             console.log('incoming receved an event', mpts)
             if (mpts.m === 'member_entered') {
                 this.findOrCreateAvatar(mpts.p.member_id, mpts.p.pos_rot)
+            } else if (mpts.m === 'member_moved') {
+                let mesh = this.scene.getMeshByName(`avatar_${mpts.p.member_id}`)
+                const { pos, rot } = mpts.p.pos_rot
+                if (mesh) {
+                    mesh.position.fromArray(pos)
+                    if (!mesh.rotationQuaternion) {
+                        mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(rot)
+                    } else {
+                        mesh.rotationQuaternion.copyFromFloats(rot[0], rot[1], rot[2], rot[3])
+                    }
+                }
+
             }
         })
 

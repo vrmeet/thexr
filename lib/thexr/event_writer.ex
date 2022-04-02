@@ -11,10 +11,10 @@ defmodule Thexr.EventWriter do
   end
 
   def handle_events(events, _from, state) do
-    IO.inspect(events, label: "event writer receiving events")
+    IO.inspect(length(events), label: "event writer receiving events")
     # TODO: write all events in bulk
     Enum.map(events, fn event ->
-      Thexr.Spaces.create_event(event) |> IO.inspect(label: "create_event")
+      Thexr.Spaces.create_event(event)
     end)
 
     # We are a consumer, so we would never emit items.

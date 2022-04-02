@@ -94,7 +94,7 @@ defmodule Thexr.SpaceServer do
        space: space,
        member_movements: member_movements,
        member_states: member_states,
-       sequence: 0
+       sequence: Thexr.Spaces.max_event_sequence(space.id)
      }, @timeout}
   end
 
