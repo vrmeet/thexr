@@ -631,4 +631,9 @@ defmodule Thexr.Spaces do
     |> EventStream.changeset(attrs)
     |> Repo.insert()
   end
+
+  def max_event_sequence(space_id) do
+    query = from e in EventStream, select: max(e.sequence), where: e.space_id == ^space_id
+    Repo.one(query) || 0
+  end
 end
