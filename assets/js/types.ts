@@ -35,17 +35,11 @@ export type PresenceDiff = {
 
 export type EditMode = "transform" | "delete" | null
 
-/**
- * commands
- */
-
-export type command =
-    ["enter", { member_id: string }] |
-    ["observe", { member_id: string }] |
-    ["leave", { member_id: string }] |
-    ["move", { member_id: string, pos_rot: PosRot }]
-
-
+export type Component =
+    { type: "position", data: number[] } |
+    { type: "rotation", data: number[] } |
+    { type: "scaling", data: number[] } |
+    { type: "color", data: string }
 
 
 /**
@@ -56,7 +50,8 @@ export type event =
     { m: "member_entered", p: { member_id: string, pos_rot: PosRot }, ts?: number } |
     { m: "member_observed", p: { member_id: string }, ts?: number } |
     { m: "member_moved", p: { member_id: string, pos_rot: PosRot }, ts?: number } |
-    { m: "member_left", p: { member_id: string }, ts?: number }
+    { m: "member_left", p: { member_id: string }, ts?: number } |
+    { m: "create_entity", p: { type: string, id: string, name: string, components: Component[] }, ts?: number }
     // ["member_left", { member_id: string }] |
     // ["member_moved", { member_id: string, pos_rot: PosRot }]
 

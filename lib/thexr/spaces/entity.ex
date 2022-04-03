@@ -51,7 +51,7 @@ defmodule Thexr.Spaces.Entity do
     end
   end
 
-  def build_default_components(attrs) do
+  def build_default_components(_) do
     raise "build_default_components requires a map with a type key"
   end
 

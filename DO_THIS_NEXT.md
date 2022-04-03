@@ -1,14 +1,24 @@
 TODO:
 
+hide immersive glasses, and vr menu until modal is dismissed
+- create menu manager after the choice to enter a space is made
+- and modal is dismissed
+
+- convert observables back into events (for menu)
 
 
-enable: 
+test member leave 
+  - what happens if person refreshes page before the kick check?
+    - it will still generate member_enter, with no member_leave
+    - maybe member_entered should also be generated server side?
+    - OR... just allow omnipotent member_enter events?
 
-(figure out how to produce member leave event, - not 1:1 with momentary disconnection)
-remove avatar on leave event        
-        ... re-enable all the simple primitive and movement
+clean up unused code
+ ... re-enable all the simple primitive and movement
 
-redo logic for joining webrtc - don't think needs an event???
+redo logic for joining webrtc 
+  - when user 'enter', subscribe to channel if another person is entered and unmuted
+  - when user 'observe', subscribe to channel if another person is entered and unmuted
 
 - work on replay events
 - snapshot of state for late joiners
