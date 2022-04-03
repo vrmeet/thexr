@@ -65,10 +65,6 @@ defmodule Thexr.SpaceServer do
     GenServer.cast(pid(slug), {:member_disconnected, member_id})
   end
 
-  def pop_events(slug) do
-    GenServer.call(pid(slug), :pop_events)
-  end
-
   def safe_call(pid, payload) when is_pid(pid) do
     GenServer.call(pid, payload)
   end
@@ -145,10 +141,6 @@ defmodule Thexr.SpaceServer do
 
   def handle_call(:summary, _from, state) do
     {:reply, state, state, @timeout}
-  end
-
-  def handle_call(:pop_events, _from, state) do
-    {:reply, state.events, %{state | events: []}, @timeout}
   end
 
   def handle_call(:get_ets_refs, _from, state) do

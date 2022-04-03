@@ -1,16 +1,16 @@
-import * as BABYLON from 'babylonjs'
-import * as MAT from 'babylonjs-materials'
-import type { Channel } from 'phoenix';
-import type { PosRot, scene_settings, serialized_space } from './types'
-import { sessionPersistance } from './sessionPersistance';
-import { MenuManager } from './menu/menu-manager'
-import { reduceSigFigs } from './utils';
-import { XRManager } from './xr-manager';
-import type { Orchestrator } from './orchestrator';
-import { signalHub } from './signalHub';
-import { buffer, bufferCount, debounceTime, filter, map, take } from 'rxjs/operators'
-import { CollaborativeEditTransformManager } from './collab-edit/transform';
-import { CollabEditDeleteManager } from './collab-edit/delete';
+import * as BABYLON from "babylonjs"
+import * as MAT from "babylonjs-materials"
+import type { Channel } from "phoenix";
+import type { PosRot, scene_settings, serialized_space } from "./types"
+import { sessionPersistance } from "./sessionPersistance";
+import { MenuManager } from "./menu/menu-manager"
+import { reduceSigFigs } from "./utils";
+import { XRManager } from "./xr-manager";
+import type { Orchestrator } from "./orchestrator";
+import { signalHub } from "./signalHub";
+import { buffer, bufferCount, debounceTime, filter, map, take } from "rxjs/operators"
+import { CollaborativeEditTransformManager } from "./collab-edit/transform";
+import { CollabEditDeleteManager } from "./collab-edit/delete";
 
 
 export class SceneManager {
@@ -46,11 +46,11 @@ export class SceneManager {
 
     setChannelListeners() {
 
-        signalHub.incoming.on('event').subscribe((mpts) => {
-            console.log('incoming receved an event', mpts)
-            if (mpts.m === 'member_entered') {
+        signalHub.incoming.on("event").subscribe((mpts) => {
+            console.log("incoming receved an event", mpts)
+            if (mpts.m === "member_entered") {
                 this.findOrCreateAvatar(mpts.p.member_id, mpts.p.pos_rot)
-            } else if (mpts.m === 'member_moved') {
+            } else if (mpts.m === "member_moved") {
                 let mesh = this.scene.getMeshByName(`avatar_${mpts.p.member_id}`)
                 const { pos, rot } = mpts.p.pos_rot
                 if (mesh) {
@@ -61,9 +61,10 @@ export class SceneManager {
                         mesh.rotationQuaternion.copyFromFloats(rot[0], rot[1], rot[2], rot[3])
                     }
                 }
-
-            } else if (mpts.m == 'member_left') {
+            } else if (mpts.m == "member_left") {
                 this.removeAvatar(mpts.p.member_id)
+            } else if (mpts.m == "create_entity") {
+                this.findOrCreateMesh(mpts.p)
             }
         })
 
@@ -80,13 +81,13 @@ export class SceneManager {
         //     }
 
         // })
-        // signalHub.incoming.on('component_changed').subscribe(params => {
+        // signalHub.incoming.on("component_changed").subscribe(params => {
         //     let meshes = this.scene.getMeshesById(params.entity_id)
         //     meshes.forEach(mesh => {
         //         this.processComponent(mesh, { type: params.type, data: params.data })
         //     })
         // })
-        // signalHub.incoming.on('BoxCreated').subscribe(event => {
+        // signalHub.incoming.on("BoxCreated").subscribe(event => {
         //     let mesh: BABYLON.AbstractMesh
         //     mesh = this.scene.getMeshById(event.id)
         //     if (!mesh) {
@@ -97,21 +98,21 @@ export class SceneManager {
         //     mesh.position.copyFromFloats(position.x, position.y, position.z)
         // })
 
-        // signalHub.incoming.on('entity_created').subscribe(entity => {
+        // signalHub.incoming.on("entity_created").subscribe(entity => {
         //     this.findOrCreateMesh(entity)
         // })
-        // signalHub.incoming.on('entity_deleted').subscribe(params => {
+        // signalHub.incoming.on("entity_deleted").subscribe(params => {
         //     let meshes = this.scene.getMeshesById(params.id)
         //     meshes.forEach(mesh => {
         //         mesh.dispose()
         //     })
         // })
 
-        // signalHub.incoming.on('new_member').subscribe(({ member_id, pos_rot }) => {
+        // signalHub.incoming.on("new_member").subscribe(({ member_id, pos_rot }) => {
         //     this.findOrCreateAvatar(member_id, pos_rot)
         // })
 
-        // signalHub.incoming.on('members').subscribe(({ movements }) => {
+        // signalHub.incoming.on("members").subscribe(({ movements }) => {
         //     Object.entries(movements).forEach(([member_id, payload]) => {
         //         if (member_id != this.member_id) {
         //             this.findOrCreateAvatar(member_id, payload.pos_rot)
@@ -120,14 +121,14 @@ export class SceneManager {
         // })
 
 
-        // signalHub.incoming.on('presence_diff').subscribe(params => {
+        // signalHub.incoming.on("presence_diff").subscribe(params => {
 
         //     Object.keys(params.leaves).map(id => {
         //         this.removeAvatar(id)
         //     })
         // })
 
-        signalHub.incoming.on('space_settings_changed').subscribe(params => {
+        signalHub.incoming.on("space_settings_changed").subscribe(params => {
             this.processscene_settings(params as scene_settings)
 
         })
@@ -146,11 +147,11 @@ export class SceneManager {
 
 
         this.processscene_settings(this.settings as scene_settings)
-        window['scene'] = this.scene
+        window["scene"] = this.scene
         this.createCamera()
 
         // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
-        var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), this.scene);
+        var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), this.scene);
         this.parseInitialScene(this.entities)
         this.collabEditManager = new CollaborativeEditTransformManager(this.scene)
         this.collabDeleteManager = new CollabEditDeleteManager(this.scene)
@@ -183,7 +184,7 @@ export class SceneManager {
 
 
     findSpawnPoint() {
-        const result = this.entities.filter(entity => entity.type === 'spawn_point')
+        const result = this.entities.filter(entity => entity.type === "spawn_point")
         if (result.length > 0) {
             let pos = result[0].components[0].data
             return { pos: [pos.x, pos.y, pos.z], rot: [0, 0, 0, 1] }
@@ -209,7 +210,7 @@ export class SceneManager {
 
     async createCamera() {
         let posRot = this.getLastPosRot()
-        this.freeCamera = new BABYLON.FreeCamera('freeCam', BABYLON.Vector3.FromArray(posRot.pos), this.scene);
+        this.freeCamera = new BABYLON.FreeCamera("freeCam", BABYLON.Vector3.FromArray(posRot.pos), this.scene);
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.FromArray(posRot.rot)
         // Attach the camera to the canvas
         this.freeCamera.attachControl(this.canvas, true);
@@ -227,8 +228,8 @@ export class SceneManager {
         await this.xrManager.enableWebXRExperience()
         this.menuManager = new MenuManager(this.orchestrator)
 
-        // signalHub.local.next({ event: 'camera_ready', payload: {} })
-        signalHub.local.emit('camera_ready', posRot)
+        // signalHub.local.next({ event: "camera_ready", payload: {} })
+        signalHub.local.emit("camera_ready", posRot)
         // this.tempMenu()
 
         addEventListener("beforeunload", () => {
@@ -284,8 +285,8 @@ export class SceneManager {
         })
     }
 
-    findOrCreateMaterial(opts: { type: 'color' | 'grid', colorString?: string }) {
-        if (opts.type === 'color' && opts.colorString) {
+    findOrCreateMaterial(opts: { type: "color" | "grid", colorString?: string }) {
+        if (opts.type === "color" && opts.colorString) {
             let mat = this.scene.getMaterialByName(`mat_${opts.colorString}`)
             if (mat) {
                 return mat
@@ -296,7 +297,7 @@ export class SceneManager {
                 return myMaterial
             }
         } else {
-            return this.scene.getMaterialByName('mat_grid') || (new MAT.GridMaterial('mat_grid', this.scene))
+            return this.scene.getMaterialByName("mat_grid") || (new MAT.GridMaterial("mat_grid", this.scene))
         }
     }
 
@@ -306,27 +307,27 @@ export class SceneManager {
         let mesh: BABYLON.AbstractMesh
         mesh = this.scene.getMeshById(entity.id)
         if (!mesh) {
-            if (entity.type === 'box') {
+            if (entity.type === "box") {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable")
-            } else if (entity.type === 'plane') {
+            } else if (entity.type === "plane") {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
-            } else if (entity.type === 'grid') {
+            } else if (entity.type === "grid") {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { size: 25, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
-                const gridMat = this.findOrCreateMaterial({ type: 'grid' })
+                const gridMat = this.findOrCreateMaterial({ type: "grid" })
                 mesh.material = gridMat;
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable")
 
-            } else if (entity.type === 'sphere') {
+            } else if (entity.type === "sphere") {
                 mesh = BABYLON.MeshBuilder.CreateSphere(entity.name, {}, this.scene)
-            } else if (entity.type === 'cone') {
+            } else if (entity.type === "cone") {
                 mesh = BABYLON.MeshBuilder.CreateCylinder(entity.name, { diameterTop: 0 }, this.scene)
             }
             if (mesh) {
                 mesh.id = entity.id
                 BABYLON.Tags.AddTagsTo(mesh, "editable")
 
-                signalHub.local.emit('mesh_built', { name: mesh.name })
+                signalHub.local.emit("mesh_built", { name: mesh.name })
             }
         }
         if (mesh) {
@@ -339,22 +340,22 @@ export class SceneManager {
 
     processComponent(mesh: BABYLON.AbstractMesh, component: { type: string, data: any }) {
         switch (component.type) {
-            case 'position':
-                mesh.position.set(component.data.x, component.data.y, component.data.z)
+            case "position":
+                mesh.position.set(component.data[0], component.data[1], component.data[2])
                 break;
-            case 'scale':
-                mesh.scaling.set(component.data.x, component.data.y, component.data.z)
+            case "scale":
+                mesh.scaling.set(component.data[0], component.data[1], component.data[2])
                 break;
-            case 'rotation':
-                mesh.rotation.set(component.data.x, component.data.y, component.data.z)
+            case "rotation":
+                mesh.rotation.set(component.data[0], component.data[1], component.data[2])
                 break;
-            case 'color':
-                console.log('component', component)
-                const mat = this.findOrCreateMaterial({ type: 'color', colorString: component.data.value })
+            case "color":
+                console.log("component", component)
+                const mat = this.findOrCreateMaterial({ type: "color", colorString: component.data })
                 mesh.material = mat;
                 break;
             default:
-                console.error('unknown component', component.type)
+                console.error("unknown component", component.type)
 
         }
     }
@@ -365,7 +366,7 @@ export class SceneManager {
             this.scene.render();
         });
         // the canvas/window resize event handler
-        window.addEventListener('resize', () => {
+        window.addEventListener("resize", () => {
             this.engine.resize();
         });
 
