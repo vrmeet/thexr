@@ -2,6 +2,7 @@
 import * as BABYLON from 'babylonjs'
 import * as GUI from 'babylonjs-gui'
 import { signalHub } from '../signalHub'
+import type { Component, event } from '../types'
 
 
 export class CollaborativeEditTransformManager {
@@ -42,9 +43,12 @@ export class CollaborativeEditTransformManager {
             if (evt.type === BABYLON.PointerEventTypes.POINTERPICK) {
                 let mesh = evt.pickInfo.pickedMesh
 
+                console.log('mesh', mesh.id, mesh.name, BABYLON.Tags.MatchesQuery(mesh, "editable"))
 
                 if (mesh && BABYLON.Tags.MatchesQuery(mesh, "editable")) {
                     this.selectMesh(mesh)
+                } else {
+                    console.log('no mesh found')
                 }
             }
 
@@ -107,28 +111,46 @@ export class CollaborativeEditTransformManager {
 
     broadcastNewPosition() {
         const pos = this.selectedMesh.position
-        signalHub.outgoing.emit('spaces_api', {
-            func: "modify_component_with_broadcast",
-            args: [this.selectedMesh.id, "position", { x: pos.x, y: pos.y, z: pos.z }],
-        });
+        const components: Component[] = [{ type: "position", data: pos.asArray() }]
+        const event: event = {
+            m: 'entity_transformed', p: { id: this.selectedMesh.id, components: components }
+        }
+        signalHub.outgoing.emit('event', event)
+
+        // signalHub.outgoing.emit('spaces_api', {
+        //     func: "modify_component_with_broadcast",
+        //     args: [this.selectedMesh.id, "position", { x: pos.x, y: pos.y, z: pos.z }],
+        // });
     }
 
     broadcastNewRotation() {
 
         const rot = this.selectedMesh.rotationQuaternion.toEulerAngles()
+        const components: Component[] = [{ type: "rotation", data: rot.asArray() }]
+        const event: event = {
+            m: 'entity_transformed', p: { id: this.selectedMesh.id, components: components }
+        }
+        signalHub.outgoing.emit('event', event)
 
-        signalHub.outgoing.emit('spaces_api', {
-            func: "modify_component_with_broadcast",
-            args: [this.selectedMesh.id, "rotation", { x: rot.x, y: rot.y, z: rot.z }],
-        });
+
+        // signalHub.outgoing.emit('spaces_api', {
+        //     func: "modify_component_with_broadcast",
+        //     args: [this.selectedMesh.id, "rotation", { x: rot.x, y: rot.y, z: rot.z }],
+        // });
     }
 
     broadcastNewScale() {
-        const scale = this.selectedMesh.scaling
-        signalHub.outgoing.emit('spaces_api', {
-            func: "modify_component_with_broadcast",
-            args: [this.selectedMesh.id, "scale", { x: scale.x, y: scale.y, z: scale.z }],
-        });
+        const scaling = this.selectedMesh.scaling
+
+        const components: Component[] = [{ type: "scaling", data: scaling.asArray() }]
+        const event: event = {
+            m: 'entity_transformed', p: { id: this.selectedMesh.id, components: components }
+        }
+        signalHub.outgoing.emit('event', event)
+        // signalHub.outgoing.emit('spaces_api', {
+        //     func: "modify_component_with_broadcast",
+        //     args: [this.selectedMesh.id, "scale", { x: scale.x, y: scale.y, z: scale.z }],
+        // });
     }
 
 

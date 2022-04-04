@@ -1,5 +1,7 @@
 TODO:
 
+tools - menu ui diagram
+
 hide immersive glasses, and vr menu until modal is dismissed
 - create menu manager after the choice to enter a space is made
 - and modal is dismissed
