@@ -1,5 +1,6 @@
 import { signalHub } from "../signalHub";
 import * as BABYLON from 'babylonjs'
+import type { event } from '../types'
 
 export class CollabEditDeleteManager {
     public pointerObs: BABYLON.Observer<BABYLON.PointerInfo>
@@ -35,10 +36,14 @@ export class CollabEditDeleteManager {
     }
 
     deleteMesh(mesh: BABYLON.AbstractMesh) {
-        console.log('attempting to delete', mesh)
-        signalHub.outgoing.emit('spaces_api', {
-            func: "delete_entity_with_broadcast",
-            args: [{ id: mesh.id }],
-        });
+        const event: event = { m: "entity_deleted", p: { id: mesh.id } }
+        signalHub.outgoing.emit("event", event)
+        signalHub.incoming.emit("event", event)
+
+        // console.log('attempting to delete', mesh)
+        // signalHub.outgoing.emit('spaces_api', {
+        //     func: "delete_entity_with_broadcast",
+        //     args: [{ id: mesh.id }],
+        // });
     }
 }

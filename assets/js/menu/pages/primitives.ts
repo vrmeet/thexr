@@ -41,7 +41,7 @@ export class MenuPagePrimitives extends GUI.Container {
                 let components = {
                     position: [0, 0, 0],
                     rotation: [0, 0, 0],
-                    scale: [1, 1, 1],
+                    scaling: [1, 1, 1],
                 }
                 if (prim === "grid") {
                     components.position = [0, -0.01, 0]
@@ -52,7 +52,7 @@ export class MenuPagePrimitives extends GUI.Container {
                     return { type: key, data: value }
                 }) as Component[]
 
-                const entity_event: event = { m: "create_entity", p: { type: prim, id: uuid, name, components: componentList } }
+                const entity_event: event = { m: "entity_created", p: { type: prim, id: uuid, name, components: componentList } }
 
                 signalHub.outgoing.emit('event', entity_event)
                 signalHub.incoming.emit('event', entity_event)

@@ -61,10 +61,30 @@ export class SceneManager {
                         mesh.rotationQuaternion.copyFromFloats(rot[0], rot[1], rot[2], rot[3])
                     }
                 }
-            } else if (mpts.m == "member_left") {
+            } else if (mpts.m === "member_left") {
                 this.removeAvatar(mpts.p.member_id)
-            } else if (mpts.m == "create_entity") {
+            } else if (mpts.m === "entity_created") {
                 this.findOrCreateMesh(mpts.p)
+            } else if (mpts.m === "entity_transformed") {
+                let meshes = this.scene.getMeshesById(mpts.p.id)
+                meshes.forEach(mesh => {
+                    mpts.p.components.forEach(payload => {
+                        this.processComponent(mesh, payload)
+                    })
+                    // this.processComponent(mesh, { type: mpts.p.type, data: params.data })
+                })
+            } else if (mpts.m === "entity_colored") {
+                let meshes = this.scene.getMeshesById(mpts.p.id)
+                meshes.forEach(mesh => {
+                    this.processComponent(mesh, { type: "color", data: mpts.p.color })
+
+                    // this.processComponent(mesh, { type: mpts.p.type, data: params.data })
+                })
+            } else if (mpts.m === "entity_deleted") {
+                let meshes = this.scene.getMeshesById(mpts.p.id)
+                meshes.forEach(mesh => {
+                    mesh.dispose()
+                })
             }
         })
 
@@ -172,6 +192,7 @@ export class SceneManager {
         let box = this.scene.getMeshByName(`avatar_${id}`)
         if (!box) {
             box = BABYLON.MeshBuilder.CreateBox(`avatar_${id}`)
+            box.isPickable = false
         }
         if (!posRot) {
             return box
@@ -343,7 +364,7 @@ export class SceneManager {
             case "position":
                 mesh.position.set(component.data[0], component.data[1], component.data[2])
                 break;
-            case "scale":
+            case "scaling":
                 mesh.scaling.set(component.data[0], component.data[1], component.data[2])
                 break;
             case "rotation":
