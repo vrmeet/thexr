@@ -609,8 +609,15 @@ defmodule Thexr.Spaces do
       [%Event{}, ...]
 
   """
-  def event_stream(space_id) do
-    q = from(e in EventStream, where: e.space_id == ^space_id, order_by: e.sequence)
+  def event_stream(space_id, last_sequence \\ 0, limit \\ 100) do
+    q =
+      from(e in EventStream,
+        select: map(e, [:sequence, :event_timestamp, :type, :payload]),
+        where: e.space_id == ^space_id and e.sequence > ^last_sequence,
+        limit: ^limit,
+        order_by: e.sequence
+      )
+
     Repo.all(q)
   end
 
