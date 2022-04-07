@@ -122,6 +122,7 @@ defmodule Thexr.SpaceServer do
 
     Thexr.QueueBroadcaster.async_notify(event_stream_attrs)
     broadcast_event(state.space, data, pid)
+    # Thexr.Snapshot.process_event(msg, payload)
 
     {:noreply, state}
   end
