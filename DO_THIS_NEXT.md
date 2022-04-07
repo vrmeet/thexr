@@ -1,5 +1,36 @@
 TODO:
 
+idea to explore:
+
+instead of a table components
+
+try List of polymorphic embeds on the entity schema
+
+types: [
+    position: Thexr.Components.Vector3,
+    color: ...,
+    rotation: ...
+  ],
+
+and each polymorphic type is an object like:
+
+  embedded_schema do
+    field :type, :string
+    field :data, :string #when color
+  end
+
+  embedded_schema do
+    field :type, :string
+    field :data, :map #other data
+    field :data, {:array, :float}
+  end
+
+custom field
+  https://elixirforum.com/t/using-custom-type-in-embedded-schema/29882/2
+
+
+- snapshot of state for late joiners
+
 tools - menu ui diagram
 
 hide immersive glasses, and vr menu until modal is dismissed
@@ -23,7 +54,7 @@ redo logic for joining webrtc
   - when user 'observe', subscribe to channel if another person is entered and unmuted
 
 - work on replay events
-- snapshot of state for late joiners
+
 
 local events should happen immediately in the client
   - tricky becauses it requires locally mapping command to event which is redundant to
@@ -31,46 +62,9 @@ local events should happen immediately in the client
 
 - create procedural (deterministically random), embellishment of environments
   - e.g., create trees, grass, rocks, continuously when you go near a place
-
-handle joining and leaving a space separately then joining a space channel
- - and turn joining and leaving a space into explicit events
-
-- frontend:
-    1) js -> signalHub -> channel.push 
-    2) graphQL -> mutation -> command
-    - folder of command interfaces/types
-    - folder of event interfaces/types
-
-Both can send a command struct to a handler
-  - multiple function heads {command_name, payload} -> {event_name, payload}
-  - persist events to DB
-  - create snapshots every X events
-  - doesn't need type, just pattern match on the value in the tuple to create snapshot
-
-
-use quaternion_rotation every where
-store as array everywhere
-
-send all updates via events, including member join, member leave, mic mutes, entity creation
-
 create a web page for viewing list of events
 remove id from list of events, remove inserted at and updated at
 
-create a snap shot mechanism so can load prior state quickly, and without member movements
-
-
-
-context has api for commands: 
-  member_join_space
-  member_move
-  member_mute
-  ...
-
-The context creates the event -> sends to the space genserver
-  - genserver forward them to queued_broadcaster (producer)
-  - 
-
-Use genstage consumer that subscribes to the producer (above), and write to a db
 
 genserver - appends the event to a log
   - first in memory
