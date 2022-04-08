@@ -7,7 +7,7 @@ defmodule Thexr.EventWriter do
 
   def init(:ok) do
     {:consumer, :the_state_does_not_matter,
-     subscribe_to: [{Thexr.QueueBroadcaster, max_demand: 100, min_demand: 50}]}
+     subscribe_to: [{Thexr.QueueBroadcaster, max_demand: 5, min_demand: 2}]}
   end
 
   def handle_events(events, _from, state) do
@@ -15,6 +15,7 @@ defmodule Thexr.EventWriter do
     # TODO: write all events in bulk
     Enum.map(events, fn event ->
       Thexr.Spaces.create_event(event)
+      Thexr.Snapshot.process(event.space_id, event.type, event)
     end)
 
     # We are a consumer, so we would never emit items.

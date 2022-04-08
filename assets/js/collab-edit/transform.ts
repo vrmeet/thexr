@@ -3,6 +3,7 @@ import * as BABYLON from 'babylonjs'
 import * as GUI from 'babylonjs-gui'
 import { signalHub } from '../signalHub'
 import type { Component, event } from '../types'
+import { arrayReduceSigFigs } from '../utils'
 
 
 export class CollaborativeEditTransformManager {
@@ -111,7 +112,7 @@ export class CollaborativeEditTransformManager {
 
     broadcastNewPosition() {
         const pos = this.selectedMesh.position
-        const components: Component[] = [{ type: "position", data: pos.asArray() }]
+        const components: Component[] = [{ type: "position", data: arrayReduceSigFigs(pos.asArray()) }]
         const event: event = {
             m: 'entity_transformed', p: { id: this.selectedMesh.id, components: components }
         }
@@ -126,7 +127,7 @@ export class CollaborativeEditTransformManager {
     broadcastNewRotation() {
 
         const rot = this.selectedMesh.rotationQuaternion.toEulerAngles()
-        const components: Component[] = [{ type: "rotation", data: rot.asArray() }]
+        const components: Component[] = [{ type: "rotation", data: arrayReduceSigFigs(rot.asArray()) }]
         const event: event = {
             m: 'entity_transformed', p: { id: this.selectedMesh.id, components: components }
         }
@@ -142,7 +143,7 @@ export class CollaborativeEditTransformManager {
     broadcastNewScale() {
         const scaling = this.selectedMesh.scaling
 
-        const components: Component[] = [{ type: "scaling", data: scaling.asArray() }]
+        const components: Component[] = [{ type: "scaling", data: arrayReduceSigFigs(scaling.asArray()) }]
         const event: event = {
             m: 'entity_transformed', p: { id: this.selectedMesh.id, components: components }
         }
