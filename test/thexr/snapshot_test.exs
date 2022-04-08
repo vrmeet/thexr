@@ -35,6 +35,23 @@ defmodule Thexr.SnapshotTest do
           ]
         },
         "ts" => 2_423_423
+      },
+      %{
+        "ts" => 1_649_386_829_984,
+        "p" => %{
+          "components" => [
+            %{
+              "data" => [123, 456, 789],
+              "type" => "rotation"
+            },
+            %{
+              "data" => [10, 20, 30],
+              "type" => "scaling"
+            }
+          ],
+          "id" => "029b7351-98be-4183-8848-579fab7cf5c7"
+        },
+        "m" => "entity_transformed"
       }
     ]
 
@@ -43,7 +60,7 @@ defmodule Thexr.SnapshotTest do
     end)
 
     Process.sleep(50)
-    Snapshot.update_snapshot(space.id)
+    # Snapshot.update_snapshot(space.id)
     Spaces.serialize(space) |> IO.inspect()
   end
 end
