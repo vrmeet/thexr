@@ -3,7 +3,7 @@ defmodule Thexr.Snapshot do
   alias Thexr.Repo
   alias Ecto.Multi
 
-  alias Thexr.Spaces.Entity
+  alias Thexr.Spaces.{Entity, Component}
 
   alias Thexr.Spaces
 
@@ -39,7 +39,7 @@ defmodule Thexr.Snapshot do
       multi,
       fn component, prev_multi ->
         query =
-          from(c in Thexr.Spaces.Component,
+          from(c in Component,
             where: c.entity_id == ^entity_id and c.type == ^component["type"],
             update: [set: [data: ^component]]
           )
@@ -50,8 +50,19 @@ defmodule Thexr.Snapshot do
     |> Repo.transaction()
   end
 
-  # { m: "entity_transformed", p: { id: string, components: Component[] }, ts?: number } |
-  # { m: "entity_colored", p: { id: string, color: string }, ts?: number } |
+  def process(_space_id, "entity_colored", %{payload: %{"id" => entity_id, "color" => color}}) do
+    Repo.insert_all(
+      Component,
+      [%{entity_id: entity_id, type: "color", data: %{type: "color", data: color}}],
+      on_conflict: {:replace, [:data]},
+      conflict_target: [:entity_id, :type]
+    )
+  end
+
+  def process(_space_id, "entity_deleted", %{payload: %{"id" => entity_id}}) do
+    from(e in Entity, where: e.id == ^entity_id) |> Repo.delete_all()
+  end
+
   # { m: "entity_deleted", p: { id: string }, ts?: number }
 
   def process(_, msg, event) do

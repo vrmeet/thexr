@@ -52,6 +52,21 @@ defmodule Thexr.SnapshotTest do
           "id" => "029b7351-98be-4183-8848-579fab7cf5c7"
         },
         "m" => "entity_transformed"
+      },
+      %{
+        "ts" => 23_423_423,
+        "p" => %{"id" => "029b7351-98be-4183-8848-579fab7cf5c7", "color" => "#FF0000"},
+        "m" => "entity_colored"
+      },
+      %{
+        "ts" => 23_423_425,
+        "p" => %{"id" => "029b7351-98be-4183-8848-579fab7cf5c7", "color" => "#0000FF"},
+        "m" => "entity_colored"
+      },
+      %{
+        "ts" => 23_423_425,
+        "p" => %{"id" => "029b7351-98be-4183-8848-579fab7cf5c7"},
+        "m" => "entity_deleted"
       }
     ]
 

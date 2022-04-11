@@ -69,16 +69,16 @@ export class SceneManager {
                 let meshes = this.scene.getMeshesById(mpts.p.id)
                 meshes.forEach(mesh => {
                     mpts.p.components.forEach(payload => {
-                        this.processComponent(mesh, payload)
+                        this.animateComponent(mesh, payload)
                     })
-                    // this.processComponent(mesh, { type: mpts.p.type, data: params.data })
+                    // this.setComponent(mesh, { type: mpts.p.type, data: params.data })
                 })
             } else if (mpts.m === "entity_colored") {
                 let meshes = this.scene.getMeshesById(mpts.p.id)
                 meshes.forEach(mesh => {
-                    this.processComponent(mesh, { type: "color", data: mpts.p.color })
+                    this.setComponent(mesh, { type: "color", data: mpts.p.color })
 
-                    // this.processComponent(mesh, { type: mpts.p.type, data: params.data })
+                    // this.setComponent(mesh, { type: mpts.p.type, data: params.data })
                 })
             } else if (mpts.m === "entity_deleted") {
                 let meshes = this.scene.getMeshesById(mpts.p.id)
@@ -104,7 +104,7 @@ export class SceneManager {
         // signalHub.incoming.on("component_changed").subscribe(params => {
         //     let meshes = this.scene.getMeshesById(params.entity_id)
         //     meshes.forEach(mesh => {
-        //         this.processComponent(mesh, { type: params.type, data: params.data })
+        //         this.setComponent(mesh, { type: params.type, data: params.data })
         //     })
         // })
         // signalHub.incoming.on("BoxCreated").subscribe(event => {
@@ -353,15 +353,45 @@ export class SceneManager {
         }
         if (mesh) {
             entity.components.forEach(component => {
-                this.processComponent(mesh, component)
+                this.setComponent(mesh, component)
             })
+            // BABYLON.Animation.CreateAndStartAnimation("appear", mesh, "scaling", 60, 120, new BABYLON.Vector3(0.1, 0.1, 0.1), new BABYLON.Vector3(1, 1, 1), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            BABYLON.Animation.CreateAndStartAnimation("appear", mesh, "position", 60, 60, new BABYLON.Vector3(mesh.position.x, 10, mesh.position.z), mesh.position.clone(), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+
         }
         return mesh
     }
 
-    processComponent(mesh: BABYLON.AbstractMesh, component: { type: string, data: any }) {
+    animateComponent(mesh: BABYLON.AbstractMesh, component: { type: string, data: any }) {
         switch (component.type) {
             case "position":
+                BABYLON.Animation.CreateAndStartAnimation("translate", mesh,
+                    "position", 100, 10, mesh.position, BABYLON.Vector3.FromArray(component.data), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+
+                break;
+            case "scaling":
+                mesh.scaling.set(component.data[0], component.data[1], component.data[2])
+                break;
+            case "rotation":
+                mesh.rotation.set(component.data[0], component.data[1], component.data[2])
+                break;
+            case "color":
+                console.log("component", component)
+                const mat = this.findOrCreateMaterial({ type: "color", colorString: component.data })
+                mesh.material = mat;
+                break;
+            default:
+                console.error("unknown component", component.type)
+
+        }
+    }
+
+    setComponent(mesh: BABYLON.AbstractMesh, component: { type: string, data: any }) {
+        switch (component.type) {
+            case "position":
+                // BABYLON.Animation.CreateAndStartAnimation("translate", mesh,
+                //     "position", 60, 120, mesh.position, BABYLON.Vector3.FromArray(component.data), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+
                 mesh.position.set(component.data[0], component.data[1], component.data[2])
                 break;
             case "scaling":
