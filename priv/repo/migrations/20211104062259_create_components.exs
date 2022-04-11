@@ -8,9 +8,9 @@ defmodule Thexr.Repo.Migrations.CreateComponents do
       add :data, :map
       add :entity_id, references(:entities, on_delete: :delete_all, type: :binary_id), null: false
 
-      timestamps()
+      # timestamps()
     end
 
-    create index(:components, [:entity_id])
+    create unique_index(:components, [:entity_id, :type])
   end
 end

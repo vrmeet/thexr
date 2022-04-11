@@ -28,7 +28,7 @@ defmodule Thexr.Spaces.Component do
     #   on_type_not_found: :raise,
     #   on_replace: :update
 
-    timestamps()
+    #  timestamps()
   end
 
   # def put_type_into_data(type, %{data: %{}} = attrs) do

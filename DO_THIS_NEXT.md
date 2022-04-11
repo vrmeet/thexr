@@ -1,35 +1,20 @@
 TODO:
 
-idea to explore:
+- add animation to transformations
 
-instead of a table components
+- playback / record
 
-try List of polymorphic embeds on the entity schema
+- we are already recording member movements, so what we need is to know what range to playback
+  a recording is an extra artifact separate from the event stream
+  - recording starts a client reference to current time (no event yet)
+  - the client then emits a 'recording_created' event that includes the starting and ending
+    timestamps (or this can be created using graphQL api)
+  - actually you just need to know what ranges to playback
+  - playback start-timestamp, end-timestamp | (speed 1X, 2X, 0.5X)
 
-types: [
-    position: Thexr.Components.Vector3,
-    color: ...,
-    rotation: ...
-  ],
-
-and each polymorphic type is an object like:
-
-  embedded_schema do
-    field :type, :string
-    field :data, :string #when color
-  end
-
-  embedded_schema do
-    field :type, :string
-    field :data, :map #other data
-    field :data, {:array, :float}
-  end
-
-custom field
-  https://elixirforum.com/t/using-custom-type-in-embedded-schema/29882/2
-
-
-- snapshot of state for late joiners
+- snapshot of members for late joiners
+- include hand_movement in member moved payload
+- support playback
 
 tools - menu ui diagram
 

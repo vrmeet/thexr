@@ -49,7 +49,7 @@ export class MenuColor extends GUI.Container {
         signalHub.outgoing.emit("event", event)
         signalHub.incoming.emit("event", event)
 
-        // this.sceneManager.processComponent(mesh,
+        // this.sceneManager.setComponent(mesh,
         //     {
         //         type: 'color',
         //         data: { value: colorString }
