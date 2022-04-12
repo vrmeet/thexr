@@ -49,7 +49,7 @@ export class MenuPagePrimitives extends GUI.Container {
                 }
 
                 const componentList = Object.entries(components).map(([key, value]) => {
-                    return { type: key, data: value }
+                    return { type: key, data: { value } }
                 }) as Component[]
 
                 const entity_event: event = { m: "entity_created", p: { type: prim, id: uuid, name, components: componentList } }

@@ -112,7 +112,7 @@ export class CollaborativeEditTransformManager {
 
     broadcastNewPosition() {
         const pos = this.selectedMesh.position
-        const components: Component[] = [{ type: "position", data: arrayReduceSigFigs(pos.asArray()) }]
+        const components: Component[] = [{ type: "position", data: { value: arrayReduceSigFigs(pos.asArray()) } }]
         const event: event = {
             m: 'entity_transformed', p: { id: this.selectedMesh.id, components: components }
         }
@@ -127,7 +127,7 @@ export class CollaborativeEditTransformManager {
     broadcastNewRotation() {
 
         const rot = this.selectedMesh.rotationQuaternion.toEulerAngles()
-        const components: Component[] = [{ type: "rotation", data: arrayReduceSigFigs(rot.asArray()) }]
+        const components: Component[] = [{ type: "rotation", data: { value: arrayReduceSigFigs(rot.asArray()) } }]
         const event: event = {
             m: 'entity_transformed', p: { id: this.selectedMesh.id, components: components }
         }
@@ -143,7 +143,7 @@ export class CollaborativeEditTransformManager {
     broadcastNewScale() {
         const scaling = this.selectedMesh.scaling
 
-        const components: Component[] = [{ type: "scaling", data: arrayReduceSigFigs(scaling.asArray()) }]
+        const components: Component[] = [{ type: "scaling", data: { value: arrayReduceSigFigs(scaling.asArray()) } }]
         const event: event = {
             m: 'entity_transformed', p: { id: this.selectedMesh.id, components: components }
         }

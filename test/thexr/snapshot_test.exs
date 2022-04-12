@@ -29,9 +29,9 @@ defmodule Thexr.SnapshotTest do
           "id" => "029b7351-98be-4183-8848-579fab7cf5c7",
           "name" => "mybox",
           "components" => [
-            %{"type" => "position", "data" => [1, 2, 3]},
-            %{"type" => "rotation", "data" => [2, 3, 5]},
-            %{"type" => "scaling", "data" => [1, 1, 1]}
+            %{"type" => "position", "data" => %{"value" => [1, 2, 3]}},
+            %{"type" => "rotation", "data" => %{"value" => [2, 3, 5]}},
+            %{"type" => "scaling", "data" => %{"value" => [1, 1, 1]}}
           ]
         },
         "ts" => 2_423_423
@@ -41,11 +41,11 @@ defmodule Thexr.SnapshotTest do
         "p" => %{
           "components" => [
             %{
-              "data" => [123, 456, 789],
+              "data" => %{"value" => [123, 456, 789]},
               "type" => "rotation"
             },
             %{
-              "data" => [10, 20, 30],
+              "data" => %{"value" => [10, 20, 30]},
               "type" => "scaling"
             }
           ],
@@ -62,12 +62,12 @@ defmodule Thexr.SnapshotTest do
         "ts" => 23_423_425,
         "p" => %{"id" => "029b7351-98be-4183-8848-579fab7cf5c7", "color" => "#0000FF"},
         "m" => "entity_colored"
-      },
-      %{
-        "ts" => 23_423_425,
-        "p" => %{"id" => "029b7351-98be-4183-8848-579fab7cf5c7"},
-        "m" => "entity_deleted"
       }
+      # %{
+      #   "ts" => 23_423_425,
+      #   "p" => %{"id" => "029b7351-98be-4183-8848-579fab7cf5c7"},
+      #   "m" => "entity_deleted"
+      # }
     ]
 
     Enum.each(events, fn payload ->
