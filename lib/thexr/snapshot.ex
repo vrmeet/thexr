@@ -41,7 +41,7 @@ defmodule Thexr.Snapshot do
         query =
           from(c in Component,
             where: c.entity_id == ^entity_id and c.type == ^component["type"],
-            update: [set: [data: ^component]]
+            update: [set: [data: ^component["data"]]]
           )
 
         Multi.update_all(prev_multi, component["type"], query, [])
@@ -53,7 +53,7 @@ defmodule Thexr.Snapshot do
   def process(_space_id, "entity_colored", %{payload: %{"id" => entity_id, "color" => color}}) do
     Repo.insert_all(
       Component,
-      [%{entity_id: entity_id, type: "color", data: %{type: "color", data: color}}],
+      [%{entity_id: entity_id, type: "color", data: %{value: color}}],
       on_conflict: {:replace, [:data]},
       conflict_target: [:entity_id, :type]
     )
@@ -65,7 +65,7 @@ defmodule Thexr.Snapshot do
 
   # { m: "entity_deleted", p: { id: string }, ts?: number }
 
-  def process(_, msg, event) do
+  def process(_, _msg, _event) do
     # IO.inspect(event, label: "no match #{msg}")
   end
 

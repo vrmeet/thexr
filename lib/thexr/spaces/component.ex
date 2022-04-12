@@ -1,15 +1,15 @@
-defimpl Jason.Encoder, for: Thexr.Spaces.Component do
-  def encode(value, opts) do
-    Jason.Encode.map(value.data, opts)
-  end
-end
+# defimpl Jason.Encoder, for: Thexr.Spaces.Component do
+#   def encode(value, opts) do
+#     Jason.Encode.map(value.data, opts)
+#   end
+# end
 
 defmodule Thexr.Spaces.Component do
   use Ecto.Schema
   import Ecto.Changeset
   #  import PolymorphicEmbed, only: [cast_polymorphic_embed: 3]
 
-  # @derive {Jason.Encoder, only: [:data]}
+  @derive {Jason.Encoder, only: [:type, :data]}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -41,7 +41,7 @@ defmodule Thexr.Spaces.Component do
   # end
 
   def changeset(component, attrs) do
-    attrs = %{attrs | "data" => %{"type" => attrs["type"], "data" => attrs["data"]}}
+    # attrs = %{attrs | "data" => %{"type" => attrs["type"], "data" => attrs["data"]}}
 
     component
     |> cast(attrs, [:type, :data, :entity_id])

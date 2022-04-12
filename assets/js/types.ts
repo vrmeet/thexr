@@ -36,10 +36,10 @@ export type PresenceDiff = {
 export type EditMode = "transform" | "delete" | null
 
 export type Component =
-    { type: "position", data: number[] } |
-    { type: "rotation", data: number[] } |
-    { type: "scaling", data: number[] } |
-    { type: "color", data: string }
+    { type: "position", data: { value: number[] } } |
+    { type: "rotation", data: { value: number[] } } |
+    { type: "scaling", data: { value: number[] } } |
+    { type: "color", data: { value: string } }
 
 
 /**

@@ -1,7 +1,7 @@
 import * as BABYLON from "babylonjs"
 import * as MAT from "babylonjs-materials"
 import type { Channel } from "phoenix";
-import type { PosRot, scene_settings, serialized_space } from "./types"
+import type { Component, PosRot, scene_settings, serialized_space } from "./types"
 import { sessionPersistance } from "./sessionPersistance";
 import { MenuManager } from "./menu/menu-manager"
 import { reduceSigFigs } from "./utils";
@@ -78,7 +78,7 @@ export class SceneManager {
             } else if (mpts.m === "entity_colored") {
                 let meshes = this.scene.getMeshesById(mpts.p.id)
                 meshes.forEach(mesh => {
-                    this.setComponent(mesh, { type: "color", data: mpts.p.color })
+                    this.setComponent(mesh, { type: "color", data: { value: mpts.p.color } })
 
                     // this.setComponent(mesh, { type: mpts.p.type, data: params.data })
                 })
@@ -327,7 +327,7 @@ export class SceneManager {
     }
 
 
-    findOrCreateMesh(entity: { type: string, name: string, id: string, components: any, parent?: string }) {
+    findOrCreateMesh(entity: { type: string, name: string, id: string, components: Component[], parent?: string }) {
 
         let mesh: BABYLON.AbstractMesh
         mesh = this.scene.getMeshById(entity.id)
@@ -365,11 +365,11 @@ export class SceneManager {
         return mesh
     }
 
-    animateComponent(mesh: BABYLON.AbstractMesh, component: { type: string, data: any }) {
+    animateComponent(mesh: BABYLON.AbstractMesh, component: Component) {
         switch (component.type) {
             case "color":
                 console.log("component", component)
-                const mat = this.findOrCreateMaterial({ type: "color", colorString: component.data })
+                const mat = this.findOrCreateMaterial({ type: "color", colorString: component.data.value })
                 mesh.material = mat;
                 break;
             case "position":
@@ -377,35 +377,32 @@ export class SceneManager {
             case "rotation":
 
                 BABYLON.Animation.CreateAndStartAnimation("translate", mesh,
-                    component.type, ANIMATION_FRAME_PER_SECOND, TOTAL_ANIMATION_FRAMES, mesh[component.type].clone(), BABYLON.Vector3.FromArray(component.data), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                    component.type, ANIMATION_FRAME_PER_SECOND, TOTAL_ANIMATION_FRAMES, mesh[component.type].clone(), BABYLON.Vector3.FromArray(component.data.value), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
                 break;
             default:
-                console.error("unknown component", component.type)
+                console.error("unknown component", component)
 
         }
     }
 
-    setComponent(mesh: BABYLON.AbstractMesh, component: { type: string, data: any }) {
-        switch (component.type) {
-            case "position":
-                // BABYLON.Animation.CreateAndStartAnimation("translate", mesh,
-                //     "position", 60, 120, mesh.position, BABYLON.Vector3.FromArray(component.data), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+    setComponent(mesh: BABYLON.AbstractMesh, component: Component) {
 
-                mesh.position.set(component.data[0], component.data[1], component.data[2])
-                break;
-            case "scaling":
-                mesh.scaling.set(component.data[0], component.data[1], component.data[2])
-                break;
-            case "rotation":
-                mesh.rotation.set(component.data[0], component.data[1], component.data[2])
-                break;
+        switch (component.type) {
             case "color":
                 console.log("component", component)
-                const mat = this.findOrCreateMaterial({ type: "color", colorString: component.data })
+                const mat = this.findOrCreateMaterial({ type: "color", colorString: component.data.value })
                 mesh.material = mat;
                 break;
+            case "position":
+            case "scaling":
+            case "rotation":
+                // BABYLON.Animation.CreateAndStartAnimation("translate", mesh,
+                //     "position", 60, 120, mesh.position, BABYLON.Vector3.FromArray(component.data), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                const value = component.data.value
+                mesh[component.type].set(value[0], value[1], value[2])
+                break;
             default:
-                console.error("unknown component", component.type)
+                console.error("unknown component", component)
 
         }
     }
