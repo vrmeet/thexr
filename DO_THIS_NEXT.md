@@ -1,8 +1,10 @@
 TODO:
 
-- add animation to transformations
 
 - playback / record
+- add animation to member_moved
+
+- graphQL component, has nested data data
 
 - we are already recording member movements, so what we need is to know what range to playback
   a recording is an extra artifact separate from the event stream

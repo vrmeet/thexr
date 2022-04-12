@@ -12,6 +12,8 @@ import { buffer, bufferCount, debounceTime, filter, map, take } from "rxjs/opera
 import { CollaborativeEditTransformManager } from "./collab-edit/transform";
 import { CollabEditDeleteManager } from "./collab-edit/delete";
 
+const ANIMATION_FRAME_PER_SECOND = 60
+const TOTAL_ANIMATION_FRAMES = 10
 
 export class SceneManager {
     public canvas: HTMLCanvasElement;
@@ -83,7 +85,9 @@ export class SceneManager {
             } else if (mpts.m === "entity_deleted") {
                 let meshes = this.scene.getMeshesById(mpts.p.id)
                 meshes.forEach(mesh => {
-                    mesh.dispose()
+                    BABYLON.Animation.CreateAndStartAnimation("delete", mesh, "scaling", ANIMATION_FRAME_PER_SECOND, TOTAL_ANIMATION_FRAMES, mesh.scaling.clone(), new BABYLON.Vector3(0.01, 0.01, 0.01), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, null, () => {
+                        mesh.dispose()
+                    });
                 })
             }
         })
@@ -355,8 +359,7 @@ export class SceneManager {
             entity.components.forEach(component => {
                 this.setComponent(mesh, component)
             })
-            // BABYLON.Animation.CreateAndStartAnimation("appear", mesh, "scaling", 60, 120, new BABYLON.Vector3(0.1, 0.1, 0.1), new BABYLON.Vector3(1, 1, 1), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-            BABYLON.Animation.CreateAndStartAnimation("appear", mesh, "position", 60, 60, new BABYLON.Vector3(mesh.position.x, 10, mesh.position.z), mesh.position.clone(), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            BABYLON.Animation.CreateAndStartAnimation("appear", mesh, "position", ANIMATION_FRAME_PER_SECOND, TOTAL_ANIMATION_FRAMES, new BABYLON.Vector3(mesh.position.x, mesh.position.y + 10, mesh.position.z), mesh.position.clone(), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
 
         }
         return mesh
@@ -364,21 +367,17 @@ export class SceneManager {
 
     animateComponent(mesh: BABYLON.AbstractMesh, component: { type: string, data: any }) {
         switch (component.type) {
-            case "position":
-                BABYLON.Animation.CreateAndStartAnimation("translate", mesh,
-                    "position", 100, 10, mesh.position, BABYLON.Vector3.FromArray(component.data), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-
-                break;
-            case "scaling":
-                mesh.scaling.set(component.data[0], component.data[1], component.data[2])
-                break;
-            case "rotation":
-                mesh.rotation.set(component.data[0], component.data[1], component.data[2])
-                break;
             case "color":
                 console.log("component", component)
                 const mat = this.findOrCreateMaterial({ type: "color", colorString: component.data })
                 mesh.material = mat;
+                break;
+            case "position":
+            case "scaling":
+            case "rotation":
+
+                BABYLON.Animation.CreateAndStartAnimation("translate", mesh,
+                    component.type, ANIMATION_FRAME_PER_SECOND, TOTAL_ANIMATION_FRAMES, mesh[component.type].clone(), BABYLON.Vector3.FromArray(component.data), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
                 break;
             default:
                 console.error("unknown component", component.type)
