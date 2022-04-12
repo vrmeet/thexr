@@ -233,6 +233,8 @@ defmodule Thexr.Spaces do
   """
   def get_entity!(id), do: Repo.get!(Entity, id)
 
+  def get_entity_by_id(id), do: Repo.get(Entity, id)
+
   @doc """
   Creates a entity.
 

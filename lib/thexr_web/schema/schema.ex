@@ -70,14 +70,14 @@ defmodule ThexrWeb.Schema.Schema do
 
   mutation do
     @desc "update  a space"
-    field :update_space, :space do
+    field :update_space, :id do
       arg(:slug, non_null(:string))
       arg(:attributes, non_null(:space_input))
       resolve(&SpaceResolver.update_space/3)
     end
 
     @desc "create entity for a space"
-    field :create_entity, :entity do
+    field :create_entity, :id do
       arg(:slug, non_null(:string))
       arg(:type, non_null(:string))
       resolve(&SpaceResolver.create_entity/3)
@@ -87,8 +87,8 @@ defmodule ThexrWeb.Schema.Schema do
     field :delete_entity, :id do
       @desc "the slug of the space"
       arg(:slug, non_null(:string))
-      @desc "the name of the entity"
-      arg(:name, non_null(:string))
+      @desc "the id of the entity"
+      arg(:id, non_null(:string))
       resolve(&SpaceResolver.delete_entity/3)
     end
   end

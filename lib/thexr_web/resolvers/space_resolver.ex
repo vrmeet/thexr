@@ -20,7 +20,7 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
       nil ->
         {:error, :space_not_found}
 
-      _space ->
+      space ->
         id = Ecto.UUID.generate()
 
         payload = %{
@@ -38,7 +38,7 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
           "ts" => :os.system_time(:millisecond)
         }
 
-        SpaceServer.process_event(args.slug, payload, nil)
+        SpaceServer.process_event(space.slug, payload, nil)
         {:ok, id}
         # Spaces.add_entity_with_broadcast(space, args.type)
     end
@@ -50,10 +50,22 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
         {:error, :space_not_found}
 
       space ->
-        with {:ok, entity} <- Spaces.delete_entity_with_broadcast(space, name: args.name) do
-          {:ok, entity.id}
-        else
-          err -> {:error, err}
+        case Spaces.get_entity_by_id(args.id) do
+          nil ->
+            {:error, :not_found}
+
+          entity ->
+            SpaceServer.process_event(
+              space.slug,
+              %{
+                "m" => "entity_deleted",
+                "p" => %{"id" => entity.id},
+                "ts" => :os.system_time(:millisecond)
+              },
+              nil
+            )
+
+            {:ok, entity.id}
         end
     end
   end
