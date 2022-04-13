@@ -1,91 +1,68 @@
 defmodule ThexrWeb.Resolvers.SpaceResolver do
   alias Thexr.Spaces
-  alias Thexr.SpaceServer
-  alias Thexr.SpaceSupervisor
 
   def spaces(_root, _args, _info) do
     {:ok, Spaces.list_spaces()}
   end
 
-  def space(_root, args, _info) do
-    {:ok, Spaces.get_space_by_slug(args.slug)}
+  def space(_root, %{space_id: space_id}, _info) do
+    case Spaces.get_space_by_id(space_id) do
+      nil -> {:error, :not_found}
+      space -> {:ok, space}
+    end
   end
 
   # def components(_, args, _) do
   #   {:ok, Spaces.list_components_for_entity(args.entity_id)}
   # end
 
-  def create_entity(_root, args, _) do
-    case Spaces.get_space_by_slug(args.slug) do
+  def create_entity(_root, %{space_id: space_id, type: type}, _) do
+    case Spaces.get_space_by_id(space_id) do
       nil ->
         {:error, :space_not_found}
 
       space ->
-        id = Ecto.UUID.generate()
-
-        payload = %{
-          "m" => "entity_created",
-          "p" => %{
-            "type" => args.type,
-            "id" => id,
-            name: "#{args.type}_#{Thexr.Utils.random_id(5)}",
-            components: [
-              %{"type" => "position", "data" => [0, 0, 0]},
-              %{"type" => "rotation", "data" => [0, 0, 0]},
-              %{"type" => "scaling", "data" => [1, 1, 1]}
-            ]
-          },
-          "ts" => :os.system_time(:millisecond)
-        }
-
-        SpaceServer.process_event(space.slug, payload, nil)
-        {:ok, id}
-        # Spaces.add_entity_with_broadcast(space, args.type)
+        Thexr.Spaces.CommandHandler.create_entity(space.id, type)
     end
   end
 
-  def delete_entity(_root, args, _) do
-    case Spaces.get_space_by_slug(args.slug) do
+  def delete_entity(_root, %{space_id: space_id, entity_id: entity_id}, _) do
+    case Spaces.get_space_by_id(space_id) do
       nil ->
         {:error, :space_not_found}
 
       space ->
-        case Spaces.get_entity_by_id(args.id) do
+        case Spaces.get_entity_by_id(entity_id) do
           nil ->
-            {:error, :not_found}
+            {:error, :entity_not_found}
 
           entity ->
-            SpaceServer.process_event(
-              space.slug,
-              %{
-                "m" => "entity_deleted",
-                "p" => %{"id" => entity.id},
-                "ts" => :os.system_time(:millisecond)
-              },
-              nil
-            )
-
-            {:ok, entity.id}
+            Thexr.Spaces.CommandHandler.delete_entity(space.id, entity.id)
+            {:ok, true}
         end
     end
   end
 
-  def update_space(_, args, _) do
-    space = Spaces.get_space_by_slug(args.slug)
+  def update_space(_, %{space_id: space_id, attributes: attributes}, _) do
+    case Spaces.get_space_by_id(space_id) do
+      nil ->
+        {:error, :space_not_found}
 
-    attributes =
-      cond do
-        Map.has_key?(args.attributes, :settings) ->
-          Map.put(
-            args.attributes,
-            :settings,
-            space.settings |> Map.from_struct() |> Map.merge(args.attributes.settings)
-          )
+      space ->
+        attributes =
+          cond do
+            Map.has_key?(attributes, :settings) ->
+              Map.put(
+                attributes,
+                :settings,
+                space.settings |> Map.from_struct() |> Map.merge(attributes.settings)
+              )
 
-        true ->
-          args.attributes
-      end
+            true ->
+              attributes
+          end
 
-    Spaces.update_space(space, attributes)
+        Spaces.update_space(space, attributes)
+    end
   end
 end

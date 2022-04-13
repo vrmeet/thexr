@@ -22,7 +22,7 @@ export class SceneManager {
     public entities: any[]
     public skyBox: BABYLON.Mesh
     public settings: scene_settings
-    public slug: string;
+    public space_id: string;
     public menuManager: MenuManager
     public freeCamera: BABYLON.FreeCamera
     public xrManager: XRManager
@@ -38,7 +38,7 @@ export class SceneManager {
         this.canvasId = orchestrator.canvasId
         this.member_id = orchestrator.member_id
         this.serializedSpace = orchestrator.serializedSpace
-        this.slug = this.serializedSpace.slug
+        this.space_id = this.orchestrator.space_id
         this.canvas = document.getElementById(this.canvasId) as HTMLCanvasElement;
         this.engine = new BABYLON.Engine(this.canvas, true, { preserveDrawingBuffer: true, stencil: true });
         this.settings = this.serializedSpace.settings
@@ -272,7 +272,7 @@ export class SceneManager {
 
     findOrCreateSkyBox() {
         if (!this.skyBox) {
-            this.skyBox = BABYLON.MeshBuilder.CreateBox(`${this.slug}_skybox`, { size: 50 })
+            this.skyBox = BABYLON.MeshBuilder.CreateBox(`${this.space_id}_skybox`, { size: 50 })
             this.skyBox.infiniteDistance = true
             let skyboxMaterial = new MAT.SkyMaterial("skyMaterial", this.scene);
             skyboxMaterial.backFaceCulling = false;

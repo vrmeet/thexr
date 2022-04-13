@@ -43,7 +43,7 @@ defmodule ThexrWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
-    get "/:slug", SpaceController, :show
+    get "/s/:space_id", SpaceController, :show
   end
 
   scope "/admin", ThexrWeb do
@@ -65,8 +65,8 @@ defmodule ThexrWeb.Router do
     live "/spaces/new", SpaceLive.Index, :new
     live "/spaces/:id/edit", SpaceLive.Index, :edit
 
-    live "/edit_space/:slug", SpaceEditLive.Index, :index
-    live "/edit_space/:slug/edit", SpaceEditLive.Index, :edit
+    live "/edit_space/:id", SpaceEditLive.Index, :index
+    live "/edit_space/:id/edit", SpaceEditLive.Index, :edit
 
     # live "/spaces/:id/show/edit", SpaceLive.Show, :edit
   end

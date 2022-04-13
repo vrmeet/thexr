@@ -1,6 +1,10 @@
 TODO:
 
 
+
+have the context make the event, remove event making out of the graphQL resolver
+
+
 - playback / record
 - add animation to member_moved
 
@@ -205,11 +209,6 @@ add a monster
 
 (feature)
 - mobile movement joystick
-
-(explore)
-- consider getting rid of the edit 'slug' for a space.  people don't know what it means.  and it is subject to 
-  abuse if people reserve the best short slugs or spell things we don't want.  What if every space was
-  browsible but was public or private.  the slug is still there but not changable except by admin.
 
 (cleanup)
 - remove template and plugin models/migrations

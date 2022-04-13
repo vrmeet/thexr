@@ -12,65 +12,52 @@ defmodule Thexr.SpaceServer do
   # Client (Public) Interface
 
   @doc """
-  Spawns a new space server process registered under the given `space_slug`.
+  Spawns a new space server process registered under the given `space.id`.
   options are passed to initialize the space state
   """
   def start_link(space) do
     GenServer.start_link(
       __MODULE__,
       {:ok, space},
-      name: via_tuple(space.slug)
+      name: via_tuple(space.id)
     )
   end
 
-  def process_event(slug, payload, pid) do
-    GenServer.cast(pid(slug), {:event, payload, pid})
+  def process_event(space_id, payload, pid) do
+    GenServer.cast(via_tuple(space_id), {:event, payload, pid})
   end
 
-  # def process_event(slug, event) do
-  #   GenServer.cast(pid(slug), {:event, event})
-  # end
-
-  @spec via_tuple(any) :: {:via, Registry, {Thexr.SpaceRegistry, any}}
   @doc """
   Returns a tuple used to register and lookup a game server process by name.
   """
-  def via_tuple(slug) do
-    {:via, Registry, {Thexr.SpaceRegistry, slug}}
+  def via_tuple(space_id) do
+    {:via, Registry, {Thexr.SpaceRegistry, space_id}}
   end
 
   @doc """
   Returns the `pid` of the game server process registered under the
   given `game_name`, or `nil` if no process is registered.
   """
-  def pid(slug) do
-    slug
+  def pid(space_id) do
+    space_id
     |> via_tuple()
     |> GenServer.whereis()
   end
 
-  def ets_refs(slug) do
-    safe_call(pid(slug), :get_ets_refs)
+  def ets_refs(space_id) do
+    GenServer.call(via_tuple(space_id), :get_ets_refs)
   end
 
-  def summary(slug) do
-    GenServer.call(pid(slug), :summary)
+  def summary(space_id) do
+    GenServer.call(via_tuple(space_id), :summary)
   end
 
-  def member_connected(slug, member_id) do
-    GenServer.cast(pid(slug), {:member_connected, member_id})
+  def member_connected(space_id, member_id) do
+    GenServer.cast(via_tuple(space_id), {:member_connected, member_id})
   end
 
-  def member_disconnected(slug, member_id) do
-    GenServer.cast(pid(slug), {:member_disconnected, member_id})
-  end
-
-  def safe_call(pid, payload) when is_pid(pid) do
-    GenServer.call(pid, payload)
-  end
-
-  def safe_call(nil, _) do
-    {:error, :no_pid}
+  def member_disconnected(space_id, member_id) do
+    GenServer.cast(via_tuple(space_id), {:member_disconnected, member_id})
   end
 
   #################################################################
@@ -116,7 +103,7 @@ defmodule Thexr.SpaceServer do
       space_id: state.space.id,
       type: msg,
       sequence: state.sequence,
-      payload: payload,
+      payload: AtomicMap.convert(payload, %{safe: false}),
       event_timestamp: time_in_ms
     }
 
@@ -156,7 +143,7 @@ defmodule Thexr.SpaceServer do
     Enum.each(state.disconnected, fn member_id ->
       time_in_ms = DateTime.utc_now() |> DateTime.to_unix(:millisecond)
       payload = %{"m" => "member_left", "p" => %{"member_id" => member_id}, "ts" => time_in_ms}
-      __MODULE__.process_event(state.space.slug, payload, nil)
+      __MODULE__.process_event(state.space.id, payload, nil)
     end)
 
     state = %{state | disconnected: MapSet.new()}
@@ -172,10 +159,10 @@ defmodule Thexr.SpaceServer do
   end
 
   def broadcast_event(space, payload, nil) do
-    ThexrWeb.Endpoint.broadcast("space:#{space.slug}", "event", payload)
+    ThexrWeb.Endpoint.broadcast("space:#{space.id}", "event", payload)
   end
 
   def broadcast_event(space, payload, from) do
-    ThexrWeb.Endpoint.broadcast_from(from, "space:#{space.slug}", "event", payload)
+    ThexrWeb.Endpoint.broadcast_from(from, "space:#{space.id}", "event", payload)
   end
 end

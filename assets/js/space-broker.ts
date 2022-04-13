@@ -21,7 +21,7 @@ type ChannelParams = {
 
 
 export class SpaceBroker {
-    public slug: string
+    public space_id: string
     public socket: Socket
     public spaceChannel: Channel
     public member_id: string
@@ -31,7 +31,7 @@ export class SpaceBroker {
 
     constructor(public orchestrator: Orchestrator) {
         this.member_id = orchestrator.member_id
-        this.slug = orchestrator.slug
+        this.space_id = orchestrator.space_id
         this.socket = new Socket('/socket', { params: { token: window['userToken'] } })
         // this.channelParams = {
         //     pos_rot: undefined,
@@ -45,7 +45,7 @@ export class SpaceBroker {
         //         updated_at: Date.now()
         //     }
         // }
-        this.spaceChannel = this.socket.channel(`space:${this.slug}`)
+        this.spaceChannel = this.socket.channel(`space:${this.space_id}`)
 
         // listen for clicked join button
         const $cameraReady = signalHub.local.on('camera_ready')

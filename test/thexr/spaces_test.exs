@@ -19,12 +19,11 @@ defmodule Thexr.SpacesTest do
     end
 
     test "create_space/1 with valid data creates a space" do
-      valid_attrs = %{description: "some description", name: "some name", slug: "some slug"}
+      valid_attrs = %{description: "some description", name: "some name"}
 
       assert {:ok, %Space{} = space} = Spaces.create_space(valid_attrs)
       assert space.description == "some description"
       assert space.name == "some name"
-      assert space.slug =~ "some-name"
     end
 
     test "create_space/1 with invalid data returns error changeset" do
@@ -36,19 +35,17 @@ defmodule Thexr.SpacesTest do
 
       update_attrs = %{
         description: "some updated description",
-        name: "some updated name",
-        slug: "some updated slug"
+        name: "some updated name"
       }
 
       assert {:ok, %Space{} = space} = Spaces.update_space(space, update_attrs)
       assert space.description == "some updated description"
       assert space.name == "some updated name"
-      assert space.slug == "some updated slug"
     end
 
     test "update_space/2 with invalid data returns error changeset" do
       space = space_fixture()
-      assert {:error, %Ecto.Changeset{}} = Spaces.update_space(space, %{"slug" => nil})
+      assert {:error, %Ecto.Changeset{}} = Spaces.update_space(space, %{"name" => nil})
       assert space == Spaces.get_space!(space.id)
     end
 

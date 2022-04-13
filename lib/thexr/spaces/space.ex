@@ -9,10 +9,7 @@ defmodule Thexr.Spaces.Space do
   schema "spaces" do
     field :description, :string
     field :name, :string
-    field :slug, :string
-    # field :data, :string, default: ""
     embeds_one :settings, Settings, on_replace: :update
-
     has_many :entities, Thexr.Spaces.Entity
     timestamps()
   end
@@ -27,11 +24,9 @@ defmodule Thexr.Spaces.Space do
 
   def edit_changeset(space, attrs) do
     space
-    |> cast(attrs, [:name, :description, :slug])
-    |> validate_required([:name, :description, :slug])
+    |> cast(attrs, [:name, :description])
+    |> validate_required([:name, :description])
     |> cast_embed(:settings)
-    |> create_rand_slug_if_missing()
-    |> unique_constraint(:slug)
   end
 
   def create_settings_if_missing(changeset) do
@@ -40,25 +35,6 @@ defmodule Thexr.Spaces.Space do
         {:data, nil} ->
           settings = %Thexr.Spaces.Settings{}
           put_change(changeset, :settings, settings)
-
-        _ ->
-          changeset
-      end
-    else
-      changeset
-    end
-  end
-
-  def create_rand_slug_if_missing(changeset) do
-    if changeset.valid? do
-      case fetch_field(changeset, :slug) do
-        {:data, nil} ->
-          name =
-            fetch_field!(changeset, :name)
-            |> String.replace(~r/[^a-zA-Z0-9]/, "-")
-
-          new_slug = "#{name}_#{Thexr.Utils.random_id()}"
-          put_change(changeset, :slug, new_slug)
 
         _ ->
           changeset

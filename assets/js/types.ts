@@ -7,7 +7,7 @@ export type scene_settings = {
     fog_density: number
 }
 
-export type serialized_space = { settings: scene_settings, slug: string, entities: any[] }
+export type serialized_space = { settings: scene_settings, id: string, entities: any[] }
 
 export interface member_state {
     mic_pref?: "on" | "off"

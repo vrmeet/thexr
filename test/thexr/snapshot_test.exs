@@ -71,7 +71,7 @@ defmodule Thexr.SnapshotTest do
     ]
 
     Enum.each(events, fn payload ->
-      Thexr.SpaceServer.process_event(space.slug, payload, self())
+      Thexr.SpaceServer.process_event(space.id, payload, self())
     end)
 
     Process.sleep(50)

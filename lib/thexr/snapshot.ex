@@ -14,7 +14,10 @@ defmodule Thexr.Snapshot do
 
   def update_snapshot(space_id, last_sequence \\ 0) do
     events = Spaces.event_stream(space_id, last_sequence)
-    Enum.each(events, fn event -> process(space_id, event.type, event) end)
+
+    Enum.each(events, fn event ->
+      process(space_id, event.type, AtomicMap.convert(event, %{safe: false}))
+    end)
   end
 
   def process(space_id, "entity_created", %{
@@ -23,6 +26,7 @@ defmodule Thexr.Snapshot do
     changeset =
       %Entity{space_id: space_id}
       |> Entity.changeset(payload)
+      |> IO.inspect(label: "entity changeset")
 
     Multi.new()
     |> Multi.insert(:entity, changeset)
@@ -30,7 +34,7 @@ defmodule Thexr.Snapshot do
   end
 
   def process(_space_id, "entity_transformed", %{
-        payload: %{"id" => entity_id, "components" => components}
+        payload: %{id: entity_id, components: components}
       }) do
     multi = Multi.new()
 
@@ -40,17 +44,17 @@ defmodule Thexr.Snapshot do
       fn component, prev_multi ->
         query =
           from(c in Component,
-            where: c.entity_id == ^entity_id and c.type == ^component["type"],
-            update: [set: [data: ^component["data"]]]
+            where: c.entity_id == ^entity_id and c.type == ^component.type,
+            update: [set: [data: ^component.data]]
           )
 
-        Multi.update_all(prev_multi, component["type"], query, [])
+        Multi.update_all(prev_multi, component.type, query, [])
       end
     )
     |> Repo.transaction()
   end
 
-  def process(_space_id, "entity_colored", %{payload: %{"id" => entity_id, "color" => color}}) do
+  def process(_space_id, "entity_colored", %{payload: %{id: entity_id, color: color}}) do
     Repo.insert_all(
       Component,
       [%{entity_id: entity_id, type: "color", data: %{value: color}}],
@@ -59,14 +63,15 @@ defmodule Thexr.Snapshot do
     )
   end
 
-  def process(_space_id, "entity_deleted", %{payload: %{"id" => entity_id}}) do
+  def process(_space_id, "entity_deleted", %{payload: %{id: entity_id}}) do
     from(e in Entity, where: e.id == ^entity_id) |> Repo.delete_all()
   end
 
   # { m: "entity_deleted", p: { id: string }, ts?: number }
 
-  def process(_, _msg, _event) do
-    # IO.inspect(event, label: "no match #{msg}")
+  def process(s, m, e) do
+    IO.inspect(s, label: "space_id")
+    IO.inspect(e, label: "no match #{m}")
   end
 
   # def process(space_id, "entity_created", %{payload: %{"id" => id, "type" => type, "name" => name, "components" => components}}) do

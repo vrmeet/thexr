@@ -5,10 +5,10 @@
     title: @page_title,
     action: @live_action,
     space: @space,
-    return_to: Routes.space_edit_index_path(@socket, :index, @space.slug) %>
+    return_to: Routes.space_edit_index_path(@socket, :index, @space) %>
 <% end %>
 
-<span><%= link "Settings", to: Routes.space_edit_index_path(@socket, :edit, @space.slug) %></span>
+<span><%= link "Settings", to: Routes.space_edit_index_path(@socket, :edit, @space) %></span>
        
 
 <form phx-submit="add_entity">

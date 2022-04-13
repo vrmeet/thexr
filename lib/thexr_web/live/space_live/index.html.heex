@@ -16,8 +16,7 @@
     <tr>
       <th>Name</th>
       <th>Description</th>
-      <th>Slug</th>
-
+     
       <th></th>
     </tr>
   </thead>
@@ -26,10 +25,8 @@
       <tr id={"space-#{space.id}"}>
         <td><%= space.name %></td>
         <td><%= space.description %></td>
-        <td><%= space.slug %></td>
-
         <td>
-          <span><%= link "Enter", to: Routes.space_path(@socket, :show, space.slug) %></span>
+          <span><%= link "Enter", to: Routes.space_path(@socket, :show, space.id) %></span>
           <span><%= live_patch "Edit", to: Routes.space_index_path(@socket, :edit, space) %></span>
           <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: space.id, data: [confirm: "Are you sure?"] %></span>
         </td>

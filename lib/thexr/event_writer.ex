@@ -15,6 +15,7 @@ defmodule Thexr.EventWriter do
     # TODO: write all events in bulk
     Enum.map(events, fn event ->
       Thexr.Spaces.create_event(event)
+      IO.inspect(event, label: "about to process")
       Thexr.Snapshot.process(event.space_id, event.type, event)
     end)
 

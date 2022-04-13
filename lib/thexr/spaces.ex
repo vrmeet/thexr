@@ -42,7 +42,9 @@ defmodule Thexr.Spaces do
   """
   def get_space!(id), do: Repo.get!(Space, id)
 
-  def get_space_by_slug(slug), do: Repo.get_by(Space, slug: slug)
+  def get_space_by_id(id) do
+    Repo.get(Space, id)
+  end
 
   def get_all_entities_for_space(space_id) do
     q = from(e in Entity, where: e.space_id == ^space_id, order_by: e.inserted_at)
@@ -134,7 +136,6 @@ defmodule Thexr.Spaces do
   def create_space(attrs \\ %{}) do
     %Space{}
     |> Space.new_changeset(attrs)
-    |> Space.create_rand_slug_if_missing()
     |> Space.create_settings_if_missing()
     |> Repo.insert()
   end
@@ -159,7 +160,7 @@ defmodule Thexr.Spaces do
   end
 
   defp broadcast_space_update({:ok, space}) do
-    ThexrWeb.Endpoint.broadcast("space:#{space.slug}", "space_settings_changed", space.settings)
+    ThexrWeb.Endpoint.broadcast("space:#{space.id}", "space_settings_changed", space.settings)
     {:ok, space}
   end
 
@@ -305,7 +306,7 @@ defmodule Thexr.Spaces do
 
     with {:ok, entity} <- delete_entity(filters) do
       ThexrWeb.Endpoint.broadcast(
-        "space:#{space.slug}",
+        "space:#{space.id}",
         "entity_deleted",
         %{id: entity.id}
       )
@@ -547,11 +548,18 @@ defmodule Thexr.Spaces do
   def serialize(space) do
     entities = list_entities_for_space_with_components(space.id)
 
-    %{entities: entities, slug: space.slug, settings: space.settings}
+    %{entities: entities, id: space.id, settings: space.settings}
     |> Jason.encode!()
   end
 
   # when entity is precreated in frontend
+  @spec added_entity_with_broadcast(
+          atom | %{:id => any, optional(any) => any},
+          any,
+          any,
+          any,
+          any
+        ) :: {:ok, nil | [%{optional(atom) => any}] | %{optional(atom) => any}}
   def added_entity_with_broadcast(space, uuid, name, entity_kind, components) do
     attrs = %{"space_id" => space.id, "type" => entity_kind, "id" => uuid, "name" => name}
     attrs = Entity.set_components_in_attrs(attrs, components)
@@ -560,7 +568,7 @@ defmodule Thexr.Spaces do
     entity = entity |> Repo.preload(components: from(c in Component, order_by: c.type))
 
     ThexrWeb.Endpoint.broadcast(
-      "space:#{space.slug}",
+      "space:#{space.id}",
       "entity_created",
       entity
     )
@@ -574,7 +582,7 @@ defmodule Thexr.Spaces do
     entity = entity |> Repo.preload(components: from(c in Component, order_by: c.type))
 
     ThexrWeb.Endpoint.broadcast(
-      "space:#{space.slug}",
+      "space:#{space.id}",
       "entity_created",
       entity
     )
@@ -586,7 +594,7 @@ defmodule Thexr.Spaces do
     with {:ok, component} <- get_component_by_entity_id(entity_id, type),
          {:ok, component} <-
            Component.changeset(component, %{"type" => type, "data" => data}) |> Repo.update() do
-      ThexrWeb.Endpoint.broadcast("space:#{space.slug}", "component_changed", %{
+      ThexrWeb.Endpoint.broadcast("space:#{space.id}", "component_changed", %{
         "entity_id" => component.entity_id,
         "type" => component.type,
         "data" => component.data

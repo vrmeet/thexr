@@ -7,13 +7,13 @@
     let name;
     let description;
 
-    const slug = getContext("slug");
+    const space_id = getContext("space_id");
 
     // onMount(async () => {
 
     const space = operationStore(`
 query {
-  space(slug: "${slug}") {
+  space(space_id: "${space_id}") {
     name
     description
   }

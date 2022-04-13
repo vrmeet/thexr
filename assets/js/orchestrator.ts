@@ -12,7 +12,7 @@ import { WebRTCManager } from './web-rtc-manager';
 export class Orchestrator {
     public canvas;
     public engine;
-    public slug: string
+    public space_id: string
     public entities: any[]
     public settings: scene_settings
     public skyBox: BABYLON.Mesh
@@ -25,7 +25,7 @@ export class Orchestrator {
 
     constructor(public canvasId: string, public member_id: string, public serializedSpace: serialized_space) {
         this.logManager = new LogManager()
-        this.slug = serializedSpace.slug;
+        this.space_id = serializedSpace.id;
         this.spaceBroker = new SpaceBroker(this)
 
         this.sceneManager = new SceneManager(this)
@@ -33,7 +33,7 @@ export class Orchestrator {
 
         window['orchestrator'] = this
 
-        new App({ target: document.body, props: { canvasId, slug: this.slug } });
+        new App({ target: document.body, props: { canvasId, space_id: this.space_id } });
 
     }
 

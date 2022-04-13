@@ -8,8 +8,8 @@ defmodule ThexrWeb.SpaceEditLive.Index do
   alias Thexr.Repo
 
   @impl true
-  def mount(%{"slug" => slug}, _session, socket) do
-    space = Spaces.get_space_by_slug(slug)
+  def mount(%{"id" => id}, _session, socket) do
+    space = Spaces.get_space_by_id(id)
     entities = Spaces.get_all_entities_for_space(space.id)
 
     {:ok,
@@ -56,7 +56,7 @@ defmodule ThexrWeb.SpaceEditLive.Index do
       end
 
     ThexrWeb.Endpoint.broadcast(
-      "space:#{socket.assigns.space.slug}",
+      "space:#{socket.assigns.space.id}",
       "entity_deleted",
       %{id: id}
     )
@@ -184,7 +184,7 @@ defmodule ThexrWeb.SpaceEditLive.Index do
       updated_changeset = Component.changeset(component, %{})
       socket = assign(socket, component_changeset: updated_changeset)
 
-      ThexrWeb.Endpoint.broadcast("space:#{socket.assigns.space.slug}", "component_changed", %{
+      ThexrWeb.Endpoint.broadcast("space:#{socket.assigns.space.id}", "component_changed", %{
         "entity_id" => component.entity_id,
         "type" => component.type,
         "data" => component.data
