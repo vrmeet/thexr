@@ -20,10 +20,6 @@
 
    <%= if @action == :edit do %>
 
-    <%= label f, :slug %>
-    <%= text_input f, :slug %>
-    <%= error_tag f, :slug %>
-
     <%= inputs_for f, :settings, fn ff -> %>
       <%= label ff, :clear_color %>
       <%= text_input ff, :clear_color %>

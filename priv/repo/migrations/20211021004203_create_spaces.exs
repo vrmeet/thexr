@@ -6,11 +6,8 @@ defmodule Thexr.Repo.Migrations.CreateSpaces do
       add :id, :binary_id, primary_key: true
       add :name, :string, null: false
       add :description, :text
-      add :slug, :string, null: false
       add :settings, :map, default: %{}, null: false
       timestamps()
     end
-
-    create unique_index(:spaces, [:slug])
   end
 end

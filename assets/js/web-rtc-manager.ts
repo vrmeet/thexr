@@ -9,7 +9,7 @@ export class WebRTCManager {
     public agora_app_id: string
 
     constructor(public orchestrator: Orchestrator) {
-        this.webRTCClient = new WebRTCClientAgora(this.orchestrator.slug, this.orchestrator.member_id)
+        this.webRTCClient = new WebRTCClientAgora(this.orchestrator.space_id, this.orchestrator.member_id)
         // first setup listeners/behaviors for joining leaving agora client
         //this.setupWebRTCEvents()
         // listeners only work if there is an app id

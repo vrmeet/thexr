@@ -13,9 +13,9 @@
 
     //props
     export let canvasId: string;
-    export let slug: string;
+    export let space_id: string;
 
-    setContext("slug", slug);
+    setContext("space_id", space_id);
     // message bus with orchestrator
 
     //state

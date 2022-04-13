@@ -5,15 +5,15 @@ defmodule ThexrWeb.SpaceChannel do
   alias Thexr.SpaceServer
 
   @impl true
-  def join("space:" <> slug, _params, socket) do
+  def join("space:" <> space_id, _params, socket) do
     send(self(), :after_join)
-    socket = assign(socket, :slug, slug)
+    socket = assign(socket, :space_id, space_id)
     {:ok, %{agora_app_id: System.get_env("AGORA_APP_ID")}, socket}
   end
 
   @impl true
   def handle_in("event", payload, socket) do
-    SpaceServer.process_event(socket.assigns.slug, payload, self())
+    SpaceServer.process_event(socket.assigns.space_id, payload, self())
     {:noreply, socket}
   end
 
@@ -70,7 +70,7 @@ defmodule ThexrWeb.SpaceChannel do
   def handle_info(:after_join, socket) do
     {:ok, _} = Presence.track(socket, socket.assigns.member_id, %{})
     push(socket, "presence_state", Presence.list(socket))
-    SpaceServer.member_connected(socket.assigns.slug, socket.assigns.member_id)
+    SpaceServer.member_connected(socket.assigns.space_id, socket.assigns.member_id)
     {:noreply, socket}
   end
 
@@ -80,7 +80,7 @@ defmodule ThexrWeb.SpaceChannel do
            params},
         socket
       ) do
-    case Thexr.SpaceServer.ets_refs(socket.assigns.slug) do
+    case Thexr.SpaceServer.ets_refs(socket.assigns.space_id) do
       {:error, _} ->
         push(socket, "server_lost", %{})
         {:noreply, socket}
@@ -114,7 +114,7 @@ defmodule ThexrWeb.SpaceChannel do
         socket = assign(socket, member_movements: member_movements)
         socket = assign(socket, member_states: member_states)
 
-        space = Thexr.Spaces.get_space_by_slug(socket.assigns.slug)
+        space = Thexr.Spaces.get_space_by_id(socket.assigns.space_id)
         socket = assign(socket, space: space)
         {:noreply, socket}
     end
@@ -122,8 +122,8 @@ defmodule ThexrWeb.SpaceChannel do
 
   @impl true
   def terminate(_reason, socket) do
-    if socket.assigns.member_id && socket.assigns.slug do
-      SpaceServer.member_disconnected(socket.assigns.slug, socket.assigns.member_id)
+    if socket.assigns.member_id && socket.assigns.space_id do
+      SpaceServer.member_disconnected(socket.assigns.space_id, socket.assigns.member_id)
     end
 
     try do

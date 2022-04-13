@@ -6,13 +6,11 @@ defmodule ThexrWeb.SpaceController do
 
   alias Thexr.Spaces
 
-  def show(conn, %{"slug" => slug}) do
-    space = Spaces.get_space_by_slug(slug)
-
-    case space do
+  def show(conn, %{"space_id" => space_id}) do
+    case Spaces.get_space_by_id(space_id) do
       nil ->
         conn
-        |> put_flash(:error, "Unrecognized Space Slug in the URL")
+        |> put_flash(:error, "Unrecognized Space ID in the URL")
         |> redirect(to: Routes.page_path(conn, :index))
 
       space ->
