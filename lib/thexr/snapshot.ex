@@ -26,7 +26,6 @@ defmodule Thexr.Snapshot do
     changeset =
       %Entity{space_id: space_id}
       |> Entity.changeset(payload)
-      |> IO.inspect(label: "entity changeset")
 
     Multi.new()
     |> Multi.insert(:entity, changeset)
@@ -70,8 +69,8 @@ defmodule Thexr.Snapshot do
   # { m: "entity_deleted", p: { id: string }, ts?: number }
 
   def process(s, m, e) do
-    IO.inspect(s, label: "space_id")
-    IO.inspect(e, label: "no match #{m}")
+    #   IO.inspect(s, label: "space_id")
+    #  IO.inspect(e, label: "no match #{m}")
   end
 
   # def process(space_id, "entity_created", %{payload: %{"id" => id, "type" => type, "name" => name, "components" => components}}) do

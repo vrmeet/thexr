@@ -41,7 +41,7 @@ defmodule ThexrWeb.SpaceChannel do
   end
 
   def handle_in("member_state_patched", patch, socket) do
-    IO.inspect(patch, label: "what's the data")
+    # IO.inspect(patch, label: "what's the data")
     payload = get_state(socket.assigns.member_id, socket.assigns.member_states)
     state = Map.merge(payload, patch)
     :ets.insert(socket.assigns.member_states, {socket.assigns.member_id, state})

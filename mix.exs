@@ -55,7 +55,8 @@ defmodule Thexr.MixProject do
       {:absinthe, "~> 1.7"},
       {:absinthe_plug, "~> 1.5.8"},
       {:dataloader, "~> 1.0"},
-      {:gen_stage, "~> 1.1"}
+      {:gen_stage, "~> 1.1"},
+      {:elixir_uuid, "~> 1.2"}
     ]
   end
 
