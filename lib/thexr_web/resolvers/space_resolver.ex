@@ -1,5 +1,6 @@
 defmodule ThexrWeb.Resolvers.SpaceResolver do
   alias Thexr.Spaces
+  alias Thexr.Spaces.EventStream
 
   def spaces(_root, _args, _info) do
     {:ok, Spaces.list_spaces()}
@@ -64,5 +65,9 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
 
         Spaces.update_space(space, attributes)
     end
+  end
+
+  def playback(_root, %{space_id: space_id, beginning_sequence: beginning_sequence}, _) do
+    Thexr.PlaybackServer.start_link(%{space_id: space_id, beginning_sequence: beginning_sequence})
   end
 end

@@ -85,6 +85,14 @@ defmodule ThexrWeb.Schema.Schema do
       arg(:entity_id, non_null(:string))
       resolve(&SpaceResolver.delete_entity/3)
     end
+
+    @desc "playback stream"
+    field :playback, :boolean do
+      @desc "the id of the space"
+      arg(:space_id, non_null(:string))
+      arg(:beginning_sequence, non_null(:integer))
+      resolve(&SpaceResolver.playback/3)
+    end
   end
 
   def context(ctx) do

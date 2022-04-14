@@ -553,13 +553,6 @@ defmodule Thexr.Spaces do
   end
 
   # when entity is precreated in frontend
-  @spec added_entity_with_broadcast(
-          atom | %{:id => any, optional(any) => any},
-          any,
-          any,
-          any,
-          any
-        ) :: {:ok, nil | [%{optional(atom) => any}] | %{optional(atom) => any}}
   def added_entity_with_broadcast(space, uuid, name, entity_kind, components) do
     attrs = %{"space_id" => space.id, "type" => entity_kind, "id" => uuid, "name" => name}
     attrs = Entity.set_components_in_attrs(attrs, components)
