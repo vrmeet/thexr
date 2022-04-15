@@ -1,10 +1,12 @@
 TODO:
 
-
+clean-up member connection
+  -- some unused code in space channel
+  -- need to send a cached version of all members in a room each new joiner
+  
 
 
 have the context make the event, remove event making out of the graphQL resolver
-
 
 - playback / record
 - add animation to member_moved
@@ -31,36 +33,21 @@ hide immersive glasses, and vr menu until modal is dismissed
 
 - convert observables back into events (for menu)
 
-
 test member leave 
   - what happens if person refreshes page before the kick check?
     - it will still generate member_enter, with no member_leave
     - maybe member_entered should also be generated server side?
     - OR... just allow omnipotent member_enter events?
 
-clean up unused code
- ... re-enable all the simple primitive and movement
 
 redo logic for joining webrtc 
   - when user 'enter', subscribe to channel if another person is entered and unmuted
   - when user 'observe', subscribe to channel if another person is entered and unmuted
 
-- work on replay events
-
-
-local events should happen immediately in the client
-  - tricky becauses it requires locally mapping command to event which is redundant to
-    backend.  
-
 - create procedural (deterministically random), embellishment of environments
   - e.g., create trees, grass, rocks, continuously when you go near a place
 create a web page for viewing list of events
 remove id from list of events, remove inserted at and updated at
-
-
-genserver - appends the event to a log
-  - first in memory
-  - then to disk (maybe use genstage when the consumer gives producer a demand)
 
 subscribers:
   - eventstream to disk writer
@@ -68,14 +55,8 @@ subscribers:
   - member positions/rotations (hands)
 
 
-
-Event sourcing
-
-events are the 1st class citizen
-- persist the events
-
-
-
+- maybe tools are handheld things like paint brush, color wand, etc
+  deleter
 
 UI Tools
   - List of tools that are one click away
@@ -83,16 +64,9 @@ UI Tools
      - maintained by the tool
   - a primitive is a kind of brush tip, so you paint with it
 
-
-- way to delete and color primitives
-  tools
-    primitives
-    delete
-    color
+- more tools
     pen
     thicken
-
-- console log button presses on controllers
 
 - skip select mic and output if on quest (enhancement)
 

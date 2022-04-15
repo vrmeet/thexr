@@ -48,6 +48,7 @@ export class SceneManager {
 
     setChannelListeners() {
 
+
         signalHub.incoming.on("event").subscribe((mpts) => {
             console.log("incoming receved an event", mpts)
             if (mpts.m === "member_entered") {
