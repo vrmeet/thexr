@@ -22,7 +22,9 @@ export class XRManager {
 
         this.teleportationManager = new TeleportationManager(this.xrHelper, this.scene)
 
-
+        signalHub.local.on('xr_component_changed').subscribe(value => {
+            console.log('xr_component_changed', value)
+        })
 
         this.xrHelper.baseExperience.onStateChangedObservable.add(state => {
             signalHub.local.emit('xr_state_changed', state)

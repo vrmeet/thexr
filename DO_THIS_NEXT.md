@@ -2,6 +2,7 @@ TODO:
 
 
 
+
 have the context make the event, remove event making out of the graphQL resolver
 
 
@@ -93,8 +94,6 @@ UI Tools
 
 - console log button presses on controllers
 
-- delete menu, delete the mesh you click on
-
 - skip select mic and output if on quest (enhancement)
 
 - create an entity gizmo that brings up all the menu
@@ -112,12 +111,6 @@ UI Tools
 
 - set sink id of audio output selection 
 https://stackoverflow.com/questions/46523466/html-js-select-audio-output-device-in-browser'
-
-- create new entities in front end fast by choosing the uuid
-
-- create scene level double pick observable
-- delete menu
-- change color menu
 
 - remove browse texture until menu is open
 
@@ -160,18 +153,12 @@ may need a callback or listen for errors )
 grab a nickname from user if there isn't one in session storage
 
 (improvement)
-add audio profile for agora
+add audio profile for agora - for sampling rate and encoder
 
-(improvement) show nickname over avatar
-show mic muted status
-
-(new feature)
-add color picker
+(improvement) show nickname over avatar - collect nickname in svelte
 
 (improvement)
 add a listener for when dragging the bounding box gizmo
-
-
 
 (feature)
 - be able to delete a selected object 
@@ -184,7 +171,6 @@ Easy way to add image wall
 
 (feature)
 add some simple behavior (cause and effect)
-
 
 add some sound
 add a gun
@@ -204,11 +190,5 @@ add a monster
 (add primimitive feature)
 - add cylinder type
 
-(features)
-- animate changes so we see things slide into place
-
 (feature)
 - mobile movement joystick
-
-(cleanup)
-- remove template and plugin models/migrations
