@@ -48,6 +48,14 @@ export class SceneManager {
 
     setChannelListeners() {
 
+        signalHub.incoming.on("members").subscribe(members => {
+            console.log("members is ", members)
+            for (const [member_id, payload] of Object.entries(members.movements)) {
+                console.log("find or create avatar", member_id, payload.pos_rot)
+                this.findOrCreateAvatar(member_id, payload.pos_rot)
+            }
+        })
+
 
         signalHub.incoming.on("event").subscribe((mpts) => {
             console.log("incoming receved an event", mpts)

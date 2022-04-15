@@ -1,10 +1,9 @@
 TODO:
 
-clean-up member connection
-  -- some unused code in space channel
-  -- need to send a cached version of all members in a room each new joiner
-  
+-- add member state caching
+-- remove observables in signal hub, use typed event?
 
+-- repair the webrtc bit
 
 have the context make the event, remove event making out of the graphQL resolver
 
