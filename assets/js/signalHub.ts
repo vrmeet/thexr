@@ -30,6 +30,7 @@ export type IncomingEvents = {
     presence_diff: types.PresenceDiff
     presence_state: types.PresenceState
     space_settings_changed: types.scene_settings
+    members: { movements: { member_id: { pos_rot: types.PosRot } } }
     server_lost: any
     // new_member: { member_id: string, pos_rot: types.PosRot, state: types.member_state }
     // members: { movements: { [member_id: string]: { pos_rot: types.PosRot } }, states: { [member_id: string]: types.member_state } }
