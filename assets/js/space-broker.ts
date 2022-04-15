@@ -27,31 +27,21 @@ export class SpaceBroker {
     public member_id: string
 
     // public initialized: Promise<any>
-    // public channelParams: ChannelParams
+    public channelParams: { choice: string }
 
     constructor(public orchestrator: Orchestrator) {
         this.member_id = orchestrator.member_id
         this.space_id = orchestrator.space_id
         this.socket = new Socket('/socket', { params: { token: window['userToken'] } })
-        // this.channelParams = {
-        //     pos_rot: undefined,
-        //     state: {
-        //         mic_pref: "off",
-        //         video_pref: "off",
-        //         audio_actual: "unpublished",
-        //         video_actual: "unpublished",
-        //         nickname: "string",
-        //         handraised: false,
-        //         updated_at: Date.now()
-        //     }
-        // }
-        this.spaceChannel = this.socket.channel(`space:${this.space_id}`)
+        this.channelParams = { choice: null }
+        this.spaceChannel = this.socket.channel(`space:${this.space_id}`, this.channelParams)
 
         // listen for clicked join button
         const $cameraReady = signalHub.local.on('camera_ready')
         const $interaction_choice = signalHub.local.on('interaction_choice')
 
-        $interaction_choice.subscribe(() => {
+        $interaction_choice.subscribe(choiceValue => {
+            this.channelParams.choice = choiceValue
             this.connectToChannel()
         })
 
@@ -75,7 +65,7 @@ export class SpaceBroker {
         // send a command to enter | observe after we've joined the channel
         const $space_channel_connected = signalHub.local.on('space_channel_connected')
         combineLatest([$cameraReady, $interaction_choice, $space_channel_connected]).subscribe(([pos_rot, choice, _]) => {
-            console.log('send command', choice)
+
             if (choice === 'enter') {
                 signalHub.outgoing.emit('event', { m: 'member_entered', p: { member_id: this.member_id, pos_rot: pos_rot } })
             } else {

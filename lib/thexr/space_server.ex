@@ -52,6 +52,7 @@ defmodule Thexr.SpaceServer do
     GenServer.call(via_tuple(space_id), :summary)
   end
 
+  # used to support future disconnects by the server
   def member_connected(space_id, member_id) do
     GenServer.cast(via_tuple(space_id), {:member_connected, member_id})
   end
