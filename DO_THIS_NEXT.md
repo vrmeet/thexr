@@ -1,6 +1,8 @@
 TODO:
 
-- maybe playback does not create new events, it only broadcasts into the channel
+- playback must have ending sequence
+- ability to see events
+
 
 - include hand_movement in member moved payload
 - support playback

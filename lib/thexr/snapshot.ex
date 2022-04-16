@@ -12,8 +12,8 @@ defmodule Thexr.Snapshot do
     Repo.delete_all(query)
   end
 
-  def update_snapshot(space_id, last_sequence \\ 0) do
-    events = Spaces.event_stream(space_id, last_sequence)
+  def update_snapshot(space_id, last_evaluated_sequence \\ 0) do
+    events = Spaces.event_stream(space_id, last_evaluated_sequence)
 
     Enum.each(events, fn event ->
       process(space_id, event.type, AtomicMap.convert(event, %{safe: false}))

@@ -15,6 +15,14 @@ defmodule ThexrWeb.Schema.Schema do
     field :entities, non_null(list_of(:entity)), resolve: dataloader(Spaces)
   end
 
+  object :event_stream do
+    field :space_id, non_null(:id)
+    field :event_timestamp, non_null(:integer)
+    field :sequence, non_null(:integer)
+    field :type, non_null(:string)
+    field :payload, :json
+  end
+
   input_object :space_input do
     field :name, :string
     field :description, :string
@@ -56,6 +64,14 @@ defmodule ThexrWeb.Schema.Schema do
       resolve(&SpaceResolver.space/3)
     end
 
+    @desc "View events of a space"
+    field :events, non_null(list_of(:event_stream)) do
+      arg(:space_id, non_null(:string))
+      arg(:last_evaluated_sequence, :integer)
+      arg(:limit, :integer)
+      resolve(&SpaceResolver.event_stream/3)
+    end
+
     # field :components, list_of(:component) do
     #   arg(:entity_id, non_null(:id))
     #   resolve(&SpaceResolver.components/3)
@@ -90,7 +106,8 @@ defmodule ThexrWeb.Schema.Schema do
     field :playback, :boolean do
       @desc "the id of the space"
       arg(:space_id, non_null(:string))
-      arg(:beginning_sequence, non_null(:integer))
+      arg(:start_seq, non_null(:integer))
+      arg(:end_seq, non_null(:integer))
       resolve(&SpaceResolver.playback/3)
     end
   end
