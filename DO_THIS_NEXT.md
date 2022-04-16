@@ -1,10 +1,6 @@
 TODO:
 
 
-
--- remove observables in signal hub, use typed event?
-
-
 - add animation to member_moved
 
 - maybe playback does not create new events, it only broadcasts into the channel

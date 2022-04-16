@@ -13,7 +13,7 @@ import { CollaborativeEditTransformManager } from "./collab-edit/transform";
 import { CollabEditDeleteManager } from "./collab-edit/delete";
 
 const ANIMATION_FRAME_PER_SECOND = 60
-const TOTAL_ANIMATION_FRAMES = 10
+const TOTAL_ANIMATION_FRAMES = 5
 
 export class SceneManager {
     public canvas: HTMLCanvasElement;
@@ -62,16 +62,19 @@ export class SceneManager {
             if (mpts.m === "member_entered") {
                 this.findOrCreateAvatar(mpts.p.member_id, mpts.p.pos_rot)
             } else if (mpts.m === "member_moved") {
-                let mesh = this.scene.getMeshByName(`avatar_${mpts.p.member_id}`)
+                const mesh = this.findOrCreateAvatar(mpts.p.member_id, null)
                 const { pos, rot } = mpts.p.pos_rot
-                if (mesh) {
-                    mesh.position.fromArray(pos)
-                    if (!mesh.rotationQuaternion) {
-                        mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(rot)
-                    } else {
-                        mesh.rotationQuaternion.copyFromFloats(rot[0], rot[1], rot[2], rot[3])
-                    }
-                }
+                this.animateComponent(mesh, { type: "position", data: { value: pos } })
+                this.animateComponent(mesh, { type: "rotation", data: { value: rot } })
+
+
+                // mesh.position.fromArray(pos)
+                // if (!mesh.rotationQuaternion) {
+                //     mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(rot)
+                // } else {
+                //     mesh.rotationQuaternion.copyFromFloats(rot[0], rot[1], rot[2], rot[3])
+                // }
+
             } else if (mpts.m === "member_left") {
                 this.removeAvatar(mpts.p.member_id)
             } else if (mpts.m === "entity_created") {
