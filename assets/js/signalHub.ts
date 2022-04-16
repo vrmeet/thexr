@@ -16,8 +16,8 @@ type LocalEvents = {
     }
     xr_state_changed: BABYLON.WebXRState
     new_log: any,
-    member_state: { member_id: string, op: "new" | "updated" | "removed", state: types.member_state }
     mesh_built: { name: string } // required to add new meshes to teleport manager
+    member_states_changed: { [member_id: string]: types.member_state }
 }
 
 export type IncomingEvents = {

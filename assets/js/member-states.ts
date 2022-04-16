@@ -17,14 +17,20 @@ export class MemberStates {
 
         signalHub.incoming.on("about_members").subscribe(members => {
             for (const [member_id, state] of Object.entries(members.states)) {
-                this.members[member_id] = state
+                this.merge_state(member_id, state)
             }
         })
 
         signalHub.incoming.on("event").pipe(
             filter(msg => msg.m === "member_entered")
         ).subscribe((evt: any) => {
-            this.members[evt.p.member_id] = evt.p.state
+            this.merge_state(evt.p.member_id, evt.p.state)
+        })
+
+        signalHub.incoming.on("event").pipe(
+            filter(msg => msg.m === "member_left")
+        ).subscribe((evt) => {
+            this.merge_state(evt.p["member_id"], null)
         })
 
         signalHub.incoming.on("event").pipe(
@@ -37,20 +43,27 @@ export class MemberStates {
         })
     }
 
-    merge_state(member_id: string, attr: any) {
-        for (const key of Object.keys(attr)) {
-            if (key in this.members[member_id]) { // or obj1.hasOwnProperty(key)
-                this.members[member_id][key] = attr[key];
+    merge_state(member_id: string, attr: any | null) {
+        if (attr === null) {
+            delete this.members[member_id]
+        } else {
+            if (!this.members[member_id] && attr) {
+                this.members[member_id] = { mic_muted: true, nickname: "unset nickname" }
+            }
+            // copy in only the keys that are part of the state
+            for (const key of Object.keys(attr)) {
+                if (key in this.members[member_id]) {
+                    this.members[member_id][key] = attr[key];
+                }
             }
         }
+        signalHub.local.emit("member_states_changed", this.members)
     }
 
-    update_mic_pref(member_id: string, mic_muted_pref: boolean) {
-        this.members[member_id].mic_muted = mic_muted_pref
-    }
+
 
     update_my_mic_muted_pref(mic_muted_pref: boolean) {
-        this.update_mic_pref(this.my_member_id, mic_muted_pref)
+        this.merge_state(this.my_member_id, { mic_muted: mic_muted_pref })
         const data: event = {
             m: 'member_changed_mic_pref',
             p: { member_id: this.orchestrator.member_id, mic_muted: mic_muted_pref }
@@ -59,7 +72,7 @@ export class MemberStates {
     }
 
     update_my_nickname(nickname: string) {
-        this.members[this.my_member_id].nickname = nickname
+        this.merge_state(this.my_member_id, { nickname: nickname })
         const data: event = {
             m: 'member_changed_nickname',
             p: { member_id: this.orchestrator.member_id, nickname: nickname }
