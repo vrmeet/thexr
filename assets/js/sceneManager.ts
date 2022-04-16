@@ -44,6 +44,12 @@ export class SceneManager {
         this.settings = this.serializedSpace.settings
         this.entities = this.serializedSpace.entities
         this.setChannelListeners()
+
+        signalHub.local.on("client_ready").subscribe(async () => {
+            this.xrManager = new XRManager(this.scene)
+            await this.xrManager.enableWebXRExperience()
+            this.menuManager = new MenuManager(this.orchestrator)
+        })
     }
 
     setChannelListeners() {
@@ -260,10 +266,6 @@ export class SceneManager {
         })
 
         //  const env = this.scene.createDefaultEnvironment();
-
-        this.xrManager = new XRManager(this.scene)
-        await this.xrManager.enableWebXRExperience()
-        this.menuManager = new MenuManager(this.orchestrator)
 
         // signalHub.local.next({ event: "camera_ready", payload: {} })
         signalHub.local.emit("camera_ready", posRot)

@@ -1,8 +1,5 @@
 TODO:
 
-
-- add animation to member_moved
-
 - maybe playback does not create new events, it only broadcasts into the channel
 
 - include hand_movement in member moved payload
@@ -12,9 +9,7 @@ tools - menu ui diagram
 
 - have a button to exit the space
 
-hide immersive glasses, and vr menu until modal is dismissed
-- create menu manager after the choice to enter a space is made
-- and modal is dismissed
+
 
 - convert observables back into events (for menu)
 
