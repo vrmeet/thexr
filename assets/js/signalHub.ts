@@ -3,7 +3,7 @@ import { Emitter } from 'typed-rx-emitter'
 import type * as types from './types'
 
 type LocalEvents = {
-    interaction_choice: 'enter' | 'observe'
+    client_ready: 'enter' | 'observe'
     space_channel_connected: { agora_app_id: string }
     camera_ready: { pos: number[], rot: number[] }
     controller_ready: { hand: string }
@@ -22,34 +22,20 @@ type LocalEvents = {
 
 export type IncomingEvents = {
     event: types.event
-
-    // member_moved: { member_id: string, pos: number[], rot: number[] }
-    // component_changed: { entity_id: string, type: string, data: any }
-    // entity_created: any
-    // entity_deleted: { id: string }
     presence_diff: types.PresenceDiff
     presence_state: types.PresenceState
     space_settings_changed: types.scene_settings
-    //about_members: { movements: { member_id: { pos_rot: types.PosRot } } }
     server_lost: any
-    // new_member: { member_id: string, pos_rot: types.PosRot, state: types.member_state }
     about_members: { movements: { [member_id: string]: { pos_rot: types.PosRot } }, states: { [member_id: string]: types.member_state } }
-    // member_state_updated: { member_id: string, state: types.member_state }
-    // "BoxCreated": { id: string, name: string, components: any }
-
 }
 
 export type OutgoingEvents = {
-    member_state_patched: types.member_state
-    member_state_changed: types.member_state
-    spaces_api: { func: string, args: any[] }
     event: types.event
 }
 
 
 interface SignalHub {
     observables: {
-        mic_muted_pref: BehaviorSubject<boolean>
         //    memberStates?: Observable<{ [member_id: string]: types.member_state }>
         camera_moved: Subject<{ pos: number[], rot: number[] }>
         hand_movement: Subject<{ hand: string, pos: number[], rot: number[] }>
@@ -66,7 +52,6 @@ interface SignalHub {
 
 export const signalHub: SignalHub = {
     observables: {
-        mic_muted_pref: new BehaviorSubject<boolean>(true),
         camera_moved: new Subject<{ pos: number[], rot: number[] }>(),
         hand_movement: new Subject<{ hand: string, pos: number[], rot: number[] }>(),
         menu_opened: new BehaviorSubject<boolean>(false),
