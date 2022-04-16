@@ -21,14 +21,31 @@ defmodule Thexr.PlaybackServer do
   # Server Callbacks
   #################################################################
 
-  def init({:ok, %{space_id: space_id, beginning_sequence: beginning_sequence}}) do
-    case Thexr.Spaces.event_stream(space_id, beginning_sequence, @buffer_size) do
+  def init(
+        {:ok,
+         %{
+           space_id: space_id,
+           start_seq: beginning_sequence,
+           end_seq: ending_sequence
+         }}
+      ) do
+    case Thexr.Spaces.event_stream(space_id,
+           last_evaluated_sequence: beginning_sequence,
+           limit: @buffer_size
+         ) do
       [] ->
         :ignore
 
       [first | rest] ->
         send(self(), {:event, first})
-        {:ok, %{space_id: space_id, events: rest, last_timestamp: first.event_timestamp}}
+
+        {:ok,
+         %{
+           space_id: space_id,
+           end_seq: ending_sequence,
+           events: rest,
+           last_timestamp: first.event_timestamp
+         }}
     end
 
     # todo, terminate if events empty
@@ -44,6 +61,10 @@ defmodule Thexr.PlaybackServer do
     payload = %{"m" => event.type, "p" => modified_payload, "ts" => :os.system_time(:millisecond)}
     Thexr.SpaceServer.process_event(state.space_id, payload, nil)
 
+    if event.sequence == state.end_seq do
+      Process.exit(self(), :done)
+    end
+
     case state.events do
       [] ->
         Process.exit(self(), :done)
@@ -51,8 +72,14 @@ defmodule Thexr.PlaybackServer do
       [first | rest] ->
         rest =
           case rest do
-            [] -> Thexr.Spaces.event_stream(state.space_id, first.sequence, @buffer_size)
-            _ -> rest
+            [] ->
+              Thexr.Spaces.event_stream(state.space_id,
+                last_evaluated_sequence: first.sequence,
+                limit: @buffer_size
+              )
+
+            _ ->
+              rest
           end
 
         Process.send_after(self(), {:event, first}, first.event_timestamp - state.last_timestamp)

@@ -13,6 +13,12 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
     end
   end
 
+  def event_stream(_root, %{space_id: space_id} = args, _info) do
+    options = args |> Enum.into([]) |> Keyword.drop([:space_id])
+    events = Spaces.event_stream(space_id, options)
+    {:ok, events}
+  end
+
   # def components(_, args, _) do
   #   {:ok, Spaces.list_components_for_entity(args.entity_id)}
   # end
@@ -67,7 +73,8 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
     end
   end
 
-  def playback(_root, %{space_id: space_id, beginning_sequence: beginning_sequence}, _) do
-    Thexr.PlaybackServer.start_link(%{space_id: space_id, beginning_sequence: beginning_sequence})
+  def playback(_root, args, _) do
+    Thexr.PlaybackServer.start_link(args)
+    {:ok, true}
   end
 end

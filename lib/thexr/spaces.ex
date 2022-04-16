@@ -612,11 +612,16 @@ defmodule Thexr.Spaces do
       [%Event{}, ...]
 
   """
-  def event_stream(space_id, last_sequence \\ 0, limit \\ 100) do
+  @event_stream_defaults %{last_evaluated_sequence: 0, limit: 100}
+
+  def event_stream(space_id, options \\ []) do
+    %{last_evaluated_sequence: last_evaluated_sequence, limit: limit} =
+      Enum.into(options, @event_stream_defaults)
+
     q =
       from(e in EventStream,
         select: map(e, [:sequence, :event_timestamp, :type, :payload]),
-        where: e.space_id == ^space_id and e.sequence > ^last_sequence,
+        where: e.space_id == ^space_id and e.sequence > ^last_evaluated_sequence,
         limit: ^limit,
         order_by: e.sequence
       )
