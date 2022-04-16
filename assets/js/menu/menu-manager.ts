@@ -55,9 +55,9 @@ export class MenuManager {
         this.menu_opened = false
         this.menu_topic = "main"
 
-        signalHub.local.on('camera_ready').subscribe(() => {
-            this.createFullScreenUI()
-        })
+        // signalHub.local.on('camera_ready').subscribe(() => {
+        this.createFullScreenUI()
+        // })
 
         signalHub.local.on('controller_ready').pipe(
             filter(payload => (payload.hand === 'left'))
