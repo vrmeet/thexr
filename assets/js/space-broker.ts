@@ -38,14 +38,14 @@ export class SpaceBroker {
 
         // listen for clicked join button
         const $cameraReady = signalHub.local.on('camera_ready')
-        const $interaction_choice = signalHub.local.on('interaction_choice')
+        const $client_ready = signalHub.local.on('client_ready')
 
-        $interaction_choice.subscribe(choiceValue => {
+        $client_ready.subscribe(choiceValue => {
             this.channelParams.choice = choiceValue
             this.connectToChannel()
         })
 
-        const $enter = $interaction_choice.pipe(
+        const $enter = $client_ready.pipe(
             filter(value => (value === 'enter'))
         )
 
@@ -64,7 +64,7 @@ export class SpaceBroker {
 
         // send a command to enter | observe after we've joined the channel
         const $space_channel_connected = signalHub.local.on('space_channel_connected')
-        combineLatest([$cameraReady, $interaction_choice, $space_channel_connected]).subscribe(([pos_rot, choice, _]) => {
+        combineLatest([$cameraReady, $client_ready, $space_channel_connected]).subscribe(([pos_rot, choice, _]) => {
 
             if (choice === 'enter') {
                 signalHub.outgoing.emit('event', { m: 'member_entered', p: { member_id: this.member_id, pos_rot: pos_rot, state: this.orchestrator.memberStates.my_state() } })

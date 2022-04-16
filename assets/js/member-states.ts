@@ -8,12 +8,19 @@ import type { event } from './types'
 export class MemberStates {
     public my_member_id: string
     public members: { [member_id: string]: member_state }
+    public client_ready: boolean
 
     constructor(public orchestrator: Orchestrator) {
         this.my_member_id = orchestrator.member_id
+        this.client_ready = false
+
         this.members = {
             [this.my_member_id]: { mic_muted: true, nickname: "unset nickname" }
         }
+
+        signalHub.local.on("client_ready").subscribe(() => {
+            this.client_ready = true
+        })
 
         signalHub.incoming.on("about_members").subscribe(members => {
             for (const [member_id, state] of Object.entries(members.states)) {
@@ -57,7 +64,9 @@ export class MemberStates {
                 }
             }
         }
-        signalHub.local.emit("member_states_changed", this.members)
+        if (this.client_ready) {
+            signalHub.local.emit("member_states_changed", this.members)
+        }
     }
 
 
@@ -68,8 +77,9 @@ export class MemberStates {
             m: 'member_changed_mic_pref',
             p: { member_id: this.orchestrator.member_id, mic_muted: mic_muted_pref }
         }
-        signalHub.outgoing.emit("event", data)
+        this.emit_event(data)
     }
+
 
     update_my_nickname(nickname: string) {
         this.merge_state(this.my_member_id, { nickname: nickname })
@@ -77,8 +87,15 @@ export class MemberStates {
             m: 'member_changed_nickname',
             p: { member_id: this.orchestrator.member_id, nickname: nickname }
         }
-        signalHub.outgoing.emit("event", data)
+        this.emit_event(data)
     }
+
+    emit_event(event) {
+        if (this.client_ready) {
+            signalHub.outgoing.emit("event", event)
+        }
+    }
+
 
     my_state() {
         return this.members[this.my_member_id]

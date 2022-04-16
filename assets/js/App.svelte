@@ -17,6 +17,7 @@
     export let orchestrator: Orchestrator;
     const canvasId = orchestrator.canvasId;
     const space_id = orchestrator.space_id;
+    let choice: "enter" | "observe";
 
     setContext("orchestrator", orchestrator);
     setContext("space_id", space_id);
@@ -43,6 +44,7 @@
 
     //callbacks
     const avatarAndNicknameCallback = (nickname: string) => {
+        sessionPersistance.saveNickname({ nickname });
         orchestrator.memberStates.update_my_nickname(nickname);
         showAvatarAndNickNameForm = false;
         if (!micConfirmed()) {
@@ -53,20 +55,21 @@
     };
 
     const enterCallback = () => {
-        signalHub.local.emit("interaction_choice", "enter");
+        choice = "enter";
         // signalHub.local.next(new EventJoined());
         didInteract = true;
         showAvatarAndNickNameForm = true;
     };
 
     const observeCallback = () => {
-        signalHub.local.emit("interaction_choice", "observe");
+        choice = "observe";
         // signalHub.local.next(new EventJoined());
         didInteract = true;
         ready();
     };
 
     const ready = () => {
+        signalHub.local.emit("client_ready", choice);
         let canvas = document.getElementById(canvasId);
         canvas.focus();
     };
