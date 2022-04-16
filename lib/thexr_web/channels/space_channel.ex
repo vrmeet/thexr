@@ -63,6 +63,19 @@ defmodule ThexrWeb.SpaceChannel do
     :ets.insert(socket.assigns.member_states, {member_id, state})
   end
 
+  def cache_members(
+        %{
+          "m" => "member_changed_nickname",
+          "p" => %{"member_id" => member_id, "nickname" => nickname}
+        },
+        socket
+      ) do
+    payload = get_state(member_id, socket.assigns.member_states)
+
+    state = Map.merge(payload, %{"nickname" => nickname})
+    :ets.insert(socket.assigns.member_states, {member_id, state})
+  end
+
   def cache_members(_, _) do
   end
 

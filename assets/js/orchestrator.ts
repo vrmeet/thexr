@@ -36,7 +36,7 @@ export class Orchestrator {
 
         window['orchestrator'] = this
 
-        new App({ target: document.body, props: { canvasId, space_id: this.space_id } });
+        new App({ target: document.body, props: { orchestrator: this } });
 
     }
 
