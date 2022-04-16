@@ -191,12 +191,7 @@ export class MenuManager {
         const micCallback = () => {
 
             const newValue: boolean = !this.orchestrator.memberStates.my_mic_muted_pref()
-            const data: event = {
-                m: 'member_changed_mic_pref',
-                p: { member_id: this.orchestrator.member_id, mic_muted: newValue }
-            }
-            signalHub.outgoing.emit("event", data)
-            signalHub.incoming.emit("event", data)
+            this.orchestrator.memberStates.update_my_mic_muted_pref(newValue)
             // !signalHub.observables.mic_muted_pref.getValue()
             //signalHub.observables.mic_muted_pref.next(newValue)
         }

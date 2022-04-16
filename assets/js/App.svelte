@@ -2,9 +2,11 @@
     import { setContext } from "svelte";
     import Welcome from "./components/Welcome.svelte";
     import MicAndOutput from "./components/MicAndOutput.svelte";
+    import AvatarAndNickName from "./components/AvatarAndNickname.svelte";
     import { signalHub } from "./signalHub";
     import { sessionPersistance } from "./sessionPersistance";
     import { initClient, operationStore, query } from "@urql/svelte";
+    import type { Orchestrator } from "./orchestrator";
 
     initClient({
         url: "/api",
@@ -12,14 +14,17 @@
     });
 
     //props
-    export let canvasId: string;
-    export let space_id: string;
+    export let orchestrator: Orchestrator;
+    const canvasId = orchestrator.canvasId;
+    const space_id = orchestrator.space_id;
 
+    setContext("orchestrator", orchestrator);
     setContext("space_id", space_id);
     // message bus with orchestrator
 
     //state
     let didInteract = false;
+    let showAvatarAndNickNameForm = false;
     let showMicAndOutputForm = false;
 
     const micConfirmed = () => {
@@ -37,15 +42,21 @@
     };
 
     //callbacks
-    const enterCallback = () => {
-        signalHub.local.emit("interaction_choice", "enter");
-        // signalHub.local.next(new EventJoined());
-        didInteract = true;
+    const avatarAndNicknameCallback = (nickname: string) => {
+        orchestrator.memberStates.update_my_nickname(nickname);
+        showAvatarAndNickNameForm = false;
         if (!micConfirmed()) {
             showMicAndOutputForm = true;
         } else {
             ready();
         }
+    };
+
+    const enterCallback = () => {
+        signalHub.local.emit("interaction_choice", "enter");
+        // signalHub.local.next(new EventJoined());
+        didInteract = true;
+        showAvatarAndNickNameForm = true;
     };
 
     const observeCallback = () => {
@@ -75,6 +86,9 @@
 
 {#if !didInteract}
     <Welcome {enterCallback} {observeCallback} />
+{/if}
+{#if showAvatarAndNickNameForm}
+    <AvatarAndNickName {avatarAndNicknameCallback} />
 {/if}
 {#if showMicAndOutputForm}
     <MicAndOutput {confirmMicAndOutputCallback} />

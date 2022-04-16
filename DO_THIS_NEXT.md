@@ -1,27 +1,14 @@
 TODO:
 
-pass along nickname
-
--- add member state caching (mic muted, nickname)
-
 -- remove observables in signal hub, use typed event?
 
 -- repair the webrtc bit
 
-have the context make the event, remove event making out of the graphQL resolver
-
-- playback / record
 - add animation to member_moved
 
 - graphQL component, has nested data data
 
-- we are already recording member movements, so what we need is to know what range to playback
-  a recording is an extra artifact separate from the event stream
-  - recording starts a client reference to current time (no event yet)
-  - the client then emits a 'recording_created' event that includes the starting and ending
-    timestamps (or this can be created using graphQL api)
-  - actually you just need to know what ranges to playback
-  - playback start-timestamp, end-timestamp | (speed 1X, 2X, 0.5X)
+- maybe playback does not create new events, it only broadcasts into the channel
 
 - snapshot of members for late joiners
 - include hand_movement in member moved payload
