@@ -131,7 +131,7 @@ export class SpaceBroker {
 
     forwardCameraMovement() {
         // forward camera movement
-        signalHub.observables.camera_moved.pipe(
+        signalHub.movement.on("camera_moved").pipe(
             throttleTime(100)
         ).subscribe(msg => {
             signalHub.outgoing.emit('event', { m: 'member_moved', p: { member_id: this.member_id, pos_rot: msg } })

@@ -19,7 +19,9 @@ export class MenuColor extends GUI.Container {
         this.sceneManager = orchestrator.sceneManager
         this.scene = orchestrator.sceneManager.scene
         this.currentColor = BABYLON.Color3.Red()
-        const callback = () => { signalHub.observables.menu_page.next('tools') }
+        const callback = () => {
+            signalHub.menu.emit("menu_topic", "tools")
+        }
         this.addControl(
             div({ name: "color_div" },
                 a({ name: "back-to-tools", callback }, "< Tools"),

@@ -15,7 +15,9 @@ export class MenuPagePrimitives extends GUI.Container {
         super()
         this.scene = this.orchestrator.sceneManager.scene
 
-        const callback = () => { signalHub.observables.menu_page.next("tools") }
+        const callback = () => {
+            signalHub.menu.emit("menu_topic", "tools")
+        }
 
         let options = [a({ callback }, "< Tools"), this.scrollablePrimOptions()]
 

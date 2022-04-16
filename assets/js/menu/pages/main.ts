@@ -18,7 +18,7 @@ export class MenuPageMain extends GUI.Container {
     }
 
     cb(dest: string) {
-        return () => (signalHub.observables.menu_page.next(dest))
+        return () => (signalHub.menu.emit("menu_topic", dest))
     }
 
 
