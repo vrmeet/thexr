@@ -253,7 +253,7 @@ export class SceneManager {
         this.freeCamera.onViewMatrixChangedObservable.add(cam => {
             let posArray = cam.position.asArray().map(reduceSigFigs)
             let rotArray = cam.absoluteRotation.asArray().map(reduceSigFigs)
-            signalHub.observables.camera_moved.next({ pos: posArray, rot: rotArray })
+            signalHub.movement.emit("camera_moved", { pos: posArray, rot: rotArray })
         })
 
         //  const env = this.scene.createDefaultEnvironment();

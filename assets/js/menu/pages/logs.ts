@@ -12,7 +12,9 @@ export class MenuPageLogs extends GUI.Container {
         this.name = "menu_page_logs"
         this.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
         this.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP
-        const callback = () => { signalHub.observables.menu_page.next("main") }
+        const callback = () => {
+            signalHub.menu.emit("menu_topic", "main")
+        }
 
         this.addControl(
             div({ name: "logs_div" },

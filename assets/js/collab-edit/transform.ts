@@ -1,6 +1,7 @@
 
 import * as BABYLON from 'babylonjs'
 import * as GUI from 'babylonjs-gui'
+import { filter } from 'rxjs/operators'
 import { signalHub } from '../signalHub'
 import type { Component, event } from '../types'
 import { arrayReduceSigFigs } from '../utils'
@@ -12,14 +13,14 @@ export class CollaborativeEditTransformManager {
     public pointerObs: BABYLON.Observer<BABYLON.PointerInfo>
 
     constructor(public scene: BABYLON.Scene) {
-
-        signalHub.observables.editing.subscribe(value => {
-            if (value === 'transform') {
+        signalHub.menu.on("menu_editing_tool").subscribe(editing => {
+            if (editing === "transform") {
                 this.on()
             } else {
                 this.off()
             }
         })
+
     }
 
     dispose() {

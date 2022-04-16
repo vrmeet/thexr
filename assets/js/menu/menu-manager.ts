@@ -46,10 +46,14 @@ export class MenuManager {
     public browseGui: GUI.AdvancedDynamicTexture
     public scene: BABYLON.Scene
     public sceneManager: SceneManager
+    public menu_opened: boolean
+    public menu_topic: string
 
     constructor(public orchestrator: Orchestrator) {
         this.sceneManager = orchestrator.sceneManager
         this.scene = orchestrator.sceneManager.scene
+        this.menu_opened = false
+        this.menu_topic = "main"
 
         signalHub.local.on('camera_ready').subscribe(() => {
             this.createFullScreenUI()
@@ -86,12 +90,19 @@ export class MenuManager {
 
         // listen to menu states
 
-        const menu_opened = signalHub.observables.menu_opened
-        const menu_page = signalHub.observables.menu_page
-
-        combineLatest([menu_opened, menu_page]).subscribe(value => {
+        const menu_opened = signalHub.menu.on("menu_opened").subscribe(value => {
+            this.menu_opened = value
             this.render()
         })
+
+        const menu_topic = signalHub.menu.on("menu_topic").subscribe(topic => {
+            this.menu_topic = topic
+            this.render()
+        })
+
+        // combineLatest([menu_opened, menu_topic]).subscribe(value => {
+        //     this.render()
+        // })
     }
 
 
@@ -131,7 +142,7 @@ export class MenuManager {
             this.fsGui.rootContainer.dispose()
 
             this.fsGui.addControl(this.adaptMenuCtrlForFsGUI(content.menuCtrl))
-            if (signalHub.observables.menu_opened.getValue()) {
+            if (this.menu_opened) {
                 this.fsGui.addControl(this.adaptBrowserCtrlForFsGUI(content.browserCtrl))
             }
         }
@@ -142,7 +153,7 @@ export class MenuManager {
             }
             if (this.browseGui) {
                 this.browseGui.rootContainer.dispose()
-                if (signalHub.observables.menu_opened.getValue()) {
+                if (this.menu_opened) {
                     this.browseGui.addControl(content.browserCtrl)
                 }
             }
@@ -175,7 +186,7 @@ export class MenuManager {
 
     stateToCtrls() {
 
-        const browserCtrl = (signalHub.observables.menu_opened.getValue()) ? this[signalHub.observables.menu_page.getValue()]() : null
+        const browserCtrl = (this.menu_opened) ? this[this.menu_topic]() : null
 
         return {
             menuCtrl: this.stateToMenuCtrl(),
@@ -185,8 +196,8 @@ export class MenuManager {
 
     stateToMenuCtrl() {
         const menuCallback = () => {
-            const newValue = !signalHub.observables.menu_opened.getValue()
-            signalHub.observables.menu_opened.next(newValue)
+            const newValue = !this.menu_opened
+            signalHub.menu.emit("menu_opened", newValue)
         }
 
         const micCallback = () => {
@@ -199,7 +210,7 @@ export class MenuManager {
             //signalHub.observables.mic_muted_pref.next(newValue)
         }
 
-        const menuLabel = signalHub.observables.menu_opened.getValue() ? "close" : "menu"
+        const menuLabel = this.menu_opened ? "close" : "menu"
         const micLabel = this.orchestrator.memberStates.my_mic_muted_pref() ? "Unmute" : "Mute"
         return div({ name: 'menu-div' },
             a({ name: 'menu-btn', callback: menuCallback }, menuLabel),

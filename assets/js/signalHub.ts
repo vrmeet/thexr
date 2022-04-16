@@ -33,35 +33,32 @@ export type OutgoingEvents = {
     event: types.event
 }
 
+export type MenuEvents = {
+    menu_opened: boolean
+    menu_topic: string
+    menu_editing_tool: types.EditMode
+}
+
+export type MovementEvents = {
+    camera_moved: types.PosRot
+    hand_movement: { hand: string, pos: number[], rot: number[] }
+}
+
 
 interface SignalHub {
-    observables: {
-        //    memberStates?: Observable<{ [member_id: string]: types.member_state }>
-        camera_moved: Subject<{ pos: number[], rot: number[] }>
-        hand_movement: Subject<{ hand: string, pos: number[], rot: number[] }>
-        menu_opened: BehaviorSubject<boolean>
-        editing: BehaviorSubject<types.EditMode>
-        menu_page: BehaviorSubject<string>
-
-
-    }
     local: Emitter<LocalEvents>
     incoming: Emitter<IncomingEvents>
     outgoing: Emitter<OutgoingEvents>
+    menu: Emitter<MenuEvents>
+    movement: Emitter<MovementEvents>
 }
 
 export const signalHub: SignalHub = {
-    observables: {
-        camera_moved: new Subject<{ pos: number[], rot: number[] }>(),
-        hand_movement: new Subject<{ hand: string, pos: number[], rot: number[] }>(),
-        menu_opened: new BehaviorSubject<boolean>(false),
-        editing: new BehaviorSubject<types.EditMode>(null),
-        menu_page: new BehaviorSubject<string>("main"),
-
-    },
     local: new Emitter<LocalEvents>(),
     incoming: new Emitter<IncomingEvents>(),
-    outgoing: new Emitter<OutgoingEvents>()
+    outgoing: new Emitter<OutgoingEvents>(),
+    menu: new Emitter<MenuEvents>(),
+    movement: new Emitter<MovementEvents>()
 }
 
 

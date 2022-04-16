@@ -11,11 +11,13 @@ export class MenuTools extends GUI.Container {
     public tools: any
     constructor() {
         super()
-        this.selectedTool = signalHub.observables.editing.getValue()
+        this.selectedTool = null
         this.tools = {}
-        const backToMainCallback = () => { signalHub.observables.menu_page.next('main') }
-        const gotoPrimitiveCallback = () => { signalHub.observables.menu_page.next('primitives') }
-        const gotoColorCallback = () => { signalHub.observables.menu_page.next('color') }
+        const backToMainCallback = () => {
+            signalHub.menu.emit("menu_topic", "main")
+        }
+        const gotoPrimitiveCallback = () => { signalHub.menu.emit("menu_topic", 'primitives') }
+        const gotoColorCallback = () => { signalHub.menu.emit("menu_topic", 'color') }
 
         const makeTool = (toolName: EditMode) => {
             const args = {
@@ -43,7 +45,7 @@ export class MenuTools extends GUI.Container {
         )
 
         this.onDisposeObservable.add(() => {
-            signalHub.observables.editing.next(null)
+            signalHub.menu.emit("menu_editing_tool", null)
         })
 
 
@@ -59,8 +61,7 @@ export class MenuTools extends GUI.Container {
         }
         this.selectedTool = toolName
         this.tools[this.selectedTool].background = "#FF0000"
-
-        signalHub.observables.editing.next(toolName)
+        signalHub.menu.emit("menu_editing_tool", toolName)
 
     }
 

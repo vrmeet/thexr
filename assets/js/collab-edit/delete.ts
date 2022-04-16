@@ -1,12 +1,13 @@
 import { signalHub } from "../signalHub";
 import * as BABYLON from 'babylonjs'
 import type { event } from '../types'
+import { filter } from "rxjs/operators";
 
 export class CollabEditDeleteManager {
     public pointerObs: BABYLON.Observer<BABYLON.PointerInfo>
     constructor(public scene: BABYLON.Scene) {
-        signalHub.observables.editing.subscribe(value => {
-            if (value === 'delete') {
+        signalHub.menu.on("menu_editing_tool").subscribe(editing => {
+            if (editing === "delete") {
                 this.on()
             } else {
                 this.off()

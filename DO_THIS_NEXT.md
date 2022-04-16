@@ -1,8 +1,6 @@
 TODO:
 
--- don't send enter event until we are all done with the modals, ready()
 
--- repair the webrtc bit
 
 -- remove observables in signal hub, use typed event?
 
@@ -15,6 +13,8 @@ TODO:
 - support playback
 
 tools - menu ui diagram
+
+- have a button to exit the space
 
 hide immersive glasses, and vr menu until modal is dismissed
 - create menu manager after the choice to enter a space is made
@@ -149,3 +149,6 @@ add a monster
 
 (feature)
 - mobile movement joystick
+
+-- add DB on AWS
+-- 
