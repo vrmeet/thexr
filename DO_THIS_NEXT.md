@@ -1,16 +1,16 @@
 TODO:
 
--- remove observables in signal hub, use typed event?
+-- don't send enter event until we are all done with the modals, ready()
 
 -- repair the webrtc bit
 
-- add animation to member_moved
+-- remove observables in signal hub, use typed event?
 
-- graphQL component, has nested data data
+
+- add animation to member_moved
 
 - maybe playback does not create new events, it only broadcasts into the channel
 
-- snapshot of members for late joiners
 - include hand_movement in member moved payload
 - support playback
 
@@ -37,12 +37,6 @@ redo logic for joining webrtc
   - e.g., create trees, grass, rocks, continuously when you go near a place
 create a web page for viewing list of events
 remove id from list of events, remove inserted at and updated at
-
-subscribers:
-  - eventstream to disk writer
-  - member states (could be either memory (:ets) or db)
-  - member positions/rotations (hands)
-
 
 - maybe tools are handheld things like paint brush, color wand, etc
   deleter

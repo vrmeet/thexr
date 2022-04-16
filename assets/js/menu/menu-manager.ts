@@ -85,12 +85,12 @@ export class MenuManager {
         })
 
         // listen to menu states
-        const mic_muted_pref = signalHub.observables.mic_muted_pref
+
         const menu_opened = signalHub.observables.menu_opened
         const menu_page = signalHub.observables.menu_page
 
-        combineLatest([mic_muted_pref, menu_opened, menu_page]).subscribe(value => {
-            this.render(this.stateToCtrls())
+        combineLatest([menu_opened, menu_page]).subscribe(value => {
+            this.render()
         })
     }
 
@@ -116,16 +116,17 @@ export class MenuManager {
 
         this.browseGui = GUI.AdvancedDynamicTexture.CreateForMesh(this.browsePlane, 640, 640)
 
-        this.render(this.stateToCtrls())
+        this.render()
 
     }
 
     createFullScreenUI() {
         this.fsGui = GUI.AdvancedDynamicTexture.CreateFullscreenUI("fsGui")
-        this.render(this.stateToCtrls())
+        this.render()
     }
 
-    render(content: { menuCtrl: GUI.Control, browserCtrl: GUI.Control }) {
+    render() {
+        const content = this.stateToCtrls()
         if (this.fsGui) {
             this.fsGui.rootContainer.dispose()
 
@@ -192,12 +193,14 @@ export class MenuManager {
 
             const newValue: boolean = !this.orchestrator.memberStates.my_mic_muted_pref()
             this.orchestrator.memberStates.update_my_mic_muted_pref(newValue)
+
+            this.render()
             // !signalHub.observables.mic_muted_pref.getValue()
             //signalHub.observables.mic_muted_pref.next(newValue)
         }
 
         const menuLabel = signalHub.observables.menu_opened.getValue() ? "close" : "menu"
-        const micLabel = signalHub.observables.mic_muted_pref.getValue() ? "Unmute" : "Mute"
+        const micLabel = this.orchestrator.memberStates.my_mic_muted_pref() ? "Unmute" : "Mute"
         return div({ name: 'menu-div' },
             a({ name: 'menu-btn', callback: menuCallback }, menuLabel),
             a({ name: 'mute-btn', callback: micCallback }, micLabel),
