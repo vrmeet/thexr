@@ -67,7 +67,7 @@ export class SpaceBroker {
         combineLatest([$cameraReady, $interaction_choice, $space_channel_connected]).subscribe(([pos_rot, choice, _]) => {
 
             if (choice === 'enter') {
-                signalHub.outgoing.emit('event', { m: 'member_entered', p: { member_id: this.member_id, pos_rot: pos_rot } })
+                signalHub.outgoing.emit('event', { m: 'member_entered', p: { member_id: this.member_id, pos_rot: pos_rot, state: this.orchestrator.memberStates.my_state() } })
             } else {
                 signalHub.outgoing.emit('event', { m: 'member_observed', p: { member_id: this.member_id } })
             }
@@ -139,13 +139,13 @@ export class SpaceBroker {
         })
     }
 
-    forwardMicPrefAsState() {
-        // snap shot of memberStates
-        signalHub.observables.mic_muted_pref.subscribe(isMuted => {
-            console.log('this emitted called')
-            signalHub.outgoing.emit('member_state_patched', { mic_pref: isMuted ? "off" : "on" })
-        })
+    // forwardMicPrefAsState() {
+    // snap shot of memberStates
+    // signalHub.observables.mic_muted_pref.subscribe(isMuted => {
+    //     console.log('this emitted called')
+    //     signalHub.outgoing.emit('member_state_patched', { mic_pref: isMuted ? "off" : "on" })
+    // })
 
-    }
+    // }
 
 }

@@ -15,37 +15,55 @@ defmodule ThexrWeb.SpaceChannel do
   def handle_in("event", payload, socket) do
     SpaceServer.process_event(socket.assigns.space_id, payload, self())
     # cache member movement if event is camera movement
-    cache_member_movement(payload, socket.assigns.member_movements)
+    cache_members(payload, socket)
     {:noreply, socket}
   end
 
-  def cache_member_movement(
-        %{"m" => "member_entered", "p" => %{"member_id" => member_id, "pos_rot" => pos_rot}},
-        member_movements
+  def cache_members(
+        %{
+          "m" => "member_entered",
+          "p" => %{"member_id" => member_id, "pos_rot" => pos_rot, "state" => member_state}
+        },
+        socket
       ) do
     [px, py, pz] = pos_rot["pos"]
     [rx, ry, rz, rw] = pos_rot["rot"]
 
     :ets.insert(
-      member_movements,
+      socket.assigns.member_movements,
       {member_id, {px, py, pz, rx, ry, rz, rw}}
     )
+
+    :ets.insert(socket.assigns.member_states, {member_id, member_state})
   end
 
-  def cache_member_movement(
+  def cache_members(
         %{"m" => "member_moved", "p" => %{"member_id" => member_id, "pos_rot" => pos_rot}},
-        member_movements
+        socket
       ) do
     [px, py, pz] = pos_rot["pos"]
     [rx, ry, rz, rw] = pos_rot["rot"]
 
     :ets.insert(
-      member_movements,
+      socket.assigns.member_movements,
       {member_id, {px, py, pz, rx, ry, rz, rw}}
     )
   end
 
-  def cache_member_movement(_, _) do
+  def cache_members(
+        %{
+          "m" => "member_changed_mic_pref",
+          "p" => %{"member_id" => member_id, "mic_muted" => mic_muted}
+        },
+        socket
+      ) do
+    payload = get_state(member_id, socket.assigns.member_states)
+
+    state = Map.merge(payload, %{"mic_muted" => mic_muted})
+    :ets.insert(socket.assigns.member_states, {member_id, state})
+  end
+
+  def cache_members(_, _) do
   end
 
   # def handle_in("camera_moved", %{"pos" => pos, "rot" => rot}, socket) do
@@ -104,14 +122,14 @@ defmodule ThexrWeb.SpaceChannel do
         push(socket, "server_lost", %{})
         {:noreply, socket}
 
-      {member_movements, _member_states} ->
-        socket = assign(socket, :member_movements, member_movements)
+      {member_movements, member_states} ->
+        socket = assign(socket, member_movements: member_movements, member_states: member_states)
         {:ok, _} = Presence.track(socket, socket.assigns.member_id, params)
         push(socket, "presence_state", Presence.list(socket))
 
         # TODO, move this to after member_entered? received
-        push(socket, "members", %{
-          # "states" => member_states_to_map(member_states),
+        push(socket, "about_members", %{
+          "states" => member_states_to_map(member_states),
           "movements" => movements_to_map(member_movements)
         })
 

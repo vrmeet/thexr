@@ -10,13 +10,8 @@ export type scene_settings = {
 export type serialized_space = { settings: scene_settings, id: string, entities: any[] }
 
 export interface member_state {
-    mic_pref?: "on" | "off"
-    video_pref?: "screen" | "camera" | "off"
-    audio_actual?: { volume: number } | "unpublished" | { error: string }
-    video_actual?: "published" | "unpublished" | { error: string } | "forced_mute"
+    mic_muted?: boolean
     nickname?: string
-    handraised?: boolean
-    updated_at?: number
 }
 
 export type PosRot = {
@@ -47,7 +42,8 @@ export type Component =
  */
 
 export type event =
-    { m: "member_entered", p: { member_id: string, pos_rot: PosRot }, ts?: number } |
+    { m: "member_changed_mic_pref", p: { member_id: string, mic_muted: boolean }, ts?: number } |
+    { m: "member_entered", p: { member_id: string, pos_rot: PosRot, state: member_state }, ts?: number } |
     { m: "member_observed", p: { member_id: string }, ts?: number } |
     { m: "member_moved", p: { member_id: string, pos_rot: PosRot }, ts?: number } |
     { m: "member_left", p: { member_id: string }, ts?: number } |

@@ -48,7 +48,7 @@ export class SceneManager {
 
     setChannelListeners() {
 
-        signalHub.incoming.on("members").subscribe(members => {
+        signalHub.incoming.on("about_members").subscribe(members => {
             console.log("members is ", members)
             for (const [member_id, payload] of Object.entries(members.movements)) {
                 console.log("find or create avatar", member_id, payload.pos_rot)

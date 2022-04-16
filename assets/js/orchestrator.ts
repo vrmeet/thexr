@@ -8,6 +8,7 @@ import { SpaceBroker } from './space-broker';
 
 import type { scene_settings, serialized_space } from './types'
 import { WebRTCManager } from './web-rtc-manager';
+import { MemberStates } from './member-states';
 
 export class Orchestrator {
     public canvas;
@@ -20,12 +21,14 @@ export class Orchestrator {
     public logManager: LogManager
     public spaceBroker: SpaceBroker
     public webRTCManager: WebRTCManager
+    public memberStates: MemberStates
 
 
 
     constructor(public canvasId: string, public member_id: string, public serializedSpace: serialized_space) {
         this.logManager = new LogManager()
         this.space_id = serializedSpace.id;
+        this.memberStates = new MemberStates(this)
         this.spaceBroker = new SpaceBroker(this)
 
         this.sceneManager = new SceneManager(this)

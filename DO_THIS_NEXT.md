@@ -1,6 +1,9 @@
 TODO:
 
--- add member state caching
+pass along nickname
+
+-- add member state caching (mic muted, nickname)
+
 -- remove observables in signal hub, use typed event?
 
 -- repair the webrtc bit
