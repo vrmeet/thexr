@@ -14,6 +14,7 @@ import type { Orchestrator } from '../orchestrator';
 import { combineLatest, merge } from 'rxjs';
 import { MenuTools } from './pages/tools';
 import { MenuColor } from './pages/color';
+import type { event } from '../types'
 
 /*
 inline -mode
@@ -188,8 +189,16 @@ export class MenuManager {
         }
 
         const micCallback = () => {
-            const newValue = !signalHub.observables.mic_muted_pref.getValue()
-            signalHub.observables.mic_muted_pref.next(newValue)
+
+            const newValue: boolean = !this.orchestrator.memberStates.my_mic_muted_pref()
+            const data: event = {
+                m: 'member_changed_mic_pref',
+                p: { member_id: this.orchestrator.member_id, mic_muted: newValue }
+            }
+            signalHub.outgoing.emit("event", data)
+            signalHub.incoming.emit("event", data)
+            // !signalHub.observables.mic_muted_pref.getValue()
+            //signalHub.observables.mic_muted_pref.next(newValue)
         }
 
         const menuLabel = signalHub.observables.menu_opened.getValue() ? "close" : "menu"
