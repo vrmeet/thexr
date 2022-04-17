@@ -58,7 +58,9 @@ export class SceneManager {
             console.log("members is ", members)
             for (const [member_id, payload] of Object.entries(members.movements)) {
                 console.log("find or create avatar", member_id, payload.pos_rot)
-                this.findOrCreateAvatar(member_id, payload.pos_rot)
+                const avatar = this.findOrCreateAvatar(member_id)
+                this.setComponent(avatar, { type: "position", data: { value: payload.pos_rot.pos } })
+                this.setComponent(avatar, { type: "rotation", data: { value: payload.pos_rot.rot } })
             }
         })
 
@@ -66,13 +68,21 @@ export class SceneManager {
         signalHub.incoming.on("event").subscribe((mpts) => {
             console.log("incoming receved an event", mpts)
             if (mpts.m === "member_entered") {
-                this.findOrCreateAvatar(mpts.p.member_id, mpts.p.pos_rot)
+                const payload = mpts.p
+                const avatar = this.findOrCreateAvatar(payload.member_id)
+                this.setComponent(avatar, { type: "position", data: { value: payload.pos_rot.pos } })
+                this.setComponent(avatar, { type: "rotation", data: { value: payload.pos_rot.rot } })
             } else if (mpts.m === "member_moved") {
-                const mesh = this.findOrCreateAvatar(mpts.p.member_id, null)
-                const { pos, rot } = mpts.p.pos_rot
-                this.animateComponent(mesh, { type: "position", data: { value: pos } })
-                this.animateComponent(mesh, { type: "rotation", data: { value: rot } })
-
+                const payload = mpts.p
+                const avatar = this.findOrCreateAvatar(payload.member_id)
+                this.animateComponent(avatar, { type: "position", data: { value: payload.pos_rot.pos } })
+                this.animateComponent(avatar, { type: "rotation", data: { value: payload.pos_rot.rot } })
+                if (payload.left) {
+                    this.findOrCreateAvatarHand(payload.member_id, "left", payload.left)
+                }
+                if (payload.right) {
+                    this.findOrCreateAvatarHand(payload.member_id, "right", payload.right)
+                }
 
                 // mesh.position.fromArray(pos)
                 // if (!mesh.rotationQuaternion) {
@@ -177,6 +187,16 @@ export class SceneManager {
 
     }
 
+    findOrCreateAvatarHand(member_id: string, hand: string, pos_rot: PosRot) {
+        let mesh = this.scene.getMeshByName(`avatar_${member_id}_${hand}`)
+        if (!mesh) {
+            mesh = BABYLON.MeshBuilder.CreateBox(`avatar_${member_id}_${hand}`, { size: 0.1 }, this.scene)
+        }
+        mesh.position.fromArray(pos_rot.pos)
+        mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(pos_rot.rot)
+
+    }
+
 
     async createScene() {
         // Create a basic BJS Scene object
@@ -210,19 +230,13 @@ export class SceneManager {
         }
     }
 
-    findOrCreateAvatar(id: string, posRot: PosRot) {
-        let box = this.scene.getMeshByName(`avatar_${id}`)
+    findOrCreateAvatar(member_id: string) {
+        let box = this.scene.getMeshByName(`avatar_${member_id}`)
         if (!box) {
-            box = BABYLON.MeshBuilder.CreateBox(`avatar_${id}`)
+            box = BABYLON.MeshBuilder.CreateBox(`avatar_${member_id}`)
             box.isPickable = false
         }
-        if (!posRot) {
-            return box
-        } else {
-            box.position = BABYLON.Vector3.FromArray(posRot.pos)
-            box.rotationQuaternion = BABYLON.Quaternion.FromArray(posRot.rot)
-            return box
-        }
+        return box
     }
 
 
@@ -392,10 +406,21 @@ export class SceneManager {
                 break;
             case "position":
             case "scaling":
-            case "rotation":
-
                 BABYLON.Animation.CreateAndStartAnimation("translate", mesh,
                     component.type, ANIMATION_FRAME_PER_SECOND, TOTAL_ANIMATION_FRAMES, mesh[component.type].clone(), BABYLON.Vector3.FromArray(component.data.value), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                break;
+            case "rotation":
+                const rawValue = component.data.value
+                let newQuaternion;
+                if (rawValue.length === 3) {
+                    // change euler to quaternions
+                    newQuaternion = BABYLON.Vector3.FromArray(rawValue).toQuaternion()
+                } else {
+                    newQuaternion = BABYLON.Quaternion.FromArray(rawValue)
+                }
+
+                BABYLON.Animation.CreateAndStartAnimation("translate", mesh,
+                    "rotationQuaternion", ANIMATION_FRAME_PER_SECOND, TOTAL_ANIMATION_FRAMES, mesh.rotationQuaternion.clone(), newQuaternion, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
                 break;
             default:
                 console.error("unknown component", component)
@@ -413,11 +438,23 @@ export class SceneManager {
                 break;
             case "position":
             case "scaling":
-            case "rotation":
-                // BABYLON.Animation.CreateAndStartAnimation("translate", mesh,
-                //     "position", 60, 120, mesh.position, BABYLON.Vector3.FromArray(component.data), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
                 const value = component.data.value
                 mesh[component.type].set(value[0], value[1], value[2])
+                break;
+            case "rotation":
+                const rawValue = component.data.value
+                let newQuaternion;
+                if (rawValue.length === 3) {
+                    // change euler to quaternions
+                    newQuaternion = BABYLON.Vector3.FromArray(rawValue).toQuaternion()
+                } else {
+                    newQuaternion = BABYLON.Quaternion.FromArray(rawValue)
+                }
+                if (mesh.rotationQuaternion === null) {
+                    mesh.rotationQuaternion = newQuaternion
+                } else {
+                    mesh.rotationQuaternion.copyFrom(newQuaternion)
+                }
                 break;
             default:
                 console.error("unknown component", component)
