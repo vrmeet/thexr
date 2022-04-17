@@ -1,3 +1,6 @@
+import { filter, map, pipe, scan } from "rxjs";
+import type { PosRot } from "./types";
+
 export const reduceSigFigs = (value: number) => {
     return Math.round(value * 100000) / 100000
 }
@@ -14,4 +17,17 @@ export function random_id(length: number) {
             charactersLength));
     }
     return result;
+}
+
+
+export function throttleByMovement(movementDelta: number) {
+    return pipe(
+        scan((acc, curPosRot: PosRot) => {
+            const newSum = curPosRot.pos[0] + curPosRot.pos[1] + curPosRot.pos[2] + curPosRot.rot[0] + curPosRot.rot[1] + curPosRot.rot[2] + curPosRot.rot[3]
+            const diff = Math.abs(acc.sum - newSum)
+            return { diff: diff, sum: newSum, posRot: curPosRot }
+        }, { diff: 0, sum: 0, posRot: { pos: [0, 0, 0], rot: [0, 0, 0, 1] } }),
+        filter(data => (data.diff > movementDelta)),
+        map(data => (data.posRot))
+    )
 }
