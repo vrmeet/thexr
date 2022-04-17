@@ -1,15 +1,13 @@
 TODO:
 
-need to send hand positions along with camera movement
+add a box that is parented to the controller mesh, to detect intersections with things to pick up
 
-need to cache that in ETS
 
 need to draw hand meshes for other members
 
 ===
+need to cache that in ETS
 
-
-add a box that is parented to the controller mesh, to detect intersections with things to pick up
 
 
 

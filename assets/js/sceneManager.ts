@@ -46,7 +46,7 @@ export class SceneManager {
         this.setChannelListeners()
 
         signalHub.local.on("client_ready").subscribe(async () => {
-            this.xrManager = new XRManager(this.scene)
+            this.xrManager = new XRManager(this.orchestrator)
             await this.xrManager.enableWebXRExperience()
             this.menuManager = new MenuManager(this.orchestrator)
         })
