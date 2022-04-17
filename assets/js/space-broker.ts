@@ -130,21 +130,16 @@ export class SpaceBroker {
     }
 
     forwardCameraMovement() {
-        const leftMovement$ = signalHub.movement.on("controller_moved").pipe(
-            filter(val => val.hand === "left"),
-            //throttleTime(80),
-            map(handRot => ({ left: { pos: handRot.pos, rot: handRot.rot } }))
+        const leftMovement$ = signalHub.movement.on("left_hand_moved").pipe(
+            map(value => ({ left: value }))
         )
 
-        const rightMovement$ = signalHub.movement.on("controller_moved").pipe(
-            filter(val => val.hand === "right"),
-            // throttleTime(80),
-            map(handRot => ({ right: { pos: handRot.pos, rot: handRot.rot } }))
+        const rightMovement$ = signalHub.movement.on("right_hand_moved").pipe(
+            map(value => ({ right: value }))
         )
-
         const camMovement$ = signalHub.movement.on("camera_moved").pipe(
             // throttleTime(80),
-            map(cam => { return { cam: cam } })
+            map(cam => ({ cam: cam }))
         )
 
         camMovement$.pipe(

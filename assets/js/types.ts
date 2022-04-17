@@ -10,8 +10,6 @@ export type scene_settings = {
 export type serialized_space = { settings: scene_settings, id: string, entities: any[] }
 
 export type xr_component = {
-    type: string,
-    hand: string,
     pressed: boolean,
     touched: boolean,
     value: number,

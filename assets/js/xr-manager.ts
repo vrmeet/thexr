@@ -4,6 +4,8 @@ import { arrayReduceSigFigs, reduceSigFigs } from './utils'
 import { Observable, single } from 'rxjs'
 import { TeleportationManager } from './xr-teleportation-manager'
 import type { xr_component } from './types'
+import type { Orchestrator } from './orchestrator'
+import { XRGripManager } from './xr-grip-manager'
 
 export class XRManager {
     public xrHelper: BABYLON.WebXRDefaultExperience
@@ -11,7 +13,9 @@ export class XRManager {
     public right_input_source: BABYLON.WebXRInputSource
     public inXR: boolean
     public teleportationManager: TeleportationManager
-    constructor(public scene: BABYLON.Scene) {
+    public scene: BABYLON.Scene
+    constructor(public orchestrator: Orchestrator) {
+        this.scene = orchestrator.sceneManager.scene
         this.inXR = false
     }
 
@@ -23,12 +27,12 @@ export class XRManager {
 
         this.teleportationManager = new TeleportationManager(this.xrHelper, this.scene)
 
-        signalHub.local.on('xr_component_changed').subscribe(value => {
-            console.log('xr_component_changed', value)
-        })
-        signalHub.movement.on("controller_moved").subscribe(value => {
-            console.log('controller moved', value)
-        })
+        // signalHub.local.on('xr_component_changed').subscribe(value => {
+        //     console.log('xr_component_changed', value)
+        // })
+        // signalHub.movement.on("controller_moved").subscribe(value => {
+        //     console.log('controller moved', value)
+        // })
 
         this.xrHelper.baseExperience.onStateChangedObservable.add(state => {
             signalHub.local.emit('xr_state_changed', state)
@@ -85,6 +89,8 @@ export class XRManager {
     initController(inputSource: BABYLON.WebXRInputSource, motionController: BABYLON.WebXRAbstractMotionController) {
         this.setupSendHandPosRot(inputSource)
         this.setupSendComponentData(motionController)
+        new XRGripManager(this.orchestrator, inputSource, motionController)
+
         const payload = {
             hand: motionController.handedness
         }
@@ -95,15 +101,13 @@ export class XRManager {
         let lastPos = [0, 0, 0]
         let lastRot = [0, 0, 0, 1]
         let lastSum = 0
+        const hand = inputSource.inputSource.handedness as "left" | "right"
         this.xrHelper.baseExperience.sessionManager.onXRFrameObservable.add(() => {
             const newPos = arrayReduceSigFigs(inputSource.pointer.position.asArray())
             const newRot = arrayReduceSigFigs(inputSource.pointer.rotationQuaternion.asArray())
             const newSum = newPos[0] + newPos[1] + newPos[2] + newRot[0] + newRot[1] + newRot[2] + newRot[3]
             if (newSum - lastSum > Math.abs(0.001)) {
-                // console.log(inputSource.inputSource.handedness, newSum, lastSum)
-
-                signalHub.movement.emit("controller_moved", {
-                    hand: inputSource.inputSource.handedness,
+                signalHub.movement.emit(`${hand}_hand_moved`, {
                     pos: newPos,
                     rot: newRot
                 })
@@ -125,17 +129,16 @@ export class XRManager {
     publishChanges(motionController: BABYLON.WebXRAbstractMotionController, component: BABYLON.WebXRControllerComponent) {
         console.log('binding publishing changes for', component.type, component.id)
         //wrap babylon observable in rxjs observable
+        const hand = motionController.handedness as "left" | "right"
         const componentObservable$ = new Observable<any>(subscriber => {
             // wrap the babylonjs observable
             const babylonObserver = component.onButtonStateChangedObservable.add(state => {
                 const payload: xr_component = {
-                    hand: motionController.handedness,
                     pressed: state.pressed,
                     touched: state.touched,
                     value: state.value,
                     axes: state.axes,
-                    id: state.id,
-                    type: component.type
+                    id: state.id
                 }
                 subscriber.next(payload)
             })
@@ -144,7 +147,8 @@ export class XRManager {
             }
         })
         componentObservable$.subscribe(xr_button_change_evt => {
-            signalHub.local.emit('xr_component_changed', xr_button_change_evt)
+
+            signalHub.movement.emit(`${hand}_${component.type}`, xr_button_change_evt)
         })
     }
 
