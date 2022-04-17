@@ -1,19 +1,26 @@
 TODO:
 
-- playback must have ending sequence
-- ability to see events
-
 
 - include hand_movement in member moved payload
-- support playback
+- add events for 
+   - entity grabbed (means parent it and move with the players left|right hand)
+        - entity_id
+        - position-off-set
+        - angular-off-set
+        - hand
+        - member_id
+   - entity released
+        - member_id
+        - hand
+        - impulse? (optional)
+
+environemtn settings should also be event sourced
+
 
 tools - menu ui diagram
 
 - have a button to exit the space
 
-
-
-- convert observables back into events (for menu)
 
 test member leave 
   - what happens if person refreshes page before the kick check?
@@ -62,45 +69,23 @@ UI Tools
 - set sink id of audio output selection 
 https://stackoverflow.com/questions/46523466/html-js-select-audio-output-device-in-browser'
 
-- remove browse texture until menu is open
+- remove immersive VR browse texture until menu is open (create the plane only if menu is opened)
 
 - parent, unparent an object in VR
 
 show spawn points when entering edit mode
 
-- show nickname
 - pick avatar
 
-
-may not need typed emitter, maybe can just use rxjs subject,
-then usage of rxjs becomes more uniform
 
 (feature)
 log the logs into the backend so we can view them off line later
 can log commands and event stream to correlate with log timestamps
 - event sourcing
 
-(refactor)
-move default member state  from space-broker to somewhere else?
-
-(refactor)
-mic pref is sometimes boolean and sometimes "on" | "off" , consolidate?
-
----
-
-(refactor)
-not sure we need to maintain all the member states as an observable 
-if we only need the member count and unmic count, we just need
-an object of 
-{ "id1": "on", "id2": "off" }
-... hmmm
-
 
 (refactor: after we request publishing audio, determine if successful or unsuccessful, our agora wrapper api
 may need a callback or listen for errors )
-
-(new feature)
-grab a nickname from user if there isn't one in session storage
 
 (improvement)
 add audio profile for agora - for sampling rate and encoder
