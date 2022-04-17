@@ -1,7 +1,7 @@
 import { Socket, Channel } from 'phoenix'
 import type { Orchestrator } from './orchestrator'
 import { signalHub } from './signalHub'
-import { merge, mergeWith, take, throttleTime, withLatestFrom } from 'rxjs/operators'
+import { merge, mergeWith, scan, take, tap, throttleTime, withLatestFrom } from 'rxjs/operators'
 import { combineLatest, map, filter } from 'rxjs'
 import type { IncomingEvents } from './signalHub'
 import type { PosRot } from './types'
@@ -130,13 +130,78 @@ export class SpaceBroker {
     }
 
     forwardCameraMovement() {
-        // forward camera movement
-        signalHub.movement.on("camera_moved").pipe(
+        const leftMovement$ = signalHub.movement.on("controller_moved").pipe(
+            filter(val => val.hand === "left"),
+            //throttleTime(80),
+            map(handRot => ({ left: { pos: handRot.pos, rot: handRot.rot } }))
+        )
+
+        const rightMovement$ = signalHub.movement.on("controller_moved").pipe(
+            filter(val => val.hand === "right"),
+            // throttleTime(80),
+            map(handRot => ({ right: { pos: handRot.pos, rot: handRot.rot } }))
+        )
+
+        const camMovement$ = signalHub.movement.on("camera_moved").pipe(
+            // throttleTime(80),
+            map(cam => { return { cam: cam } })
+        )
+
+        camMovement$.pipe(
+            mergeWith(leftMovement$, rightMovement$),
+            scan((acc, data) => ({ ...acc, ...data }), { cam: undefined, left: undefined, right: undefined }),
+            filter(data => ((!!data.cam))),
             throttleTime(100)
-        ).subscribe(msg => {
-            signalHub.outgoing.emit('event', { m: 'member_moved', p: { member_id: this.member_id, pos_rot: msg } })
-            //this.spaceChannel.push('camera_moved', msg)
+        ).subscribe(data => {
+            if (data.left && data.right) {
+                signalHub.outgoing.emit("event", {
+                    m: "member_moved",
+                    p: { member_id: this.member_id, pos_rot: data.cam, left: data.left, right: data.right }
+                })
+            } else {
+                signalHub.outgoing.emit("event", {
+                    m: "member_moved",
+                    p: { member_id: this.member_id, pos_rot: data.cam }
+                })
+            }
         })
+
+        /*
+        
+        
+            merge(camMovement$, leftMovement$, rightMovement$)
+              .pipe(
+                scan((acc, data) => {
+                  return { ...acc, ...data }
+                }, { cam: undefined, left: undefined, right: undefined }),
+                filter(data => (!!data.cam)),
+                throttleTime(100)
+              )
+              .subscribe(data => {
+                if (data.left && data.right) {
+                  this.channel.push("i_moved", {
+                    cam: data.cam,
+                    left: data.left,
+                    right: data.right
+                  })
+                } else {
+                  this.channel.push("i_moved", {
+                    cam: data.cam
+                  })
+                }
+              })
+        
+        */
+
+
+
+        // forward camera movement
+        // signalHub.movement.on("camera_moved").pipe(
+        //     throttleTime(100)
+        // ).subscribe(msg => {
+        //     signalHub.outgoing.emit('event', { m: 'member_moved', p: { member_id: this.member_id, pos_rot: msg } })
+        //     //this.spaceChannel.push('camera_moved', msg)
+        // })
     }
 
     // forwardMicPrefAsState() {

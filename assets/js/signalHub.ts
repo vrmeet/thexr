@@ -7,13 +7,7 @@ type LocalEvents = {
     space_channel_connected: { agora_app_id: string }
     camera_ready: { pos: number[], rot: number[] }
     controller_ready: { hand: string }
-    xr_component_changed: {
-        hand: string,
-        pressed: boolean,
-        touched: boolean,
-        value: number,
-        id: string
-    }
+    xr_component_changed: types.xr_component
     xr_state_changed: BABYLON.WebXRState
     new_log: any,
     mesh_built: { name: string } // required to add new meshes to teleport manager
@@ -39,9 +33,13 @@ export type MenuEvents = {
     menu_editing_tool: types.EditMode
 }
 
+export type HandPosRot = {
+    hand: string, pos: number[], rot: number[]
+}
+
 export type MovementEvents = {
     camera_moved: types.PosRot
-    hand_movement: { hand: string, pos: number[], rot: number[] }
+    controller_moved: HandPosRot
 }
 
 

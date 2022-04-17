@@ -346,9 +346,13 @@ export class SceneManager {
         let mesh: BABYLON.AbstractMesh
         mesh = this.scene.getMeshById(entity.id)
         if (!mesh) {
+
             if (entity.type === "box") {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable")
+            } else if (entity.type === "capsule") {
+                mesh = BABYLON.MeshBuilder.CreateCapsule("capsule", {}, this.scene)
+                BABYLON.Tags.AddTagsTo(mesh, "interactable")
             } else if (entity.type === "plane") {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
             } else if (entity.type === "grid") {

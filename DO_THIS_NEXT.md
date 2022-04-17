@@ -1,7 +1,33 @@
 TODO:
 
+need to send hand positions along with camera movement
 
-- include hand_movement in member moved payload
+need to cache that in ETS
+
+need to draw hand meshes for other members
+
+===
+
+
+add a box that is parented to the controller mesh, to detect intersections with things to pick up
+
+
+
+make a new event type that checks grip + intersection with interactable objects from controller mesh
+  if there is a intersection then emit: 
+    "entity_grabbed", {member_id, entity_id, hand}
+
+if entity is grabbed, then parent the entity to the hand mesh
+
+
+make a corresponding event for entity_released if grip is released while previously grabbing something
+
+we also need to update released if grab is lost, stolen etc
+
+
+send hand movement 
+
+- include controller_moved in member moved payload
 - add events for 
    - entity grabbed (means parent it and move with the players left|right hand)
         - entity_id
