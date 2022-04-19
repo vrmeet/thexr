@@ -117,6 +117,26 @@ export class SceneManager {
                         mesh.dispose()
                     });
                 })
+            } else if (mpts.m === "entity_grabbed") {
+                let grabbedEntity = this.scene.getMeshById(mpts.p.entity_id)
+                let handMesh = this.scene.getMeshByName(`avatar_${mpts.p.member_id}_${mpts.p.hand}`)
+                if (grabbedEntity && handMesh) {
+                    this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
+                    this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
+                    this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
+                    this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
+                    grabbedEntity.setParent(handMesh)
+                }
+            } else if (mpts.m === "entity_released") {
+                let grabbedEntity = this.scene.getMeshById(mpts.p.entity_id)
+                let handMesh = this.scene.getMeshByName(`avatar_${mpts.p.member_id}_${mpts.p.hand}`)
+                if (grabbedEntity && handMesh) {
+                    this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
+                    this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
+                    this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
+                    this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
+                    grabbedEntity.setParent(null)
+                }
             }
         })
 
@@ -191,6 +211,7 @@ export class SceneManager {
         let mesh = this.scene.getMeshByName(`avatar_${member_id}_${hand}`)
         if (!mesh) {
             mesh = BABYLON.MeshBuilder.CreateBox(`avatar_${member_id}_${hand}`, { size: 0.1 }, this.scene)
+            mesh.isPickable = false
         }
         mesh.position.fromArray(pos_rot.pos)
         mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(pos_rot.rot)
@@ -233,7 +254,7 @@ export class SceneManager {
     findOrCreateAvatar(member_id: string) {
         let box = this.scene.getMeshByName(`avatar_${member_id}`)
         if (!box) {
-            box = BABYLON.MeshBuilder.CreateBox(`avatar_${member_id}`)
+            box = BABYLON.MeshBuilder.CreateBox(`avatar_${member_id}`, { size: 0.3 }, this.scene)
             box.isPickable = false
         }
         return box

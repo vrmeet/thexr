@@ -105,7 +105,7 @@ export class XRManager {
         this.xrHelper.baseExperience.sessionManager.onXRFrameObservable.add(() => {
             const newPos = arrayReduceSigFigs(inputSource.pointer.position.asArray())
             const newRot = arrayReduceSigFigs(inputSource.pointer.rotationQuaternion.asArray())
-            const newSum = newPos[0] + newPos[1] + newPos[2] + newRot[0] + newRot[1] + newRot[2] + newRot[3]
+            const newSum = newPos[0] + newPos[1] + newPos[2] //+ newRot[0] + newRot[1] + newRot[2] + newRot[3]
             if (newSum - lastSum > Math.abs(0.001)) {
                 signalHub.movement.emit(`${hand}_hand_moved`, {
                     pos: newPos,
