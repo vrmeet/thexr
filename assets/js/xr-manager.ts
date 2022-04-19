@@ -147,7 +147,7 @@ export class XRManager {
             }
         })
         componentObservable$.subscribe(xr_button_change_evt => {
-
+            console.log('emit', `${hand}_${component.type}`, xr_button_change_evt)
             signalHub.movement.emit(`${hand}_${component.type}`, xr_button_change_evt)
         })
     }
