@@ -52,8 +52,10 @@ export type MovementEvents = {
     right_thumbstick: types.xr_component
     right_touchpad: types.xr_component
     left_grab_start: { entity_id: string }
+    left_grab_released: { entity_id: string }
     left_grab_end: { entity_id: string }
     right_grab_start: { entity_id: string }
+    right_grab_released: { entity_id: string }
     right_grab_end: { entity_id: string }
 }
 
