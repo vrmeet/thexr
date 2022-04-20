@@ -1,11 +1,6 @@
 TODO:
 
 
-add a box that is parented to the controller mesh, to detect intersections with things to pick up
-
-
-need to draw hand meshes for other members
-
 ===
 need to cache that in ETS
 
