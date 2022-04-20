@@ -5,6 +5,7 @@ import { merge, mergeWith, scan, take, tap, throttleTime, withLatestFrom } from 
 import { combineLatest, map, filter } from 'rxjs'
 import type { IncomingEvents } from './signalHub'
 import type { PosRot } from './types'
+import { arrayReduceSigFigs, throttleByMovement } from './utils'
 
 type ChannelParams = {
     pos_rot: PosRot,
@@ -131,23 +132,34 @@ export class SpaceBroker {
 
     forwardCameraMovement() {
         const leftMovement$ = signalHub.movement.on("left_hand_moved").pipe(
+            throttleTime(80),
+            map(orig => ({ pos: arrayReduceSigFigs(orig.pos), rot: arrayReduceSigFigs(orig.rot) })),
+            throttleByMovement(0.005),
             map(value => ({ left: value }))
         )
 
         const rightMovement$ = signalHub.movement.on("right_hand_moved").pipe(
+            throttleTime(80),
+            map(orig => ({ pos: arrayReduceSigFigs(orig.pos), rot: arrayReduceSigFigs(orig.rot) })),
+            throttleByMovement(0.005),
             map(value => ({ right: value }))
         )
         const camMovement$ = signalHub.movement.on("camera_moved").pipe(
-            // throttleTime(80),
+            throttleTime(80),
+            map(orig => ({ pos: arrayReduceSigFigs(orig.pos), rot: arrayReduceSigFigs(orig.rot) })),
+            throttleByMovement(0.005),
             map(cam => ({ cam: cam }))
         )
 
         camMovement$.pipe(
             mergeWith(leftMovement$, rightMovement$),
-            scan((acc, data) => ({ ...acc, ...data }), { cam: undefined, left: undefined, right: undefined }),
+            scan((acc, data) => ({ ...acc, ...data }), { cam: null, left: null, right: null }),
             filter(data => ((!!data.cam))),
             throttleTime(100)
         ).subscribe(data => {
+            // console.log('combining', JSON.stringify(data))
+
+
             if (data.left && data.right) {
                 signalHub.outgoing.emit("event", {
                     m: "member_moved",

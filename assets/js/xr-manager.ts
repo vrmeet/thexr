@@ -79,10 +79,10 @@ export class XRManager {
 
     setupEmitCameraMovement() {
         this.xrHelper.baseExperience.camera.onViewMatrixChangedObservable.add(cam => {
-            let posArray = cam.position.asArray().map(reduceSigFigs)
-            let rotArray = cam.absoluteRotation.asArray().map(reduceSigFigs)
-
-            signalHub.movement.emit("camera_moved", { pos: posArray, rot: rotArray })
+            signalHub.movement.emit("camera_moved", {
+                pos: cam.position.asArray(),
+                rot: cam.absoluteRotation.asArray()
+            })
         })
     }
 
@@ -98,23 +98,13 @@ export class XRManager {
     }
 
     setupSendHandPosRot(inputSource: BABYLON.WebXRInputSource) {
-        let lastPos = [0, 0, 0]
-        let lastRot = [0, 0, 0, 1]
-        let lastSum = 0
+
         const hand = inputSource.inputSource.handedness as "left" | "right"
         this.xrHelper.baseExperience.sessionManager.onXRFrameObservable.add(() => {
-            const newPos = arrayReduceSigFigs(inputSource.pointer.position.asArray())
-            const newRot = arrayReduceSigFigs(inputSource.pointer.rotationQuaternion.asArray())
-            const newSum = newPos[0] + newPos[1] + newPos[2] //+ newRot[0] + newRot[1] + newRot[2] + newRot[3]
-            if (newSum - lastSum > Math.abs(0.001)) {
-                signalHub.movement.emit(`${hand}_hand_moved`, {
-                    pos: newPos,
-                    rot: newRot
-                })
-            }
-            lastPos = newPos;
-            lastRot = newRot;
-            lastSum = newSum;
+            signalHub.movement.emit(`${hand}_hand_moved`, {
+                pos: inputSource.pointer.position.asArray(),
+                rot: inputSource.pointer.rotationQuaternion.asArray()
+            })
         })
     }
 

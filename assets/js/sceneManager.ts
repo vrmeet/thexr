@@ -75,8 +75,8 @@ export class SceneManager {
             } else if (mpts.m === "member_moved") {
                 const payload = mpts.p
                 const avatar = this.findOrCreateAvatar(payload.member_id)
-                this.animateComponent(avatar, { type: "position", data: { value: payload.pos_rot.pos } })
-                this.animateComponent(avatar, { type: "rotation", data: { value: payload.pos_rot.rot } })
+                this.setComponent(avatar, { type: "position", data: { value: payload.pos_rot.pos } })
+                this.setComponent(avatar, { type: "rotation", data: { value: payload.pos_rot.rot } })
                 if (payload.left) {
                     this.findOrCreateAvatarHand(payload.member_id, "left", payload.left)
                 }
@@ -295,9 +295,7 @@ export class SceneManager {
         this.freeCamera.inertia = 0.7;
         this.freeCamera.minZ = 0.05
         this.freeCamera.onViewMatrixChangedObservable.add(cam => {
-            let posArray = cam.position.asArray().map(reduceSigFigs)
-            let rotArray = cam.absoluteRotation.asArray().map(reduceSigFigs)
-            signalHub.movement.emit("camera_moved", { pos: posArray, rot: rotArray })
+            signalHub.movement.emit("camera_moved", { pos: cam.position.asArray(), rot: cam.absoluteRotation.asArray() })
         })
 
         //  const env = this.scene.createDefaultEnvironment();
