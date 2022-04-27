@@ -1,5 +1,5 @@
 import * as BABYLON from 'babylonjs'
-import { signalHub } from './signalHub'
+import { signalHub } from '../signalHub'
 
 
 export class TeleportationManager {
@@ -36,7 +36,10 @@ export class TeleportationManager {
             BABYLON.Tags.RemoveTagsFrom(mesh, "teleportable")
             this.teleportation.removeFloorMesh(mesh)
         }
+
     }
+
+
 
 
     enableTeleporationFeature() {

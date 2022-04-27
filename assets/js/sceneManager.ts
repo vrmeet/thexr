@@ -1,16 +1,16 @@
 import * as BABYLON from "babylonjs"
+import Ammo from 'ammojs-typed'
 import * as MAT from "babylonjs-materials"
-import type { Channel } from "phoenix";
 import type { Component, PosRot, scene_settings, serialized_space } from "./types"
 import { sessionPersistance } from "./sessionPersistance";
 import { MenuManager } from "./menu/menu-manager"
 import { reduceSigFigs } from "./utils";
-import { XRManager } from "./xr-manager";
+import { XRManager } from "./xr/xr-manager";
 import type { Orchestrator } from "./orchestrator";
 import { signalHub } from "./signalHub";
-import { buffer, bufferCount, debounceTime, filter, map, take } from "rxjs/operators"
 import { CollaborativeEditTransformManager } from "./collab-edit/transform";
 import { CollabEditDeleteManager } from "./collab-edit/delete";
+
 
 const ANIMATION_FRAME_PER_SECOND = 60
 const TOTAL_ANIMATION_FRAMES = 5
@@ -117,15 +117,21 @@ export class SceneManager {
                         mesh.dispose()
                     });
                 })
-            } else if (mpts.m === "entity_grabbed") {
+            } else if (mpts.m === "entity_grabbed" || mpts.m === "entity_assumed") {
                 let grabbedEntity = this.scene.getMeshById(mpts.p.entity_id)
                 let handMesh = this.scene.getMeshByName(`avatar_${mpts.p.member_id}_${mpts.p.hand}`)
                 if (grabbedEntity && handMesh) {
-                    this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
-                    this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
                     this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
                     this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
-                    grabbedEntity.setParent(handMesh)
+                    if (mpts.m === "entity_grabbed") {
+                        this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
+                        this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
+                        grabbedEntity.setParent(handMesh)
+                    } else {
+                        // this.setComponent(grabbedEntity, { type: "position", data: { value: [0, 0, 0] } })
+                        // this.setComponent(grabbedEntity, { type: "rotation", data: { value: [0, 0, 0, 1] } })
+                        grabbedEntity.parent = handMesh
+                    }
                 }
             } else if (mpts.m === "entity_released") {
                 let grabbedEntity = this.scene.getMeshById(mpts.p.entity_id)
@@ -223,15 +229,20 @@ export class SceneManager {
         // Create a basic BJS Scene object
         this.scene = new BABYLON.Scene(this.engine);
 
-
-
-
-
-
+        var gravityVector = new BABYLON.Vector3(0, -9.81, 0);
+        const ammo = await Ammo()
+        var physicsPlugin = new BABYLON.AmmoJSPlugin(true, ammo);
+        this.scene.enablePhysics(gravityVector, physicsPlugin);
 
         this.processscene_settings(this.settings as scene_settings)
         window["scene"] = this.scene
         this.createCamera()
+
+        //test physics imposter
+        let testBox = BABYLON.MeshBuilder.CreateBox('physics', {}, this.scene)
+        testBox.position.y = 1.5;
+        testBox.position.x = 3;
+        testBox.physicsImpostor = new BABYLON.PhysicsImpostor(testBox, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0.5 }, this.scene);
 
         // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
         var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), this.scene);
@@ -383,6 +394,9 @@ export class SceneManager {
             if (entity.type === "box") {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable")
+            } else if (entity.type === "gun") {
+                mesh = BABYLON.MeshBuilder.CreateTorus("gun", {}, this.scene)
+                BABYLON.Tags.AddTagsTo(mesh, "assumable")
             } else if (entity.type === "capsule") {
                 mesh = BABYLON.MeshBuilder.CreateCapsule("capsule", {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "interactable")
@@ -390,6 +404,9 @@ export class SceneManager {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
             } else if (entity.type === "grid") {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { size: 25, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
+
+                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, this.scene);
+
                 const gridMat = this.findOrCreateMaterial({ type: "grid" })
                 mesh.material = gridMat;
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable")
