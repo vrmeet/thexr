@@ -51,12 +51,25 @@ export type MovementEvents = {
     right_button: types.xr_component
     right_thumbstick: types.xr_component
     right_touchpad: types.xr_component
-    left_grab_start: { entity_id: string }
-    left_grab_released: { entity_id: string }
-    left_grab_end: { entity_id: string }
-    right_grab_start: { entity_id: string }
-    right_grab_released: { entity_id: string }
-    right_grab_end: { entity_id: string }
+
+    // clean grip and release
+    left_grip_squeezed: any
+    left_grip_released: any
+    right_grip_squeezed: any
+    right_grip_released: any
+
+    // ... with a mesh
+    // left_grip_squeezed_w_mesh: BABYLON.AbstractMesh
+    // left_grip_released_w_mesh: BABYLON.AbstractMesh
+    // right_grip_squeezed_w_mesh: BABYLON.AbstractMesh
+    // right_grip_released_w_mesh: BABYLON.AbstractMesh
+
+    // left_grab_start: { entity_id: string }
+    // left_grab_released: { entity_id: string }
+    // left_grab_end: { entity_id: string }
+    // right_grab_start: { entity_id: string }
+    // right_grab_released: { entity_id: string }
+    // right_grab_end: { entity_id: string }
 }
 
 

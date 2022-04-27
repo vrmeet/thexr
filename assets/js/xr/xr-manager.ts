@@ -1,10 +1,10 @@
 import * as BABYLON from 'babylonjs'
-import { signalHub } from './signalHub'
-import { arrayReduceSigFigs, reduceSigFigs } from './utils'
+import { signalHub } from '../signalHub'
+import { arrayReduceSigFigs, reduceSigFigs } from '../utils'
 import { Observable, single } from 'rxjs'
 import { TeleportationManager } from './xr-teleportation-manager'
-import type { xr_component } from './types'
-import type { Orchestrator } from './orchestrator'
+import type { xr_component } from '../types'
+import type { Orchestrator } from '../orchestrator'
 import { XRGripManager } from './xr-grip-manager'
 
 export class XRManager {
@@ -24,6 +24,16 @@ export class XRManager {
             return
         }
         this.xrHelper = await this.scene.createDefaultXRExperienceAsync({})
+
+        this.xrHelper.baseExperience.featuresManager.enableFeature(BABYLON.WebXRFeatureName.PHYSICS_CONTROLLERS, "latest", {
+            xrInput: this.xrHelper.input,
+            physicsProperties: {
+                restitution: 0.5,
+                impostorSize: 0.1,
+                impostorType: BABYLON.PhysicsImpostor.BoxImpostor
+            },
+            enableHeadsetImpostor: false
+        })
 
         this.teleportationManager = new TeleportationManager(this.xrHelper, this.scene)
 
@@ -75,6 +85,8 @@ export class XRManager {
             })
         })
 
+
+
     }
 
     setupEmitCameraMovement() {
@@ -87,6 +99,7 @@ export class XRManager {
     }
 
     initController(inputSource: BABYLON.WebXRInputSource, motionController: BABYLON.WebXRAbstractMotionController) {
+
         this.setupSendHandPosRot(inputSource)
         this.setupSendComponentData(motionController)
         new XRGripManager(this.orchestrator, inputSource, motionController)
@@ -97,15 +110,28 @@ export class XRManager {
         signalHub.local.emit('controller_ready', payload)
     }
 
+
+    makeXRFrameSignal() {
+        return new Observable<XRFrame>(subscriber => {
+            const obs = this.xrHelper.baseExperience.sessionManager.onXRFrameObservable.add(value => {
+                subscriber.next(value)
+            })
+            return () => {
+                this.xrHelper.baseExperience.sessionManager.onXRFrameObservable.remove(obs)
+            }
+        })
+    }
+
     setupSendHandPosRot(inputSource: BABYLON.WebXRInputSource) {
 
         const hand = inputSource.inputSource.handedness as "left" | "right"
-        this.xrHelper.baseExperience.sessionManager.onXRFrameObservable.add(() => {
+        this.makeXRFrameSignal().subscribe(() => {
             signalHub.movement.emit(`${hand}_hand_moved`, {
                 pos: inputSource.pointer.position.asArray(),
                 rot: inputSource.pointer.rotationQuaternion.asArray()
             })
         })
+
     }
 
     setupSendComponentData(motionController: BABYLON.WebXRAbstractMotionController) {

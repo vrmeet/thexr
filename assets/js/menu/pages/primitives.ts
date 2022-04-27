@@ -32,7 +32,7 @@ export class MenuPagePrimitives extends GUI.Container {
     }
 
     primOptions() {
-        const options = ["capsule", "box", "cone", "sphere", "grid", "plane"];
+        const options = ["gun", "capsule", "box", "cone", "sphere", "grid", "plane"];
 
         return options.map(prim => {
             const callback = () => {

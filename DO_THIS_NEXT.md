@@ -1,38 +1,149 @@
 TODO:
 
+pick up, and throw something ("interactable" "gravity")
+pickup a gun and press trigger to shoot a bullet ("shootable")
+
+
+
+try out the hand tracking or physics controllers for features manager
+  - we can get velocity and angular velocity out of it
+
+  check out this throw playground https://playground.babylonjs.com/#K1WGX0#36
+
+- you probably stilll want to be able to throw everything like a gun, so if it's marked throwable
+  then apply an impulse when you release it.  what about a fixed turret, it's a gun
+  but you can't pick it up, you can't throw it
+
+  interactable
+  shootable
+  joystick
+  lever
+  pull-switch
+  restricted-y
+  swevelable
+  pickupable
+  throwable
+  ??
+
+
+
+xr-manager sets up signals for raw hand movement, button changes
+xr-grip-manager interpreted the grab when there was an intersecting mesh
+
+   the message deepends on context
+     - interactable
+         -- entity grabbed, tag: "interactable"
+     - gun
+         -- entity grabbed, tag: "gun"
+    - sword
+    -ball
+    - bow and arrow (subscribe to grab or trigger on other hand for pulling arrow back)
+    - grenade (subscribe to trigger on other hand for pulling pin)
+     - are we scaling an object?
+     - are we grabbing a monsters face
+     - are we grippig the throttle on a space ship
+     - are we cranking a lever
+
+need a system to interpret higher level interactions
+
+a series of different pipes that are mutually exclusive
+  each pipeline is responsible for the emitting of context relevant events
+  unsubscribing, at release
+
+
+- the grip is squeezed
+   - there is an intersection of mesh during squeeze with object of interest
+      
+      - send local message 'squeezed_entity', { member_id, hand, entity_id, squeeze payload, entity_tags }
+
+
+= the fact that you care about grip released is predicated by the fact that grip squeeze happened first
+- the grip is released
+   - was previously gripping something
+      - send local message 'released_entity', {}
+            (which may be ignored if no longer holding it)
+
+
+
+
+  - add or remove listeners based on the entity tags or context
+    - if object has  "two hand scalable" tag
+
+
+  
+
+- the other grip squeezed
+  - intersection of interest
+    -
+    
+
+bug: to release the gun we need different logic because there is no intersection check when you assume an entity
+
+- create a gun
+   - some visual thing to grab / collect
+- tool assumed
+  - when you're holding the gun
+  - trigger message (trigger while holding gun)
+  - projectile fired message
+
+- projectile hits player
+- projectile hits monster
+
+
+editing and playing are two mutually exclusive things:
+  - you're either designing the level and game mechanics, using scripting or whatever
+     - the editing page allows you to see invisible elements such as: (menu is overlay of iframe)
+        - spawn points
+        - music/sound nodes
+        - invisible trip areas
+        - list entities
+        - modify component attributes
+        - reposition and scale entities like in maya
+        - upload files
+        - manage animations
+        - save assets
+        - place new entities into the space
+        - access builder tools like drawing and
+  - or you are spawning into the spawn point of the game and must also adhere to the permissions of the space
+        - execute scripts
+        - grab and throw
+        - resume/pause
+        - restart
+
+the space is either in 'edit' mode or 'running'
+
+you change your environment as you play (throw things, create things, destroy things)
+  - the question is which abilities are allowed in the space
+    - there are widgets with power (there is a list of widgets allowed in the space)
+    - if you have the widget then you can:
+      color something
+      delete something
+      shoot something
+
+Main uses cases:
+play a free game together with friends, accomplish some goal.  Platform can support many use cases.
+
+  play doom together
+    - environment
+    - doors / keys (perhaps only allow sophisticated menus on Desktop)
+      - in VR you can reposition and scale and draw
+      - but any creation or editing, where you tune parameters is done in a webpage
+    -  guns
+    - ammo
+    - inventory
+    - health
+    - monsters, AI
+
+  star trek bridge crew
+    - primarily a pre-made game, each ship is a URL
+      all ships define a shared universe namespace, the ships will be placed in shared universe
+
+  drawing class in VR
+
+
 
 ===
 need to cache that in ETS
-
-
-
-
-make a new event type that checks grip + intersection with interactable objects from controller mesh
-  if there is a intersection then emit: 
-    "entity_grabbed", {member_id, entity_id, hand}
-
-if entity is grabbed, then parent the entity to the hand mesh
-
-
-make a corresponding event for entity_released if grip is released while previously grabbing something
-
-we also need to update released if grab is lost, stolen etc
-
-
-send hand movement 
-
-- include controller_moved in member moved payload
-- add events for 
-   - entity grabbed (means parent it and move with the players left|right hand)
-        - entity_id
-        - position-off-set
-        - angular-off-set
-        - hand
-        - member_id
-   - entity released
-        - member_id
-        - hand
-        - impulse? (optional)
 
 environemtn settings should also be event sourced
 
@@ -48,10 +159,9 @@ test member leave
     - maybe member_entered should also be generated server side?
     - OR... just allow omnipotent member_enter events?
 
+add text chat
 
-redo logic for joining webrtc 
-  - when user 'enter', subscribe to channel if another person is entered and unmuted
-  - when user 'observe', subscribe to channel if another person is entered and unmuted
+heads up display messaging
 
 - create procedural (deterministically random), embellishment of environments
   - e.g., create trees, grass, rocks, continuously when you go near a place

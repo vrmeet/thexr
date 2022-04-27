@@ -45,7 +45,7 @@ export class Orchestrator {
 
 
     async start() {
-        this.sceneManager.createScene()
+        await this.sceneManager.createScene()
         // parse the scene for states
 
         this.sceneManager.run()
