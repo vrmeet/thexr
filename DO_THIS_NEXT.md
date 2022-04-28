@@ -1,5 +1,20 @@
 TODO:
 
+bug: graphQL events, return null on event stream if asking for the spaceId, but it's redundant
+  remove that field
+
+emit proper messages for entity_grabbed, entity_released, send tags
+  so that we can have fewer message types and be flexible with interpretation of behavior
+
+- late joiner needs to know that the entity that was picked up was moved
+   - each entity grabbed, or released should update the position
+   - released with impulse coul update 
+
+- add a physics engine AMMO.js
+- enable the physics controllers web xr feature
+   -  hand controller physics imposters
+       - velocity, - angular velocity
+
 pick up, and throw something ("interactable" "gravity")
 pickup a gun and press trigger to shoot a bullet ("shootable")
 

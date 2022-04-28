@@ -1,7 +1,7 @@
 
 import * as BABYLON from "babylonjs"
 import { Observable, of, pipe, race } from "rxjs";
-import { switchMap, filter, map, distinctUntilChanged, tap, take, raceWith } from "rxjs/operators";
+import { switchMap, filter, map, distinctUntilChanged, tap, take, raceWith, takeUntil } from "rxjs/operators";
 import type { Orchestrator } from "../orchestrator";
 import { signalHub } from "../signalHub";
 import type { event } from "../types"
@@ -22,7 +22,8 @@ export class XRGripManager {
         this.other_hand = (this.hand === "left") ? "right" : "left"
 
 
-        motionController.onModelLoadedObservable.add(() => {
+        motionController.onModelLoadedObservable.add(model => {
+
             this.palmMesh = BABYLON.MeshBuilder.CreateBox(`avatar_${this.orchestrator.member_id}_${this.hand}`, { size: 0.1 }, this.scene)
             this.palmMesh.showBoundingBox = true
             this.palmMesh.visibility = 0.5
@@ -31,15 +32,25 @@ export class XRGripManager {
 
             // listen for clean grip and release
 
-            signalHub.movement.on(`${this.hand}${GRIP}`).pipe(
+            signalHub.movement.on(`${this.hand}_squeeze`).pipe(
                 map(val => val.pressed),
                 distinctUntilChanged()
             ).subscribe(squeezed => {
-                console.log('squeezed', squeezed)
                 if (squeezed) {
                     signalHub.movement.emit(`${this.hand}_grip_squeezed`, true)
                 } else {
                     signalHub.movement.emit(`${this.hand}_grip_released`, true)
+                }
+            })
+
+            signalHub.movement.on(`${this.hand}_trigger`).pipe(
+                map(val => val.pressed),
+                distinctUntilChanged()
+            ).subscribe(squeezed => {
+                if (squeezed) {
+                    signalHub.movement.emit(`${this.hand}_trigger_squeezed`, true)
+                } else {
+                    signalHub.movement.emit(`${this.hand}_trigger_released`, true)
                 }
             })
 
@@ -49,12 +60,13 @@ export class XRGripManager {
                 filter(mesh => (mesh !== null)),
                 tap((mesh: BABYLON.AbstractMesh) => (this.intersectedMesh = mesh)),
                 map(mesh => ([mesh, BABYLON.Tags.GetTags(mesh)] as [BABYLON.AbstractMesh, string[]])),
-                switchMap(([mesh, tags]) => {
-                    // if (tags.includes("gun")) {
-                    //
-                    // } else {
-                    return this.basicInteractable(mesh)
+                tap(([mesh, tags]) => {
+
+                    // if (tags.includes("shootable")) {
+                    this.shootable().subscribe()
                     //}
+                    this.basicInteractable(mesh).subscribe()
+
                 })
             ).subscribe()
 
@@ -67,6 +79,13 @@ export class XRGripManager {
         })
 
 
+    }
+
+    shootable() {
+        return signalHub.movement.on(`${this.hand}_trigger_squeezed`).pipe(
+            tap(() => { console.log('fire bullet') }),
+            takeUntil(signalHub.movement.on(`${this.hand}_grip_released`))
+        )
     }
 
     basicInteractable(mesh: BABYLON.AbstractMesh) {
