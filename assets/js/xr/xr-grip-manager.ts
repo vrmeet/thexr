@@ -62,10 +62,19 @@ export class XRGripManager {
                 map(mesh => ([mesh, BABYLON.Tags.GetTags(mesh)] as [BABYLON.AbstractMesh, string[]])),
                 tap(([mesh, tags]) => {
 
-                    // if (tags.includes("shootable")) {
-                    this.shootable().subscribe()
-                    //}
-                    this.basicInteractable(mesh).subscribe()
+                    let event: event = {
+                        m: "entity_grabbed",
+                        p: this.createEventPayload()
+                    }
+
+                    signalHub.outgoing.emit("event", event)
+                    signalHub.incoming.emit("event", event)
+
+                    if (tags.includes("shootable")) {
+                        this.shootable().subscribe()
+                    } else {
+                        this.basicInteractable().subscribe()
+                    }
 
                 })
             ).subscribe()
@@ -83,26 +92,55 @@ export class XRGripManager {
 
     shootable() {
         return signalHub.movement.on(`${this.hand}_trigger_squeezed`).pipe(
-            tap(() => { console.log('fire bullet') }),
-            takeUntil(signalHub.movement.on(`${this.hand}_grip_released`))
+            tap(() => {
+                let event: event = {
+                    m: "entity_trigger_squeezed",
+                    p: {
+                        member_id: this.orchestrator.member_id,
+                        entity_id: this.intersectedMesh.id,
+                        pos: this.inputSource.pointer.absolutePosition.asArray(),
+                        direction: this.inputSource.pointer.forward.asArray()
+                    }
+                }
+
+                signalHub.outgoing.emit("event", event)
+                signalHub.incoming.emit("event", event)
+            }),
+            takeUntil(this.basicInteractable())
         )
     }
 
-    basicInteractable(mesh: BABYLON.AbstractMesh) {
-        //
-        console.log('emit entity_grabbed')
+    basicInteractable() {
 
         return race(
+            // if other hand grabbed the same mesh away from the first hand
             signalHub.movement.on(`${this.other_hand}_grip_squeezed`).pipe(
                 map(() => (this.findIntersectingMesh())),
-                filter(val => (val !== null && this.intersectedMesh !== null && val.id === this.intersectedMesh.id))
-            ),
-            signalHub.movement.on(`${this.hand}_grip_released`).pipe(
-                map(() => (this.findIntersectingMesh())),
                 filter(val => (val !== null && this.intersectedMesh !== null && val.id === this.intersectedMesh.id)),
-                tap(() => (console.log('emit entity_released')))
             ),
+            // another player stole our object
+            signalHub.incoming.on("event").pipe(
+                filter(msg => (msg.m === "entity_grabbed" && msg.p.entity_id === this.intersectedMesh.id && msg.p.member_id != this.orchestrator.member_id))
+            ),
+
+            // or the first hand released the mesh
+            signalHub.movement.on(`${this.hand}_grip_released`).pipe(
+                tap(() => {
+                    let event: event = {
+                        m: "entity_released",
+                        p: this.createEventPayload()
+                    }
+                    // add linear velocity and angular velocity from physics constrollers
+                    event.p.lv = this.inputSource.grip.physicsImpostor.getLinearVelocity().asArray()
+                    event.p.av = this.inputSource.grip.physicsImpostor.getAngularVelocity().asArray()
+
+                    signalHub.outgoing.emit("event", event)
+                    signalHub.incoming.emit("event", event)
+                })
+
+            )
         ).pipe(
+            tap(() => (this.intersectedMesh = null)),
             take(1)
         )
 
@@ -122,27 +160,27 @@ export class XRGripManager {
 
     }
 
-    // createEventPayload(intersectedMesh: BABYLON.AbstractMesh) {
-    //     if (!this.palmMesh.rotationQuaternion) {
-    //         this.palmMesh.rotationQuaternion = this.palmMesh.rotation.toQuaternion()
-    //     }
-    //     if (!intersectedMesh.rotationQuaternion) {
-    //         intersectedMesh.rotationQuaternion = intersectedMesh.rotation.toQuaternion()
-    //     }
-    //     return {
-    //         member_id: this.orchestrator.member_id,
-    //         entity_id: intersectedMesh.id,
-    //         hand_pos_rot: {
-    //             pos: utils.arrayReduceSigFigs(this.palmMesh.position.asArray()),
-    //             rot: utils.arrayReduceSigFigs(this.palmMesh.rotationQuaternion.asArray())
-    //         },
-    //         entity_pos_rot: {
-    //             pos: utils.arrayReduceSigFigs(intersectedMesh.position.asArray()),
-    //             rot: utils.arrayReduceSigFigs(intersectedMesh.rotationQuaternion.asArray())
-    //         },
-    //         hand: this.hand
-    //     }
-    // }
+    createEventPayload() {
+        if (!this.palmMesh.rotationQuaternion) {
+            this.palmMesh.rotationQuaternion = this.palmMesh.rotation.toQuaternion()
+        }
+        if (!this.intersectedMesh.rotationQuaternion) {
+            this.intersectedMesh.rotationQuaternion = this.intersectedMesh.rotation.toQuaternion()
+        }
+        return {
+            member_id: this.orchestrator.member_id,
+            entity_id: this.intersectedMesh.id,
+            hand_pos_rot: {
+                pos: utils.arrayReduceSigFigs(this.palmMesh.position.asArray()),
+                rot: utils.arrayReduceSigFigs(this.palmMesh.rotationQuaternion.asArray())
+            },
+            entity_pos_rot: {
+                pos: utils.arrayReduceSigFigs(this.intersectedMesh.position.asArray()),
+                rot: utils.arrayReduceSigFigs(this.intersectedMesh.rotationQuaternion.asArray())
+            },
+            hand: this.hand
+        }
+    }
 
     // checkRelease() {
     //     const intersectedMesh = this.findIntersectingMesh()
@@ -191,7 +229,6 @@ export class XRGripManager {
 
     findIntersectingMesh(): BABYLON.AbstractMesh {
         const meshes = this.scene.getMeshesByTags("interactable")
-        return meshes[0]
         for (let i = 0; i < meshes.length; i++) {
             if (meshes[i].intersectsMesh(this.palmMesh)) {
                 return meshes[i]
