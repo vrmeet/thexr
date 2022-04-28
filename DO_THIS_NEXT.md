@@ -1,19 +1,18 @@
 TODO:
 
-bug: graphQL events, return null on event stream if asking for the spaceId, but it's redundant
-  remove that field
+- verify that angular velocity and linear velocity of controllers is sent correctly,
+   inspect console.log in the headset
 
-emit proper messages for entity_grabbed, entity_released, send tags
-  so that we can have fewer message types and be flexible with interpretation of behavior
+- create message handlers for entity_trigger_squeezed and entity_grabbed, entity_released
+   taking the entity tags into consideration
+
+- apply a physics imposter and an impulse when a throwable object is released
 
 - late joiner needs to know that the entity that was picked up was moved
-   - each entity grabbed, or released should update the position
+   - each entity grabbed, or released should update the position on the entity (server side)
    - released with impulse coul update 
+   - (server side can't predict final position though, so maybe added a delay then query a user for final position)
 
-- add a physics engine AMMO.js
-- enable the physics controllers web xr feature
-   -  hand controller physics imposters
-       - velocity, - angular velocity
 
 pick up, and throw something ("interactable" "gravity")
 pickup a gun and press trigger to shoot a bullet ("shootable")

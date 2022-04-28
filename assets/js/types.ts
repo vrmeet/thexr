@@ -61,8 +61,8 @@ export type event =
     { m: "entity_colored", p: { id: string, color: string }, ts?: number } |
     { m: "entity_deleted", p: { id: string }, ts?: number } |
     { m: "entity_grabbed", p: { member_id: string, entity_id: string, hand: string, hand_pos_rot: PosRot, entity_pos_rot: PosRot } } |
-    { m: "entity_released", p: { member_id: string, entity_id: string, hand: string, hand_pos_rot: PosRot, entity_pos_rot: PosRot, impulse?: number[] } } |
-    { m: "entity_assumed", p: { member_id: string, entity_id: string, hand: string, hand_pos_rot: PosRot, entity_pos_rot: PosRot } }
+    { m: "entity_released", p: { member_id: string, entity_id: string, hand: string, hand_pos_rot: PosRot, entity_pos_rot: PosRot, lv?: number[], av?: number[] } } |
+    { m: "entity_trigger_squeezed", p: { member_id: string, entity_id: string, pos: number[], direction: number[] } }
     // ["member_left", { member_id: string }] |
     // ["member_moved", { member_id: string, pos_rot: PosRot }]
 
