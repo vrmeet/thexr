@@ -11,21 +11,23 @@ Copy .env.sample to .env (ignored by git) to add secrets
 
 ====
 
-To start your Phoenix server:
-
-  * Install dependencies with `mix deps.get`
-  * Create and migrate your database with `mix ecto.setup`
-  * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
-
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
-
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
-
 ## Useful
 
-- to hop into psql, click CLI in docker desktop for thexr-dev-env_devcontainer_db_1
+- to hop into psql, open docker desktop, expand thexr_devcontainer created by vscode, click the CLI button next to the thexr_devcontainer-db-1
 - psql -U postgres thexr_dev
 - \dt (describe tables)
+
+## To deploy to gigalixir (not in vscode terminal, in regular terminal)
+
+./deploy.sh
+
+## run migrations on gigalixir
+
+gigalixir ps:migrate
+
+## If developing: To reset DB on gigalixir
+
+- login to gigalixr if on free tier just delete and recreate db
 
 ## Learn more
 

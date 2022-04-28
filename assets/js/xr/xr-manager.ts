@@ -126,6 +126,7 @@ export class XRManager {
 
         const hand = inputSource.inputSource.handedness as "left" | "right"
         this.makeXRFrameSignal().subscribe(() => {
+
             signalHub.movement.emit(`${hand}_hand_moved`, {
                 pos: inputSource.pointer.position.asArray(),
                 rot: inputSource.pointer.rotationQuaternion.asArray()

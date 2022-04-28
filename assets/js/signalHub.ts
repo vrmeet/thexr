@@ -38,6 +38,7 @@ export type MenuEvents = {
 // }
 
 export type MovementEvents = {
+    // continuous values
     camera_moved: types.PosRot
     left_hand_moved: types.PosRot
     left_trigger: types.xr_component
@@ -52,11 +53,17 @@ export type MovementEvents = {
     right_thumbstick: types.xr_component
     right_touchpad: types.xr_component
 
-    // clean grip and release
+    // clean grip and release (alternating values)
     left_grip_squeezed: any
     left_grip_released: any
+    left_trigger_squeezed: any
+    left_trigger_released: any
     right_grip_squeezed: any
     right_grip_released: any
+    right_trigger_squeezed: any
+    right_trigger_released: any
+
+
 
     // ... with a mesh
     // left_grip_squeezed_w_mesh: BABYLON.AbstractMesh

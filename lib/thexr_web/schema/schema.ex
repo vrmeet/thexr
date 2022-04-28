@@ -16,7 +16,6 @@ defmodule ThexrWeb.Schema.Schema do
   end
 
   object :event_stream do
-    field :space_id, non_null(:id)
     field :event_timestamp, non_null(:integer)
     field :sequence, non_null(:integer)
     field :type, non_null(:string)
