@@ -159,6 +159,14 @@ export class SceneManager {
 
 
                 }
+            } else if (mpts.m === "entity_trigger_squeezed") {
+                let bullet = BABYLON.MeshBuilder.CreateBox("", { size: 0.05 }, this.scene)
+                bullet.position.fromArray(mpts.p.pos)
+                let target = bullet.position.add(BABYLON.Vector3.FromArray(mpts.p.direction))
+                BABYLON.Animation.CreateAndStartAnimation("bullet", bullet,
+                    "position", ANIMATION_FRAME_PER_SECOND, TOTAL_ANIMATION_FRAMES, bullet.position.clone(), target, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+
+
             }
         })
 

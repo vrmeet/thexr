@@ -1,13 +1,30 @@
 TODO:
 
-persist the released entity at it's new position
-  - does not account for throwing
+- fire a projectile if item has shootable tag  
+  - make it a slow moving projectile that animates at constant linear rate
+  - add a sound effect
+  - add a particle effect
 
-x if person leaves, remove their hands
-persist th
+- create entity library
+  - can export a space into an entity by merging what's in the space into one thing, sans the floor
+  - make a default space come with a grid with arrows
+  - the entity gets a uuid, and the json data of the saved scene (babylon.js format)
+  - browse, search entity library
+  - use the ID, to add that mesh to your scene
 
-- send angular velocity and linear velocity of controllers
-  if the item grabbed is throwable
+- optimization of member movements
+  - gather and send all member movements together every 1s
+  - update members in frustum list every 1s
+  - only get member movements 100ms for those in the frustum
+
+- detect a hit of projectile to self
+  - emit some kind of projectile hit member event
+    - red overlay for pain
+    - dispose of projectile
+
+- server side random creation of target to shoot
+  - entities marked target
+  - entity is removed if hit by projectile
 
 - create message handlers for entity_trigger_squeezed and entity_grabbed, entity_released
    taking the entity tags into consideration
