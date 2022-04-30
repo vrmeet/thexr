@@ -83,7 +83,7 @@ export class SpaceBroker {
         // forward incoming from channel to event bus
         this.spaceChannel.onMessage = (event: keyof IncomingEvents, payload) => {
             if (!event.startsWith('phx_') && !event.startsWith('chan_')) {
-                console.log('channel incoming', event, payload)
+                //       console.log('channel incoming', event, payload)
                 signalHub.incoming.emit(event, payload)
             }
             return payload
@@ -106,6 +106,9 @@ export class SpaceBroker {
         // })
 
         signalHub.outgoing.on('event').subscribe(mp => {
+            if (mp.m === "entity_released") {
+                console.log("released", mp)
+            }
             this.spaceChannel.push('event', { ...mp, ts: (new Date()).getTime() })
         })
 

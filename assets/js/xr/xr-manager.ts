@@ -14,6 +14,7 @@ export class XRManager {
     public inXR: boolean
     public teleportationManager: TeleportationManager
     public scene: BABYLON.Scene
+    public controllerPhysicsFeature: BABYLON.WebXRControllerPhysics
     constructor(public orchestrator: Orchestrator) {
         this.scene = orchestrator.sceneManager.scene
         this.inXR = false
@@ -25,7 +26,7 @@ export class XRManager {
         }
         this.xrHelper = await this.scene.createDefaultXRExperienceAsync({})
 
-        this.xrHelper.baseExperience.featuresManager.enableFeature(BABYLON.WebXRFeatureName.PHYSICS_CONTROLLERS, "latest", {
+        this.controllerPhysicsFeature = <BABYLON.WebXRControllerPhysics>this.xrHelper.baseExperience.featuresManager.enableFeature(BABYLON.WebXRFeatureName.PHYSICS_CONTROLLERS, "latest", {
             xrInput: this.xrHelper.input,
             physicsProperties: {
                 restitution: 0.5,
@@ -34,6 +35,8 @@ export class XRManager {
             },
             enableHeadsetImpostor: false
         })
+
+
 
         this.teleportationManager = new TeleportationManager(this.xrHelper, this.scene)
 
@@ -72,8 +75,6 @@ export class XRManager {
         // setup each controller
         let xrInput = this.xrHelper.input
 
-
-
         xrInput.onControllerAddedObservable.add(inputSource => {
             if (inputSource.inputSource.handedness === 'left') {
                 this.left_input_source = inputSource
@@ -102,7 +103,7 @@ export class XRManager {
 
         this.setupSendHandPosRot(inputSource)
         this.setupSendComponentData(motionController)
-        new XRGripManager(this.orchestrator, inputSource, motionController)
+        new XRGripManager(this.orchestrator, inputSource, motionController, this.controllerPhysicsFeature.getImpostorForController(inputSource))
 
         const payload = {
             hand: motionController.handedness
@@ -128,8 +129,8 @@ export class XRManager {
         this.makeXRFrameSignal().subscribe(() => {
 
             signalHub.movement.emit(`${hand}_hand_moved`, {
-                pos: inputSource.pointer.position.asArray(),
-                rot: inputSource.pointer.rotationQuaternion.asArray()
+                pos: inputSource.grip.absolutePosition.asArray(),
+                rot: inputSource.grip.absoluteRotationQuaternion.asArray()
             })
         })
 
@@ -144,7 +145,6 @@ export class XRManager {
     }
 
     publishChanges(motionController: BABYLON.WebXRAbstractMotionController, component: BABYLON.WebXRControllerComponent) {
-        console.log('binding publishing changes for', component.type, component.id)
         //wrap babylon observable in rxjs observable
         const hand = motionController.handedness as "left" | "right"
         const componentObservable$ = new Observable<any>(subscriber => {
@@ -164,7 +164,6 @@ export class XRManager {
             }
         })
         componentObservable$.subscribe(xr_button_change_evt => {
-            console.log('emit', `${hand}_${component.type}`, xr_button_change_evt)
             signalHub.movement.emit(`${hand}_${component.type}`, xr_button_change_evt)
         })
     }

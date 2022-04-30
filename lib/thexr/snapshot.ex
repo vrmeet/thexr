@@ -66,11 +66,48 @@ defmodule Thexr.Snapshot do
     from(e in Entity, where: e.id == ^entity_id) |> Repo.delete_all()
   end
 
+  def process(space_id, "entity_grabbed", %{
+        payload: %{entity_id: entity_id, entity_pos_rot: %{pos: pos, rot: rot}}
+      }) do
+    process(space_id, "entity_transformed", %{
+      payload: %{
+        id: entity_id,
+        components: [
+          %{type: "position", data: %{value: pos}},
+          %{type: "rotation", data: %{value: rot}}
+        ]
+      }
+    })
+  end
+
+  def process(space_id, "entity_released", %{
+        payload: %{entity_id: entity_id, entity_pos_rot: %{pos: pos, rot: rot}}
+      }) do
+    process(space_id, "entity_transformed", %{
+      payload: %{
+        id: entity_id,
+        components: [
+          %{type: "position", data: %{value: pos}},
+          %{type: "rotation", data: %{value: rot}}
+        ]
+      }
+    })
+  end
+
   # { m: "entity_deleted", p: { id: string }, ts?: number }
 
   def process(s, m, e) do
-    #   IO.inspect(s, label: "space_id")
-    #  IO.inspect(e, label: "no match #{m}")
+    if m !== "member_moved" do
+      IO.inspect(s, label: "GOT-----------------------")
+      IO.inspect(s, label: "GOT-----------------------")
+      IO.inspect(s, label: "GOT-----------------------")
+      IO.inspect(s, label: "GOT-----------------------")
+      IO.inspect(s, label: "GOT-----------------------")
+      IO.inspect(s, label: "GOT-----------------------")
+      IO.inspect(s, label: "TO THE catch ALL-----------------------")
+
+      IO.inspect(e, label: "no match #{m}")
+    end
   end
 
   # def process(space_id, "entity_created", %{payload: %{"id" => id, "type" => type, "name" => name, "components" => components}}) do
