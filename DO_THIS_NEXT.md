@@ -1,7 +1,13 @@
 TODO:
 
-- verify that angular velocity and linear velocity of controllers is sent correctly,
-   inspect console.log in the headset
+persist the released entity at it's new position
+  - does not account for throwing
+
+x if person leaves, remove their hands
+persist th
+
+- send angular velocity and linear velocity of controllers
+  if the item grabbed is throwable
 
 - create message handlers for entity_trigger_squeezed and entity_grabbed, entity_released
    taking the entity tags into consideration

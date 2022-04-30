@@ -10,6 +10,7 @@ import type { Orchestrator } from "./orchestrator";
 import { signalHub } from "./signalHub";
 import { CollaborativeEditTransformManager } from "./collab-edit/transform";
 import { CollabEditDeleteManager } from "./collab-edit/delete";
+import { g } from "./menu/helpers";
 
 
 const ANIMATION_FRAME_PER_SECOND = 60
@@ -55,9 +56,7 @@ export class SceneManager {
     setChannelListeners() {
 
         signalHub.incoming.on("about_members").subscribe(members => {
-            console.log("members is ", members)
             for (const [member_id, payload] of Object.entries(members.movements)) {
-                console.log("find or create avatar", member_id, payload.pos_rot)
                 const avatar = this.findOrCreateAvatar(member_id)
                 this.setComponent(avatar, { type: "position", data: { value: payload.pos_rot.pos } })
                 this.setComponent(avatar, { type: "rotation", data: { value: payload.pos_rot.rot } })
@@ -66,7 +65,6 @@ export class SceneManager {
 
 
         signalHub.incoming.on("event").subscribe((mpts) => {
-            console.log("incoming receved an event", mpts)
             if (mpts.m === "member_entered") {
                 const payload = mpts.p
                 const avatar = this.findOrCreateAvatar(payload.member_id)
@@ -75,8 +73,8 @@ export class SceneManager {
             } else if (mpts.m === "member_moved") {
                 const payload = mpts.p
                 const avatar = this.findOrCreateAvatar(payload.member_id)
-                this.setComponent(avatar, { type: "position", data: { value: payload.pos_rot.pos } })
-                this.setComponent(avatar, { type: "rotation", data: { value: payload.pos_rot.rot } })
+                this.animateComponent(avatar, { type: "position", data: { value: payload.pos_rot.pos } })
+                this.animateComponent(avatar, { type: "rotation", data: { value: payload.pos_rot.rot } })
                 if (payload.left) {
                     this.findOrCreateAvatarHand(payload.member_id, "left", payload.left)
                 }
@@ -117,31 +115,49 @@ export class SceneManager {
                         mesh.dispose()
                     });
                 })
-            } else if (mpts.m === "entity_grabbed" || mpts.m === "entity_assumed") {
+            } else if (mpts.m === "entity_grabbed") {
+
                 let grabbedEntity = this.scene.getMeshById(mpts.p.entity_id)
+                if (grabbedEntity.physicsImpostor) {
+                    grabbedEntity.physicsImpostor.dispose()
+                    grabbedEntity.physicsImpostor = null
+                }
                 let handMesh = this.scene.getMeshByName(`avatar_${mpts.p.member_id}_${mpts.p.hand}`)
                 if (grabbedEntity && handMesh) {
-                    this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
-                    this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
-                    if (mpts.m === "entity_grabbed") {
-                        this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
-                        this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
+
+                    if (mpts.p.member_id === this.member_id) {
                         grabbedEntity.setParent(handMesh)
                     } else {
-                        // this.setComponent(grabbedEntity, { type: "position", data: { value: [0, 0, 0] } })
-                        // this.setComponent(grabbedEntity, { type: "rotation", data: { value: [0, 0, 0, 1] } })
-                        grabbedEntity.parent = handMesh
+                        grabbedEntity.parent = null
+                        this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
+                        this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
+                        this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
+                        this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
+
+                        grabbedEntity.setParent(handMesh)
                     }
+
                 }
             } else if (mpts.m === "entity_released") {
                 let grabbedEntity = this.scene.getMeshById(mpts.p.entity_id)
                 let handMesh = this.scene.getMeshByName(`avatar_${mpts.p.member_id}_${mpts.p.hand}`)
                 if (grabbedEntity && handMesh) {
-                    this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
-                    this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
-                    this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
-                    this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
-                    grabbedEntity.setParent(null)
+                    if (mpts.p.member_id === this.member_id) {
+                        grabbedEntity.setParent(null)
+                    } else {
+                        grabbedEntity.parent = null
+                        this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
+                        this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
+                        this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
+                        this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
+                    }
+                    if (mpts.p.lv) {
+                        grabbedEntity.physicsImpostor = new BABYLON.PhysicsImpostor(grabbedEntity, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, friction: 0.8, restitution: 0.5 }, this.scene);
+                        grabbedEntity.physicsImpostor.setLinearVelocity(BABYLON.Vector3.FromArray(mpts.p.lv))
+                        grabbedEntity.physicsImpostor.setAngularVelocity(BABYLON.Vector3.FromArray(mpts.p.av))
+                    }
+
+
                 }
             }
         })
@@ -213,14 +229,24 @@ export class SceneManager {
 
     }
 
+    removeAvatarHand(member_id: string, hand: string) {
+        let mesh = this.scene.getMeshByName(`avatar_${member_id}_${hand}`)
+        if (mesh) {
+            mesh.dispose()
+        }
+    }
+
     findOrCreateAvatarHand(member_id: string, hand: string, pos_rot: PosRot) {
         let mesh = this.scene.getMeshByName(`avatar_${member_id}_${hand}`)
         if (!mesh) {
             mesh = BABYLON.MeshBuilder.CreateBox(`avatar_${member_id}_${hand}`, { size: 0.1 }, this.scene)
             mesh.isPickable = false
+            mesh.position.fromArray(pos_rot.pos)
+            mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(pos_rot.rot)
+        } else {
+            this.animateComponent(mesh, { type: "position", data: { value: pos_rot.pos } })
+            this.animateComponent(mesh, { type: "rotation", data: { value: pos_rot.rot } })
         }
-        mesh.position.fromArray(pos_rot.pos)
-        mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(pos_rot.rot)
 
     }
 
@@ -238,19 +264,12 @@ export class SceneManager {
         window["scene"] = this.scene
         this.createCamera()
 
-        //test physics imposter
-        let testBox = BABYLON.MeshBuilder.CreateBox('physics', {}, this.scene)
-        testBox.position.y = 1.5;
-        testBox.position.x = 3;
-        testBox.physicsImpostor = new BABYLON.PhysicsImpostor(testBox, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0.5 }, this.scene);
-
         // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
         var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), this.scene);
         this.parseInitialScene(this.entities)
         this.collabEditManager = new CollaborativeEditTransformManager(this.scene)
         this.collabDeleteManager = new CollabEditDeleteManager(this.scene)
         return this.scene;
-
 
     }
 
@@ -260,6 +279,8 @@ export class SceneManager {
         if (box) {
             box.dispose()
         }
+        this.removeAvatarHand(id, "left")
+        this.removeAvatarHand(id, "right")
     }
 
     findOrCreateAvatar(member_id: string) {
@@ -396,10 +417,10 @@ export class SceneManager {
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable")
             } else if (entity.type === "gun") {
                 mesh = BABYLON.MeshBuilder.CreateTorus("gun", {}, this.scene)
-                BABYLON.Tags.AddTagsTo(mesh, "assumable")
+                BABYLON.Tags.AddTagsTo(mesh, "interactable shootable")
             } else if (entity.type === "capsule") {
                 mesh = BABYLON.MeshBuilder.CreateCapsule("capsule", {}, this.scene)
-                BABYLON.Tags.AddTagsTo(mesh, "interactable")
+                BABYLON.Tags.AddTagsTo(mesh, "interactable physics")
             } else if (entity.type === "plane") {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
             } else if (entity.type === "grid") {
@@ -436,7 +457,6 @@ export class SceneManager {
     animateComponent(mesh: BABYLON.AbstractMesh, component: Component) {
         switch (component.type) {
             case "color":
-                console.log("component", component)
                 const mat = this.findOrCreateMaterial({ type: "color", colorString: component.data.value })
                 mesh.material = mat;
                 break;
@@ -468,7 +488,6 @@ export class SceneManager {
 
         switch (component.type) {
             case "color":
-                console.log("component", component)
                 const mat = this.findOrCreateMaterial({ type: "color", colorString: component.data.value })
                 mesh.material = mat;
                 break;

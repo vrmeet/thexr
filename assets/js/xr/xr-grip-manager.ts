@@ -14,13 +14,13 @@ export class XRGripManager {
     public other_hand: "left" | "right"
     public palmMesh: BABYLON.AbstractMesh
     public intersectedMesh: BABYLON.AbstractMesh
+    public intersectedMeshTags: string[]
     public scene: BABYLON.Scene
 
-    constructor(public orchestrator: Orchestrator, public inputSource: BABYLON.WebXRInputSource, public motionController: BABYLON.WebXRAbstractMotionController) {
+    constructor(public orchestrator: Orchestrator, public inputSource: BABYLON.WebXRInputSource, public motionController: BABYLON.WebXRAbstractMotionController, public imposter: BABYLON.PhysicsImpostor) {
         this.scene = orchestrator.sceneManager.scene
         this.hand = motionController.handedness as "left" | "right"
         this.other_hand = (this.hand === "left") ? "right" : "left"
-
 
         motionController.onModelLoadedObservable.add(model => {
 
@@ -55,12 +55,13 @@ export class XRGripManager {
             })
 
             signalHub.movement.on(`${this.hand}_grip_squeezed`).pipe(
-                tap(() => { console.log('got here') }),
                 map(() => (this.findIntersectingMesh())),
                 filter(mesh => (mesh !== null)),
-                tap((mesh: BABYLON.AbstractMesh) => (this.intersectedMesh = mesh)),
-                map(mesh => ([mesh, BABYLON.Tags.GetTags(mesh)] as [BABYLON.AbstractMesh, string[]])),
-                tap(([mesh, tags]) => {
+                tap((mesh: BABYLON.AbstractMesh) => {
+                    this.intersectedMesh = mesh;
+                    this.intersectedMeshTags = BABYLON.Tags.GetTags(mesh)
+                }),
+                tap((mesh) => {
 
                     let event: event = {
                         m: "entity_grabbed",
@@ -70,7 +71,7 @@ export class XRGripManager {
                     signalHub.outgoing.emit("event", event)
                     signalHub.incoming.emit("event", event)
 
-                    if (tags.includes("shootable")) {
+                    if (this.intersectedMeshTags.includes("shootable")) {
                         this.shootable().subscribe()
                     } else {
                         this.basicInteractable().subscribe()
@@ -130,17 +131,20 @@ export class XRGripManager {
                         m: "entity_released",
                         p: this.createEventPayload()
                     }
-                    // add linear velocity and angular velocity from physics constrollers
-                    event.p.lv = this.inputSource.grip.physicsImpostor.getLinearVelocity().asArray()
-                    event.p.av = this.inputSource.grip.physicsImpostor.getAngularVelocity().asArray()
-
+                    if (this.intersectedMeshTags.includes("physics")) {
+                        event.p.lv = utils.arrayReduceSigFigs(this.imposter.getLinearVelocity().asArray())
+                        event.p.av = utils.arrayReduceSigFigs(this.imposter.getAngularVelocity().asArray())
+                    }
                     signalHub.outgoing.emit("event", event)
                     signalHub.incoming.emit("event", event)
                 })
 
             )
         ).pipe(
-            tap(() => (this.intersectedMesh = null)),
+            tap(() => {
+                this.intersectedMesh = null
+                this.intersectedMeshTags = []
+            }),
             take(1)
         )
 
@@ -161,25 +165,21 @@ export class XRGripManager {
     }
 
     createEventPayload() {
-        if (!this.palmMesh.rotationQuaternion) {
-            this.palmMesh.rotationQuaternion = this.palmMesh.rotation.toQuaternion()
-        }
-        if (!this.intersectedMesh.rotationQuaternion) {
-            this.intersectedMesh.rotationQuaternion = this.intersectedMesh.rotation.toQuaternion()
-        }
-        return {
+
+        let payload = {
             member_id: this.orchestrator.member_id,
             entity_id: this.intersectedMesh.id,
             hand_pos_rot: {
-                pos: utils.arrayReduceSigFigs(this.palmMesh.position.asArray()),
-                rot: utils.arrayReduceSigFigs(this.palmMesh.rotationQuaternion.asArray())
+                pos: utils.arrayReduceSigFigs(this.palmMesh.absolutePosition.asArray()),
+                rot: utils.arrayReduceSigFigs(this.palmMesh.absoluteRotationQuaternion.asArray())
             },
             entity_pos_rot: {
-                pos: utils.arrayReduceSigFigs(this.intersectedMesh.position.asArray()),
-                rot: utils.arrayReduceSigFigs(this.intersectedMesh.rotationQuaternion.asArray())
+                pos: utils.arrayReduceSigFigs(this.intersectedMesh.absolutePosition.asArray()),
+                rot: utils.arrayReduceSigFigs(this.intersectedMesh.absoluteRotationQuaternion.asArray())
             },
             hand: this.hand
         }
+        return payload
     }
 
     // checkRelease() {
@@ -234,7 +234,6 @@ export class XRGripManager {
                 return meshes[i]
             }
         }
-        console.log("no intersections detected")
         return null
     }
 }
