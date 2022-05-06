@@ -5,7 +5,12 @@ TODO:
   - add a sound effect
   - add a particle effect
 
+
 - create entity library
+  - the donut gun is kind of ugly, let's design a better looking gun
+  - create a new space
+     - position some cubes and color them
+     - try merging them and see what happens
   - can export a space into an entity by merging what's in the space into one thing, sans the floor
   - make a default space come with a grid with arrows
   - the entity gets a uuid, and the json data of the saved scene (babylon.js format)
