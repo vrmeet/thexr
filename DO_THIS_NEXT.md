@@ -1,9 +1,11 @@
 TODO:
 
-- fire a projectile if item has shootable tag  
-  - make it a slow moving projectile that animates at constant linear rate
-  - add a sound effect
-  - add a particle effect
+
+- properly fit gun to the hand when grabbed
+
+- add a particle effect
+
+ - add a sound effect
 
 
 - create entity library

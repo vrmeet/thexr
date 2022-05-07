@@ -163,6 +163,10 @@ export class SceneManager {
                 let bullet = BABYLON.MeshBuilder.CreateBox("bullet", { size: 0.05 }, this.scene)
                 bullet.position.fromArray(mpts.p.pos)
                 let target = bullet.position.add(BABYLON.Vector3.FromArray(mpts.p.direction).scale(30))
+
+                BABYLON.ParticleHelper.CreateFromSnippetAsync("HYB2FR#51", this.scene, false, "https://www.babylonjs-playground.com/").then((system) => {
+                    system.emitter = bullet
+                });
                 BABYLON.Animation.CreateAndStartAnimation("bullet", bullet,
                     "position", 60, 60, bullet.position.clone(), target, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, null, () => {
                         bullet.dispose()
@@ -428,7 +432,18 @@ export class SceneManager {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable")
             } else if (entity.type === "gun") {
-                mesh = BABYLON.MeshBuilder.CreateTorus("gun", {}, this.scene)
+                let barrel = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.05, depth: 0.25, height: 0.05 }, this.scene)
+                barrel.position.y = 0.7
+                barrel.position.z = 0.08
+                let handle = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.05, depth: 0.07, height: 0.15 }, this.scene)
+                handle.position.y = 0.6
+                mesh = BABYLON.Mesh.MergeMeshes([barrel, handle], true);
+
+
+
+
+                entity.components.push({ type: "color", data: { value: "#A0A0A0" } })
+                // mesh = BABYLON.MeshBuilder.CreateTorus("gun", {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "interactable shootable")
             } else if (entity.type === "capsule") {
                 mesh = BABYLON.MeshBuilder.CreateCapsule("capsule", {}, this.scene)
