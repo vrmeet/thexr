@@ -1,6 +1,7 @@
 import { BehaviorSubject, bufferCount, filter, map, Observable, scan, Subject, tap } from 'rxjs'
 import { Emitter } from 'typed-rx-emitter'
 import type * as types from './types'
+import type * as BABYLON from 'babylonjs'
 
 type LocalEvents = {
     client_ready: 'enter' | 'observe'
@@ -62,6 +63,8 @@ export type MovementEvents = {
     right_grip_released: any
     right_trigger_squeezed: any
     right_trigger_released: any
+    left_grip_mesh: BABYLON.AbstractMesh
+    right_grip_mesh: BABYLON.AbstractMesh
 
 
 
