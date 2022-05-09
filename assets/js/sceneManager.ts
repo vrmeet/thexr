@@ -32,6 +32,7 @@ export class SceneManager {
     public serializedSpace: serialized_space
     public collabEditManager: CollaborativeEditTransformManager
     public collabDeleteManager: CollabEditDeleteManager
+    public bulletParticle: BABYLON.IParticleSystem
 
 
 
@@ -44,6 +45,7 @@ export class SceneManager {
         this.engine = new BABYLON.Engine(this.canvas, true, { preserveDrawingBuffer: true, stencil: true });
         this.settings = this.serializedSpace.settings
         this.entities = this.serializedSpace.entities
+
         this.setChannelListeners()
 
         signalHub.local.on("client_ready").subscribe(async () => {
@@ -160,17 +162,25 @@ export class SceneManager {
 
                 }
             } else if (mpts.m === "entity_trigger_squeezed") {
+
+
+
+
+
                 let bullet = BABYLON.MeshBuilder.CreateBox("bullet", { size: 0.05 }, this.scene)
                 bullet.position.fromArray(mpts.p.pos)
                 let target = bullet.position.add(BABYLON.Vector3.FromArray(mpts.p.direction).scale(30))
 
-                BABYLON.ParticleHelper.CreateFromSnippetAsync("HYB2FR#51", this.scene, false, "https://www.babylonjs-playground.com/").then((system) => {
-                    system.emitter = bullet
-                });
+                let system = this.bulletParticle.clone("", bullet)
+                system.start()
+
                 BABYLON.Animation.CreateAndStartAnimation("bullet", bullet,
                     "position", 60, 60, bullet.position.clone(), target, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, null, () => {
                         bullet.dispose()
+                        system.dispose()
                     });
+
+
 
 
 
@@ -266,10 +276,17 @@ export class SceneManager {
 
     }
 
+    async createBulletParticle() {
+        this.bulletParticle = await BABYLON.ParticleHelper.CreateFromSnippetAsync("HYB2FR#51", this.scene, false, "https://www.babylonjs-playground.com/")
+        this.bulletParticle.stop()
+    }
+
 
     async createScene() {
         // Create a basic BJS Scene object
         this.scene = new BABYLON.Scene(this.engine);
+
+        this.createBulletParticle()
 
         var gravityVector = new BABYLON.Vector3(0, -9.81, 0);
         const ammo = await Ammo()

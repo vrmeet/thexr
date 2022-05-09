@@ -56,13 +56,20 @@ export class XRGripManager {
 
             signalHub.movement.on(`${this.hand}_grip_squeezed`).pipe(
                 map(() => (this.findIntersectingMesh())),
-                filter(mesh => (mesh !== null)),
+                filter(mesh => (mesh !== null))
+            ).subscribe(mesh => {
+                signalHub.movement.emit(`${this.hand}_grip_mesh`, mesh)
+            })
+
+
+
+            signalHub.movement.on(`${this.hand}_grip_mesh`).pipe(
                 tap((mesh: BABYLON.AbstractMesh) => {
                     this.intersectedMesh = mesh;
                     this.intersectedMeshTags = BABYLON.Tags.GetTags(mesh)
                 }),
                 tap((mesh) => {
-
+                    console.log(`${this.hand} grab`)
                     let event: event = {
                         m: "entity_grabbed",
                         p: this.createEventPayload()
@@ -115,18 +122,22 @@ export class XRGripManager {
 
         return race(
             // if other hand grabbed the same mesh away from the first hand
-            signalHub.movement.on(`${this.other_hand}_grip_squeezed`).pipe(
-                map(() => (this.findIntersectingMesh())),
-                filter(val => (val !== null && this.intersectedMesh !== null && val.id === this.intersectedMesh.id)),
+            signalHub.movement.on(`${this.other_hand}_grip_mesh`).pipe(
+                filter(mesh => (mesh.id === this.intersectedMesh.id)),
+                tap((val) => {
+                    console.log("other hand grabbed same object", val)
+                })
             ),
             // another player stole our object
             signalHub.incoming.on("event").pipe(
-                filter(msg => (msg.m === "entity_grabbed" && msg.p.entity_id === this.intersectedMesh.id && msg.p.member_id != this.orchestrator.member_id))
+                filter(msg => (msg.m === "entity_grabbed" && msg.p.entity_id === this.intersectedMesh.id && msg.p.member_id != this.orchestrator.member_id)),
+                tap(() => { console.log("other player steal") })
             ),
 
             // or the first hand released the mesh
             signalHub.movement.on(`${this.hand}_grip_released`).pipe(
                 tap(() => {
+                    console.log("I release")
                     let event: event = {
                         m: "entity_released",
                         p: this.createEventPayload()
