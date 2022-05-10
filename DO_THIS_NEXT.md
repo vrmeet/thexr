@@ -1,9 +1,9 @@
 TODO:
 
+- add option to not store all event stream
+
 
 - properly fit gun to the hand when grabbed
-
-- add a particle effect
 
  - add a sound effect
 
@@ -154,7 +154,6 @@ editing and playing are two mutually exclusive things:
         - resume/pause
         - restart
 
-the space is either in 'edit' mode or 'running'
 
 you change your environment as you play (throw things, create things, destroy things)
   - the question is which abilities are allowed in the space
@@ -180,7 +179,13 @@ play a free game together with friends, accomplish some goal.  Platform can supp
 
   star trek bridge crew
     - primarily a pre-made game, each ship is a URL
-      all ships define a shared universe namespace, the ships will be placed in shared universe
+      all ships define a shared universe namespace, the ships will be placed in shared universe map, with sections
+    - start as an ensign on someones ship, earn playing experience and level up
+
+  squadren/battlestar/wing-commander
+    - individual x-wing fighters
+    - return to base ship
+  
 
   drawing class in VR
 
@@ -225,7 +230,10 @@ UI Tools
     pen
     thicken
 
-- skip select mic and output if on quest (enhancement)
+- (enhancement) skip select mic and output if on quest 
+
+- lock/unlock property (freeze matrix)
+  - property manager of objects
 
 - create an entity gizmo that brings up all the menu
    - delete
@@ -243,19 +251,17 @@ UI Tools
 - set sink id of audio output selection 
 https://stackoverflow.com/questions/46523466/html-js-select-audio-output-device-in-browser'
 
-- remove immersive VR browse texture until menu is open (create the plane only if menu is opened)
+- (improvement) remove immersive VR browse texture until menu is open (create the plane only if menu is opened)
 
 - parent, unparent an object in VR
 
-show spawn points when entering edit mode
+(feature) show spawn points when entering edit mode
+  - need better edit mode to see constructs that you can't see
+  - or maybe make it something that you see
+  - and something you hide with a checkbox
+    (view hidden items on|off)
 
-- pick avatar
-
-
-(feature)
-log the logs into the backend so we can view them off line later
-can log commands and event stream to correlate with log timestamps
-- event sourcing
+(feature/improvement)- pick avatar
 
 
 (refactor: after we request publishing audio, determine if successful or unsuccessful, our agora wrapper api
@@ -271,9 +277,7 @@ add a listener for when dragging the bounding box gizmo
 
 (feature)
 - be able to delete a selected object 
-
-(feature)
-- add pick/up and throwable objects
+- select should be a tool
 
 (feature)
 Easy way to add image wall
@@ -282,7 +286,6 @@ Easy way to add image wall
 add some simple behavior (cause and effect)
 
 add some sound
-add a gun
 add a monster
 
 (remove skybox)
@@ -290,17 +293,13 @@ add a monster
 - when skiybox is set too close to make fog reasonable, then it can clip local objects
 - render skybox behind everything (sky box has corners, don't really like it that much)
 
-(explore)
-- skydom (no seams), that renders behind everything
 
 (feature)
 - add video/cam and screen sharing 
 
-(add primimitive feature)
-- add cylinder type
-
 (feature)
-- mobile movement joystick
+- mobile movement joystick, so that when people open up a world they are not stuck in one place
 
--- add DB on AWS
+-- for PROD
+-- add DB on AWS, so that we can have additional write connections
 -- 

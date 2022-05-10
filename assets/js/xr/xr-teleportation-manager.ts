@@ -56,6 +56,7 @@ export class TeleportationManager {
             forceHandedness: "right"
         }) as BABYLON.WebXRMotionControllerTeleportation
         this.teleportation.rotationEnabled = false
+
     }
 
 
