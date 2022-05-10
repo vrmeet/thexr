@@ -32,7 +32,7 @@ export class MenuPagePrimitives extends GUI.Container {
     }
 
     primOptions() {
-        const options = ["gun", "capsule", "box", "cone", "sphere", "grid", "plane"];
+        const options = ["gun", "capsule", "box", "cone", "sphere", "grid", "cylinder", "plane"];
 
         return options.map(prim => {
             const callback = () => {
@@ -41,7 +41,7 @@ export class MenuPagePrimitives extends GUI.Container {
                 const name = `${prim}_${random_id(6)}`
                 const uuid = uuidv4()
                 let components = {
-                    position: [0, 0, 0],
+                    position: [0, 0.5, 0],
                     rotation: [0, 0, 0],
                     scaling: [1, 1, 1],
                 }

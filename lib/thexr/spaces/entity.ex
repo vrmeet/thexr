@@ -9,7 +9,7 @@ defmodule Thexr.Spaces.Entity do
   schema "entities" do
     field :name, :string
     field :type, :string
-    field :space_id, Ecto.UUID
+    belongs_to :space, Thexr.Spaces.Space
     field :parent_id, :binary_id
     has_many :components, Thexr.Spaces.Component
     timestamps()

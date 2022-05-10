@@ -448,6 +448,9 @@ export class SceneManager {
             if (entity.type === "box") {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable")
+            } else if (entity.type === "cylinder") {
+                mesh = BABYLON.MeshBuilder.CreateCylinder(entity.name, {}, this.scene)
+                BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable")
             } else if (entity.type === "gun") {
                 let barrel = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.05, depth: 0.25, height: 0.05 }, this.scene)
                 barrel.position.y = 0.7
@@ -455,10 +458,6 @@ export class SceneManager {
                 let handle = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.05, depth: 0.07, height: 0.15 }, this.scene)
                 handle.position.y = 0.6
                 mesh = BABYLON.Mesh.MergeMeshes([barrel, handle], true);
-
-
-
-
                 entity.components.push({ type: "color", data: { value: "#A0A0A0" } })
                 // mesh = BABYLON.MeshBuilder.CreateTorus("gun", {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "interactable shootable")

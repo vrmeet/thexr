@@ -11,6 +11,7 @@ defmodule Thexr.Spaces.Space do
     field :name, :string
     embeds_one :settings, Settings, on_replace: :update
     has_many :entities, Thexr.Spaces.Entity
+    has_many :event_streams, Thexr.Spaces.EventStream
     timestamps()
   end
 

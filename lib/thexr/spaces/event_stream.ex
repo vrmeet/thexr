@@ -8,7 +8,7 @@ defmodule Thexr.Spaces.EventStream do
     field :payload, :map
     field :sequence, :integer
     field :type, :string
-    field :space_id, :binary_id
+    belongs_to :space, Thexr.Spaces.Space
     field :event_timestamp, :integer
     timestamps(updated_at: false)
   end
