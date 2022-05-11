@@ -1,6 +1,6 @@
 TODO:
 
-- add option to not store all event stream
+- for now (do not) store all event stream
 
 
 - properly fit gun to the hand when grabbed

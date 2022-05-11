@@ -127,15 +127,21 @@ export class SceneManager {
                 let handMesh = this.scene.getMeshByName(`avatar_${mpts.p.member_id}_${mpts.p.hand}`)
                 if (grabbedEntity && handMesh) {
 
-                    if (mpts.p.member_id === this.member_id) {
-                        grabbedEntity.setParent(handMesh)
-                    } else {
+                    if (mpts.p.member_id !== this.member_id) {
+
                         grabbedEntity.parent = null
                         this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
                         this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
                         this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
                         this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
 
+
+                    }
+                    let tags = <string[]>BABYLON.Tags.GetTags(grabbedEntity)
+                    console.log('tags', tags)
+                    if (tags.includes("shootable")) {
+                        grabbedEntity.parent = handMesh
+                    } else {
                         grabbedEntity.setParent(handMesh)
                     }
 

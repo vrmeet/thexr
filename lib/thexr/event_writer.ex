@@ -13,7 +13,7 @@ defmodule Thexr.EventWriter do
   def handle_events(events, _from, state) do
     # TODO: write all events in bulk
     Enum.map(events, fn event ->
-      Thexr.Spaces.create_event(event)
+      # Thexr.Spaces.create_event(event)
       Thexr.Snapshot.process(event.space_id, event.type, event)
     end)
 
