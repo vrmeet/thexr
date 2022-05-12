@@ -128,7 +128,7 @@ export class SceneManager {
                 if (grabbedEntity && handMesh) {
 
                     if (mpts.p.member_id !== this.member_id) {
-
+                        // incase was grabbed by someone else first
                         grabbedEntity.parent = null
                         this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
                         this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
@@ -138,8 +138,10 @@ export class SceneManager {
 
                     }
                     let tags = <string[]>BABYLON.Tags.GetTags(grabbedEntity)
-                    console.log('tags', tags)
+
                     if (tags.includes("shootable")) {
+                        grabbedEntity.position.copyFromFloats(0, 0, 0)
+                        grabbedEntity.rotationQuaternion.copyFromFloats(0, 0, 0, 1)
                         grabbedEntity.parent = handMesh
                     } else {
                         grabbedEntity.setParent(handMesh)
@@ -151,8 +153,12 @@ export class SceneManager {
                 let handMesh = this.scene.getMeshByName(`avatar_${mpts.p.member_id}_${mpts.p.hand}`)
                 if (grabbedEntity && handMesh) {
                     if (mpts.p.member_id === this.member_id) {
+
+                        // locally we're the one moving so we don't need to update position
+                        // keep it where it is
                         grabbedEntity.setParent(null)
                     } else {
+                        // unset previous grab
                         grabbedEntity.parent = null
                         this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
                         this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
@@ -459,10 +465,10 @@ export class SceneManager {
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable")
             } else if (entity.type === "gun") {
                 let barrel = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.05, depth: 0.25, height: 0.05 }, this.scene)
-                barrel.position.y = 0.7
-                barrel.position.z = 0.08
+                barrel.position.z = 0.07
+                barrel.position.y = 0.05
                 let handle = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.05, depth: 0.07, height: 0.15 }, this.scene)
-                handle.position.y = 0.6
+                handle.rotation.x = BABYLON.Angle.FromDegrees(45).radians()
                 mesh = BABYLON.Mesh.MergeMeshes([barrel, handle], true);
                 entity.components.push({ type: "color", data: { value: "#A0A0A0" } })
                 // mesh = BABYLON.MeshBuilder.CreateTorus("gun", {}, this.scene)
