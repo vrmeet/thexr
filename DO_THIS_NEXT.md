@@ -1,12 +1,5 @@
 TODO:
 
-turn bullet mesh into the direction of the ray
-
-impulse target at the time bullet intersects the mesh, 
-
-need something to shoot at
-  - a target
-  - disappears after bullet hits it
 
 target is spawned in random place with random frequency 
   - consistent appearance for all members

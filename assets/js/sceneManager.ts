@@ -10,7 +10,7 @@ import type { Orchestrator } from "./orchestrator";
 import { signalHub } from "./signalHub";
 import { CollaborativeEditTransformManager } from "./collab-edit/transform";
 import { CollabEditDeleteManager } from "./collab-edit/delete";
-import { g } from "./menu/helpers";
+import type { event } from "./types"
 
 
 const ANIMATION_FRAME_PER_SECOND = 60
@@ -175,34 +175,44 @@ export class SceneManager {
                 }
             } else if (mpts.m === "entity_trigger_squeezed") {
 
-
-
-
-
-                let bullet = BABYLON.MeshBuilder.CreateCapsule("bullet", {}, this.scene)
-                // bullet.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(mpts.p.direction[0], mpts.p.direction[1], mpts.p.direction[2])
+                let distance = 30 // meters
+                let bullet = BABYLON.MeshBuilder.CreateCapsule("bullet", {
+                    height: 0.1,
+                    radiusTop: 0.03, radiusBottom: 0.05
+                }, this.scene)
+                // set bullet position
                 bullet.position.fromArray(mpts.p.pos)
-                let target = bullet.position.add(BABYLON.Vector3.FromArray(mpts.p.direction).scale(30))
-                // bullet.lookAt(target, null, BABYLON.Angle.FromDegrees(90).radians())
-                let ray = new BABYLON.Ray(bullet.position, BABYLON.Vector3.FromArray(mpts.p.direction), 30)
 
-                let hit = this.scene.pickWithRay(ray)
+                let ray = new BABYLON.Ray(bullet.position, BABYLON.Vector3.FromArray(mpts.p.direction), distance)
+                // see if we hit something within the distance
+                let rayhit = this.scene.pickWithRay(ray)
                 let hitSomething = false;
-                if (hit.pickedMesh && <string[]>BABYLON.Tags.GetTags(hit.pickedMesh).includes("targetable")) {
+                if (rayhit.pickedMesh && <string[]>BABYLON.Tags.GetTags(rayhit.pickedMesh)?.includes("targetable")) {
                     hitSomething = true;
+                    distance = rayhit.distance
                 }
-
-
-
+                // animation target point
+                let target = bullet.position.add(BABYLON.Vector3.FromArray(mpts.p.direction).scale(distance))
+                bullet.lookAt(target, null, BABYLON.Angle.FromDegrees(90).radians())
                 let system = this.bulletParticle.clone("", bullet)
                 system.start()
 
+
+
+
                 BABYLON.Animation.CreateAndStartAnimation("bullet", bullet,
-                    "position", 60, 60, bullet.position.clone(), target, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, null, () => {
-                        bullet.dispose()
-                        system.dispose()
+                    "position", 60, 20 * distance, bullet.position.clone(), target, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, null, () => {
+                        system.stop()
+                        bullet.visibility = 0
+                        setTimeout(() => {
+                            system.dispose()
+                            bullet.dispose()
+                        }, 2000)
+
                         if (hitSomething) {
-                            hit.pickedMesh.dispose()
+                            const event: event = { m: "entity_deleted", p: { id: rayhit.pickedMesh.id } }
+                            signalHub.outgoing.emit("event", event)
+                            signalHub.incoming.emit("event", event)
                         }
                     });
 
