@@ -179,9 +179,20 @@ export class SceneManager {
 
 
 
-                let bullet = BABYLON.MeshBuilder.CreateBox("bullet", { size: 0.05 }, this.scene)
+                let bullet = BABYLON.MeshBuilder.CreateCapsule("bullet", {}, this.scene)
+                // bullet.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(mpts.p.direction[0], mpts.p.direction[1], mpts.p.direction[2])
                 bullet.position.fromArray(mpts.p.pos)
                 let target = bullet.position.add(BABYLON.Vector3.FromArray(mpts.p.direction).scale(30))
+                // bullet.lookAt(target, null, BABYLON.Angle.FromDegrees(90).radians())
+                let ray = new BABYLON.Ray(bullet.position, BABYLON.Vector3.FromArray(mpts.p.direction), 30)
+
+                let hit = this.scene.pickWithRay(ray)
+                let hitSomething = false;
+                if (hit.pickedMesh && <string[]>BABYLON.Tags.GetTags(hit.pickedMesh).includes("targetable")) {
+                    hitSomething = true;
+                }
+
+
 
                 let system = this.bulletParticle.clone("", bullet)
                 system.start()
@@ -190,6 +201,9 @@ export class SceneManager {
                     "position", 60, 60, bullet.position.clone(), target, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, null, () => {
                         bullet.dispose()
                         system.dispose()
+                        if (hitSomething) {
+                            hit.pickedMesh.dispose()
+                        }
                     });
 
 
@@ -462,7 +476,9 @@ export class SceneManager {
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable")
             } else if (entity.type === "cylinder") {
                 mesh = BABYLON.MeshBuilder.CreateCylinder(entity.name, {}, this.scene)
-                BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable")
+                BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable targetable")
+                // mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.CylinderImpostor, { mass: 1, friction: 0.2, restitution: 0.7 }, this.scene);
+
             } else if (entity.type === "gun") {
                 let barrel = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.05, depth: 0.25, height: 0.05 }, this.scene)
                 barrel.position.z = 0.07
