@@ -1,9 +1,23 @@
 TODO:
 
-- for now (do not) store all event stream
+turn bullet mesh into the direction of the ray
+
+impulse target at the time bullet intersects the mesh, 
+
+need something to shoot at
+  - a target
+  - disappears after bullet hits it
+
+target is spawned in random place with random frequency 
+  - consistent appearance for all members
+
+target moves toward closest member as long as they can see them
+  - one member asked to control movement for target for a certain duration
 
 
-- properly fit gun to the hand when grabbed
+- figure out navmesh
+  - use for crowd agents (monsters moving toward members)
+  - use for teleportable mesh, create "walkable" area
 
  - add a sound effect
 
@@ -42,10 +56,6 @@ TODO:
    - each entity grabbed, or released should update the position on the entity (server side)
    - released with impulse coul update 
    - (server side can't predict final position though, so maybe added a delay then query a user for final position)
-
-
-pick up, and throw something ("interactable" "gravity")
-pickup a gun and press trigger to shoot a bullet ("shootable")
 
 
 
