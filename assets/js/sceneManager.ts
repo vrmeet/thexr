@@ -11,6 +11,7 @@ import { signalHub } from "./signalHub";
 import { CollaborativeEditTransformManager } from "./collab-edit/transform";
 import { CollabEditDeleteManager } from "./collab-edit/delete";
 import type { event } from "./types"
+import { TargetSpawner } from "./scene/target-spawner";
 
 
 const ANIMATION_FRAME_PER_SECOND = 60
@@ -33,6 +34,7 @@ export class SceneManager {
     public collabEditManager: CollaborativeEditTransformManager
     public collabDeleteManager: CollabEditDeleteManager
     public bulletParticle: BABYLON.IParticleSystem
+    public target_spawner: TargetSpawner
 
 
 
@@ -84,12 +86,6 @@ export class SceneManager {
                     this.findOrCreateAvatarHand(payload.member_id, "right", payload.right)
                 }
 
-                // mesh.position.fromArray(pos)
-                // if (!mesh.rotationQuaternion) {
-                //     mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(rot)
-                // } else {
-                //     mesh.rotationQuaternion.copyFromFloats(rot[0], rot[1], rot[2], rot[3])
-                // }
 
             } else if (mpts.m === "member_left") {
                 this.removeAvatar(mpts.p.member_id)
@@ -201,7 +197,7 @@ export class SceneManager {
 
 
                 BABYLON.Animation.CreateAndStartAnimation("bullet", bullet,
-                    "position", 60, 20 * distance, bullet.position.clone(), target, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, null, () => {
+                    "position", 60, 2 * distance, bullet.position.clone(), target, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, null, () => {
                         system.stop()
                         bullet.visibility = 0
                         setTimeout(() => {
@@ -215,74 +211,9 @@ export class SceneManager {
                             signalHub.incoming.emit("event", event)
                         }
                     });
-
-
-
-
-
-
             }
         })
 
-        // signalHub.incoming.on("member_moved").subscribe(({ member_id, pos, rot }) => {
-        //     let mesh = this.scene.getMeshByName(`avatar_${member_id}`)
-
-        //     if (mesh) {
-        //         mesh.position.fromArray(pos)
-        //         if (!mesh.rotationQuaternion) {
-        //             mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(rot)
-        //         } else {
-        //             mesh.rotationQuaternion.copyFromFloats(rot[0], rot[1], rot[2], rot[3])
-        //         }
-        //     }
-
-        // })
-        // signalHub.incoming.on("component_changed").subscribe(params => {
-        //     let meshes = this.scene.getMeshesById(params.entity_id)
-        //     meshes.forEach(mesh => {
-        //         this.setComponent(mesh, { type: params.type, data: params.data })
-        //     })
-        // })
-        // signalHub.incoming.on("BoxCreated").subscribe(event => {
-        //     let mesh: BABYLON.AbstractMesh
-        //     mesh = this.scene.getMeshById(event.id)
-        //     if (!mesh) {
-        //         mesh = BABYLON.MeshBuilder.CreateBox(event.name, {}, this.scene)
-        //         BABYLON.Tags.AddTagsTo(mesh, "teleportable")
-        //     }
-        //     const { position, rotation, scaling } = event.components
-        //     mesh.position.copyFromFloats(position.x, position.y, position.z)
-        // })
-
-        // signalHub.incoming.on("entity_created").subscribe(entity => {
-        //     this.findOrCreateMesh(entity)
-        // })
-        // signalHub.incoming.on("entity_deleted").subscribe(params => {
-        //     let meshes = this.scene.getMeshesById(params.id)
-        //     meshes.forEach(mesh => {
-        //         mesh.dispose()
-        //     })
-        // })
-
-        // signalHub.incoming.on("new_member").subscribe(({ member_id, pos_rot }) => {
-        //     this.findOrCreateAvatar(member_id, pos_rot)
-        // })
-
-        // signalHub.incoming.on("members").subscribe(({ movements }) => {
-        //     Object.entries(movements).forEach(([member_id, payload]) => {
-        //         if (member_id != this.member_id) {
-        //             this.findOrCreateAvatar(member_id, payload.pos_rot)
-        //         }
-        //     })
-        // })
-
-
-        // signalHub.incoming.on("presence_diff").subscribe(params => {
-
-        //     Object.keys(params.leaves).map(id => {
-        //         this.removeAvatar(id)
-        //     })
-        // })
 
         signalHub.incoming.on("space_settings_changed").subscribe(params => {
             this.processscene_settings(params as scene_settings)
@@ -517,6 +448,10 @@ export class SceneManager {
                 mesh = BABYLON.MeshBuilder.CreateSphere(entity.name, {}, this.scene)
             } else if (entity.type === "cone") {
                 mesh = BABYLON.MeshBuilder.CreateCylinder(entity.name, { diameterTop: 0 }, this.scene)
+            } else if (entity.type === "target_spawner") {
+                if (!this.target_spawner) {
+                    this.target_spawner = new TargetSpawner(this.scene)
+                }
             }
             if (mesh) {
                 mesh.id = entity.id
