@@ -1,5 +1,21 @@
 TODO:
 
+- make it easier to create primitive on js side, create reusable function
+  for target spawner and primitive
+
+- update graphQL create entity to take components, pos, rot, scale
+
+--- create new primitive: target spawner
+-- upon initial load, construct the spawner and wait for leader signal,
+   -- stop
+
+
+client - setTimeout, random position, create a new cylinder event
+client2 - setTimeout, random position, create cylinder
+
+----
+choose a leader: invoke the target spawner
+
 
 target is spawned in random place with random frequency 
   - consistent appearance for all members
