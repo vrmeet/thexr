@@ -92,6 +92,10 @@ export class MenuManager {
 
         const menu_opened = signalHub.menu.on("menu_opened").subscribe(value => {
             this.menu_opened = value
+            if (this.browsePlane) {
+
+                this.browsePlane.setEnabled(value)
+            }
             this.render()
         })
 
@@ -120,6 +124,7 @@ export class MenuManager {
 
         this.browsePlane = BABYLON.MeshBuilder.CreatePlane("browse_plane", { height: 1, width: 1 }, this.scene)
         this.browsePlane.showBoundingBox = true
+        this.browsePlane.setEnabled(false)
         this.browsePlane.position.z = 0.6
         this.browsePlane.position.y = 0.2
         this.browsePlane.rotation.x = 1.06
