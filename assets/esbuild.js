@@ -42,7 +42,7 @@ const globals = {
 
 // Define esbuild options + extras for watch and deploy
 let opts = {
-    entryPoints: ['js/app.js', 'js/orchestrator.ts'],
+    entryPoints: ['js/app.js', 'js/orchestrator.ts', 'js/navMeshWorker.js'],
     bundle: true,
     external: ["/fonts/*", "/images/*"],
     logLevel: 'info',

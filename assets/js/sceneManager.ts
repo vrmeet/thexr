@@ -1,5 +1,6 @@
 import * as BABYLON from "babylonjs"
 import Ammo from 'ammojs-typed'
+
 import * as MAT from "babylonjs-materials"
 import type { Component, PosRot, scene_settings, serialized_space } from "./types"
 import { sessionPersistance } from "./sessionPersistance";
@@ -32,6 +33,7 @@ export class SceneManager {
     public serializedSpace: serialized_space
 
     public bulletParticle: BABYLON.IParticleSystem
+    public navigationPlugin: BABYLON.RecastJSPlugin
     public target_spawner: TargetSpawner
 
 
@@ -252,9 +254,14 @@ export class SceneManager {
         this.scene = new BABYLON.Scene(this.engine);
 
         this.createBulletParticle()
+        // console.log('recast is', Recast.Recast())
+        const recast = await window['Recast']()
+        console.log('recast', recast)
+        this.navigationPlugin = new BABYLON.RecastJSPlugin(recast);
 
         var gravityVector = new BABYLON.Vector3(0, -9.81, 0);
         const ammo = await Ammo()
+
         var physicsPlugin = new BABYLON.AmmoJSPlugin(true, ammo);
         this.scene.enablePhysics(gravityVector, physicsPlugin);
 
@@ -380,9 +387,35 @@ export class SceneManager {
 
 
     parseInitialScene(entities) {
-        entities.map(entity => {
-            this.findOrCreateMesh(entity)
+        const meshes = entities.map(entity => this.findOrCreateMesh(entity))
+        // try to create a nav mesh
+        var navmeshParameters = {
+            cs: 0.2,
+            ch: 0.2,
+            walkableSlopeAngle: 90,
+            walkableHeight: 1.0,
+            walkableClimb: 1,
+            walkableRadius: 1,
+            maxEdgeLen: 12.,
+            maxSimplificationError: 1.3,
+            minRegionArea: 8,
+            mergeRegionArea: 20,
+            maxVertsPerPoly: 6,
+            detailSampleDist: 6,
+            detailSampleMaxError: 1,
+        };
+        this.navigationPlugin.setWorkerURL("/assets/navMeshWorker.js");
+
+        this.navigationPlugin.createNavMesh(meshes, navmeshParameters, navMeshData => {
+
+            this.navigationPlugin.buildFromNavmeshData(navMeshData)
+            const navmeshdebug = this.navigationPlugin.createDebugNavMesh(this.scene);
+            var matdebug = new BABYLON.StandardMaterial("matdebug", this.scene);
+            matdebug.diffuseColor = new BABYLON.Color3(1, 0, 0);
+            matdebug.alpha = 0.5;
+            navmeshdebug.material = matdebug;
         })
+
     }
 
     findOrCreateMaterial(opts: { type: "color" | "grid", colorString?: string }) {
@@ -402,7 +435,7 @@ export class SceneManager {
     }
 
 
-    findOrCreateMesh(entity: { type: string, name: string, id: string, components: Component[], parent?: string }) {
+    findOrCreateMesh(entity: { type: string, name: string, id: string, components: Component[], parent?: string }): BABYLON.AbstractMesh {
 
         let mesh: BABYLON.AbstractMesh
         mesh = this.scene.getMeshById(entity.id)
@@ -539,7 +572,6 @@ export class SceneManager {
             this.engine.resize();
         });
 
-        // this.menuManager.test()
     }
 
 }
