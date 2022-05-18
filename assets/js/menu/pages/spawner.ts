@@ -19,6 +19,7 @@ export class MenuPageSpawner extends GUI.Container {
                 a({
                     name: "spawn_target_btn", callback: () => {
                         console.log("button clicked")
+
                     }
                 }, "spawn targets")
 

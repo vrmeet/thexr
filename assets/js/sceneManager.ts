@@ -11,7 +11,6 @@ import type { Orchestrator } from "./orchestrator";
 import { signalHub } from "./signalHub";
 
 import type { event } from "./types"
-import { TargetSpawner } from "./scene/target-spawner";
 
 
 const ANIMATION_FRAME_PER_SECOND = 60
@@ -34,8 +33,6 @@ export class SceneManager {
 
     public bulletParticle: BABYLON.IParticleSystem
     public navigationPlugin: BABYLON.RecastJSPlugin
-    public target_spawner: TargetSpawner
-
 
 
     constructor(public orchestrator: Orchestrator) {
@@ -54,6 +51,36 @@ export class SceneManager {
             this.xrManager = new XRManager(this.orchestrator)
             await this.xrManager.enableWebXRExperience()
             this.menuManager = new MenuManager(this.orchestrator)
+            // test of agent
+            let enemy = BABYLON.MeshBuilder.CreateBox("enemy", { width: 1, depth: 1, height: 2 }, this.scene)
+            // enemy.position.y = 2
+            let crowd = this.navigationPlugin.createCrowd(10, 0.5, this.scene)
+            const agentParams = {
+                radius: 1,
+                height: 2,
+                maxAcceleration: 4.0,
+                maxSpeed: 1.0,
+                collisionQueryRange: 0.5,
+                pathOptimizationRange: 0.0,
+                separationWeight: 1.0
+            };
+            const agentIndex = crowd.addAgent(BABYLON.Vector3.FromArray([0, 1, 0]), agentParams, enemy)
+            this.scene.onBeforeRenderObservable.add(() => {
+                // move agent toward next target
+                enemy.position = crowd.getAgentPosition(agentIndex)
+                let vel = crowd.getAgentVelocity(agentIndex);
+                //crowd.getAgentNextTargetPathToRef(agentIndex, ag.target.position);
+                if (vel.length() > 0.2) {
+                    vel.normalize();
+                    var desiredRotation = Math.atan2(vel.x, vel.z);
+                    enemy.rotation.y = enemy.rotation.y + (desiredRotation - enemy.rotation.y) * 0.05;
+                }
+
+            })
+            setInterval(() => {
+                //  console.log("send agent to", this.scene.activeCamera.position)
+                crowd.agentGoto(agentIndex, this.scene.activeCamera.position)
+            }, 1000)
         })
     }
 
@@ -477,10 +504,6 @@ export class SceneManager {
                 mesh = BABYLON.MeshBuilder.CreateSphere(entity.name, {}, this.scene)
             } else if (entity.type === "cone") {
                 mesh = BABYLON.MeshBuilder.CreateCylinder(entity.name, { diameterTop: 0 }, this.scene)
-            } else if (entity.type === "target_spawner") {
-                if (!this.target_spawner) {
-                    this.target_spawner = new TargetSpawner(this.scene)
-                }
             }
             if (mesh) {
                 mesh.id = entity.id
