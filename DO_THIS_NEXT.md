@@ -1,5 +1,43 @@
 TODO:
 
+The UI still sucks:
+
+  But I really like not having to deal with another software to save an artifact,
+  upload it and import it into the space
+
+  Perhaps add better menu to create spaces
+
+  Click and draw a path to form outline 
+
+
+  HTML menu -> Live view -> holds state, share messages with 
+  JS Land and canvas
+
+  ===
+
+  Menu is a declarative tree:, 
+    {root: {
+      [{}, {}, {}]
+    }}
+
+The entire state is maintained in the tree
+  - on click of 'inspector'
+     - pointer becomes an inspector tool
+     - in VR, pointer becomes an inspector tool
+     anything you click becomes highlighted
+     the menu shows component details about the item
+     - clicking on an input brings up an input and keyboard
+      - or brings up a 2D form overlay, and submitting it will update that component
+  - cut and extrude tool
+    - first corner, 2nd corner, 3rd click sets height or cuts hole
+
+  When open menu -> make a call to server to get HTML
+  HTML to texture -> interactivity sends local signal
+
+server side target spawner
+
+- remove the client side spawner
+
 - make it easier to create primitive on js side, create reusable function
   for target spawner and primitive
 
