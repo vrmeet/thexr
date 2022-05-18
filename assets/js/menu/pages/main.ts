@@ -14,6 +14,7 @@ export class MenuPageMain extends GUI.Container {
                 a({ callback: this.cb("about") }, "About"),
                 a({ callback: this.cb("logs") }, "Logs"),
                 a({ callback: this.cb("tools") }, "Tools"),
+                a({ callback: this.cb("spawner") }, "Spawner"),
             ))
     }
 
