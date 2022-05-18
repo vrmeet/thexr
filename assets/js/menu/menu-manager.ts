@@ -9,12 +9,15 @@ import { MenuPageMain } from './pages/main'
 import { MenuPagePrimitives } from './pages/primitives'
 import { MenuPageLogs } from './pages/logs'
 
-import { div, button, a } from './helpers';
+import { div, a } from './helpers';
 import type { Orchestrator } from '../orchestrator';
-import { combineLatest, merge } from 'rxjs';
 import { MenuTools } from './pages/tools';
 import { MenuColor } from './pages/color';
-import type { event } from '../types'
+
+
+import { CollaborativeEditTransformManager } from "../collab-edit/transform";
+import { CollabEditDeleteManager } from "../collab-edit/delete";
+import { MenuPageSpawner } from './pages/spawner';
 
 /*
 inline -mode
@@ -48,10 +51,14 @@ export class MenuManager {
     public sceneManager: SceneManager
     public menu_opened: boolean
     public menu_topic: string
+    public collabEditManager: CollaborativeEditTransformManager
+    public collabDeleteManager: CollabEditDeleteManager
 
     constructor(public orchestrator: Orchestrator) {
         this.sceneManager = orchestrator.sceneManager
         this.scene = orchestrator.sceneManager.scene
+        this.collabEditManager = new CollaborativeEditTransformManager(this.scene)
+        this.collabDeleteManager = new CollabEditDeleteManager(this.scene)
         this.menu_opened = false
         this.menu_topic = "main"
 
@@ -248,6 +255,10 @@ export class MenuManager {
 
     primitives() {
         return new MenuPagePrimitives(this.orchestrator)
+    }
+
+    spawner() {
+        return new MenuPageSpawner()
     }
 }
 

@@ -8,8 +8,7 @@ import { reduceSigFigs } from "./utils";
 import { XRManager } from "./xr/xr-manager";
 import type { Orchestrator } from "./orchestrator";
 import { signalHub } from "./signalHub";
-import { CollaborativeEditTransformManager } from "./collab-edit/transform";
-import { CollabEditDeleteManager } from "./collab-edit/delete";
+
 import type { event } from "./types"
 import { TargetSpawner } from "./scene/target-spawner";
 
@@ -31,8 +30,7 @@ export class SceneManager {
     public canvasId: string
     public member_id: string
     public serializedSpace: serialized_space
-    public collabEditManager: CollaborativeEditTransformManager
-    public collabDeleteManager: CollabEditDeleteManager
+
     public bulletParticle: BABYLON.IParticleSystem
     public target_spawner: TargetSpawner
 
@@ -267,8 +265,6 @@ export class SceneManager {
         // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
         var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), this.scene);
         this.parseInitialScene(this.entities)
-        this.collabEditManager = new CollaborativeEditTransformManager(this.scene)
-        this.collabDeleteManager = new CollabEditDeleteManager(this.scene)
         return this.scene;
 
     }
