@@ -242,7 +242,7 @@ export class MenuManager {
     }
 
     logs() {
-        return new MenuPageLogs(this.orchestrator.logManager)
+        return new MenuPageLogs()
     }
 
     tools() {

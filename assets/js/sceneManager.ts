@@ -52,35 +52,37 @@ export class SceneManager {
             await this.xrManager.enableWebXRExperience()
             this.menuManager = new MenuManager(this.orchestrator)
             // test of agent
-            let enemy = BABYLON.MeshBuilder.CreateBox("enemy", { width: 1, depth: 1, height: 2 }, this.scene)
-            // enemy.position.y = 2
-            let crowd = this.navigationPlugin.createCrowd(10, 0.5, this.scene)
-            const agentParams = {
-                radius: 1,
-                height: 2,
-                maxAcceleration: 4.0,
-                maxSpeed: 1.0,
-                collisionQueryRange: 0.5,
-                pathOptimizationRange: 0.0,
-                separationWeight: 1.0
-            };
-            const agentIndex = crowd.addAgent(BABYLON.Vector3.FromArray([0, 1, 0]), agentParams, enemy)
-            this.scene.onBeforeRenderObservable.add(() => {
-                // move agent toward next target
-                enemy.position = crowd.getAgentPosition(agentIndex)
-                let vel = crowd.getAgentVelocity(agentIndex);
-                //crowd.getAgentNextTargetPathToRef(agentIndex, ag.target.position);
-                if (vel.length() > 0.2) {
-                    vel.normalize();
-                    var desiredRotation = Math.atan2(vel.x, vel.z);
-                    enemy.rotation.y = enemy.rotation.y + (desiredRotation - enemy.rotation.y) * 0.05;
-                }
+            if (this.navigationPlugin) {
+                let enemy = BABYLON.MeshBuilder.CreateBox("enemy", { width: 1, depth: 1, height: 2 }, this.scene)
+                // enemy.position.y = 2
+                let crowd = this.navigationPlugin.createCrowd(10, 0.5, this.scene)
+                const agentParams = {
+                    radius: 1,
+                    height: 2,
+                    maxAcceleration: 4.0,
+                    maxSpeed: 1.0,
+                    collisionQueryRange: 0.5,
+                    pathOptimizationRange: 0.0,
+                    separationWeight: 1.0
+                };
+                const agentIndex = crowd.addAgent(BABYLON.Vector3.FromArray([0, 1, 0]), agentParams, enemy)
+                this.scene.onBeforeRenderObservable.add(() => {
+                    // move agent toward next target
+                    enemy.position = crowd.getAgentPosition(agentIndex)
+                    let vel = crowd.getAgentVelocity(agentIndex);
+                    //crowd.getAgentNextTargetPathToRef(agentIndex, ag.target.position);
+                    if (vel.length() > 0.2) {
+                        vel.normalize();
+                        var desiredRotation = Math.atan2(vel.x, vel.z);
+                        enemy.rotation.y = enemy.rotation.y + (desiredRotation - enemy.rotation.y) * 0.05;
+                    }
 
-            })
-            setInterval(() => {
-                //  console.log("send agent to", this.scene.activeCamera.position)
-                crowd.agentGoto(agentIndex, this.scene.activeCamera.position)
-            }, 1000)
+                })
+                setInterval(() => {
+                    //  console.log("send agent to", this.scene.activeCamera.position)
+                    crowd.agentGoto(agentIndex, this.scene.activeCamera.position)
+                }, 1000)
+            }
         })
     }
 
@@ -281,10 +283,6 @@ export class SceneManager {
         this.scene = new BABYLON.Scene(this.engine);
 
         this.createBulletParticle()
-        // console.log('recast is', Recast.Recast())
-        const recast = await window['Recast']()
-        console.log('recast', recast)
-        this.navigationPlugin = new BABYLON.RecastJSPlugin(recast);
 
         var gravityVector = new BABYLON.Vector3(0, -9.81, 0);
         const ammo = await Ammo()
@@ -415,6 +413,20 @@ export class SceneManager {
 
     parseInitialScene(entities) {
         const meshes = entities.map(entity => this.findOrCreateMesh(entity))
+        this.createNavMesh(meshes)
+    }
+
+    async createNavMesh(meshes: BABYLON.Mesh[]) {
+        //console.log("in create Nav Mesh")
+        //  const recast = await window['recast']
+
+        //console.log('awaited recast', recast)
+        this.navigationPlugin = new BABYLON.RecastJSPlugin();
+
+
+        // if (!this.navigationPlugin) {
+        //     return
+        // }
         // try to create a nav mesh
         var navmeshParameters = {
             cs: 0.2,
@@ -431,17 +443,18 @@ export class SceneManager {
             detailSampleDist: 6,
             detailSampleMaxError: 1,
         };
-        this.navigationPlugin.setWorkerURL("/assets/navMeshWorker.js");
+        //    this.navigationPlugin.setWorkerURL("/assets/navMeshWorker.js");
 
-        this.navigationPlugin.createNavMesh(meshes, navmeshParameters, navMeshData => {
+        this.navigationPlugin.createNavMesh(meshes, navmeshParameters)
+        // , navMeshData => {
 
-            this.navigationPlugin.buildFromNavmeshData(navMeshData)
-            const navmeshdebug = this.navigationPlugin.createDebugNavMesh(this.scene);
-            var matdebug = new BABYLON.StandardMaterial("matdebug", this.scene);
-            matdebug.diffuseColor = new BABYLON.Color3(1, 0, 0);
-            matdebug.alpha = 0.5;
-            navmeshdebug.material = matdebug;
-        })
+        //  this.navigationPlugin.buildFromNavmeshData(navMeshData)
+        const navmeshdebug = this.navigationPlugin.createDebugNavMesh(this.scene);
+        var matdebug = new BABYLON.StandardMaterial("matdebug", this.scene);
+        matdebug.diffuseColor = new BABYLON.Color3(1, 0, 0);
+        matdebug.alpha = 0.5;
+        navmeshdebug.material = matdebug;
+        // })
 
     }
 
