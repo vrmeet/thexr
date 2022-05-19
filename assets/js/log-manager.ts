@@ -87,3 +87,8 @@ export class LogManager {
 
 
 }
+
+
+export const logManager: LogManager = new LogManager()
+
+window['logManager'] = logManager;

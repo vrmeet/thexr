@@ -1,13 +1,13 @@
 import type * as BABYLON from 'babylonjs'
 import * as GUI from 'babylonjs-gui'
-import type { LogManager } from '../../log-manager';
+import { logManager } from '../../log-manager';
 import { signalHub } from '../../signalHub';
 
 import { pre, a, div, g } from '../helpers';
 
 export class MenuPageLogs extends GUI.Container {
     public textBlock: GUI.TextBlock
-    constructor(public logManager: LogManager) {
+    constructor() {
         super()
         this.name = "menu_page_logs"
         this.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
@@ -23,7 +23,7 @@ export class MenuPageLogs extends GUI.Container {
             )
         )
         const subscription = signalHub.local.on('new_log').subscribe(() => {
-            this.textBlock.text = this.logManager.recentLogsAsText()
+            this.textBlock.text = logManager.recentLogsAsText()
         })
         this.onDisposeObservable.addOnce(() => {
             subscription.unsubscribe()
@@ -37,7 +37,7 @@ export class MenuPageLogs extends GUI.Container {
                 textHorizontalAlignment: GUI.Control.HORIZONTAL_ALIGNMENT_LEFT,
                 textVerticalAlignment: GUI.Control.VERTICAL_ALIGNMENT_TOP,
                 height: "900px",
-                text: this.logManager.recentLogsAsText()
+                text: logManager.recentLogsAsText()
             })
         this.textBlock = text as unknown as GUI.TextBlock
         return text
