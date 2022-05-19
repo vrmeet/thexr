@@ -29,6 +29,10 @@ gigalixir ps:migrate
 
 - login to gigalixr if on free tier just delete and recreate db
 
+## To deploy a different branch to gigalixir
+
+git push gigalixir yourbranch:master
+
 ## Learn more
 
   * Official website: https://www.phoenixframework.org/
