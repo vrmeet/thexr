@@ -27,6 +27,12 @@
     let didInteract = false;
     let showAvatarAndNickNameForm = false;
     let showMicAndOutputForm = false;
+    console.log(navigator.userAgent.toLowerCase());
+    let isOculus =
+        navigator.userAgent.toLowerCase().indexOf("oculus") > -1 ||
+        navigator.userAgent.toLowerCase().indexOf("vr") > -1
+            ? true
+            : false;
 
     const micConfirmed = () => {
         const micChoice = sessionPersistance.getMicAndOutputChoice();
@@ -47,7 +53,7 @@
         sessionPersistance.saveNickname({ nickname });
         orchestrator.memberStates.update_my_nickname(nickname);
         showAvatarAndNickNameForm = false;
-        if (!micConfirmed()) {
+        if (!isOculus && !micConfirmed()) {
             showMicAndOutputForm = true;
         } else {
             ready();
