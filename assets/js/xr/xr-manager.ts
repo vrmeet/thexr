@@ -1,7 +1,7 @@
 import * as BABYLON from 'babylonjs'
 import { signalHub } from '../signalHub'
-import { arrayReduceSigFigs, reduceSigFigs } from '../utils'
-import { Observable, single } from 'rxjs'
+import { Observable } from 'rxjs'
+import { filter } from "rxjs/operators"
 import { TeleportationManager } from './xr-teleportation-manager'
 import type { xr_component } from '../types'
 import type { Orchestrator } from '../orchestrator'
@@ -36,16 +36,7 @@ export class XRManager {
             enableHeadsetImpostor: false
         })
 
-
-
         this.teleportationManager = new TeleportationManager(this.xrHelper, this.scene)
-
-        // signalHub.local.on('xr_component_changed').subscribe(value => {
-        //     console.log('xr_component_changed', value)
-        // })
-        // signalHub.movement.on("controller_moved").subscribe(value => {
-        //     console.log('controller moved', value)
-        // })
 
         this.xrHelper.baseExperience.onStateChangedObservable.add(state => {
             signalHub.local.emit('xr_state_changed', state)
@@ -99,10 +90,26 @@ export class XRManager {
         })
     }
 
+    setupVibration(motionController: BABYLON.WebXRAbstractMotionController) {
+        let inPulse = false
+        signalHub.local.on("pulse").pipe(
+            filter(val => (val.hand === motionController.handedness))
+        ).subscribe(async (val) => {
+            if (inPulse) {
+                return
+            }
+            inPulse = true
+            await motionController.pulse(val.intensity, val.duration)
+            inPulse = false
+        })
+    }
+
     initController(inputSource: BABYLON.WebXRInputSource, motionController: BABYLON.WebXRAbstractMotionController) {
 
         this.setupSendHandPosRot(inputSource)
         this.setupSendComponentData(motionController)
+        this.setupVibration(motionController)
+
         new XRGripManager(this.orchestrator, inputSource, motionController, this.controllerPhysicsFeature.getImpostorForController(inputSource))
 
         const payload = {
