@@ -11,7 +11,7 @@
         // "mjmcloug.vscode-elixir",
         "jakebecker.elixir-ls",
         "phoenixframework.phoenix",
-        "JamesBirtles.svelte-vscode"
+        "svelte.svelte-vscode"
         // "florinpatrascu.vscode-elixir-snippets",
     ],
     "remoteEnv": {
