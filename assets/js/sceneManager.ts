@@ -14,6 +14,7 @@ import { DamageOverlay } from "./damage-overlay";
 import type { event } from "./types"
 import { HudMessager } from "./hud-message";
 import { BulletManager } from "./scene/bullet-manager";
+import { CrowdAgent } from "./scene/crowd-agent";
 
 
 const ANIMATION_FRAME_PER_SECOND = 60
@@ -34,6 +35,7 @@ export class SceneManager {
     public member_id: string
     public serializedSpace: serialized_space
     public bulletManager: BulletManager
+    public crowdAgent: CrowdAgent
 
 
     public navigationPlugin: BABYLON.RecastJSPlugin
@@ -56,55 +58,8 @@ export class SceneManager {
             await this.xrManager.enableWebXRExperience()
             this.menuManager = new MenuManager(this.orchestrator)
 
-            new DamageOverlay(this.orchestrator)
-            new HudMessager(this.scene)
-            this.bulletManager = new BulletManager(this.scene)
-
-            // test of agent
-            if (false && this.navigationPlugin) {
-                let enemy = BABYLON.MeshBuilder.CreateBox("enemy", { width: 1, depth: 1, height: 2 }, this.scene)
-                // enemy.position.y = 2
-                let crowd = this.navigationPlugin.createCrowd(10, 0.5, this.scene)
-                const agentParams = {
-                    radius: 1,
-                    height: 2,
-                    maxAcceleration: 4.0,
-                    maxSpeed: 1.0,
-                    collisionQueryRange: 0.5,
-                    pathOptimizationRange: 0.0,
-                    separationWeight: 1.0
-                };
-
-                const agentIndex = crowd.addAgent(BABYLON.Vector3.FromArray([0, 1, 0]), agentParams, enemy)
-                this.scene.onBeforeRenderObservable.add(() => {
-                    // move agent toward next target
-                    enemy.position = crowd.getAgentPosition(agentIndex)
-                    let vel = crowd.getAgentVelocity(agentIndex);
-                    //crowd.getAgentNextTargetPathToRef(agentIndex, ag.target.position);
-                    if (vel.length() > 0.2) {
-                        vel.normalize();
-                        var desiredRotation = Math.atan2(vel.x, vel.z);
-                        enemy.rotation.y = enemy.rotation.y + (desiredRotation - enemy.rotation.y) * 0.05;
-                    }
-
-                })
-                crowd['onReachTargetObservable'].add((agentInfos) => {
-                    //console.log("agent reach destination: ", agentInfos.agentIndex);
-                    signalHub.incoming.emit("event", { m: "member_damaged", p: { member_id: this.member_id } })
-                    signalHub.local.emit("pulse", { hand: "left", intensity: 0.3, duration: 120 })
-                    signalHub.local.emit("pulse", { hand: "right", intensity: 0.3, duration: 120 })
-                });
-
-                // crowd  .add((agentInfos) => {
-                //     console.log("agent reach destination: ", agentInfos.agentIndex);
-                // });
-                setInterval(async () => {
-                    //  console.log("send agent to", this.scene.activeCamera.position)
-                    crowd.agentGoto(agentIndex, this.scene.activeCamera.position);
 
 
-                }, 1000)
-            }
         })
     }
 
@@ -277,6 +232,12 @@ export class SceneManager {
         // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
         var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), this.scene);
         this.parseInitialScene(this.entities)
+
+        new DamageOverlay(this.orchestrator)
+        new HudMessager(this.scene)
+        this.bulletManager = new BulletManager(this)
+
+
         return this.scene;
 
     }
@@ -394,6 +355,7 @@ export class SceneManager {
     parseInitialScene(entities) {
         const meshes = entities.map(entity => this.findOrCreateMesh(entity))
         this.createNavMesh(meshes)
+        this.crowdAgent = new CrowdAgent(this)
     }
 
     async createNavMesh(meshes: BABYLON.Mesh[]) {
@@ -463,7 +425,7 @@ export class SceneManager {
 
             if (entity.type === "box") {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, {}, this.scene)
-                BABYLON.Tags.AddTagsTo(mesh, "teleportable")
+                BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable targetable")
             } else if (entity.type === "cylinder") {
                 mesh = BABYLON.MeshBuilder.CreateCylinder(entity.name, {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable targetable")
@@ -481,9 +443,10 @@ export class SceneManager {
                 BABYLON.Tags.AddTagsTo(mesh, "interactable shootable")
             } else if (entity.type === "capsule") {
                 mesh = BABYLON.MeshBuilder.CreateCapsule("capsule", {}, this.scene)
-                BABYLON.Tags.AddTagsTo(mesh, "interactable physics")
+                BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
             } else if (entity.type === "plane") {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
+                BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
             } else if (entity.type === "grid") {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { size: 25, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
 
@@ -495,8 +458,10 @@ export class SceneManager {
 
             } else if (entity.type === "sphere") {
                 mesh = BABYLON.MeshBuilder.CreateSphere(entity.name, {}, this.scene)
+                BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
             } else if (entity.type === "cone") {
                 mesh = BABYLON.MeshBuilder.CreateCylinder(entity.name, { diameterTop: 0 }, this.scene)
+                BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
             }
             if (mesh) {
                 mesh.id = entity.id
