@@ -45,7 +45,11 @@ defmodule Thexr.SpaceServer do
   end
 
   def ets_refs(space_id) do
-    GenServer.call(via_tuple(space_id), :get_ets_refs)
+    if pid(space_id) == nil do
+      {:error, :process_not_found}
+    else
+      GenServer.call(via_tuple(space_id), :get_ets_refs)
+    end
   end
 
   def summary(space_id) do
