@@ -53,7 +53,10 @@
         sessionPersistance.saveNickname({ nickname });
         orchestrator.memberStates.update_my_nickname(nickname);
         showAvatarAndNickNameForm = false;
-        if (!isOculus && !micConfirmed()) {
+        if (isOculus) {
+            return ready();
+        }
+        if (!micConfirmed()) {
             showMicAndOutputForm = true;
         } else {
             ready();
