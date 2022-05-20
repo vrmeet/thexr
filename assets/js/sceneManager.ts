@@ -9,8 +9,10 @@ import { reduceSigFigs } from "./utils";
 import { XRManager } from "./xr/xr-manager";
 import type { Orchestrator } from "./orchestrator";
 import { signalHub } from "./signalHub";
+import { DamageOverlay } from "./damage-overlay";
 
 import type { event } from "./types"
+import { HudMessager } from "./hud-message";
 
 
 const ANIMATION_FRAME_PER_SECOND = 60
@@ -51,6 +53,10 @@ export class SceneManager {
             this.xrManager = new XRManager(this.orchestrator)
             await this.xrManager.enableWebXRExperience()
             this.menuManager = new MenuManager(this.orchestrator)
+
+            new DamageOverlay(this.orchestrator)
+            new HudMessager(this.scene)
+
             // test of agent
             if (this.navigationPlugin) {
                 let enemy = BABYLON.MeshBuilder.CreateBox("enemy", { width: 1, depth: 1, height: 2 }, this.scene)
@@ -65,6 +71,7 @@ export class SceneManager {
                     pathOptimizationRange: 0.0,
                     separationWeight: 1.0
                 };
+
                 const agentIndex = crowd.addAgent(BABYLON.Vector3.FromArray([0, 1, 0]), agentParams, enemy)
                 this.scene.onBeforeRenderObservable.add(() => {
                     // move agent toward next target
@@ -78,9 +85,20 @@ export class SceneManager {
                     }
 
                 })
-                setInterval(() => {
+                crowd['onReachTargetObservable'].add((agentInfos) => {
+                    //console.log("agent reach destination: ", agentInfos.agentIndex);
+                    signalHub.incoming.emit("event", { m: "member_damaged", p: { member_id: this.member_id } })
+                    signalHub.local.emit("pulse", { hand: "left", intensity: 0.5, duration: 250 })
+                });
+
+                // crowd  .add((agentInfos) => {
+                //     console.log("agent reach destination: ", agentInfos.agentIndex);
+                // });
+                setInterval(async () => {
                     //  console.log("send agent to", this.scene.activeCamera.position)
-                    crowd.agentGoto(agentIndex, this.scene.activeCamera.position)
+                    crowd.agentGoto(agentIndex, this.scene.activeCamera.position);
+
+
                 }, 1000)
             }
         })

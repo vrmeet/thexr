@@ -10,7 +10,8 @@
     "extensions": [
         // "mjmcloug.vscode-elixir",
         "jakebecker.elixir-ls",
-        "phoenixframework.phoenix"
+        "phoenixframework.phoenix",
+        "JamesBirtles.svelte-vscode"
         // "florinpatrascu.vscode-elixir-snippets",
     ],
     "remoteEnv": {

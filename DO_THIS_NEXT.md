@@ -1,6 +1,19 @@
 TODO:
 
+- display hud message when members enter or leave a room
+- display damage if hit by other members bullet
+
+
+=== 
+
+
+
 The UI still sucks:
+
+  - a menu to draw enclosed rooms,
+  - then cut windows and door holes
+
+  
 
   But I really like not having to deal with another software to save an artifact,
   upload it and import it into the space
