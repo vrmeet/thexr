@@ -1,15 +1,18 @@
 import * as BABYLON from "babylonjs"
+import type { SceneManager } from "../sceneManager"
 import { signalHub } from "../signalHub"
 import type { event } from "../types"
 
 const FRAME_RATE = 60
 
 export class BulletManager {
+    public scene: BABYLON.Scene
     public bulletParticle: BABYLON.IParticleSystem
     public ray: BABYLON.Ray
     public rayHelper: BABYLON.RayHelper
 
-    constructor(public scene: BABYLON.Scene) {
+    constructor(public sceneManager: SceneManager) {
+        this.scene = sceneManager.scene
         this.createBulletParticle()
         this.ray = new BABYLON.Ray(BABYLON.Vector3.Zero(), BABYLON.Vector3.One(), 1)
         this.rayHelper = new BABYLON.RayHelper(this.ray)
@@ -62,7 +65,34 @@ export class BulletManager {
                 this.scene.unregisterBeforeRender(checkBulletForIntersect)
             })
 
+        const removeTargetable = (pickedMesh: BABYLON.AbstractMesh) => {
+            // if is crowdAgent, remove that first, so we can move it freely
+            console.log("metadata", pickedMesh.metadata)
+            if (pickedMesh.metadata && pickedMesh.metadata.agentIndex !== undefined) {
+                this.sceneManager.crowdAgent.crowd.removeAgent(pickedMesh.metadata.agentIndex)
+                if (pickedMesh.parent) {
+                    pickedMesh.setParent(null)
 
+                }
+            }
+            if (pickedMesh.physicsImpostor) {
+                pickedMesh.physicsImpostor.setAngularVelocity(BABYLON.Vector3.Zero())
+                pickedMesh.physicsImpostor.setLinearVelocity(BABYLON.Vector3.Zero())
+                pickedMesh.physicsImpostor.dispose()
+                pickedMesh.physicsImpostor = null
+            }
+            this.scene.stopAnimation(pickedMesh)
+            setTimeout(() => {
+                pickedMesh.physicsImpostor = new BABYLON.PhysicsImpostor(pickedMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, friction: 0.8, restitution: 0.5 }, this.scene);
+                pickedMesh.physicsImpostor.setLinearVelocity(this.ray.direction.scale(100))
+            }, 50)
+            // pickedMesh.physicsImpostor.setAngularVelocity(BABYLON.Vector3.FromArray(mpts.p.av))
+            // setTimeout(() => {
+            //     const event: event = { m: "entity_deleted", p: { id: pickedMesh.id } }
+            //     signalHub.outgoing.emit("event", event)
+            //     signalHub.incoming.emit("event", event)
+            // }, 5000)
+        }
 
 
         let checkBulletForIntersect = () => {
@@ -73,17 +103,13 @@ export class BulletManager {
             this.ray.length = 2 * speed / distance
 
             const hitTest = this.scene.pickWithRay(this.ray)
-            if (hitTest.pickedMesh && <string[]>BABYLON.Tags.GetTags(hitTest.pickedMesh)?.includes("targetable")) {
+            if (hitTest.pickedMesh) {
                 this.scene.unregisterAfterRender(checkBulletForIntersect)
                 animation.stop()
-                hitTest.pickedMesh.physicsImpostor = new BABYLON.PhysicsImpostor(hitTest.pickedMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, friction: 0.8, restitution: 0.5 }, this.scene);
-                hitTest.pickedMesh.physicsImpostor.setLinearVelocity(this.ray.direction.scale(100))
-                // hitTest.pickedMesh.physicsImpostor.setAngularVelocity(BABYLON.Vector3.FromArray(mpts.p.av))
-                setTimeout(() => {
-                    const event: event = { m: "entity_deleted", p: { id: hitTest.pickedMesh.id } }
-                    signalHub.outgoing.emit("event", event)
-                    signalHub.incoming.emit("event", event)
-                }, 5000)
+
+                if (<string[]>BABYLON.Tags.GetTags(hitTest.pickedMesh)?.includes("targetable")) {
+                    removeTargetable(hitTest.pickedMesh)
+                }
 
                 removeBullet()
             }
