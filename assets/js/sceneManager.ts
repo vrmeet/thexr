@@ -87,8 +87,9 @@ export class SceneManager {
                 })
                 crowd['onReachTargetObservable'].add((agentInfos) => {
                     //console.log("agent reach destination: ", agentInfos.agentIndex);
-                    signalHub.incoming.emit("event", { m: "member_damaged", p: { member_id: this.member_id } })
-                    signalHub.local.emit("pulse", { hand: "left", intensity: 0.5, duration: 250 })
+                    //  signalHub.incoming.emit("event", { m: "member_damaged", p: { member_id: this.member_id } })
+                    signalHub.local.emit("pulse", { hand: "left", intensity: 0.3, duration: 120 })
+                    signalHub.local.emit("pulse", { hand: "right", intensity: 0.3, duration: 120 })
                 });
 
                 // crowd  .add((agentInfos) => {
