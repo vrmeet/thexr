@@ -13,6 +13,7 @@ import { DamageOverlay } from "./damage-overlay";
 
 import type { event } from "./types"
 import { HudMessager } from "./hud-message";
+import { BulletManager } from "./scene/bullet-manager";
 
 
 const ANIMATION_FRAME_PER_SECOND = 60
@@ -32,8 +33,9 @@ export class SceneManager {
     public canvasId: string
     public member_id: string
     public serializedSpace: serialized_space
+    public bulletManager: BulletManager
 
-    public bulletParticle: BABYLON.IParticleSystem
+
     public navigationPlugin: BABYLON.RecastJSPlugin
 
 
@@ -56,9 +58,10 @@ export class SceneManager {
 
             new DamageOverlay(this.orchestrator)
             new HudMessager(this.scene)
+            this.bulletManager = new BulletManager(this.scene)
 
             // test of agent
-            if (this.navigationPlugin) {
+            if (false && this.navigationPlugin) {
                 let enemy = BABYLON.MeshBuilder.CreateBox("enemy", { width: 1, depth: 1, height: 2 }, this.scene)
                 // enemy.position.y = 2
                 let crowd = this.navigationPlugin.createCrowd(10, 0.5, this.scene)
@@ -218,47 +221,9 @@ export class SceneManager {
 
                 }
             } else if (mpts.m === "entity_trigger_squeezed") {
-
-                let distance = 30 // meters
-                let bullet = BABYLON.MeshBuilder.CreateCapsule("bullet", {
-                    height: 0.1,
-                    radiusTop: 0.03, radiusBottom: 0.05
-                }, this.scene)
-                // set bullet position
-                bullet.position.fromArray(mpts.p.pos)
-
-                let ray = new BABYLON.Ray(bullet.position, BABYLON.Vector3.FromArray(mpts.p.direction), distance)
-                // see if we hit something within the distance
-                let rayhit = this.scene.pickWithRay(ray)
-                let hitSomething = false;
-                if (rayhit.pickedMesh && <string[]>BABYLON.Tags.GetTags(rayhit.pickedMesh)?.includes("targetable")) {
-                    hitSomething = true;
-                    distance = rayhit.distance
-                }
-                // animation target point
-                let target = bullet.position.add(BABYLON.Vector3.FromArray(mpts.p.direction).scale(distance))
-                bullet.lookAt(target, null, BABYLON.Angle.FromDegrees(90).radians())
-                let system = this.bulletParticle.clone("", bullet)
-                system.start()
+                this.bulletManager.fireBullet(mpts.p.pos, mpts.p.direction, 30)
 
 
-
-
-                BABYLON.Animation.CreateAndStartAnimation("bullet", bullet,
-                    "position", 60, 2 * distance, bullet.position.clone(), target, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, null, () => {
-                        system.stop()
-                        bullet.visibility = 0
-                        setTimeout(() => {
-                            system.dispose()
-                            bullet.dispose()
-                        }, 2000)
-
-                        if (hitSomething) {
-                            const event: event = { m: "entity_deleted", p: { id: rayhit.pickedMesh.id } }
-                            signalHub.outgoing.emit("event", event)
-                            signalHub.incoming.emit("event", event)
-                        }
-                    });
             }
         })
 
@@ -291,17 +256,13 @@ export class SceneManager {
 
     }
 
-    async createBulletParticle() {
-        this.bulletParticle = await BABYLON.ParticleHelper.CreateFromSnippetAsync("HYB2FR#51", this.scene, false, "https://www.babylonjs-playground.com/")
-        this.bulletParticle.stop()
-    }
+
 
 
     async createScene() {
         // Create a basic BJS Scene object
         this.scene = new BABYLON.Scene(this.engine);
 
-        this.createBulletParticle()
 
         var gravityVector = new BABYLON.Vector3(0, -9.81, 0);
         const ammo = await Ammo()
