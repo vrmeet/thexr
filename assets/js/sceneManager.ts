@@ -470,8 +470,8 @@ export class SceneManager {
         //  this.navigationPlugin.buildFromNavmeshData(navMeshData)
         const navmeshdebug = this.navigationPlugin.createDebugNavMesh(this.scene);
         var matdebug = new BABYLON.StandardMaterial("matdebug", this.scene);
-        matdebug.diffuseColor = new BABYLON.Color3(1, 0, 0);
-        matdebug.alpha = 0.5;
+        matdebug.diffuseColor = new BABYLON.Color3(0, 0, 1);
+        matdebug.alpha = 0.3;
         navmeshdebug.material = matdebug;
         // })
 

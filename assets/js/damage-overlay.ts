@@ -38,7 +38,7 @@ export class DamageOverlay {
         this.scene.fogColor = BABYLON.Color3.Red()
         const a = new BABYLON.Animation("damage", "fogDensity", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
         const keyFrames = [];
-        const rate = 60
+        const rate = 30
         keyFrames.push({
             frame: 0,
             value: 0,
