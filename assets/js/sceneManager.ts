@@ -10,8 +10,7 @@ import { XRManager } from "./xr/xr-manager";
 import type { Orchestrator } from "./orchestrator";
 import { signalHub } from "./signalHub";
 import { DamageOverlay } from "./damage-overlay";
-
-import type { event } from "./types"
+import { isMobileVR } from "./utils";
 import { HudMessager } from "./hud-message";
 import { BulletManager } from "./scene/bullet-manager";
 import { CrowdAgent } from "./scene/crowd-agent";
@@ -57,6 +56,9 @@ export class SceneManager {
             this.xrManager = new XRManager(this.orchestrator)
             await this.xrManager.enableWebXRExperience()
             this.menuManager = new MenuManager(this.orchestrator)
+            if (isMobileVR()) {
+                this.xrManager.enterXR()
+            }
 
 
 

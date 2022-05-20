@@ -7,6 +7,7 @@
     import { sessionPersistance } from "./sessionPersistance";
     import { initClient, operationStore, query } from "@urql/svelte";
     import type { Orchestrator } from "./orchestrator";
+    import { isMobileVR } from "./utils";
 
     initClient({
         url: "/api",
@@ -27,12 +28,6 @@
     let didInteract = false;
     let showAvatarAndNickNameForm = false;
     let showMicAndOutputForm = false;
-    console.log(navigator.userAgent.toLowerCase());
-    let isOculus =
-        navigator.userAgent.toLowerCase().indexOf("oculus") > -1 ||
-        navigator.userAgent.toLowerCase().indexOf("vr") > -1
-            ? true
-            : false;
 
     const micConfirmed = () => {
         const micChoice = sessionPersistance.getMicAndOutputChoice();
@@ -53,7 +48,8 @@
         sessionPersistance.saveNickname({ nickname });
         orchestrator.memberStates.update_my_nickname(nickname);
         showAvatarAndNickNameForm = false;
-        if (isOculus) {
+        if (isMobileVR()) {
+            // no need to check mic and speaker, there is only one option
             return ready();
         }
         if (!micConfirmed()) {

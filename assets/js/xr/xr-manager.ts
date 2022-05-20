@@ -20,6 +20,14 @@ export class XRManager {
         this.inXR = false
     }
 
+    enterXR() {
+        return this.xrHelper.baseExperience.enterXRAsync("immersive-vr", "local-floor" /*, optionalRenderTarget */);
+    }
+
+    exitXR() {
+        return this.xrHelper.baseExperience.exitXRAsync()
+    }
+
     async enableWebXRExperience() {
         if (!navigator['xr']) {
             return
@@ -59,7 +67,6 @@ export class XRManager {
 
 
         this.setupEmitCameraMovement()
-
 
 
 
