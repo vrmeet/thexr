@@ -143,7 +143,7 @@ export class SceneManager {
                     grabbedEntity.physicsImpostor.dispose()
                     grabbedEntity.physicsImpostor = null
                 }
-                let handMesh = this.scene.getMeshByName(`avatar_${mpts.p.member_id}_${mpts.p.hand}`)
+                let handMesh = this.findOrCreateAvatarHand(mpts.p.member_id, mpts.p.hand, mpts.p.hand_pos_rot)
                 if (grabbedEntity && handMesh) {
 
                     if (mpts.p.member_id !== this.member_id) {
@@ -169,7 +169,7 @@ export class SceneManager {
                 }
             } else if (mpts.m === "entity_released") {
                 let grabbedEntity = this.scene.getMeshById(mpts.p.entity_id)
-                let handMesh = this.scene.getMeshByName(`avatar_${mpts.p.member_id}_${mpts.p.hand}`)
+                let handMesh = this.findOrCreateAvatarHand(mpts.p.member_id, mpts.p.hand, mpts.p.hand_pos_rot)
                 if (grabbedEntity && handMesh) {
                     if (mpts.p.member_id === this.member_id) {
 
@@ -214,7 +214,7 @@ export class SceneManager {
         }
     }
 
-    findOrCreateAvatarHand(member_id: string, hand: string, pos_rot: PosRot) {
+    findOrCreateAvatarHand(member_id: string, hand: string, pos_rot: PosRot): BABYLON.AbstractMesh {
         let mesh = this.scene.getMeshByName(`avatar_${member_id}_${hand}`)
         if (!mesh) {
             mesh = BABYLON.MeshBuilder.CreateBox(`avatar_${member_id}_${hand}`, { size: 0.1 }, this.scene)
@@ -225,7 +225,7 @@ export class SceneManager {
             this.animateComponent(mesh, { type: "position", data: { value: pos_rot.pos } })
             this.animateComponent(mesh, { type: "rotation", data: { value: pos_rot.rot } })
         }
-
+        return mesh
     }
 
 
@@ -260,13 +260,13 @@ export class SceneManager {
     }
 
 
-    removeAvatar(id) {
-        let box = this.scene.getMeshByName(`avatar_${id}`)
+    removeAvatar(member_id: string) {
+        let box = this.scene.getMeshByName(`avatar_${member_id}`)
         if (box) {
             box.dispose()
         }
-        this.removeAvatarHand(id, "left")
-        this.removeAvatarHand(id, "right")
+        this.removeAvatarHand(member_id, "left")
+        this.removeAvatarHand(member_id, "right")
     }
 
     findOrCreateAvatar(member_id: string) {

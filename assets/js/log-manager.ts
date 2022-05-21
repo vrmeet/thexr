@@ -39,12 +39,14 @@ export class LogManager {
                     const newArgs = [this.getTimestamp(), ...args]
                     old_console_warn(...args)
                     this.addLog(...newArgs)
+                    this.flashError(...args)
                 }
             case LogLevel.ERROR:
                 window.console.error = (...args) => {
                     const newArgs = [this.getTimestamp(), ...args]
                     old_console_error(...args)
                     this.addLog(...newArgs)
+                    this.flashError(...args)
                 }
 
         }
@@ -57,6 +59,10 @@ export class LogManager {
     addLog(...args) {
         this.recentLogs = [args, ...this.recentLogs.slice(0, 99)]
         signalHub.local.emit('new_log', {})
+    }
+
+    flashError(...args) {
+        signalHub.local.emit("hud_msg", this.rowToString(args))
     }
 
     getTimestamp() {
