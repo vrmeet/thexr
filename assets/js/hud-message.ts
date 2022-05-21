@@ -3,7 +3,7 @@ import * as BABYLON from "babylonjs"
 import * as GUI from "babylonjs-gui"
 
 import { merge, interval } from 'rxjs'
-import { scan, map, debounceTime, mapTo, tap } from 'rxjs/operators'
+import { scan, map, debounceTime, mapTo, tap, filter } from 'rxjs/operators'
 import { signalHub } from "./signalHub"
 
 const MSG_DURATION = 3000 // ms
@@ -14,6 +14,7 @@ export class HudMessager {
     texture: GUI.AdvancedDynamicTexture
     guiText: GUI.TextBlock
     animation: BABYLON.Animatable
+    timeout: any
 
     constructor(public scene: BABYLON.Scene) {
         const utilLayer = BABYLON.UtilityLayerRenderer.DefaultUtilityLayer
@@ -48,17 +49,26 @@ export class HudMessager {
                 }
             )
         ).subscribe(msgs => {
+            if (this.timeout) {
+                clearTimeout(this.timeout)
+            }
             this.showHudMessages(msgs)
+            this.timeout = setTimeout(() => {
+                if (this.label.visibility > 0) {
+                    this.animation = BABYLON.Animation.CreateAndStartAnimation("", this.label, "visibility", 60, 10 * 30, this.label.visibility, 0, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT)
+                }
+            }, MSG_DURATION)
         })
 
-        // as messages come in, wait 3 seconds then hide the messages, but if more messages come in keep them up
-        signalHub.local.on("hud_msg").pipe(
-            debounceTime(MSG_DURATION)
-        ).subscribe(() => {
-            if (this.label.visibility > 0) {
-                this.animation = BABYLON.Animation.CreateAndStartAnimation("", this.label, "visibility", 60, 10 * 30, this.label.visibility, 0, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT)
-            }
+
+        // show on screen the broadcasted message from another player
+        signalHub.incoming.on("event").pipe(
+            filter(msg => (msg.m === "message_broadcasted"))
+        ).subscribe(event => {
+            signalHub.local.emit("hud_msg", event.p['msg'])
         })
+
+
 
 
 

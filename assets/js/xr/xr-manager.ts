@@ -48,15 +48,16 @@ export class XRManager {
 
         this.xrHelper.baseExperience.onStateChangedObservable.add(state => {
             signalHub.local.emit('xr_state_changed', state)
-
-            // switch (state) {
-            //     case BABYLON.WebXRState.IN_XR:
-            //         this.inXR = true;
-            //         break;
-            //     case BABYLON.WebXRState.NOT_IN_XR:
-            //         this.inXR = false;
-            //         break;
-            // }
+            signalHub.outgoing.emit("event", { m: "message_broadcasted", p: { member_id: this.orchestrator.member_id, msg: `state ${state}` } })
+            // hold state so menu gui knows if we're rendering UI for fullscreen or XR
+            switch (state) {
+                case BABYLON.WebXRState.IN_XR:
+                    this.inXR = true;
+                    break;
+                case BABYLON.WebXRState.NOT_IN_XR:
+                    this.inXR = false;
+                    break;
+            }
             // if (state === BABYLON.WebXRState.ENTERING_XR) {
             //     //   this.teleporationManager.populateTeleporationWithFloors()
             // }
@@ -74,6 +75,7 @@ export class XRManager {
         let xrInput = this.xrHelper.input
 
         xrInput.onControllerAddedObservable.add(inputSource => {
+
             if (inputSource.inputSource.handedness === 'left') {
                 this.left_input_source = inputSource
             } else {
@@ -84,6 +86,9 @@ export class XRManager {
             })
         })
 
+        xrInput.onControllerRemovedObservable.add(() => {
+            signalHub.outgoing.emit("event", { m: "message_broadcasted", p: { member_id: this.orchestrator.member_id, msg: "controller removed" } })
+        })
 
 
     }
@@ -152,6 +157,8 @@ export class XRManager {
                 pos: inputSource.grip.absolutePosition.asArray(),
                 rot: inputSource.grip.absoluteRotationQuaternion.asArray()
             })
+
+
         })
 
     }

@@ -118,23 +118,31 @@ export class MenuManager {
 
 
     createVRMenuOverlay() {
+        const utilLayer = BABYLON.UtilityLayerRenderer.DefaultUtilityLayer
+
         this.wristPlane = BABYLON.MeshBuilder.CreatePlane("wrist_plane", { height: 0.1, width: 0.1 }, this.scene)
         this.wristPlane.showBoundingBox = true
         // this.wristPlane.position.z = 0.1
         // this.wristPlane.position.x = 0.05
         this.wristPlane.position.y = 0.05
-        this.wristPlane.rotation.x = 1
+        this.wristPlane.rotation.x = BABYLON.Angle.FromDegrees(60).radians()
 
 
         this.wristPlane.parent = this.sceneManager.xrManager.left_input_source.grip
         this.wristGui = GUI.AdvancedDynamicTexture.CreateForMesh(this.wristPlane, 256, 256)
 
-        this.browsePlane = BABYLON.MeshBuilder.CreatePlane("browse_plane", { height: 1, width: 1 }, this.scene)
+        this.browsePlane = BABYLON.MeshBuilder.CreatePlane("browse_plane", { height: 0.5, width: 0.5 }, this.scene)
         this.browsePlane.showBoundingBox = true
         this.browsePlane.setEnabled(false)
-        this.browsePlane.position.z = 0.6
-        this.browsePlane.position.y = 0.2
-        this.browsePlane.rotation.x = 1.06
+
+        this.browsePlane.position = new BABYLON.Vector3(0.3, 0.02, 0.4)
+        this.browsePlane.rotation.x = BABYLON.Angle.FromDegrees(60).radians()
+
+        //  this.browsePlane.position.z = 0.5
+        //  this.browsePlane.position.y = -0.3
+        //   this.browsePlane.rotation.y = BABYLON.Angle.FromDegrees(-60).radians()
+        //  this.browsePlane.rotation.x = BABYLON.Angle.FromDegrees(45).radians()
+
         this.browsePlane.parent = this.sceneManager.xrManager.left_input_source.grip
 
         this.browseGui = GUI.AdvancedDynamicTexture.CreateForMesh(this.browsePlane, 640, 640)

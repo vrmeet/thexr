@@ -161,11 +161,14 @@ export class SpaceBroker {
 
 
             if (data.left && data.right) {
+
                 signalHub.outgoing.emit("event", {
                     m: "member_moved",
                     p: { member_id: this.member_id, pos_rot: data.cam, left: data.left, right: data.right }
                 })
             } else {
+                signalHub.outgoing.emit("event", { m: "message_broadcasted", p: { member_id: this.orchestrator.member_id, msg: `no hands` } })
+
                 signalHub.outgoing.emit("event", {
                     m: "member_moved",
                     p: { member_id: this.member_id, pos_rot: data.cam }
