@@ -63,7 +63,8 @@ export type event =
     { m: "entity_grabbed", p: { member_id: string, entity_id: string, hand: string, hand_pos_rot: PosRot, entity_pos_rot: PosRot } } |
     { m: "entity_released", p: { member_id: string, entity_id: string, hand: string, hand_pos_rot: PosRot, entity_pos_rot: PosRot, lv?: number[], av?: number[] } } |
     { m: "entity_trigger_squeezed", p: { member_id: string, entity_id: string, pos: number[], direction: number[] } } |
-    { m: "member_damaged", p: { member_id: string } }
+    { m: "member_damaged", p: { member_id: string } } |
+    { m: "game_started", p: {} }
     // ["member_left", { member_id: string }] |
     // ["member_moved", { member_id: string, pos_rot: PosRot }]
 
