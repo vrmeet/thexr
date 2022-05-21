@@ -62,7 +62,6 @@ export class Orchestrator {
 window.addEventListener('DOMContentLoaded', async () => {
     console.log("about to await Recast")
     await window['Recast']()
-    console.log("finsihed await")
     const serializedSpace = window['serializedSpace']
     const member_id = window['member_id']
     const orchestrator = new Orchestrator('spaceCanvas', member_id, serializedSpace)

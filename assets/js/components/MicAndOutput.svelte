@@ -50,7 +50,6 @@
             audio: { deviceId: { exact: selectedMic } },
         };
         navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
-            console.log("stream", stream);
             navigator.mediaDevices.enumerateDevices().then(populateLists);
         });
     };

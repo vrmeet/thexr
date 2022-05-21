@@ -70,7 +70,6 @@ export class XRGripManager {
                     this.intersectedMeshTags = BABYLON.Tags.GetTags(mesh)
                 }),
                 tap((mesh) => {
-                    console.log(`${this.hand} grab`)
                     let event: event = {
                         m: "entity_grabbed",
                         p: this.createEventPayload()
@@ -124,10 +123,7 @@ export class XRGripManager {
         return race(
             // if other hand grabbed the same mesh away from the first hand
             signalHub.movement.on(`${this.other_hand}_grip_mesh`).pipe(
-                filter(mesh => (mesh.id === this.intersectedMesh.id)),
-                tap((val) => {
-                    console.log("other hand grabbed same object", val)
-                })
+                filter(mesh => (mesh.id === this.intersectedMesh.id))
             ),
             // another player stole our object
             signalHub.incoming.on("event").pipe(

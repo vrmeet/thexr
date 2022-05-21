@@ -45,12 +45,9 @@ export class CollaborativeEditTransformManager {
             if (evt.type === BABYLON.PointerEventTypes.POINTERPICK) {
                 let mesh = evt.pickInfo.pickedMesh
 
-                console.log('mesh', mesh.id, mesh.name, BABYLON.Tags.MatchesQuery(mesh, "editable"))
 
                 if (mesh && BABYLON.Tags.MatchesQuery(mesh, "editable")) {
                     this.selectMesh(mesh)
-                } else {
-                    console.log('no mesh found')
                 }
             }
 

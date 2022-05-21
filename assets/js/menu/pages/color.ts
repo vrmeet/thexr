@@ -70,7 +70,6 @@ export class MenuColor extends GUI.Container {
         picker.height = "150px";
         picker.width = "150px";
         picker.onValueChangedObservable.add((value) => {
-            console.log('color', value)
             this.currentColor = value
         });
         return picker

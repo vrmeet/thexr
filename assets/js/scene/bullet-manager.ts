@@ -67,7 +67,6 @@ export class BulletManager {
 
         const removeTargetable = (pickedMesh: BABYLON.AbstractMesh) => {
             // if is crowdAgent, remove that first, so we can move it freely
-            console.log("metadata", pickedMesh.metadata)
             if (pickedMesh.metadata && pickedMesh.metadata.agentIndex !== undefined) {
                 this.sceneManager.crowdAgent.crowd.removeAgent(pickedMesh.metadata.agentIndex)
                 if (pickedMesh.parent) {
@@ -104,7 +103,6 @@ export class BulletManager {
 
             const hitTest = this.scene.pickWithRay(this.ray)
             if (hitTest.pickedMesh) {
-                console.log("hit something")
                 this.scene.unregisterAfterRender(checkBulletForIntersect)
                 animation.stop()
 
@@ -113,7 +111,6 @@ export class BulletManager {
                 } else if (<string[]>BABYLON.Tags.GetTags(hitTest.pickedMesh)?.includes("targetable")) {
                     removeTargetable(hitTest.pickedMesh)
                 } else if (hitTest.pickedMesh.name.includes("plane_")) {
-                    console.log("hit a plane")
                     signalHub.outgoing.emit("event", { m: "game_started", p: {} })
                     signalHub.incoming.emit("event", { m: "game_started", p: {} })
 

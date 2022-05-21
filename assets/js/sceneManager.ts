@@ -60,21 +60,21 @@ export class SceneManager {
                 this.xrManager.enterXR()
             }
             // falling objects should not fall for ever
-            setInterval(() => {
-                console.log("checking meshes for falling")
-                const meshes = this.scene.getMeshesByTags("physics || targetable")
-                console.log("meshes count", meshes.length)
-                meshes.forEach(mesh => {
-                    console.log("mesh y", mesh.absolutePosition.y)
-                    if (mesh.absolutePosition.y < -10) {
-                        if (mesh.physicsImpostor) {
-                            mesh.physicsImpostor.dispose()
-                            mesh.physicsImpostor = null
-                        }
-                        mesh.position.copyFromFloats(Math.random() * 10 - 5, 1, Math.random() * 10 - 5)
-                    }
-                })
-            }, 10000)
+            // setInterval(() => {
+            //     console.log("checking meshes for falling")
+            //     const meshes = this.scene.getMeshesByTags("physics || targetable")
+            //     console.log("meshes count", meshes.length)
+            //     meshes.forEach(mesh => {
+            //         console.log("mesh y", mesh.absolutePosition.y)
+            //         if (mesh.absolutePosition.y < -10) {
+            //             if (mesh.physicsImpostor) {
+            //                 mesh.physicsImpostor.dispose()
+            //                 mesh.physicsImpostor = null
+            //             }
+            //             mesh.position.copyFromFloats(Math.random() * 10 - 5, 1, Math.random() * 10 - 5)
+            //         }
+            //     })
+            // }, 10000)
 
 
         })
@@ -507,7 +507,7 @@ export class SceneManager {
             case "position":
             case "scaling":
                 BABYLON.Animation.CreateAndStartAnimation("translate", mesh,
-                    component.type, ANIMATION_FRAME_PER_SECOND, TOTAL_ANIMATION_FRAMES, mesh[component.type].clone(), BABYLON.Vector3.FromArray(component.data.value), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                    component.type, ANIMATION_FRAME_PER_SECOND, TOTAL_ANIMATION_FRAMES, mesh[component.type], BABYLON.Vector3.FromArray(component.data.value), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
                 break;
             case "rotation":
                 const rawValue = component.data.value
@@ -518,9 +518,11 @@ export class SceneManager {
                 } else {
                     newQuaternion = BABYLON.Quaternion.FromArray(rawValue)
                 }
-
+                if (!mesh.rotationQuaternion) {
+                    mesh.rotationQuaternion = mesh.rotation.toQuaternion()
+                }
                 BABYLON.Animation.CreateAndStartAnimation("translate", mesh,
-                    "rotationQuaternion", ANIMATION_FRAME_PER_SECOND, TOTAL_ANIMATION_FRAMES, mesh.rotationQuaternion.clone(), newQuaternion, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                    "rotationQuaternion", ANIMATION_FRAME_PER_SECOND, TOTAL_ANIMATION_FRAMES, mesh.rotationQuaternion, newQuaternion, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
                 break;
             default:
                 console.error("unknown component", component)
