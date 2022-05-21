@@ -23,9 +23,18 @@ export class XRGripManager {
         this.other_hand = (this.hand === "left") ? "right" : "left"
 
         motionController.onModelLoadedObservable.add(model => {
-
-            this.palmMesh = BABYLON.MeshBuilder.CreateBox(`avatar_${this.orchestrator.member_id}_${this.hand}`, { width: 0.053, height: 0.08, depth: 0.1 }, this.scene)
+            const meshName = `avatar_${this.orchestrator.member_id}_${this.hand}`
+            // delete previous if there was some race condition or blip that made it
+            const foundMesh = this.scene.getMeshByName(meshName)
+            if (foundMesh) {
+                foundMesh.dispose()
+            }
+            this.palmMesh = BABYLON.MeshBuilder.CreateBox(meshName, { width: 0.053, height: 0.08, depth: 0.1 }, this.scene)
             this.palmMesh.showBoundingBox = true
+            let subscription = this.orchestrator.sceneManager.xrManager.setupSendHandPosRot(inputSource)
+            this.palmMesh.onDisposeObservable.add(() => {
+                subscription.unsubscribe()
+            })
             this.palmMesh.visibility = 0.5
             this.palmMesh.position = (this.hand[0] === "l") ? new BABYLON.Vector3(0.03, -0.05, 0.0) : new BABYLON.Vector3(-0.03, -0.05, 0.0)
             this.palmMesh.rotation.x = BABYLON.Angle.FromDegrees(45).radians()

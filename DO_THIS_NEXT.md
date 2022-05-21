@@ -1,12 +1,6 @@
 TODO:
 
 
-audio - my mic keeps dropping off!
-  -- posted on slack... dunno what solution is
-  -- either I was not joined to the channel
-  -- or my audio was not publishing
-  - or the remote sides were not subscribing and playing my audio
-  - did I unpublish my audio?
 
 == we need all the logs to come in so I can see them,
 need a logging solution
@@ -17,14 +11,20 @@ need a logging solution
 
 create primitive is not obvious, they don't know where they go
    -- something that works for VR and 2d
+   -- we need to white board out the UI
   
 hand tracking is mysteriously lost for immersive mode
    -- occationally can reproduce.  Not sure what solution is.
+   -- i think the movement stops being sent, and the hands get stuck
+   -- can we check if we're in XR and moving hands locally but not sending hand data?
+      - then somehow resume sending hand data?
 
 when grab a gun, - it disappears on you, it's like it was parented to something else
   -- oh,... if you have left over hands
   (need to clean-up left over hands)
   - how do you have two sets of meshes with the same name though...????
+   - some race condition
+     make sure when creating the hand mesh in observable that we clear any previous meshes of same name
 
 === 
 
