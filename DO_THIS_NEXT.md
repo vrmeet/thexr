@@ -1,9 +1,38 @@
 TODO:
 
-- display damage if hit by other members bullet
 
+audio - my mic keeps dropping off!
+  -- posted on slack... dunno what solution is
+  -- either I was not joined to the channel
+  -- or my audio was not publishing
+  - or the remote sides were not subscribing and playing my audio
+  - did I unpublish my audio?
+
+== we need all the logs to come in so I can see them,
+need a logging solution
+-> send all events to eventbridge
+     - send to FIFO SQS
+        -- lambda collect and write to dynamoDB (logs and events)
+        -- batch archive records to s3 large files
+
+create primitive is not obvious, they don't know where they go
+   -- something that works for VR and 2d
+  
+hand tracking is mysteriously lost for immersive mode
+   -- occationally can reproduce.  Not sure what solution is.
+
+when grab a gun, - it disappears on you, it's like it was parented to something else
+  -- oh,... if you have left over hands
+  (need to clean-up left over hands)
+  - how do you have two sets of meshes with the same name though...????
 
 === 
+
+allow typing
+allow creating of text signs
+image planes
+
+
 
 
 

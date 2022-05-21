@@ -37,7 +37,7 @@ export class SessionPersistance {
                 return null
             }
         } catch (e) {
-            console.error('tried to JSON.parse this value',)
+            console.error('tried to JSON.parse this value')
         }
     }
 

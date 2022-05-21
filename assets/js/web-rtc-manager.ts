@@ -47,9 +47,11 @@ export class WebRTCManager {
             distinctUntilChanged()
         ).subscribe(async should_join => {
             if (should_join) {
+                console.log("publishing my audio")
                 await this.webRTCClient.join(this.agora_app_id)
                 await this.webRTCClient.publishAudio()
             } else {
+                console.log("stopped my audio")
                 await this.webRTCClient.unpublishAudio()
                 await this.webRTCClient.leave()
             }

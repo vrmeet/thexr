@@ -48,7 +48,6 @@ export class XRManager {
 
         this.xrHelper.baseExperience.onStateChangedObservable.add(state => {
             signalHub.local.emit('xr_state_changed', state)
-            signalHub.outgoing.emit("event", { m: "message_broadcasted", p: { member_id: this.orchestrator.member_id, msg: `state ${state}` } })
             // hold state so menu gui knows if we're rendering UI for fullscreen or XR
             switch (state) {
                 case BABYLON.WebXRState.IN_XR:
@@ -85,11 +84,6 @@ export class XRManager {
                 this.initController(inputSource, abstractMotionController)
             })
         })
-
-        xrInput.onControllerRemovedObservable.add(() => {
-            signalHub.outgoing.emit("event", { m: "message_broadcasted", p: { member_id: this.orchestrator.member_id, msg: "controller removed" } })
-        })
-
 
     }
 

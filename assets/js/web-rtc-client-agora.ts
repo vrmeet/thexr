@@ -1,4 +1,4 @@
-import AgoraRTC, { IAgoraRTCClient, IAgoraRTCRemoteUser, ILocalVideoTrack, IMicrophoneAudioTrack, IRemoteAudioTrack, IRemoteVideoTrack } from 'agora-rtc-sdk-ng'
+import AgoraRTC, { ConnectionState, IAgoraRTCClient, IAgoraRTCRemoteUser, ILocalVideoTrack, IMicrophoneAudioTrack, IRemoteAudioTrack, IRemoteVideoTrack } from 'agora-rtc-sdk-ng'
 import type { WebRTCClient, RemoteStreamPublishedCallback, RemoteStreamUnpublishedCallback } from "./web-rtc-client"
 
 export class WebRTCClientAgora implements WebRTCClient {
@@ -30,9 +30,16 @@ export class WebRTCClientAgora implements WebRTCClient {
         // this.client.enableAudioVolumeIndicator()
         this.client.setClientRole("host")
         this.setupClientSubscriptions()
+
     }
 
+
+
+
+
     setupClientSubscriptions() {
+        this.client.on("exception", event => { console.error(event) })
+
         this.client.on("user-published", async (otherMember, mediaType) => {
             await this.client.subscribe(otherMember, mediaType)
             if (mediaType === "video") {
