@@ -1,6 +1,6 @@
 import * as BABYLON from 'babylonjs'
 import { signalHub } from '../signalHub'
-import { Observable } from 'rxjs'
+import { Observable, Subscription } from 'rxjs'
 import { filter, takeUntil } from "rxjs/operators"
 import { TeleportationManager } from './xr-teleportation-manager'
 import type { xr_component } from '../types'
@@ -112,7 +112,7 @@ export class XRManager {
 
     initController(inputSource: BABYLON.WebXRInputSource, motionController: BABYLON.WebXRAbstractMotionController) {
 
-        this.setupSendHandPosRot(inputSource)
+        // this.setupSendHandPosRot(inputSource)
         this.setupSendComponentData(motionController)
         this.setupVibration(motionController)
 
@@ -136,14 +136,14 @@ export class XRManager {
         })
     }
 
-    setupSendHandPosRot(inputSource: BABYLON.WebXRInputSource) {
+    setupSendHandPosRot(inputSource: BABYLON.WebXRInputSource): Subscription {
 
         const exitingXR$ = signalHub.local.on("xr_state_changed").pipe(
             filter(msg => msg === BABYLON.WebXRState.EXITING_XR)
         )
 
         const hand = inputSource.inputSource.handedness as "left" | "right"
-        this.makeXRFrameSignal().pipe(
+        return this.makeXRFrameSignal().pipe(
             takeUntil(exitingXR$)
         ).subscribe(() => {
 
