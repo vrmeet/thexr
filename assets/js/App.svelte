@@ -64,6 +64,10 @@
         // signalHub.local.next(new EventJoined());
         didInteract = true;
         showAvatarAndNickNameForm = true;
+        if (isMobileVR()) {
+            // force authorize audio if first time
+            navigator.mediaDevices.getUserMedia({ audio: true });
+        }
     };
 
     const observeCallback = () => {
