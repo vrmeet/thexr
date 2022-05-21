@@ -60,10 +60,13 @@ export class SceneManager {
                 this.xrManager.enterXR()
             }
             // falling objects should not fall for ever
-            setTimeout(() => {
-                const meshes = this.scene.getMeshesByTags("physics")
+            setInterval(() => {
+                console.log("checking meshes for falling")
+                const meshes = this.scene.getMeshesByTags("physics || targetable")
+                console.log("meshes count", meshes.length)
                 meshes.forEach(mesh => {
-                    if (mesh.absolutePosition.y < -100) {
+                    console.log("mesh y", mesh.absolutePosition.y)
+                    if (mesh.absolutePosition.y < -10) {
                         if (mesh.physicsImpostor) {
                             mesh.physicsImpostor.dispose()
                             mesh.physicsImpostor = null
@@ -190,7 +193,7 @@ export class SceneManager {
 
                 }
             } else if (mpts.m === "entity_trigger_squeezed") {
-                this.bulletManager.fireBullet(mpts.p.member_id, mpts.p.pos, mpts.p.direction, 30)
+                this.bulletManager.fireBullet(mpts.p.member_id, mpts.p.pos, mpts.p.direction, 10)
 
 
             }
@@ -268,11 +271,11 @@ export class SceneManager {
 
     findOrCreateAvatar(member_id: string) {
         let box = this.scene.getMeshByName(`avatar_${member_id}`)
-        box.metadata ||= {}
-        box.metadata['member_id'] = member_id
         if (!box) {
             box = BABYLON.MeshBuilder.CreateBox(`avatar_${member_id}`, { size: 0.3 }, this.scene)
-            box.isPickable = false
+            //  box.isPickable = false
+            box.metadata ||= {}
+            box.metadata['member_id'] = member_id
         }
         return box
     }
@@ -462,7 +465,6 @@ export class SceneManager {
                 BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
             } else if (entity.type === "plane") {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
-                BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
             } else if (entity.type === "grid") {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { size: 25, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
 
