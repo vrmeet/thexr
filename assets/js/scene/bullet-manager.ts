@@ -104,6 +104,7 @@ export class BulletManager {
 
             const hitTest = this.scene.pickWithRay(this.ray)
             if (hitTest.pickedMesh) {
+                console.log("hit something")
                 this.scene.unregisterAfterRender(checkBulletForIntersect)
                 animation.stop()
 
@@ -112,6 +113,7 @@ export class BulletManager {
                 } else if (<string[]>BABYLON.Tags.GetTags(hitTest.pickedMesh)?.includes("targetable")) {
                     removeTargetable(hitTest.pickedMesh)
                 } else if (hitTest.pickedMesh.name.includes("plane_")) {
+                    console.log("hit a plane")
                     signalHub.outgoing.emit("event", { m: "game_started", p: {} })
                     signalHub.incoming.emit("event", { m: "game_started", p: {} })
 
@@ -124,12 +126,12 @@ export class BulletManager {
         }
 
         //see if this bullet intersects *any* mesh
-        if (member_id === this.sceneManager.member_id) {
-            // each client checks their own bullets
-            this.scene.registerBeforeRender(
-                checkBulletForIntersect
-            )
-        }
+        // if (member_id === this.sceneManager.member_id) {
+        // each client checks their own bullets
+        this.scene.registerBeforeRender(
+            checkBulletForIntersect
+        )
+        // }
 
 
 
