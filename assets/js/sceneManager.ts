@@ -143,11 +143,15 @@ export class SceneManager {
                     grabbedEntity.physicsImpostor.dispose()
                     grabbedEntity.physicsImpostor = null
                 }
-                let handMesh = this.findOrCreateAvatarHand(mpts.p.member_id, mpts.p.hand, mpts.p.hand_pos_rot)
-                if (grabbedEntity && handMesh) {
+                const meshName = `avatar_${mpts.p.member_id}_${mpts.p.hand}`
 
+                let handMesh = this.scene.getMeshByName(meshName)
+                if (grabbedEntity && handMesh) {
+                    // don't positions for yourself because you have most up to date info per frame
+                    // also your hand is parented to a controller grip, so if you move it,
+                    // it will move in local coordinate space and be screwed up
                     if (mpts.p.member_id !== this.member_id) {
-                        // incase was grabbed by someone else first
+                        // unparent incase was grabbed by someone else first
                         grabbedEntity.parent = null
                         this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
                         this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
@@ -158,18 +162,25 @@ export class SceneManager {
                     }
                     let tags = <string[]>BABYLON.Tags.GetTags(grabbedEntity)
 
+                    // if shootable, we assign parent instead of setParent
+                    // assign will snap child local space into parent space
                     if (tags.includes("shootable")) {
                         grabbedEntity.position.copyFromFloats(0, 0, 0)
                         grabbedEntity.rotationQuaternion.copyFromFloats(0, 0, 0, 1)
                         grabbedEntity.parent = handMesh
                     } else {
+                        // keeps world space offset during the parenting
                         grabbedEntity.setParent(handMesh)
                     }
 
                 }
             } else if (mpts.m === "entity_released") {
                 let grabbedEntity = this.scene.getMeshById(mpts.p.entity_id)
-                let handMesh = this.findOrCreateAvatarHand(mpts.p.member_id, mpts.p.hand, mpts.p.hand_pos_rot)
+                const meshName = `avatar_${mpts.p.member_id}_${mpts.p.hand}`
+
+
+                let handMesh = this.scene.getMeshByName(meshName)
+
                 if (grabbedEntity && handMesh) {
                     if (mpts.p.member_id === this.member_id) {
 
@@ -215,9 +226,10 @@ export class SceneManager {
     }
 
     findOrCreateAvatarHand(member_id: string, hand: string, pos_rot: PosRot): BABYLON.AbstractMesh {
-        let mesh = this.scene.getMeshByName(`avatar_${member_id}_${hand}`)
+        const meshName = `avatar_${member_id}_${hand}`
+        let mesh = this.scene.getMeshByName(meshName)
         if (!mesh) {
-            mesh = BABYLON.MeshBuilder.CreateBox(`avatar_${member_id}_${hand}`, { size: 0.1 }, this.scene)
+            mesh = BABYLON.MeshBuilder.CreateBox(meshName, { size: 0.1 }, this.scene)
             mesh.isPickable = false
             mesh.position.fromArray(pos_rot.pos)
             mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(pos_rot.rot)

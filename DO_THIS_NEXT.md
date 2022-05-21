@@ -1,6 +1,7 @@
 TODO:
 
-
+- force enable audio before entering VR, otherwise they get kicked out to acknowledge the
+audio enable prompt
 
 == we need all the logs to come in so I can see them,
 need a logging solution
