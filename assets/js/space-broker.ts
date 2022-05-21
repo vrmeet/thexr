@@ -59,7 +59,6 @@ export class SpaceBroker {
             // this.connectToChannel()
             this.forwardCameraMovement()
             // this.forwardMicPrefAsState()
-            console.log('start forwarding camera movement')
 
         })
 
@@ -106,9 +105,7 @@ export class SpaceBroker {
         // })
 
         signalHub.outgoing.on('event').subscribe(mp => {
-            if (mp.m === "entity_released") {
-                console.log("released", mp)
-            }
+
             this.spaceChannel.push('event', { ...mp, ts: (new Date()).getTime() })
         })
 

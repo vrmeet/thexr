@@ -24,7 +24,6 @@ export class CollabEditDeleteManager {
         this.pointerObs = this.scene.onPointerObservable.add(evt => {
 
             if (evt.type === BABYLON.PointerEventTypes.POINTERPICK) {
-                console.log(evt)
                 let mesh = evt.pickInfo.pickedMesh
 
 

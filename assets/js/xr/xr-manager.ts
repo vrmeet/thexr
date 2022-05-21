@@ -1,7 +1,7 @@
 import * as BABYLON from 'babylonjs'
 import { signalHub } from '../signalHub'
 import { Observable } from 'rxjs'
-import { filter } from "rxjs/operators"
+import { filter, takeUntil } from "rxjs/operators"
 import { TeleportationManager } from './xr-teleportation-manager'
 import type { xr_component } from '../types'
 import type { Orchestrator } from '../orchestrator'
@@ -49,14 +49,14 @@ export class XRManager {
         this.xrHelper.baseExperience.onStateChangedObservable.add(state => {
             signalHub.local.emit('xr_state_changed', state)
 
-            switch (state) {
-                case BABYLON.WebXRState.IN_XR:
-                    this.inXR = true;
-                    break;
-                case BABYLON.WebXRState.NOT_IN_XR:
-                    this.inXR = false;
-                    break;
-            }
+            // switch (state) {
+            //     case BABYLON.WebXRState.IN_XR:
+            //         this.inXR = true;
+            //         break;
+            //     case BABYLON.WebXRState.NOT_IN_XR:
+            //         this.inXR = false;
+            //         break;
+            // }
             // if (state === BABYLON.WebXRState.ENTERING_XR) {
             //     //   this.teleporationManager.populateTeleporationWithFloors()
             // }
@@ -139,8 +139,14 @@ export class XRManager {
 
     setupSendHandPosRot(inputSource: BABYLON.WebXRInputSource) {
 
+        const exitingXR$ = signalHub.local.on("xr_state_changed").pipe(
+            filter(msg => msg === BABYLON.WebXRState.EXITING_XR)
+        )
+
         const hand = inputSource.inputSource.handedness as "left" | "right"
-        this.makeXRFrameSignal().subscribe(() => {
+        this.makeXRFrameSignal().pipe(
+            takeUntil(exitingXR$)
+        ).subscribe(() => {
 
             signalHub.movement.emit(`${hand}_hand_moved`, {
                 pos: inputSource.grip.absolutePosition.asArray(),
