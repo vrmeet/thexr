@@ -32,11 +32,14 @@ export class MemberStates {
             filter(msg => msg.m === "member_entered")
         ).subscribe((evt: any) => {
             this.merge_state(evt.p.member_id, evt.p.state)
+            signalHub.local.emit("hud_msg", `${this.members[evt.p.member_id].nickname} has entered`)
         })
 
         signalHub.incoming.on("event").pipe(
             filter(msg => msg.m === "member_left")
         ).subscribe((evt) => {
+            signalHub.local.emit("hud_msg", `${this.members[evt.p["member_id"]].nickname} has left`)
+
             this.merge_state(evt.p["member_id"], null)
         })
 

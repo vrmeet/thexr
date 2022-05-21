@@ -59,7 +59,19 @@ export class SceneManager {
             if (isMobileVR()) {
                 this.xrManager.enterXR()
             }
-
+            // falling objects should not fall for ever
+            setTimeout(() => {
+                const meshes = this.scene.getMeshesByTags("physics")
+                meshes.forEach(mesh => {
+                    if (mesh.absolutePosition.y < -100) {
+                        if (mesh.physicsImpostor) {
+                            mesh.physicsImpostor.dispose()
+                            mesh.physicsImpostor = null
+                        }
+                        mesh.position.copyFromFloats(Math.random() * 10 - 5, 1, Math.random() * 10 - 5)
+                    }
+                })
+            }, 10000)
 
 
         })
@@ -178,7 +190,7 @@ export class SceneManager {
 
                 }
             } else if (mpts.m === "entity_trigger_squeezed") {
-                this.bulletManager.fireBullet(mpts.p.pos, mpts.p.direction, 30)
+                this.bulletManager.fireBullet(mpts.p.member_id, mpts.p.pos, mpts.p.direction, 30)
 
 
             }
@@ -256,6 +268,8 @@ export class SceneManager {
 
     findOrCreateAvatar(member_id: string) {
         let box = this.scene.getMeshByName(`avatar_${member_id}`)
+        box.metadata ||= {}
+        box.metadata['member_id'] = member_id
         if (!box) {
             box = BABYLON.MeshBuilder.CreateBox(`avatar_${member_id}`, { size: 0.3 }, this.scene)
             box.isPickable = false

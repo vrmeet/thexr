@@ -34,7 +34,7 @@ export class BulletManager {
      * @param size 1-5 ideally
      * @param distance in meters
      */
-    fireBullet(position: number[], direction: number[], speed: number = 60, size: number = 1, distance: number = 60) {
+    fireBullet(member_id: string, position: number[], direction: number[], speed: number = 60, size: number = 1, distance: number = 60) {
 
         let bullet = BABYLON.MeshBuilder.CreateCapsule("bullet", {
             height: size * 0.1,
@@ -107,8 +107,14 @@ export class BulletManager {
                 this.scene.unregisterAfterRender(checkBulletForIntersect)
                 animation.stop()
 
-                if (<string[]>BABYLON.Tags.GetTags(hitTest.pickedMesh)?.includes("targetable")) {
+                if (hitTest.pickedMesh.metadata != null && hitTest.pickedMesh.metadata["member_id"] != undefined) {
+                    signalHub.outgoing.emit("event", { m: "member_damaged", p: { member_id: hitTest.pickedMesh.metadata["member_id"] } })
+                } else if (<string[]>BABYLON.Tags.GetTags(hitTest.pickedMesh)?.includes("targetable")) {
                     removeTargetable(hitTest.pickedMesh)
+                } else if (hitTest.pickedMesh.name.includes("plane_")) {
+                    signalHub.outgoing.emit("event", { m: "game_started", p: {} })
+                    signalHub.incoming.emit("event", { m: "game_started", p: {} })
+
                 }
 
                 removeBullet()
@@ -117,9 +123,13 @@ export class BulletManager {
 
         }
 
-        this.scene.registerBeforeRender(
-            checkBulletForIntersect
-        )
+        //see if this bullet intersects *any* mesh
+        if (member_id === this.sceneManager.member_id) {
+            // each client checks their own bullets
+            this.scene.registerBeforeRender(
+                checkBulletForIntersect
+            )
+        }
 
 
 

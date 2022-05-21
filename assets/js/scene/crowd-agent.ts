@@ -1,6 +1,7 @@
 import * as BABYLON from "babylonjs"
 import type { SceneManager } from "../sceneManager"
 import { signalHub } from "../signalHub"
+import { filter } from "rxjs/operators"
 
 export class CrowdAgent {
     public crowd: BABYLON.ICrowd
@@ -10,7 +11,9 @@ export class CrowdAgent {
         this.scene = sceneManager.scene
         this.navigationPlugin = sceneManager.navigationPlugin
 
-        signalHub.local.on("client_ready").subscribe(() => {
+        signalHub.incoming.on("event").pipe(
+            filter(msg => msg.m === "game_started")
+        ).subscribe(() => {
             let enemy = BABYLON.MeshBuilder.CreateBox("enemy", { width: 1, depth: 1, height: 2 }, this.scene)
             BABYLON.Tags.AddTagsTo(enemy, "targetable")
             enemy.position.y = 1

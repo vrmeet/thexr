@@ -1,18 +1,5 @@
 TODO:
 
-damage overlay (red )
-
-controller pulse (vibration)
-
-particle system for bullet trail
-
-AI agent for navigation mesh
-
-gun
-
-
-
-- display hud message when members enter or leave a room
 - display damage if hit by other members bullet
 
 
