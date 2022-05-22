@@ -67,7 +67,7 @@ export class LogManager {
 
     getTimestamp() {
         let d = new Date();
-        return `${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}.${d.getMilliseconds()}`
+        return `${d.getMinutes()}:${d.getSeconds()}.${d.getMilliseconds()}`
     }
 
     recentLogsAsText() {

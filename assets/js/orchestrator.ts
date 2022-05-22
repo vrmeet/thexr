@@ -9,6 +9,7 @@ import type { scene_settings, serialized_space } from './types'
 import { WebRTCManager } from './web-rtc-manager';
 import { MemberStates } from './member-states';
 import { RecastJSCrowd } from 'babylonjs';
+import { signalHub } from './signalHub';
 
 
 export class Orchestrator {
@@ -66,7 +67,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     const member_id = window['member_id']
     const orchestrator = new Orchestrator('spaceCanvas', member_id, serializedSpace)
     orchestrator.start()
-
+    window.onerror = function (message, source, lineno, colno, error) {
+        signalHub.local.emit("hud_msg", JSON.stringify({ message, source, lineno, colno, error }));
+        throw error;
+    };
 })
 
 
