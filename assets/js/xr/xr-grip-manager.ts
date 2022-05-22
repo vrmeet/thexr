@@ -7,7 +7,9 @@ import { signalHub } from "../signalHub";
 import type { event } from "../types"
 import * as utils from "../utils"
 
-const GRIP = "_trigger" // "_squeeze"
+const exitingXR$ = signalHub.local.on("xr_state_changed").pipe(
+    filter(msg => msg === BABYLON.WebXRState.EXITING_XR)
+)
 
 export class XRGripManager {
     public hand: "left" | "right"
@@ -43,6 +45,7 @@ export class XRGripManager {
             // listen for clean grip and release
 
             signalHub.movement.on(`${this.hand}_squeeze`).pipe(
+                takeUntil(exitingXR$),
                 map(val => val.pressed),
                 distinctUntilChanged()
             ).subscribe(squeezed => {
@@ -54,6 +57,7 @@ export class XRGripManager {
             })
 
             signalHub.movement.on(`${this.hand}_trigger`).pipe(
+                takeUntil(exitingXR$),
                 map(val => val.pressed),
                 distinctUntilChanged()
             ).subscribe(squeezed => {
@@ -65,6 +69,7 @@ export class XRGripManager {
             })
 
             signalHub.movement.on(`${this.hand}_grip_squeezed`).pipe(
+                takeUntil(exitingXR$),
                 map(() => (this.findIntersectingMesh())),
                 filter(mesh => (mesh !== null))
             ).subscribe(mesh => {
@@ -74,6 +79,7 @@ export class XRGripManager {
 
 
             signalHub.movement.on(`${this.hand}_grip_mesh`).pipe(
+                takeUntil(exitingXR$),
                 tap((mesh: BABYLON.AbstractMesh) => {
                     this.intersectedMesh = mesh;
                     this.intersectedMeshTags = BABYLON.Tags.GetTags(mesh)
@@ -96,10 +102,11 @@ export class XRGripManager {
                 })
             ).subscribe()
 
-
-
-            // load xr grip plugins
-
+            // in-form menu manager that the controller is ready to bind a menu
+            const payload = {
+                hand: motionController.handedness
+            }
+            signalHub.local.emit('controller_ready', payload)
 
 
         })
@@ -109,6 +116,7 @@ export class XRGripManager {
 
     shootable() {
         return signalHub.movement.on(`${this.hand}_trigger_squeezed`).pipe(
+            takeUntil(exitingXR$),
             tap(() => {
                 let event: event = {
                     m: "entity_trigger_squeezed",

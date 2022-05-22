@@ -7,17 +7,21 @@ import type { xr_component } from '../types'
 import type { Orchestrator } from '../orchestrator'
 import { XRGripManager } from './xr-grip-manager'
 
+const exitingXR$ = signalHub.local.on("xr_state_changed").pipe(
+    filter(msg => msg === BABYLON.WebXRState.EXITING_XR)
+)
+
 export class XRManager {
     public xrHelper: BABYLON.WebXRDefaultExperience
     public left_input_source: BABYLON.WebXRInputSource
     public right_input_source: BABYLON.WebXRInputSource
-    public inXR: boolean
+    //  public inXR: boolean
     public teleportationManager: TeleportationManager
     public scene: BABYLON.Scene
     public controllerPhysicsFeature: BABYLON.WebXRControllerPhysics
     constructor(public orchestrator: Orchestrator) {
         this.scene = orchestrator.sceneManager.scene
-        this.inXR = false
+        //      this.inXR = false
     }
 
     enterXR() {
@@ -46,17 +50,20 @@ export class XRManager {
 
         this.teleportationManager = new TeleportationManager(this.xrHelper, this.scene)
 
+        // function added here does not build up when entered and exiting VR 
+        // multiple times - tested with console.log
         this.xrHelper.baseExperience.onStateChangedObservable.add(state => {
+            // tell menu manager about what kind of menu to load
             signalHub.local.emit('xr_state_changed', state)
             // hold state so menu gui knows if we're rendering UI for fullscreen or XR
-            switch (state) {
-                case BABYLON.WebXRState.IN_XR:
-                    this.inXR = true;
-                    break;
-                case BABYLON.WebXRState.NOT_IN_XR:
-                    this.inXR = false;
-                    break;
-            }
+            // switch (state) {
+            //     case BABYLON.WebXRState.IN_XR:
+            //         this.inXR = true;
+            //         break;
+            //     case BABYLON.WebXRState.NOT_IN_XR:
+            //         this.inXR = false;
+            //         break;
+            // }
             // if (state === BABYLON.WebXRState.ENTERING_XR) {
             //     //   this.teleporationManager.populateTeleporationWithFloors()
             // }
@@ -65,16 +72,13 @@ export class XRManager {
             // }
         })
 
-
         this.setupEmitCameraMovement()
-
-
 
         // setup each controller
         let xrInput = this.xrHelper.input
 
+        // triggered once per hand
         xrInput.onControllerAddedObservable.add(inputSource => {
-
             if (inputSource.inputSource.handedness === 'left') {
                 this.left_input_source = inputSource
             } else {
@@ -84,6 +88,7 @@ export class XRManager {
                 this.initController(inputSource, abstractMotionController)
             })
         })
+
 
     }
 
@@ -118,10 +123,7 @@ export class XRManager {
 
         new XRGripManager(this.orchestrator, inputSource, motionController, this.controllerPhysicsFeature.getImpostorForController(inputSource))
 
-        const payload = {
-            hand: motionController.handedness
-        }
-        signalHub.local.emit('controller_ready', payload)
+
     }
 
 
@@ -138,9 +140,7 @@ export class XRManager {
 
     setupSendHandPosRot(inputSource: BABYLON.WebXRInputSource): Subscription {
 
-        const exitingXR$ = signalHub.local.on("xr_state_changed").pipe(
-            filter(msg => msg === BABYLON.WebXRState.EXITING_XR)
-        )
+
 
         const hand = inputSource.inputSource.handedness as "left" | "right"
         return this.makeXRFrameSignal().pipe(
@@ -184,7 +184,10 @@ export class XRManager {
                 component.onButtonStateChangedObservable.remove(babylonObserver)
             }
         })
-        componentObservable$.subscribe(xr_button_change_evt => {
+
+        componentObservable$.pipe(
+            takeUntil(exitingXR$)
+        ).subscribe(xr_button_change_evt => {
             signalHub.movement.emit(`${hand}_${component.type}`, xr_button_change_evt)
         })
     }

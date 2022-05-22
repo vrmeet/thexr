@@ -76,10 +76,10 @@ export class MenuManager {
             switch (state) {
                 case BABYLON.WebXRState.EXITING_XR:
                     // tear down plane and advanced gui textures
-                    this.browsePlane.dispose()
-                    this.wristPlane.dispose()
-                    this.wristGui.dispose()
-                    this.browseGui.dispose()
+                    this.browsePlane?.dispose()
+                    this.wristPlane?.dispose()
+                    this.wristGui?.dispose()
+                    this.browseGui?.dispose()
                     this.browsePlane = null
                     this.wristPlane = null;
                     this.wristGui = null;
@@ -118,7 +118,8 @@ export class MenuManager {
 
 
     createVRMenuOverlay() {
-        const utilLayer = BABYLON.UtilityLayerRenderer.DefaultUtilityLayer
+        // the utilitiy layer doesn't draw the laser point on it
+        // const utilLayer = BABYLON.UtilityLayerRenderer.DefaultUtilityLayer
 
         this.wristPlane = BABYLON.MeshBuilder.CreatePlane("wrist_plane", { height: 0.1, width: 0.1 }, this.scene)
         this.wristPlane.showBoundingBox = true
@@ -166,7 +167,7 @@ export class MenuManager {
                 this.fsGui.addControl(this.adaptBrowserCtrlForFsGUI(content.browserCtrl))
             }
         }
-        if (this.sceneManager.xrManager.inXR) {
+        if (this.browsePlane) {
             if (this.wristGui) {
                 this.wristGui.rootContainer.dispose()
                 this.wristGui.addControl(content.menuCtrl)
