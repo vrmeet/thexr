@@ -1,7 +1,7 @@
 
 import * as BABYLON from "babylonjs"
 import { Observable, of, pipe, race } from "rxjs";
-import { switchMap, filter, map, distinctUntilChanged, tap, take, raceWith, takeUntil } from "rxjs/operators";
+import { switchMap, filter, map, distinctUntilChanged, tap, take, raceWith, takeUntil, throttleTime } from "rxjs/operators";
 import type { Orchestrator } from "../orchestrator";
 import { signalHub } from "../signalHub";
 import type { event } from "../types"
@@ -117,6 +117,7 @@ export class XRGripManager {
     shootable() {
         return signalHub.movement.on(`${this.hand}_trigger_squeezed`).pipe(
             takeUntil(exitingXR$),
+            throttleTime(50),
             tap(() => {
                 let event: event = {
                     m: "entity_trigger_squeezed",
