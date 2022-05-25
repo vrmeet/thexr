@@ -35,7 +35,7 @@ config :thexr, ThexrWeb.Endpoint,
     npm: ["run", "watch", cd: Path.expand("../assets", __DIR__)]
   ]
 
-config :honeybadger,
+config :thexr,
   environment_name: :dev
 
 # ## SSL Support

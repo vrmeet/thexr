@@ -6,16 +6,37 @@ defmodule Thexr.EventWriter do
   end
 
   def init(:ok) do
-    {:consumer, :the_state_does_not_matter,
+    client = AWS.Client.create()
+    env_name = Application.get_env(:thexr, :environment_name)
+
+    {:consumer, %{aws_client: client, env_name: env_name},
      subscribe_to: [{Thexr.QueueBroadcaster, max_demand: 5, min_demand: 2}]}
   end
 
   def handle_events(events, _from, state) do
     # TODO: write all events in bulk
-    Enum.map(events, fn event ->
-      # Thexr.Spaces.create_event(event)
-      Thexr.Snapshot.process(event.space_id, event.type, event)
-    end)
+    entries =
+      Enum.map(events, fn event ->
+        # Thexr.Spaces.create_event(event)
+        # side-effect of processing each event into a snapshot
+        Thexr.Snapshot.process(event.space_id, event.type, event)
+        # return value is a entry for eventbridge
+        %{
+          "Source" => state.env_name,
+          "DetailType" => "Event",
+          "Detail" => Jason.encode!(event),
+          "EventBusName" => "ThexrEventBus"
+        }
+      end)
+
+    IO.inspect(entries, label: "entries")
+    # AWS.EventBridge.put_events(state.aws_client, %{ "Entries" => entries})
+
+    # input = %{
+    #   "EndpointId" => "" ,
+    #   "Entries" =>  []
+    # }
+    # AWS.EventBridge.put_events(state.aws_client, input, options)
 
     # We are a consumer, so we would never emit items.
     {:noreply, [], state}
