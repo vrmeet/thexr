@@ -1,5 +1,6 @@
 TODO:
 
+
 == we need all the logs to come in so I can see them,
 need a logging solution
 -> send all events to eventbridge
