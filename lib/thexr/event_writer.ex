@@ -8,8 +8,9 @@ defmodule Thexr.EventWriter do
   def init(:ok) do
     client = AWS.Client.create()
     env_name = Application.get_env(:thexr, :environment_name)
+    sqs_url = System.get_env("SQS_FIFO_EVENT_QUEUE_URL")
 
-    {:consumer, %{aws_client: client, env_name: env_name},
+    {:consumer, %{aws_client: client, env_name: env_name, sqs_url: sqs_url},
      subscribe_to: [{Thexr.QueueBroadcaster, max_demand: 5, min_demand: 2}]}
   end
 
@@ -28,7 +29,7 @@ defmodule Thexr.EventWriter do
       # )
 
       input = %{
-        "QueueUrl" => "https://sqs.us-west-2.amazonaws.com/426932470747/ThexrEventQueue.fifo",
+        "QueueUrl" => state.sqs_url,
         "MessageBody" => Jason.encode!(event),
         "MessageDeduplicationId" => event.sequence,
         "MessageGroupId" => event.space_id
