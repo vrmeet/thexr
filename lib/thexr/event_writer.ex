@@ -23,14 +23,14 @@ defmodule Thexr.EventWriter do
         # return value is a entry for eventbridge
         %{
           "Source" => state.env_name,
-          "DetailType" => "Event",
+          "DetailType" => "event",
           "Detail" => Jason.encode!(event),
           "EventBusName" => "ThexrEventBus"
         }
       end)
 
-    IO.inspect(entries, label: "entries")
-    # AWS.EventBridge.put_events(state.aws_client, %{ "Entries" => entries})
+    AWS.EventBridge.put_events(state.aws_client, %{"Entries" => entries})
+    |> IO.inspect(label: "put_event")
 
     # input = %{
     #   "EndpointId" => "" ,
