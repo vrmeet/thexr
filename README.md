@@ -3,11 +3,19 @@
 ## developers
 
 The easiest way to get a local running instance is to use vscode developer container.
-Simply open this folder using vscode and when it prompts you to open as dev container, do it.
-
-To start your server at the vscode terminal panel use: ./server.sh
+Simply open this root folder using vscode and when it prompts you to open as dev container, do it.
 
 Copy .env.sample to .env (ignored by git) to add secrets
+
+Install your AWS creds at .aws using aws cli configure command.  (Required to run cdk)
+
+Run node install inside the infra/ directory to install dependencies to run cdk for AWS resources.
+
+npx cdk deploy will create an eventbus, sqs, dynamoDB table used for logging.
+
+To start your server at the vscode terminal panel use: ./server.sh this will load the .env variables and make them available to the server.
+
+
 
 ====
 

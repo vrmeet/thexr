@@ -21,28 +21,30 @@ export class AppStack extends Stack {
     //   visibilityTimeout: cdk.Duration.seconds(300)
     // });
 
-    const bus = new events.EventBus(this, 'eventbus', {
-      eventBusName: 'ThexrEventBus'
-    });
+    // const bus = new events.EventBus(this, 'eventbus', {
+    //   eventBusName: 'ThexrEventBus'
+    // });
 
     // create a queue
 
     const eventQueue = new sqs.Queue(this, 'ThexrEventQueue', {
-      queueName: "ThexrEventQueue"
+      queueName: "ThexrEventQueue.fifo",
+      fifo: true
     });
 
 
     // create a rule to pipe events to SQS
 
-    const rule = new events.Rule(this, 'event_to_sqs', {
-      eventPattern: {
-        detailType: ["event"]
-      },
-      eventBus: bus,
-      description: "send Thexr events to SQS"
-    });
+    // const rule = new events.Rule(this, 'event_to_sqs', {
+    //   ruleName: "events-to-sqs-rule",
+    //   eventPattern: {
+    //     source: ["dev", "prod"]
+    //   },
+    //   eventBus: bus,
+    //   description: "send Thexr events to SQS"
+    // });
 
-    rule.addTarget(new targets.SqsQueue(eventQueue));
+    // rule.addTarget(new targets.SqsQueue(eventQueue));
 
 
     const lambdaDynamoEventWriter = new NodejsFunction(this, 'ThexrDynamoEventWriter', {
@@ -50,6 +52,7 @@ export class AppStack extends Stack {
       timeout: Duration.seconds(5),
       runtime: lambda.Runtime.NODEJS_14_X,
       handler: 'handler',
+      functionName: 'write-events-to-dynamo',
       entry: path.join(__dirname, `./thexr-dynamo-event-writer/index.ts`),
     });
 
