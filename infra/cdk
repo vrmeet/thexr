@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+docker run --rm -v ~/.aws:/root/.aws -v $(pwd):/opt/app --entrypoint cdk contino/aws-cdk $@
+docker run --rm -v ~/.aws:/root/.aws -v $(pwd):/opt/app contino/aws-cdk chown -R $(id -u):$(id -g) .
+
+# docker run -it --rm -v ~/.aws:/root/.aws -v $(pwd):/opt/app contino/aws-cdk bash
+# 

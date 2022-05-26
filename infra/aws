@@ -1,0 +1,5 @@
+
+#!/usr/bin/env bash
+# docker run --rm -it -v ~/.aws:/root/.aws -v $(pwd):/opt/app contino/aws-cli bash
+docker run --rm -v ~/.aws:/root/.aws -v $(pwd):/opt/app --entrypoint cdk contino/aws-cli $@
+docker run --rm -v ~/.aws:/root/.aws -v $(pwd):/opt/app contino/aws-cli chown -R $(id -u):$(id -g) .
