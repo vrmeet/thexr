@@ -156,10 +156,12 @@ defmodule Thexr.SpaceServer do
   end
 
   def terminate({:shutdown, :timeout}, _game) do
+    IO.inspect("space terminating from shutdown timeout")
     :ok
   end
 
   def terminate(_reason, _game) do
+    IO.inspect("space terminating some other reason")
     :ok
   end
 
