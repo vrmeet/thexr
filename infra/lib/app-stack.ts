@@ -29,7 +29,7 @@ export class AppStack extends Stack {
 
     const table = new dynamodb.Table(this, 'thexr-eventstreams', {
       partitionKey: { name: 'space_id', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'sequence_range', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'sequence', type: dynamodb.AttributeType.NUMBER },
       tableName: "thexr-event-streams",
       timeToLiveAttribute: "TTL"
     });
@@ -37,19 +37,21 @@ export class AppStack extends Stack {
     // create lambda
 
     const lambdaDynamoEventWriter = new NodejsFunction(this, 'ThexrDynamoEventWriter', {
-      memorySize: 1024,
+      memorySize: 256,
       timeout: Duration.seconds(5),
       runtime: lambda.Runtime.NODEJS_14_X,
       handler: 'handler',
       functionName: 'write-events-to-dynamo',
       entry: path.join(__dirname, `./thexr-dynamo-event-writer/index.ts`),
       environment: {
-        tableName: table.tableName
+        TABLE_NAME: table.tableName
       }
     });
 
     // event source for lambda
-    lambdaDynamoEventWriter.addEventSource(new eventsources.SqsEventSource(eventQueue));
+    lambdaDynamoEventWriter.addEventSource(
+      new eventsources.SqsEventSource(eventQueue, { batchSize: 1 })
+    );
 
     table.grantReadWriteData(lambdaDynamoEventWriter)
 

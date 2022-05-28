@@ -647,8 +647,19 @@ defmodule Thexr.Spaces do
     |> Repo.insert()
   end
 
+  def set_max_event_sequence(space_id, max_sequence) do
+    query =
+      from(s in Space, update: [set: [max_sequence: ^max_sequence]], where: s.id == ^space_id)
+
+    Repo.update_all(query, [])
+  end
+
   def max_event_sequence(space_id) do
-    query = from e in EventStream, select: max(e.sequence), where: e.space_id == ^space_id
+    query = from s in Space, select: s.max_sequence, where: s.id == ^space_id
     Repo.one(query) || 0
+
+    # no longer storing in postgres table
+    # query = from e in EventStream, select: max(e.sequence), where: e.space_id == ^space_id
+    # Repo.one(query) || 0
   end
 end
