@@ -12,7 +12,6 @@ defmodule Thexr.Spaces.Space do
     embeds_one :settings, Settings, on_replace: :update
     has_many :entities, Thexr.Spaces.Entity
     has_many :event_streams, Thexr.Spaces.EventStream
-    field :max_sequence, :integer
     timestamps()
   end
 

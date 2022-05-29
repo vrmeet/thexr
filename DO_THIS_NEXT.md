@@ -1,6 +1,76 @@
 TODO:
 
 
+
+- we need better edit menu
+  - needs an edit mode
+  - vs a play mode
+
+- which means we need better events
+  - event for going into edit mode
+
+- going to need way better js tests to test all the scenarios
+
+- basic scripting using
+   triggers (things that send events, click on a box)
+   on message
+     "string1" and "string2" or "stringb"
+    
+    state1:
+      sound: once: condinuous: url...wave
+      thing2: stopped
+      thing: rotating
+      door left: pos
+      door right: pos
+    state2:
+      door left: pos
+      door right: pos
+
+
+- a common shared space at all times even between players and editors
+   There is a URL for each space, all you need is a URL to specify a shared location
+- a clear difference between creation and playing
+   - a toggle gives you access to edit controls
+   - ability to create new objects and edit properties of objects
+   - changes are persisted (auto-saved)
+   - can fork a new space_id (clones into a new space_id)
+      - artifacts are copied into the new space_id
+         - it gets it's own history/logging from that point on
+   - if you lack permissions, objects that you pick-up and move etc will behave in player-mode
+      - in fact, maybe in edit mode all the players turn into ghosts
+   - things that have behaviors like
+       - monsters
+       - guns
+       have a policy for how they are persisted and edited
+         - there is the position, rotation, of where you placed it as the editor
+         -, if a player takes it and moves it around it does not affect the persisted version
+            they get a ghost version (copy on write), when they die, the version comes back from your version
+
+
+
+- create a space ->
+   immediately put into design mode 
+
+- space/edit/:space_id
+   - no nav mesh
+   - no monster movement
+
+
+logs:
+  events 
+    - building things
+    - movements
+    - communications
+    - logs
+
+    ===> eventbus
+       - filter by movement to get
+           space/member/movements
+       - filter by logs to troubleshoot
+
+edit an experience -> saves image
+
+
 == we need all the logs to come in so I can see them,
 need a logging solution
 -> send all events to eventbridge

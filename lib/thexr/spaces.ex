@@ -647,19 +647,45 @@ defmodule Thexr.Spaces do
     |> Repo.insert()
   end
 
-  def set_max_event_sequence(space_id, max_sequence) do
-    query =
-      from(s in Space, update: [set: [max_sequence: ^max_sequence]], where: s.id == ^space_id)
+  # def set_max_event_sequence(space_id, max_sequence) do
+  #   query =
+  #     from(s in Space, update: [set: [max_sequence: ^max_sequence]], where: s.id == ^space_id)
 
-    Repo.update_all(query, [])
-  end
+  #   Repo.update_all(query, [])
+  # end
 
   def max_event_sequence(space_id) do
-    query = from s in Space, select: s.max_sequence, where: s.id == ^space_id
-    Repo.one(query) || 0
-
-    # no longer storing in postgres table
-    # query = from e in EventStream, select: max(e.sequence), where: e.space_id == ^space_id
+    # query = from s in Space, select: s.max_sequence, where: s.id == ^space_id
     # Repo.one(query) || 0
+
+    query = from e in EventStream, select: max(e.sequence), where: e.space_id == ^space_id
+    Repo.one(query) || 0
+  end
+
+  def batch_archive_eventstream_to_s3(space_id, sequence, chunk_size, client) do
+    query =
+      from e in EventStream,
+        select: map(e, [:sequence, :event_timestamp, :type, :payload]),
+        where: e.space_id == ^space_id and e.sequence <= ^sequence,
+        order_by: e.sequence
+
+    body = Repo.all(query) |> Jason.encode!()
+
+    case AWS.S3.put_object(
+           client,
+           "thexr-eventstream-archive",
+           "#{space_id}/#{sequence - chunk_size + 1}-#{sequence}",
+           %{
+             "Body" => body,
+             "ContentType" => "application/json"
+           }
+         ) do
+      {:ok, _, _} ->
+        query =
+          from e in EventStream,
+            where: e.space_id == ^space_id and e.sequence <= ^sequence
+
+        Repo.delete_all(query)
+    end
   end
 end
