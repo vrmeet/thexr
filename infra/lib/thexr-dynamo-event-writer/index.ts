@@ -139,9 +139,8 @@ export const handler = async (event: SQSEvent) => {
         const input = {
             TableName: TABLE_NAME,
             Item: {
-                space_id: event.space_id,
-                sequence: event.sequence,
-                event: event
+                TTL: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+                ...event
             }
         }
         promises.push(client.put(input).promise())
