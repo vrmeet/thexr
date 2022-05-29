@@ -51,7 +51,8 @@ config :phoenix, :json_library, Jason
 config :honeybadger,
   api_key: System.get_env("HONEYBADGER_API_KEY"),
   ecto_repos: [Thexr.Repo],
-  use_logger: true
+  use_logger: true,
+  exclude_envs: [:dev, :test]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
