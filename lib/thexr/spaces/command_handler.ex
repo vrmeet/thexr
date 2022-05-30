@@ -34,4 +34,23 @@ defmodule Thexr.Spaces.CommandHandler do
       nil
     )
   end
+
+  # export type Component =
+  #   { type: "position", data: { value: number[] } } |
+  #   { type: "rotation", data: { value: number[] } } |
+  #   { type: "scaling", data: { value: number[] } } |
+  #   { type: "color", data: { value: string } }
+
+  # { m: "entity_transformed", p: { id: string, components: Component[] }, ts?: number } |
+  def transform_entity(space_id, entity_id, components) do
+    SpaceServer.process_event(
+      space_id,
+      %{
+        "m" => "entity_transformed",
+        "p" => %{"id" => entity_id, "components" => components},
+        "ts" => :os.system_time(:millisecond)
+      },
+      nil
+    )
+  end
 end

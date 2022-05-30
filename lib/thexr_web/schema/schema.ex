@@ -15,25 +15,12 @@ defmodule ThexrWeb.Schema.Schema do
     field :entities, non_null(list_of(:entity)), resolve: dataloader(Spaces)
   end
 
+  # TODO, get all events from S3
   object :event_stream do
     field :event_timestamp, non_null(:integer)
     field :sequence, non_null(:integer)
     field :type, non_null(:string)
     field :payload, :json
-  end
-
-  input_object :space_input do
-    field :name, :string
-    field :description, :string
-    field :settings, :settings_input
-  end
-
-  input_object :settings_input do
-    field :use_skybox, :boolean
-    field :skybox_inclination, :float
-    field :clear_color, :string
-    field :fog_color, :string
-    field :fog_density, :float
   end
 
   object :entity do
@@ -48,6 +35,25 @@ defmodule ThexrWeb.Schema.Schema do
   object :component do
     field :type, non_null(:string)
     field :data, :json
+  end
+
+  input_object :space_input do
+    field :name, :string
+    field :description, :string
+    field :settings, :settings_input
+  end
+
+  input_object :pos_rot_input do
+    field :pos, list_of(:float)
+    field :rot, list_of(:float)
+  end
+
+  input_object :settings_input do
+    field :use_skybox, :boolean
+    field :skybox_inclination, :float
+    field :clear_color, :string
+    field :fog_color, :string
+    field :fog_density, :float
   end
 
   query do
@@ -99,6 +105,39 @@ defmodule ThexrWeb.Schema.Schema do
       @desc "the id of the entity"
       arg(:entity_id, non_null(:string))
       resolve(&SpaceResolver.delete_entity/3)
+    end
+
+    @desc "move an entity in a space"
+    field :translate_entity, :boolean do
+      @desc "the id of the space"
+      arg(:space_id, non_null(:string))
+      @desc "the id of the entity"
+      arg(:entity_id, non_null(:string))
+      @desc "vector3 array of position destination"
+      arg(:position, non_null(list_of(:float)))
+      resolve(&SpaceResolver.translate_entity/3)
+    end
+
+    @desc "rotate an entity in a space"
+    field :rotate_entity, :boolean do
+      @desc "the id of the space"
+      arg(:space_id, non_null(:string))
+      @desc "the id of the entity"
+      arg(:entity_id, non_null(:string))
+      @desc "vector3 array euler rotation"
+      arg(:rotation, non_null(list_of(:float)))
+      resolve(&SpaceResolver.rotate_entity/3)
+    end
+
+    @desc "scale an entity in a space"
+    field :scale_entity, :boolean do
+      @desc "the id of the space"
+      arg(:space_id, non_null(:string))
+      @desc "the id of the entity"
+      arg(:entity_id, non_null(:string))
+      @desc "vector3 array of scaling"
+      arg(:scaling, non_null(list_of(:float)))
+      resolve(&SpaceResolver.scale_entity/3)
     end
 
     @desc "playback stream"
