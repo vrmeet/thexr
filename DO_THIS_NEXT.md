@@ -1,5 +1,61 @@
 TODO:
 
+- extend the types of components for overrides
+- agent events
+
+====
+
+fill in missing graphQL operations
+
+  
+===
+
+Doom like game:
+
+gun, shoot
+enemy 
+
+
+space has many entities
+
+  an entity has many components
+
+===
+as a host
+editing a space
+   modify entities (create | delete)
+      update or create components for entities
+
+as a player
+  - when modify entity (visibility component)
+       update components (pos, rot, scale etc)
+  
+  populating 
+    override_components
+
+===
+reset the world (have a button | after all members have left)
+  delete entries from override tables
+
+===
+ rwx read (visible), write (edit permission to change | delete it), execute (interact )
+
+===
+player initial load of scene
+  - load original entities (optimize mesh, load navmesh)
+  - load the override entities
+    - grab, release
+       (save in override tables)
+
+player goes into edit mode (reset the scene, with entity_id and alt_entity_id)
+  - modifications to the space only happen on entity_id
+    transform, color
+      grab, release
+        (save in the entity/component tables)
+  - a member in non-edit mode only sees the alt_entity_id version
+     grabs the entity
+
+
 
 
 - we need better edit menu

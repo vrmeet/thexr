@@ -7,7 +7,6 @@ defmodule Thexr.Repo.Migrations.CreateComponents do
       add :type, :string
       add :data, :map
       add :entity_id, references(:entities, on_delete: :delete_all, type: :binary_id), null: false
-
       # timestamps()
     end
 
