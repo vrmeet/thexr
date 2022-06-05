@@ -14,6 +14,7 @@ import { isMobileVR } from "./utils";
 import { HudMessager } from "./hud-message";
 import { BulletManager } from "./scene/bullet-manager";
 import { CrowdAgent } from "./scene/crowd-agent";
+import { EventName } from "./event-names"
 
 
 const ANIMATION_FRAME_PER_SECOND = 60
@@ -92,12 +93,12 @@ export class SceneManager {
 
 
         signalHub.incoming.on("event").subscribe((mpts) => {
-            if (mpts.m === "member_entered") {
+            if (mpts.m === EventName.member_entered) {
                 const payload = mpts.p
                 const avatar = this.findOrCreateAvatar(payload.member_id)
                 this.setComponent(avatar, { type: "position", data: { value: payload.pos_rot.pos } })
                 this.setComponent(avatar, { type: "rotation", data: { value: payload.pos_rot.rot } })
-            } else if (mpts.m === "member_moved") {
+            } else if (mpts.m === EventName.member_moved) {
                 const payload = mpts.p
                 const avatar = this.findOrCreateAvatar(payload.member_id)
                 this.animateComponent(avatar, { type: "position", data: { value: payload.pos_rot.pos } })
@@ -110,11 +111,11 @@ export class SceneManager {
                 }
 
 
-            } else if (mpts.m === "member_left") {
+            } else if (mpts.m === EventName.member_left) {
                 this.removeAvatar(mpts.p.member_id)
-            } else if (mpts.m === "entity_created") {
+            } else if (mpts.m === EventName.entity_created) {
                 this.findOrCreateMesh(mpts.p)
-            } else if (mpts.m === "entity_transformed") {
+            } else if (mpts.m === EventName.entity_transformed) {
                 let meshes = this.scene.getMeshesById(mpts.p.id)
                 meshes.forEach(mesh => {
                     mpts.p.components.forEach(payload => {
@@ -122,21 +123,21 @@ export class SceneManager {
                     })
                     // this.setComponent(mesh, { type: mpts.p.type, data: params.data })
                 })
-            } else if (mpts.m === "entity_colored") {
+            } else if (mpts.m === EventName.entity_colored) {
                 let meshes = this.scene.getMeshesById(mpts.p.id)
                 meshes.forEach(mesh => {
                     this.setComponent(mesh, { type: "color", data: { value: mpts.p.color } })
 
                     // this.setComponent(mesh, { type: mpts.p.type, data: params.data })
                 })
-            } else if (mpts.m === "entity_deleted") {
+            } else if (mpts.m === EventName.entity_deleted) {
                 let meshes = this.scene.getMeshesById(mpts.p.id)
                 meshes.forEach(mesh => {
                     BABYLON.Animation.CreateAndStartAnimation("delete", mesh, "scaling", ANIMATION_FRAME_PER_SECOND, TOTAL_ANIMATION_FRAMES, mesh.scaling.clone(), new BABYLON.Vector3(0.01, 0.01, 0.01), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, null, () => {
                         mesh.dispose()
                     });
                 })
-            } else if (mpts.m === "entity_grabbed") {
+            } else if (mpts.m === EventName.entity_grabbed) {
 
                 let grabbedEntity = this.scene.getMeshById(mpts.p.entity_id)
                 if (grabbedEntity.physicsImpostor) {
@@ -174,7 +175,7 @@ export class SceneManager {
                     }
 
                 }
-            } else if (mpts.m === "entity_released") {
+            } else if (mpts.m === EventName.entity_released) {
                 let grabbedEntity = this.scene.getMeshById(mpts.p.entity_id)
                 const meshName = `avatar_${mpts.p.member_id}_${mpts.p.hand}`
 
@@ -203,7 +204,7 @@ export class SceneManager {
 
 
                 }
-            } else if (mpts.m === "entity_trigger_squeezed") {
+            } else if (mpts.m === EventName.entity_trigger_squeezed) {
                 this.bulletManager.fireBullet(mpts.p.member_id, mpts.p.pos, mpts.p.direction, 10)
 
 

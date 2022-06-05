@@ -2,6 +2,7 @@
 
 import * as BABYLON from 'babylonjs'
 import * as GUI from 'babylonjs-gui'
+import { EventName } from '../../event-names';
 import type { Orchestrator } from '../../orchestrator';
 import type { SceneManager } from '../../sceneManager';
 import { signalHub } from '../../signalHub';
@@ -47,7 +48,7 @@ export class MenuColor extends GUI.Container {
 
     colorMesh(mesh: BABYLON.AbstractMesh) {
         const colorString = this.currentColor.toHexString()
-        const event: event = { m: "entity_colored", p: { id: mesh.id, color: colorString } }
+        const event: event = { m: EventName.entity_colored, p: { id: mesh.id, color: colorString } }
         signalHub.outgoing.emit("event", event)
         signalHub.incoming.emit("event", event)
 

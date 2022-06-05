@@ -3,6 +3,7 @@ import { signalHub } from "../signalHub"
 import { random_id } from "../utils"
 import { v4 as uuidv4 } from "uuid";
 import type { Component, event } from "../types"
+import { EventName } from "../event-names";
 
 export class TargetSpawner {
     constructor(public scene: BABYLON.Scene) {
@@ -28,7 +29,7 @@ export class TargetSpawner {
                 return { type: key, data: { value } }
             }) as Component[]
 
-            const entity_event: event = { m: "entity_created", p: { type: prim, id: uuid, name, components: componentList } }
+            const entity_event: event = { m: EventName.entity_created, p: { type: prim, id: uuid, name, components: componentList } }
 
             signalHub.outgoing.emit('event', entity_event)
             signalHub.incoming.emit('event', entity_event)

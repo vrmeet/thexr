@@ -5,6 +5,7 @@ to indicate damage
 
 import * as BABYLON from "babylonjs"
 import { filter } from "rxjs/operators"
+import { EventName } from "./event-names"
 import type { Orchestrator } from "./orchestrator"
 import { signalHub } from "./signalHub"
 
@@ -28,7 +29,7 @@ export class DamageOverlay {
         //     `
 
         signalHub.incoming.on("event").pipe(
-            filter(msg => (msg.m === "member_damaged" && msg.p.member_id === this.orchestrator.member_id))
+            filter(msg => (msg.m === EventName.member_damaged && msg.p.member_id === this.orchestrator.member_id))
         ).subscribe(rate => {
             this.flashdamageOverlay2()
         })

@@ -4,6 +4,7 @@ import { signalHub } from "./signalHub";
 import type { member_state } from "./types";
 import { filter } from 'rxjs/operators'
 import type { event } from './types'
+import { EventName } from "./event-names";
 
 export class MemberStates {
     public my_member_id: string
@@ -29,14 +30,14 @@ export class MemberStates {
         })
 
         signalHub.incoming.on("event").pipe(
-            filter(msg => msg.m === "member_entered")
+            filter(msg => msg.m === EventName.member_entered)
         ).subscribe((evt: any) => {
             this.merge_state(evt.p.member_id, evt.p.state)
             signalHub.local.emit("hud_msg", `${this.members[evt.p.member_id].nickname} has entered`)
         })
 
         signalHub.incoming.on("event").pipe(
-            filter(msg => msg.m === "member_left")
+            filter(msg => msg.m === EventName.member_left)
         ).subscribe((evt) => {
             signalHub.local.emit("hud_msg", `${this.members[evt.p["member_id"]].nickname} has left`)
 
@@ -44,7 +45,7 @@ export class MemberStates {
         })
 
         signalHub.incoming.on("event").pipe(
-            filter(msg => msg.m === "member_changed_mic_pref" || msg.m === "member_changed_nickname")
+            filter(msg => msg.m === EventName.member_changed_mic_pref || msg.m === EventName.member_changed_nickname)
         ).subscribe((evt: any) => {
             // TODO, figure out why typescript can't figure out correct type
             // so I had to use 'any'
@@ -77,7 +78,7 @@ export class MemberStates {
     update_my_mic_muted_pref(mic_muted_pref: boolean) {
         this.merge_state(this.my_member_id, { mic_muted: mic_muted_pref })
         const data: event = {
-            m: 'member_changed_mic_pref',
+            m: EventName.member_changed_mic_pref,
             p: { member_id: this.orchestrator.member_id, mic_muted: mic_muted_pref }
         }
         this.emit_event(data)
@@ -87,7 +88,7 @@ export class MemberStates {
     update_my_nickname(nickname: string) {
         this.merge_state(this.my_member_id, { nickname: nickname })
         const data: event = {
-            m: 'member_changed_nickname',
+            m: EventName.member_changed_nickname,
             p: { member_id: this.orchestrator.member_id, nickname: nickname }
         }
         this.emit_event(data)

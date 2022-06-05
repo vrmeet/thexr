@@ -6,6 +6,7 @@ import { combineLatest, map, filter } from 'rxjs'
 import type { IncomingEvents } from './signalHub'
 import type { PosRot } from './types'
 import { arrayReduceSigFigs, throttleByMovement } from './utils'
+import { EventName } from './event-names'
 
 type ChannelParams = {
     pos_rot: PosRot,
@@ -67,9 +68,9 @@ export class SpaceBroker {
         combineLatest([$cameraReady, $client_ready, $space_channel_connected]).subscribe(([pos_rot, choice, _]) => {
 
             if (choice === 'enter') {
-                signalHub.outgoing.emit('event', { m: 'member_entered', p: { member_id: this.member_id, pos_rot: pos_rot, state: this.orchestrator.memberStates.my_state() } })
+                signalHub.outgoing.emit('event', { m: EventName.member_entered, p: { member_id: this.member_id, pos_rot: pos_rot, state: this.orchestrator.memberStates.my_state() } })
             } else {
-                signalHub.outgoing.emit('event', { m: 'member_observed', p: { member_id: this.member_id } })
+                signalHub.outgoing.emit('event', { m: EventName.member_observed, p: { member_id: this.member_id } })
             }
 
         })
@@ -163,15 +164,15 @@ export class SpaceBroker {
             if (data.left && data.right) {
 
                 signalHub.outgoing.emit("event", {
-                    m: "member_moved",
+                    m: EventName.member_moved,
                     p: { member_id: this.member_id, pos_rot: data.cam, left: data.left, right: data.right }
                 })
             } else {
                 // a debug
-                signalHub.outgoing.emit("event", { m: "message_broadcasted", p: { member_id: this.orchestrator.member_id, msg: `no hands` } })
+                signalHub.outgoing.emit("event", { m: EventName.message_broadcasted, p: { member_id: this.orchestrator.member_id, msg: `no hands` } })
 
                 signalHub.outgoing.emit("event", {
-                    m: "member_moved",
+                    m: EventName.member_moved,
                     p: { member_id: this.member_id, pos_rot: data.cam }
                 })
             }

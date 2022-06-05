@@ -4,6 +4,7 @@ import * as GUI from "babylonjs-gui"
 
 import { merge, interval } from 'rxjs'
 import { scan, map, debounceTime, mapTo, tap, filter } from 'rxjs/operators'
+import { EventName } from "./event-names"
 import { signalHub } from "./signalHub"
 
 const MSG_DURATION = 3000 // ms
@@ -63,7 +64,7 @@ export class HudMessager {
 
         // show on screen the broadcasted message from another player
         signalHub.incoming.on("event").pipe(
-            filter(msg => (msg.m === "message_broadcasted"))
+            filter(msg => (msg.m === EventName.message_broadcasted))
         ).subscribe(event => {
             signalHub.local.emit("hud_msg", event.p['msg'])
         })

@@ -1,4 +1,5 @@
 import * as BABYLON from "babylonjs"
+import { EventName } from "../event-names"
 import type { SceneManager } from "../sceneManager"
 import { signalHub } from "../signalHub"
 import type { event } from "../types"
@@ -107,7 +108,7 @@ export class BulletManager {
                 animation.stop()
 
                 if (hitTest.pickedMesh.metadata != null && hitTest.pickedMesh.metadata["member_id"] != undefined) {
-                    signalHub.outgoing.emit("event", { m: "member_damaged", p: { member_id: hitTest.pickedMesh.metadata["member_id"] } })
+                    signalHub.outgoing.emit("event", { m: EventName.member_damaged, p: { member_id: hitTest.pickedMesh.metadata["member_id"] } })
                 } else if (<string[]>BABYLON.Tags.GetTags(hitTest.pickedMesh)?.includes("targetable")) {
                     removeTargetable(hitTest.pickedMesh)
                 }

@@ -2,6 +2,7 @@ import { signalHub } from "../signalHub";
 import * as BABYLON from 'babylonjs'
 import type { event } from '../types'
 import { filter } from "rxjs/operators";
+import { EventName } from "../event-names";
 
 export class CollabEditDeleteManager {
     public pointerObs: BABYLON.Observer<BABYLON.PointerInfo>
@@ -36,7 +37,7 @@ export class CollabEditDeleteManager {
     }
 
     deleteMesh(mesh: BABYLON.AbstractMesh) {
-        const event: event = { m: "entity_deleted", p: { id: mesh.id } }
+        const event: event = { m: EventName.entity_deleted, p: { id: mesh.id } }
         signalHub.outgoing.emit("event", event)
         signalHub.incoming.emit("event", event)
 

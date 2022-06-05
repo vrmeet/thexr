@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from "uuid";
 import { a, div, pre } from "../helpers";
 import { random_id } from "../../utils";
 import type { Component, event } from "../../types"
+import { EventName } from "../../event-names";
 
 export class MenuPagePrimitives extends GUI.Container {
     public scene: BABYLON.Scene
@@ -54,7 +55,7 @@ export class MenuPagePrimitives extends GUI.Container {
                     return { type: key, data: { value } }
                 }) as Component[]
 
-                const entity_event: event = { m: "entity_created", p: { type: prim, id: uuid, name, components: componentList } }
+                const entity_event: event = { m: EventName.entity_created, p: { type: prim, id: uuid, name, components: componentList } }
 
                 signalHub.outgoing.emit('event', entity_event)
                 signalHub.incoming.emit('event', entity_event)
