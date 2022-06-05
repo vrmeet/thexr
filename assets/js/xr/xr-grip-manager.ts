@@ -1,11 +1,12 @@
 
 import * as BABYLON from "babylonjs"
-import { Observable, of, pipe, race } from "rxjs";
-import { switchMap, filter, map, distinctUntilChanged, tap, take, raceWith, takeUntil, throttleTime } from "rxjs/operators";
+import { race } from "rxjs";
+import { filter, map, distinctUntilChanged, tap, take, raceWith, takeUntil, throttleTime } from "rxjs/operators";
 import type { Orchestrator } from "../orchestrator";
 import { signalHub } from "../signalHub";
 import type { event } from "../types"
 import * as utils from "../utils"
+import { EventName } from "../event-names";
 
 const exitingXR$ = signalHub.local.on("xr_state_changed").pipe(
     filter(msg => msg === BABYLON.WebXRState.EXITING_XR)
@@ -86,7 +87,7 @@ export class XRGripManager {
                 }),
                 tap((mesh) => {
                     let event: event = {
-                        m: "entity_grabbed",
+                        m: EventName.entity_grabbed,
                         p: this.createEventPayload()
                     }
 
@@ -120,7 +121,7 @@ export class XRGripManager {
             throttleTime(50),
             tap(() => {
                 let event: event = {
-                    m: "entity_trigger_squeezed",
+                    m: EventName.entity_trigger_squeezed,
                     p: {
                         member_id: this.orchestrator.member_id,
                         entity_id: this.intersectedMesh.id,
@@ -145,7 +146,7 @@ export class XRGripManager {
             ),
             // another player stole our object
             signalHub.incoming.on("event").pipe(
-                filter(msg => (msg.m === "entity_grabbed" && msg.p.entity_id === this.intersectedMesh.id && msg.p.member_id != this.orchestrator.member_id)),
+                filter(msg => (msg.m === EventName.entity_grabbed && msg.p.entity_id === this.intersectedMesh.id && msg.p.member_id != this.orchestrator.member_id)),
                 tap(() => { console.log("other player steal") })
             ),
 
@@ -154,7 +155,7 @@ export class XRGripManager {
                 tap(() => {
                     console.log("I release")
                     let event: event = {
-                        m: "entity_released",
+                        m: EventName.entity_released,
                         p: this.createEventPayload()
                     }
                     if (this.intersectedMeshTags.includes("physics")) {
@@ -173,20 +174,6 @@ export class XRGripManager {
             }),
             take(1)
         )
-
-
-        // // emit entity grabbed
-        // console.log('emit 1')
-
-        // // emit a release if you're still holding it
-        // return signalHub.movement.on(`${this.hand}_grip_released`).pipe(
-        //     take(1),
-        //     tap(() => {
-        //         console.log('emit 2')
-        //         // emit release
-        //     })
-        // )
-
 
     }
 
@@ -207,51 +194,6 @@ export class XRGripManager {
         }
         return payload
     }
-
-    // checkRelease() {
-    //     const intersectedMesh = this.findIntersectingMesh()
-    //     if (intersectedMesh === null) {
-    //         return
-    //     }
-    //     let [mesh, tag] = intersectedMesh
-    //     // only release if we're already holding the mesh AND
-    //     // the other hand isn't also holding the mesh, otherwise the mesh will be unparented by everyone
-    //     if (mesh.parent?.name === this.palmMesh.name) {
-    //         let event: event = {
-    //             m: "entity_released",
-    //             p: this.createEventPayload(mesh)
-    //         }
-    //         signalHub.outgoing.emit("event", event)
-    //         signalHub.incoming.emit("event", event)
-    //     }
-    // }
-
-
-
-
-    // checkGrab() {
-    //     const intersectedMesh = this.findIntersectingMesh()
-    //     if (intersectedMesh != null) {
-    //         let [mesh, tag] = intersectedMesh
-    //         if (tag === "interactable") {
-    //             let event: event = {
-    //                 m: "entity_grabbed",
-    //                 p: this.createEventPayload(mesh)
-    //             }
-
-    //             signalHub.outgoing.emit("event", event)
-    //             signalHub.incoming.emit("event", event)
-    //         } else {
-    //             let event: event = {
-    //                 m: "entity_assumed",
-    //                 p: this.createEventPayload(mesh)
-    //             }
-
-    //             signalHub.outgoing.emit("event", event)
-    //             signalHub.incoming.emit("event", event)
-    //         }
-    //     }
-    // }
 
     findIntersectingMesh(): BABYLON.AbstractMesh {
         const meshes = this.scene.getMeshesByTags("interactable")

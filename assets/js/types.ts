@@ -1,3 +1,4 @@
+import type { EventName } from "./event-names"
 
 export type scene_settings = {
     use_skybox: boolean
@@ -50,24 +51,24 @@ export type Component =
  */
 
 export type event =
-    { m: "member_changed_mic_pref", p: { member_id: string, mic_muted: boolean }, ts?: number } |
-    { m: "member_changed_nickname", p: { member_id: string, nickname: string }, ts?: number } |
-    { m: "member_entered", p: { member_id: string, pos_rot: PosRot, state: member_state }, ts?: number } |
-    { m: "member_observed", p: { member_id: string }, ts?: number } |
-    { m: "member_moved", p: { member_id: string, pos_rot: PosRot, left?: PosRot, right?: PosRot }, ts?: number } |
-    { m: "member_left", p: { member_id: string }, ts?: number } |
-    { m: "entity_created", p: { type: string, id: string, name: string, components: Component[] }, ts?: number } |
-    { m: "entity_transformed", p: { id: string, components: Component[] }, ts?: number } |
-    { m: "entity_colored", p: { id: string, color: string }, ts?: number } |
-    { m: "entity_deleted", p: { id: string }, ts?: number } |
-    { m: "entity_grabbed", p: { member_id: string, entity_id: string, hand: string, hand_pos_rot: PosRot, entity_pos_rot: PosRot } } |
-    { m: "entity_released", p: { member_id: string, entity_id: string, hand: string, hand_pos_rot: PosRot, entity_pos_rot: PosRot, lv?: number[], av?: number[] } } |
-    { m: "entity_trigger_squeezed", p: { member_id: string, entity_id: string, pos: number[], direction: number[] } } |
-    { m: "member_damaged", p: { member_id: string } } |
-    { m: "message_broadcasted", p: { member_id: string, msg: string } } |
-    { m: "agent_placed", p: { member_id: string, agent_id: string, pos_rot: PosRot } } |
-    { m: "agent_path_planned", p: { agent_id: string, pos_rot: PosRot } } |
-    { m: "agent_removed", p: { agent_id: string } }
+    { m: EventName.member_changed_mic_pref, p: { member_id: string, mic_muted: boolean }, ts?: number } |
+    { m: EventName.member_changed_nickname, p: { member_id: string, nickname: string }, ts?: number } |
+    { m: EventName.member_entered, p: { member_id: string, pos_rot: PosRot, state: member_state }, ts?: number } |
+    { m: EventName.member_observed, p: { member_id: string }, ts?: number } |
+    { m: EventName.member_moved, p: { member_id: string, pos_rot: PosRot, left?: PosRot, right?: PosRot }, ts?: number } |
+    { m: EventName.member_left, p: { member_id: string }, ts?: number } |
+    { m: EventName.entity_created, p: { type: string, id: string, name: string, components: Component[] }, ts?: number } |
+    { m: EventName.entity_transformed, p: { id: string, components: Component[] }, ts?: number } |
+    { m: EventName.entity_colored, p: { id: string, color: string }, ts?: number } |
+    { m: EventName.entity_deleted, p: { id: string }, ts?: number } |
+    { m: EventName.entity_grabbed, p: { member_id: string, entity_id: string, hand: string, hand_pos_rot: PosRot, entity_pos_rot: PosRot } } |
+    { m: EventName.entity_released, p: { member_id: string, entity_id: string, hand: string, hand_pos_rot: PosRot, entity_pos_rot: PosRot, lv?: number[], av?: number[] } } |
+    { m: EventName.entity_trigger_squeezed, p: { member_id: string, entity_id: string, pos: number[], direction: number[] } } |
+    { m: EventName.member_damaged, p: { member_id: string } } |
+    { m: EventName.message_broadcasted, p: { member_id: string, msg: string } } |
+    { m: EventName.agent_placed, p: { member_id: string, agent_id: string, pos_rot: PosRot } } |
+    { m: EventName.agent_path_planned, p: { agent_id: string, pos_rot: PosRot } } |
+    { m: EventName.agent_removed, p: { agent_id: string } }
     // ["member_left", { member_id: string }] |
     // ["member_moved", { member_id: string, pos_rot: PosRot }]
 
