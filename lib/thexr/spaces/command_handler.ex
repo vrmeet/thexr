@@ -53,4 +53,17 @@ defmodule Thexr.Spaces.CommandHandler do
       nil
     )
   end
+
+  # { m: "entity_colored", p: { id: string, color: string }, ts?: number } |
+  def color_entity(space_id, entity_id, color_string) do
+    SpaceServer.process_event(
+      space_id,
+      %{
+        "m" => "entity_colored",
+        "p" => %{"id" => entity_id, "color" => color_string},
+        "ts" => :os.system_time(:millisecond)
+      },
+      nil
+    )
+  end
 end
