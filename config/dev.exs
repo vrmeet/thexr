@@ -32,7 +32,8 @@ config :thexr, ThexrWeb.Endpoint,
 
     # the above default was replaced with https://cloudless.studio/wrapping-your-head-around-assets-in-phoenix-1-6
     npm: ["run", "typecheck", cd: Path.expand("../assets", __DIR__)],
-    npm: ["run", "watch", cd: Path.expand("../assets", __DIR__)]
+    npm: ["run", "watch", cd: Path.expand("../assets", __DIR__)],
+    npm: ["run", "sync_event_types", cd: Path.expand("../assets", __DIR__)]
   ]
 
 config :thexr,
