@@ -110,10 +110,6 @@ export class BulletManager {
                     signalHub.outgoing.emit("event", { m: "member_damaged", p: { member_id: hitTest.pickedMesh.metadata["member_id"] } })
                 } else if (<string[]>BABYLON.Tags.GetTags(hitTest.pickedMesh)?.includes("targetable")) {
                     removeTargetable(hitTest.pickedMesh)
-                } else if (hitTest.pickedMesh.name.includes("plane_")) {
-                    signalHub.outgoing.emit("event", { m: "game_started", p: {} })
-                    signalHub.incoming.emit("event", { m: "game_started", p: {} })
-
                 }
 
                 removeBullet()

@@ -140,6 +140,17 @@ defmodule ThexrWeb.Schema.Schema do
       resolve(&SpaceResolver.scale_entity/3)
     end
 
+    @desc "color an entity in a space"
+    field :color_entity, :boolean do
+      @desc "the id of the space"
+      arg(:space_id, non_null(:string))
+      @desc "the id of the entity"
+      arg(:entity_id, non_null(:string))
+      @desc "color string #FF0000"
+      arg(:color, non_null(:string))
+      resolve(&SpaceResolver.color_entity/3)
+    end
+
     @desc "playback stream"
     field :playback, :boolean do
       @desc "the id of the space"

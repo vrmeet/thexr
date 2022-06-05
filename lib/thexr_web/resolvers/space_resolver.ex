@@ -110,6 +110,23 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
     end
   end
 
+  def color_entity(_root, %{space_id: space_id, entity_id: entity_id, color: color}, _) do
+    case Spaces.get_space_by_id(space_id) do
+      nil ->
+        {:error, :space_not_found}
+
+      space ->
+        case Spaces.get_entity_by_id(entity_id) do
+          nil ->
+            {:error, :entity_not_found}
+
+          entity ->
+            Thexr.Spaces.CommandHandler.color_entity(space.id, entity.id, color)
+            {:ok, true}
+        end
+    end
+  end
+
   def update_space(_, %{space_id: space_id, attributes: attributes}, _) do
     case Spaces.get_space_by_id(space_id) do
       nil ->
