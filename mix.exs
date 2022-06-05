@@ -58,7 +58,8 @@ defmodule Thexr.MixProject do
       {:gen_stage, "~> 1.1"},
       {:elixir_uuid, "~> 1.2"},
       {:aws, "~> 0.11.0"},
-      {:hackney, "~> 1.18"}
+      {:hackney, "~> 1.18"},
+      {:ex_const, "~> 0.2.4"}
     ]
   end
 

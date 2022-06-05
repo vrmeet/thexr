@@ -1,0 +1,20 @@
+export enum EventName {
+    member_entered = 1,
+    member_left,
+    member_moved,
+    member_observed,
+    member_changed_mic_pref,
+    member_changed_nickname,
+    member_damaged,
+    entity_created,
+    entity_transformed,
+    entity_colored,
+    entity_deleted,
+    entity_grabbed,
+    entity_released,
+    entity_trigger_squeezed,
+    message_broadcasted,
+    agent_placed,
+    agent_path_planned,
+    agent_removed
+} 
