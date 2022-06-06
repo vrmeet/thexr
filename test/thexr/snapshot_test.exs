@@ -13,17 +13,17 @@ defmodule Thexr.SnapshotTest do
 
     events = [
       %{
-        "m" => "member_entered",
+        "m" => EventName.atom_to_int(:member_entered),
         "p" => %{"member_id" => "jsdfk", "pos_rot" => %{}},
         "ts" => 23423
       },
       %{
-        "m" => "member_entered",
+        "m" => EventName.atom_to_int(:member_entered),
         "p" => %{"member_id" => "jsdfk", "pos_rot" => %{}},
         "ts" => 34_789_723
       },
       %{
-        "m" => "entity_created",
+        "m" => EventName.atom_to_int(:entity_created),
         "p" => %{
           "type" => "box",
           "id" => "029b7351-98be-4183-8848-579fab7cf5c7",
@@ -51,17 +51,17 @@ defmodule Thexr.SnapshotTest do
           ],
           "id" => "029b7351-98be-4183-8848-579fab7cf5c7"
         },
-        "m" => "entity_transformed"
+        "m" => EventName.atom_to_int(:entity_transformed)
       },
       %{
         "ts" => 23_423_423,
         "p" => %{"id" => "029b7351-98be-4183-8848-579fab7cf5c7", "color" => "#FF0000"},
-        "m" => "entity_colored"
+        "m" => EventName.atom_to_int(:entity_colored)
       },
       %{
         "ts" => 23_423_425,
         "p" => %{"id" => "029b7351-98be-4183-8848-579fab7cf5c7", "color" => "#0000FF"},
-        "m" => "entity_colored"
+        "m" => EventName.atom_to_int(:entity_colored)
       }
       # %{
       #   "ts" => 23_423_425,

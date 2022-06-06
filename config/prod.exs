@@ -66,3 +66,6 @@ config :logger, level: :info
 
 config :thexr,
   environment_name: :prod
+
+config :honeybadger,
+  environment_name: :prod

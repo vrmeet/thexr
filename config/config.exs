@@ -51,6 +51,7 @@ config :phoenix, :json_library, Jason
 config :honeybadger,
   api_key: System.get_env("HONEYBADGER_API_KEY"),
   ecto_repos: [Thexr.Repo],
+  environment_name: :dev,
   use_logger: true,
   exclude_envs: [:dev, :test]
 

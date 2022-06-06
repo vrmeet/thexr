@@ -12,22 +12,22 @@ defmodule ThexrWeb.SpaceChannel do
   end
 
   @impl true
-  def handle_in("event", payload, socket) do
-    SpaceServer.process_event(socket.assigns.space_id, payload, self())
+  def handle_in("event", event_payload, socket) do
+    {event_atom, atomized_event} =
+      SpaceServer.process_event(socket.assigns.space_id, event_payload, self())
+
     # cache member movement if event is camera movement
-    cache_members(payload, socket)
+    cache_members(event_atom, atomized_event.p, socket)
     {:noreply, socket}
   end
 
   def cache_members(
-        %{
-          "m" => "member_entered",
-          "p" => %{"member_id" => member_id, "pos_rot" => pos_rot, "state" => member_state}
-        },
+        :member_entered,
+        %{member_id: member_id, pos_rot: pos_rot, state: member_state},
         socket
       ) do
-    [px, py, pz] = pos_rot["pos"]
-    [rx, ry, rz, rw] = pos_rot["rot"]
+    [px, py, pz] = pos_rot.pos
+    [rx, ry, rz, rw] = pos_rot.rot
 
     :ets.insert(
       socket.assigns.member_movements,
@@ -38,11 +38,12 @@ defmodule ThexrWeb.SpaceChannel do
   end
 
   def cache_members(
-        %{"m" => "member_moved", "p" => %{"member_id" => member_id, "pos_rot" => pos_rot}},
+        :member_moved,
+        %{member_id: member_id, pos_rot: pos_rot},
         socket
       ) do
-    [px, py, pz] = pos_rot["pos"]
-    [rx, ry, rz, rw] = pos_rot["rot"]
+    [px, py, pz] = pos_rot.pos
+    [rx, ry, rz, rw] = pos_rot.rot
 
     :ets.insert(
       socket.assigns.member_movements,
@@ -51,32 +52,28 @@ defmodule ThexrWeb.SpaceChannel do
   end
 
   def cache_members(
-        %{
-          "m" => "member_changed_mic_pref",
-          "p" => %{"member_id" => member_id, "mic_muted" => mic_muted}
-        },
+        :member_changed_mic_pref,
+        %{member_id: member_id, mic_muted: mic_muted},
         socket
       ) do
     payload = get_state(member_id, socket.assigns.member_states)
 
-    state = Map.merge(payload, %{"mic_muted" => mic_muted})
+    state = Map.merge(payload, %{mic_muted: mic_muted})
     :ets.insert(socket.assigns.member_states, {member_id, state})
   end
 
   def cache_members(
-        %{
-          "m" => "member_changed_nickname",
-          "p" => %{"member_id" => member_id, "nickname" => nickname}
-        },
+        :member_changed_nickname,
+        %{member_id: member_id, nickname: nickname},
         socket
       ) do
     payload = get_state(member_id, socket.assigns.member_states)
 
-    state = Map.merge(payload, %{"nickname" => nickname})
+    state = Map.merge(payload, %{nickname: nickname})
     :ets.insert(socket.assigns.member_states, {member_id, state})
   end
 
-  def cache_members(_, _) do
+  def cache_members(_, _, _) do
   end
 
   # def handle_in("camera_moved", %{"pos" => pos, "rot" => rot}, socket) do

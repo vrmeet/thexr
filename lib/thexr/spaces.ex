@@ -620,7 +620,7 @@ defmodule Thexr.Spaces do
 
     q =
       from(e in EventStream,
-        select: map(e, [:sequence, :event_timestamp, :type, :payload]),
+        select: map(e, [:sequence, :event]),
         where: e.space_id == ^space_id and e.sequence > ^last_evaluated_sequence,
         limit: ^limit,
         order_by: e.sequence
@@ -665,7 +665,7 @@ defmodule Thexr.Spaces do
   def batch_archive_eventstream_to_s3(space_id, sequence, chunk_size, client) do
     query =
       from e in EventStream,
-        select: map(e, [:sequence, :event_timestamp, :type, :payload]),
+        select: map(e, [:sequence, :event]),
         where: e.space_id == ^space_id and e.sequence <= ^sequence,
         order_by: e.sequence
 

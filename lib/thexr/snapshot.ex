@@ -16,13 +16,12 @@ defmodule Thexr.Snapshot do
     events = Spaces.event_stream(space_id, last_evaluated_sequence)
 
     Enum.each(events, fn event ->
-      process(space_id, event.type, AtomicMap.convert(event, %{safe: false}))
+      {msg, evt} = Thexr.Utils.tupleize_event_payload(event)
+      process(space_id, msg, evt)
     end)
   end
 
-  def process(space_id, "entity_created", %{
-        payload: payload
-      }) do
+  def process(space_id, :entity_created, payload) do
     changeset =
       %Entity{space_id: space_id}
       |> Entity.changeset(payload)
@@ -32,9 +31,7 @@ defmodule Thexr.Snapshot do
     |> Repo.transaction()
   end
 
-  def process(_space_id, "entity_transformed", %{
-        payload: %{id: entity_id, components: components}
-      }) do
+  def process(_space_id, :entity_transformed, %{id: entity_id, components: components}) do
     multi = Multi.new()
 
     Enum.reduce(
@@ -53,7 +50,7 @@ defmodule Thexr.Snapshot do
     |> Repo.transaction()
   end
 
-  def process(_space_id, "entity_colored", %{payload: %{id: entity_id, color: color}}) do
+  def process(_space_id, :entity_colored, %{id: entity_id, color: color}) do
     Repo.insert_all(
       Component,
       [%{entity_id: entity_id, type: "color", data: %{value: color}}],
@@ -62,51 +59,43 @@ defmodule Thexr.Snapshot do
     )
   end
 
-  def process(_space_id, "entity_deleted", %{payload: %{id: entity_id}}) do
+  def process(_space_id, :entity_deleted, %{id: entity_id}) do
     from(e in Entity, where: e.id == ^entity_id) |> Repo.delete_all()
   end
 
-  def process(space_id, "entity_grabbed", %{
-        payload: %{entity_id: entity_id, entity_pos_rot: %{pos: pos, rot: rot}}
+  def process(space_id, :entity_grabbed, %{
+        entity_id: entity_id,
+        entity_pos_rot: %{pos: pos, rot: rot}
       }) do
-    process(space_id, "entity_transformed", %{
-      payload: %{
-        id: entity_id,
-        components: [
-          %{type: "position", data: %{value: pos}},
-          %{type: "rotation", data: %{value: rot}}
-        ]
-      }
+    process(space_id, :entity_transformed, %{
+      id: entity_id,
+      components: [
+        %{type: "position", data: %{value: pos}},
+        %{type: "rotation", data: %{value: rot}}
+      ]
     })
   end
 
-  def process(space_id, "entity_released", %{
-        payload: %{entity_id: entity_id, entity_pos_rot: %{pos: pos, rot: rot}}
+  def process(space_id, :entity_released, %{
+        entity_id: entity_id,
+        entity_pos_rot: %{pos: pos, rot: rot}
       }) do
-    process(space_id, "entity_transformed", %{
-      payload: %{
-        id: entity_id,
-        components: [
-          %{type: "position", data: %{value: pos}},
-          %{type: "rotation", data: %{value: rot}}
-        ]
-      }
+    process(space_id, :entity_transformed, %{
+      id: entity_id,
+      components: [
+        %{type: "position", data: %{value: pos}},
+        %{type: "rotation", data: %{value: rot}}
+      ]
     })
   end
-
-  # { m: "entity_deleted", p: { id: string }, ts?: number }
 
   def process(s, m, e) do
-    if m !== "member_moved" do
-      IO.inspect(s, label: "GOT-----------------------")
-      IO.inspect(s, label: "GOT-----------------------")
-      IO.inspect(s, label: "GOT-----------------------")
-      IO.inspect(s, label: "GOT-----------------------")
-      IO.inspect(s, label: "GOT-----------------------")
-      IO.inspect(s, label: "GOT-----------------------")
-      IO.inspect(s, label: "TO THE catch ALL-----------------------")
+    # temp logging to see what events we're getting
 
-      IO.inspect(e, label: "no match #{m}")
+    if m !== :member_moved do
+      IO.inspect(s, label: "GOT-----------------------")
+      IO.inspect(m, label: "GOT-----------------------")
+      IO.inspect(e, label: "GOT-----------------------")
     end
   end
 

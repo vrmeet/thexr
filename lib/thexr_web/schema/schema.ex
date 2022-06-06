@@ -17,10 +17,8 @@ defmodule ThexrWeb.Schema.Schema do
 
   # TODO, get all events from S3
   object :event_stream do
-    field :event_timestamp, non_null(:integer)
     field :sequence, non_null(:integer)
-    field :type, non_null(:string)
-    field :payload, :json
+    field :event, :json
   end
 
   object :entity do

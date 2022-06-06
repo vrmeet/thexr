@@ -39,6 +39,9 @@ config :thexr, ThexrWeb.Endpoint,
 config :thexr,
   environment_name: :dev
 
+config :honeybadger,
+  environment_name: :dev
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed

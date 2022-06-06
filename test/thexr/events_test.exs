@@ -8,12 +8,12 @@ defmodule Thexr.EventsTest do
 
     events = [
       %{
-        "m" => "member_entered",
+        "m" => EventName.atom_to_int(:member_entered),
         "p" => %{"member_id" => "jsdfk", "pos_rot" => %{}},
         "ts" => 23423
       },
       %{
-        "m" => "member_entered",
+        "m" => EventName.atom_to_int(:member_entered),
         "p" => %{"member_id" => "jsdfk", "pos_rot" => %{}},
         "ts" => 34_789_723
       }
