@@ -27,20 +27,24 @@ defmodule Thexr.EventWriter do
   def handle_events(events, _from, state) do
     # TODO: write all events in bulk
 
-    Enum.map(events, fn event ->
-      Thexr.Spaces.create_event(event)
+    Enum.map(events, fn {msg, event_stream_attr} ->
+      Thexr.Spaces.create_event(event_stream_attr)
 
-      if rem(event.sequence, @archive_chuck_size) == 0 do
+      if rem(event_stream_attr.sequence, @archive_chuck_size) == 0 do
         Thexr.Spaces.batch_archive_eventstream_to_s3(
-          event.space_id,
-          event.sequence,
+          event_stream_attr.space_id,
+          event_stream_attr.sequence,
           @archive_chuck_size,
           state.aws_client
         )
       end
 
       # side-effect of processing each event into a snapshot
-      Thexr.Snapshot.process(event.space_id, event.type, event)
+      Thexr.Snapshot.process(
+        event_stream_attr.space_id,
+        msg,
+        event_stream_attr.event.p
+      )
     end)
 
     # We are a consumer, so we would never emit items.

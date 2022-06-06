@@ -4,11 +4,9 @@ defmodule Thexr.Repo.Migrations.CreateEvents do
   def change do
     create table(:event_streams, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :type, :string, null: false
       add :sequence, :bigint, default: 0, null: false
-      add :payload, :map, default: %{}, null: false
+      add :event, :map, default: %{}, null: false
       add :space_id, references(:spaces, on_delete: :delete_all, type: :binary_id)
-      add :event_timestamp, :bigint
       timestamps(updated_at: false)
     end
 

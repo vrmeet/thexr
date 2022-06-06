@@ -31,5 +31,8 @@ config :logger, level: :warn
 config :thexr,
   environment_name: :test
 
+config :honeybadger,
+  environment_name: :test
+
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime

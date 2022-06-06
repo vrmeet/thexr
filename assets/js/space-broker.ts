@@ -169,7 +169,7 @@ export class SpaceBroker {
                 })
             } else {
                 // a debug
-                signalHub.outgoing.emit("event", { m: EventName.message_broadcasted, p: { member_id: this.orchestrator.member_id, msg: `no hands` } })
+                // signalHub.outgoing.emit("event", { m: EventName.message_broadcasted, p: { member_id: this.orchestrator.member_id, msg: `no hands` } })
 
                 signalHub.outgoing.emit("event", {
                     m: EventName.member_moved,

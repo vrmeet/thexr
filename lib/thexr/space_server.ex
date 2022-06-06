@@ -23,8 +23,15 @@ defmodule Thexr.SpaceServer do
     )
   end
 
-  def process_event(space_id, payload, pid) do
-    GenServer.cast(via_tuple(space_id), {:event, payload, pid})
+  def process_event(space_id, event, pid) when is_map(event) do
+    {event_atom, atomized_event} = tuple = Thexr.Utils.tupleize_event_payload(event)
+    process_event(space_id, event_atom, atomized_event, pid)
+    tuple
+  end
+
+  def process_event(space_id, event_atom, atomized_event, pid)
+      when is_atom(event_atom) and is_map(atomized_event) do
+    GenServer.cast(via_tuple(space_id), {:event, event_atom, atomized_event, pid})
   end
 
   @doc """
@@ -101,20 +108,19 @@ defmodule Thexr.SpaceServer do
   #   {socket.assigns.member_id, p0, p1, p2, r0, r1, r2, r3, left, right}
   # )
 
-  def handle_cast({:event, %{"m" => msg, "p" => payload, "ts" => time_in_ms} = data, pid}, state) do
+  def handle_cast({:event, msg, evt, pid}, state) do
     state = %{state | sequence: state.sequence + 1}
 
     event_stream_attrs = %{
       space_id: state.space.id,
-      type: msg,
       sequence: state.sequence,
-      payload: AtomicMap.convert(payload, %{safe: false}),
-      event_timestamp: time_in_ms
+      event: evt
     }
 
-    Thexr.QueueBroadcaster.async_notify(event_stream_attrs)
-    broadcast_event(state.space, data, pid)
-    # Thexr.Snapshot.process_event(msg, payload)
+    Thexr.QueueBroadcaster.async_notify({msg, event_stream_attrs})
+    # TODO: every msg is broadcast to every client?
+    # we can consolidate that to on 'need to know' basis
+    broadcast_event(state.space, {msg, evt}, pid)
 
     {:noreply, state}
   end
@@ -147,8 +153,14 @@ defmodule Thexr.SpaceServer do
   def handle_info(:kick_check, state) do
     Enum.each(state.disconnected, fn member_id ->
       time_in_ms = DateTime.utc_now() |> DateTime.to_unix(:millisecond)
-      payload = %{"m" => "member_left", "p" => %{"member_id" => member_id}, "ts" => time_in_ms}
-      __MODULE__.process_event(state.space.id, payload, nil)
+
+      payload = %{
+        m: EventName.atom_to_int(:member_left),
+        p: %{member_id: member_id},
+        ts: time_in_ms
+      }
+
+      __MODULE__.process_event(state.space.id, :member_left, payload, nil)
     end)
 
     state = %{state | disconnected: MapSet.new()}
@@ -165,11 +177,11 @@ defmodule Thexr.SpaceServer do
     :ok
   end
 
-  def broadcast_event(space, payload, nil) do
-    ThexrWeb.Endpoint.broadcast("space:#{space.id}", "event", payload)
+  def broadcast_event(space, {_msg, evt}, nil) do
+    ThexrWeb.Endpoint.broadcast("space:#{space.id}", "event", evt)
   end
 
-  def broadcast_event(space, payload, from) do
-    ThexrWeb.Endpoint.broadcast_from(from, "space:#{space.id}", "event", payload)
+  def broadcast_event(space, {_msg, evt}, from) do
+    ThexrWeb.Endpoint.broadcast_from(from, "space:#{space.id}", "event", evt)
   end
 end
