@@ -63,11 +63,12 @@ defmodule Thexr.SpaceServer do
     GenServer.call(via_tuple(space_id), :summary)
   end
 
-  # used to support future disconnects by the server
+  # space channel calls this after join
   def member_connected(space_id, member_id) do
     GenServer.cast(via_tuple(space_id), {:member_connected, member_id})
   end
 
+  # space channel calls this on terminate
   def member_disconnected(space_id, member_id) do
     GenServer.cast(via_tuple(space_id), {:member_disconnected, member_id})
   end
@@ -120,7 +121,7 @@ defmodule Thexr.SpaceServer do
     Thexr.QueueBroadcaster.async_notify({msg, event_stream_attrs})
     # TODO: every msg is broadcast to every client?
     # we can consolidate that to on 'need to know' basis
-    broadcast_event(state.space, {msg, evt}, pid)
+    broadcast_event(state.space, msg, evt, pid)
 
     {:noreply, state}
   end
@@ -177,11 +178,11 @@ defmodule Thexr.SpaceServer do
     :ok
   end
 
-  def broadcast_event(space, {_msg, evt}, nil) do
+  def broadcast_event(space, _msg, evt, nil) do
     ThexrWeb.Endpoint.broadcast("space:#{space.id}", "event", evt)
   end
 
-  def broadcast_event(space, {_msg, evt}, from) do
+  def broadcast_event(space, _msg, evt, from) do
     ThexrWeb.Endpoint.broadcast_from(from, "space:#{space.id}", "event", evt)
   end
 end

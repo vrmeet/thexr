@@ -1,5 +1,15 @@
 TODO:
 
+- graphQL is the most "pure" edit mode (you are not embodied)
+
+- need a command to bake a nav mesh and combine locked entities
+
+- a command to place a monster
+
+- menu needs to persist edit mode true | false
+  - persisted on server
+  - used for showing you editable things (menus)
+
 - extend the types of components for overrides
 - agent events
 
