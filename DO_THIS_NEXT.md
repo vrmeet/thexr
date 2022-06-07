@@ -1,5 +1,25 @@
 TODO:
 
+handle client, storing leader status
+
+select a client leader
+  member connected (join a channel)
+  member disconnect (leave a channel)
+
+space server
+  member_joined
+  member_left
+
+  state.leader 
+
+  ets.member_states
+
+
+
+- space server should always have a leader, back channeled message
+
+- member is editing, true | false
+
 - graphQL is the most "pure" edit mode (you are not embodied)
 
 - need a command to bake a nav mesh and combine locked entities

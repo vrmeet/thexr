@@ -100,7 +100,8 @@ defmodule Thexr.SpaceServer do
        member_movements: member_movements,
        member_states: member_states,
        sequence: Thexr.Spaces.max_event_sequence(space.id),
-       disconnected: MapSet.new()
+       disconnected: MapSet.new(),
+       leader: nil
      }, @timeout}
   end
 
@@ -122,6 +123,7 @@ defmodule Thexr.SpaceServer do
     # TODO: every msg is broadcast to every client?
     # we can consolidate that to on 'need to know' basis
     broadcast_event(state.space, msg, evt, pid)
+    state = choose_leader(msg, evt, state)
 
     {:noreply, state}
   end
@@ -184,5 +186,42 @@ defmodule Thexr.SpaceServer do
 
   def broadcast_event(space, _msg, evt, from) do
     ThexrWeb.Endpoint.broadcast_from(from, "space:#{space.id}", "event", evt)
+  end
+
+  def choose_leader(:member_entered, evt, state) do
+    if state.leader == nil do
+      %{state | leader: evt.p.member_id}
+
+      ThexrWeb.Endpoint.broadcast("space:#{state.space.id}", "new_leader", %{
+        member_id: evt.p.member_id
+      })
+    else
+      state
+    end
+  end
+
+  def choose_leader(:member_left, evt, state) do
+    if evt.p.member_id == state.leader do
+      # find a new leader
+      member_ids = Thexr.Utils.member_states_to_map(state.member_states) |> Map.keys()
+
+      if length(member_ids) > 0 do
+        member_id = List.first(member_ids)
+
+        ThexrWeb.Endpoint.broadcast("space:#{state.space.id}", "new_leader", %{
+          member_id: member_id
+        })
+
+        %{state | leader: member_id}
+      else
+        %{state | leader: nil}
+      end
+    else
+      state
+    end
+  end
+
+  def choose_leader(_, _, state) do
+    state
   end
 end

@@ -16,4 +16,25 @@ defmodule Thexr.Utils do
     atomized = AtomicMap.convert(payload, %{safe: false})
     {EventName.int_to_atom(atomized.m), atomized}
   end
+
+  def member_states_to_map(ets_ref) do
+    :ets.tab2list(ets_ref)
+    |> Enum.reduce(%{}, fn {member_id, payload}, acc ->
+      Map.put(acc, member_id, payload)
+    end)
+  end
+
+  def movements_to_map(ets_ref) do
+    :ets.tab2list(ets_ref)
+    |> Enum.reduce(%{}, fn {member_id, {p0, p1, p2, r0, r1, r2, r3}}, acc ->
+      payload = %{
+        "pos_rot" => %{
+          "pos" => [p0, p1, p2],
+          "rot" => [r0, r1, r2, r3]
+        }
+      }
+
+      Map.put(acc, member_id, payload)
+    end)
+  end
 end
