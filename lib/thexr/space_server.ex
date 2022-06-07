@@ -190,11 +190,11 @@ defmodule Thexr.SpaceServer do
 
   def choose_leader(:member_entered, evt, state) do
     if state.leader == nil do
-      %{state | leader: evt.p.member_id}
-
       ThexrWeb.Endpoint.broadcast("space:#{state.space.id}", "new_leader", %{
         member_id: evt.p.member_id
       })
+
+      %{state | leader: evt.p.member_id}
     else
       state
     end
