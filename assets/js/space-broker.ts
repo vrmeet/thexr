@@ -110,13 +110,9 @@ export class SpaceBroker {
             this.spaceChannel.push('event', { ...mp, ts: (new Date()).getTime() })
         })
 
-
-
         signalHub.incoming.on("server_lost").subscribe(() => {
             window.location.href = '/';
         })
-
-
     }
 
     connectToChannel() {

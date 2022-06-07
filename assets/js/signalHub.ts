@@ -24,6 +24,7 @@ export type IncomingEvents = {
     presence_state: types.PresenceState
     space_settings_changed: types.scene_settings
     server_lost: any
+    new_leader: { member_id: string }
     about_members: { movements: { [member_id: string]: { pos_rot: types.PosRot } }, states: { [member_id: string]: types.member_state } }
 }
 

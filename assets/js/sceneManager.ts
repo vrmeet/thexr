@@ -36,12 +36,14 @@ export class SceneManager {
     public serializedSpace: serialized_space
     public bulletManager: BulletManager
     public crowdAgent: CrowdAgent
+    public isLeader: boolean
 
 
     public navigationPlugin: BABYLON.RecastJSPlugin
 
 
     constructor(public orchestrator: Orchestrator) {
+        this.isLeader = false
         this.canvasId = orchestrator.canvasId
         this.member_id = orchestrator.member_id
         this.serializedSpace = orchestrator.serializedSpace
@@ -82,6 +84,16 @@ export class SceneManager {
     }
 
     setChannelListeners() {
+
+        signalHub.incoming.on("new_leader").subscribe(({ member_id }) => {
+            if (this.member_id === member_id) {
+                this.isLeader = true
+                console.log("i'm leader")
+            } else {
+                this.isLeader = false
+                console.log("i'm not leader")
+            }
+        })
 
         signalHub.incoming.on("about_members").subscribe(members => {
             for (const [member_id, payload] of Object.entries(members.movements)) {
