@@ -1,4 +1,5 @@
-import AgoraRTC, { ConnectionState, IAgoraRTCClient, IAgoraRTCRemoteUser, ILocalVideoTrack, IMicrophoneAudioTrack, IRemoteAudioTrack, IRemoteVideoTrack } from 'agora-rtc-sdk-ng'
+import AgoraRTC from 'agora-rtc-sdk-ng'
+import type { ConnectionState, IAgoraRTCClient, IAgoraRTCRemoteUser, ILocalVideoTrack, IMicrophoneAudioTrack, IRemoteAudioTrack, IRemoteVideoTrack } from 'agora-rtc-sdk-ng'
 import type { WebRTCClient, RemoteStreamPublishedCallback, RemoteStreamUnpublishedCallback } from "./web-rtc-client"
 
 export class WebRTCClientAgora implements WebRTCClient {
