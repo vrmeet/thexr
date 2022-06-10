@@ -8,7 +8,7 @@ const NAV_MESH_PARAMS = {
     cs: 0.2,
     ch: 0.2,
     walkableSlopeAngle: 35,
-    walkableHeight: 1,
+    walkableHeight: 1.0,
     walkableClimb: 1,
     walkableRadius: 1,
     maxEdgeLen: 12,
@@ -40,29 +40,39 @@ export class NavManager {
         })
     }
 
-    async loadCacheOrCreateNavMesh(meshes: BABYLON.Mesh[]) {
+    async makeNavMesh(meshes: BABYLON.Mesh[], cacheResponse: Response) {
+        // const isCached = await this.loadNavMesh()
+        // if (isCached) {
+        if (cacheResponse.status === 200) {
+            const blob = await cacheResponse.blob()
+            console.log('fetched blob', blob)
+            const buffer = await blob.arrayBuffer()
+            const view = new Uint8Array(buffer)
+            console.log('view', view)
 
-        const didFindCache = await this.loadNavMesh()
-        //console.log("did find cache", didFindCache)
-        if (!didFindCache) {
+            this.navigationPlugin.buildFromNavmeshData(view)
 
+        } else {
             await this.createNavMesh(meshes)
             await this.bakeNavMesh()
         }
+
+
         this.createDebugMesh()
 
-        console.log('confirm navmesh data', this.navigationPlugin.getNavmeshData())
 
 
     }
 
     async loadNavMesh() {
-        //return false
 
+        // await fetch(`https://thexr.space`)
+        //return false
+        // `/s/${this.sceneManager.space_id}/nav_mesh`
         const response = await fetch(`/s/${this.sceneManager.space_id}/nav_mesh`, {
             method: "GET",
             headers: {
-                "Accept": "application/json"
+                "Accept": "*/*"
             }
         })
 
