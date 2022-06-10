@@ -398,10 +398,16 @@ export class SceneManager {
 
 
     async parseInitialScene(entities) {
-
+        //check to see if there is a cached nav mesh
+        const navMeshCacheResponse = await fetch(`/s/${this.serializedSpace.id}/nav_mesh`, {
+            method: "GET",
+            headers: {
+                "Accept": "*/*"
+            }
+        })
 
         const meshes = entities.map(entity => this.findOrCreateMesh(entity))
-        await this.navManager.loadCacheOrCreateNavMesh(meshes)
+        await this.navManager.makeNavMesh(meshes, navMeshCacheResponse)
 
         this.crowdAgent = new CrowdAgent(this)
     }
