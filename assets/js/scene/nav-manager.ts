@@ -40,57 +40,39 @@ export class NavManager {
         })
     }
 
-    async makeNavMesh(meshes: BABYLON.Mesh[], cacheResponse: Response) {
-        // const isCached = await this.loadNavMesh()
-        // if (isCached) {
-        if (cacheResponse.status === 200) {
-            const blob = await cacheResponse.blob()
-            console.log('fetched blob', blob)
-            const buffer = await blob.arrayBuffer()
-            const view = new Uint8Array(buffer)
-            console.log('view', view)
-
-            this.navigationPlugin.buildFromNavmeshData(view)
-
-        } else {
+    async loadOrMakeNavMesh(meshes: BABYLON.Mesh[]) {
+        const binary = await this.fetchCachedBinaryData()
+        if (binary === null) {
             await this.createNavMesh(meshes)
             await this.bakeNavMesh()
+        } else {
+            this.loadBinaryToPlugin(binary)
         }
-
-
         this.createDebugMesh()
-
-
-
     }
 
-    async loadNavMesh() {
+    loadBinaryToPlugin(binary: Uint8Array) {
+        this.navigationPlugin.buildFromNavmeshData(binary)
+        this.navMeshCreated = true
+    }
 
-        // await fetch(`https://thexr.space`)
-        //return false
-        // `/s/${this.sceneManager.space_id}/nav_mesh`
+    async fetchCachedBinaryData() {
         const response = await fetch(`/s/${this.sceneManager.space_id}/nav_mesh`, {
             method: "GET",
             headers: {
                 "Accept": "*/*"
             }
         })
-
-
         if (response.status === 200) {
             const blob = await response.blob()
             console.log('fetched blob', blob)
             const buffer = await blob.arrayBuffer()
-            const view = new Uint8Array(buffer)
-            console.log('view', view)
-
-            this.navigationPlugin.buildFromNavmeshData(view)
-            console.log('built mesh from cached data')
-            return true
+            return new Uint8Array(buffer)
         } else {
-            return false
+            return null
         }
     }
+
 
     async uncacheNavMesh() {
         const response = await fetch(`/s/${this.sceneManager.space_id}/nav_mesh`, { // Your POST endpoint
@@ -110,31 +92,16 @@ export class NavManager {
             console.log('skip bake mesh, no meshes')
             return
         }
-        meshes.forEach(mesh => {
-            console.log(mesh.name)
-        })
         this.navigationPlugin.createNavMesh(meshes, NAV_MESH_PARAMS)
         console.log("created nav mesh here!")
         this.navMeshCreated = true
-
     }
 
 
     async bakeNavMesh() {
-
-        //console.log("in create Nav Mesh")
-        //  const recast = await window['recast']
-
-        //console.log('awaited recast', recast)
-
-
-        // if (!this.navigationPlugin) {
-        //     return
-        // }
-        // try to create a nav mesh
-
-        //    this.navigationPlugin.setWorkerURL("/assets/navMeshWorker.js");
-
+        if (!this.navMeshCreated) {
+            return
+        }
         let data = this.navigationPlugin.getNavmeshData()
         console.log('getting data', data)
         const blob = new Blob([data.buffer], { type: "application/octet-stream" })
@@ -148,30 +115,12 @@ export class NavManager {
             },
             body: blob // This is your file object
         })
-
-        // this.createDebugMesh()
-
-        console.log('save response', response)
-
-
-
-
-        // , navMeshData => {
-
-        //  this.navigationPlugin.buildFromNavmeshData(navMeshData)
-
-        // })
-
     }
 
     createDebugMesh() {
-        // if (!this.navMeshCreated) {
-        //     return
-        // }
-        // if (this.debugMesh) {
-        //     this.debugMesh.material.dispose()
-        //     this.debugMesh.dispose()
-        // }
+        if (!this.navMeshCreated) {
+            return
+        }
         console.log("building debug mesh")
         // named: NavMeshDebug
         let debugMesh = this.navigationPlugin.createDebugNavMesh(this.scene);

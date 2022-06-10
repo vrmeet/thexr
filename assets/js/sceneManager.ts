@@ -274,12 +274,11 @@ export class SceneManager {
         // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
         var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), this.scene);
         this.navManager = new NavManager(this)
-        this.parseInitialScene(this.entities)
+        await this.parseInitialScene(this.entities)
 
         new DamageOverlay(this.orchestrator)
         new HudMessager(this.scene)
         this.bulletManager = new BulletManager(this)
-
 
         return this.scene;
 
@@ -398,17 +397,8 @@ export class SceneManager {
 
 
     async parseInitialScene(entities) {
-        //check to see if there is a cached nav mesh
-        const navMeshCacheResponse = await fetch(`/s/${this.serializedSpace.id}/nav_mesh`, {
-            method: "GET",
-            headers: {
-                "Accept": "*/*"
-            }
-        })
-
         const meshes = entities.map(entity => this.findOrCreateMesh(entity))
-        await this.navManager.makeNavMesh(meshes, navMeshCacheResponse)
-
+        await this.navManager.loadOrMakeNavMesh(meshes)
         this.crowdAgent = new CrowdAgent(this)
     }
 
