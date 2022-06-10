@@ -689,6 +689,11 @@ defmodule Thexr.Spaces do
     end
   end
 
+  def delete_nav_mesh(space_id) do
+    query = from n in NavMesh, where: n.space_id == ^space_id
+    Repo.delete_all(query)
+  end
+
   def set_nav_mesh(space_id, "") do
     set_nav_mesh(space_id, nil)
   end

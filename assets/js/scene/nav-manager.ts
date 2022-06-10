@@ -65,7 +65,6 @@ export class NavManager {
         })
         if (response.status === 200) {
             const blob = await response.blob()
-            console.log('fetched blob', blob)
             const buffer = await blob.arrayBuffer()
             return new Uint8Array(buffer)
         } else {
@@ -76,13 +75,11 @@ export class NavManager {
 
     async uncacheNavMesh() {
         const response = await fetch(`/s/${this.sceneManager.space_id}/nav_mesh`, { // Your POST endpoint
-            method: 'POST',
+            method: 'DELETE',
             headers: {
                 'Accept': 'application/json, text/plain, text/html, *.*',
-                'Content-Type': 'multipart/form-data',
                 "x-csrf-token": this.csrfToken
-            },
-            body: null // This is your file object
+            }
         })
 
     }
@@ -103,9 +100,7 @@ export class NavManager {
             return
         }
         let data = this.navigationPlugin.getNavmeshData()
-        console.log('getting data', data)
         const blob = new Blob([data.buffer], { type: "application/octet-stream" })
-        console.log('making blob', blob)
         const response = await fetch(`/s/${this.sceneManager.space_id}/nav_mesh`, { // Your POST endpoint
             method: 'POST',
             headers: {
