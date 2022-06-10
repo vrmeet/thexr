@@ -7,11 +7,11 @@ import { signalHub } from "../signalHub"
 const NAV_MESH_PARAMS = {
     cs: 0.2,
     ch: 0.2,
-    walkableSlopeAngle: 90,
-    walkableHeight: 1.0,
+    walkableSlopeAngle: 35,
+    walkableHeight: 1,
     walkableClimb: 1,
     walkableRadius: 1,
-    maxEdgeLen: 12.,
+    maxEdgeLen: 12,
     maxSimplificationError: 1.3,
     minRegionArea: 8,
     mergeRegionArea: 20,
@@ -43,24 +43,29 @@ export class NavManager {
     async loadCacheOrCreateNavMesh(meshes: BABYLON.Mesh[]) {
 
         const didFindCache = await this.loadNavMesh()
-        console.log("did find cache", didFindCache)
+        //console.log("did find cache", didFindCache)
         if (!didFindCache) {
+
             await this.createNavMesh(meshes)
             await this.bakeNavMesh()
         }
+        this.createDebugMesh()
+
         console.log('confirm navmesh data', this.navigationPlugin.getNavmeshData())
 
-        this.createDebugMesh()
+
     }
 
     async loadNavMesh() {
+        //return false
 
-        const response = await fetch(`/s/${this.sceneManager.space_id}/nav_mesh`, { // Your POST endpoint
-            method: 'GET',
+        const response = await fetch(`/s/${this.sceneManager.space_id}/nav_mesh`, {
+            method: "GET",
             headers: {
-                'Accept': 'application/json, text/plain, text/html, *.*',
+                "Accept": "application/json"
             }
         })
+
 
         if (response.status === 200) {
             const blob = await response.blob()
@@ -70,6 +75,7 @@ export class NavManager {
             console.log('view', view)
 
             this.navigationPlugin.buildFromNavmeshData(view)
+            console.log('built mesh from cached data')
             return true
         } else {
             return false
@@ -94,7 +100,11 @@ export class NavManager {
             console.log('skip bake mesh, no meshes')
             return
         }
+        meshes.forEach(mesh => {
+            console.log(mesh.name)
+        })
         this.navigationPlugin.createNavMesh(meshes, NAV_MESH_PARAMS)
+        console.log("created nav mesh here!")
         this.navMeshCreated = true
 
     }
@@ -153,9 +163,10 @@ export class NavManager {
         //     this.debugMesh.dispose()
         // }
         console.log("building debug mesh")
+        // named: NavMeshDebug
         let debugMesh = this.navigationPlugin.createDebugNavMesh(this.scene);
         debugMesh.showBoundingBox = true;
-        debugMesh.position = new BABYLON.Vector3(0, 0.01, 0);
+        // debugMesh.position = new BABYLON.Vector3(0, 0.01, 0);
         var matdebug = new BABYLON.StandardMaterial("matdebug", this.scene);
         matdebug.diffuseColor = new BABYLON.Color3(1, 0, 0);
         matdebug.alpha = 0.5;
