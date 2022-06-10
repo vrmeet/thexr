@@ -9,7 +9,7 @@ defmodule Thexr.Spaces do
   alias Thexr.Repo
 
   alias Thexr.Spaces.Space
-  alias Thexr.Spaces.{Entity, Component}
+  alias Thexr.Spaces.{Entity, Component, NavMesh}
   alias Thexr.Spaces.Treepath
 
   @doc """
@@ -687,5 +687,26 @@ defmodule Thexr.Spaces do
 
         Repo.delete_all(query)
     end
+  end
+
+  def set_nav_mesh(space_id, "") do
+    set_nav_mesh(space_id, nil)
+  end
+
+  def set_nav_mesh(space_id, data) do
+    Repo.insert!(
+      %NavMesh{space_id: space_id, data: data},
+      on_conflict: [set: [data: data]],
+      conflict_target: :space_id
+    )
+  end
+
+  def get_nav_mesh(space_id) do
+    query =
+      from n in NavMesh,
+        select: n.data,
+        where: n.space_id == ^space_id
+
+    Repo.one(query)
   end
 end

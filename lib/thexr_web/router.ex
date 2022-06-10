@@ -44,6 +44,8 @@ defmodule ThexrWeb.Router do
 
     get "/", PageController, :index
     get "/s/:space_id", SpaceController, :show
+    get "/s/:space_id/nav_mesh", SpaceController, :get_nav_mesh
+    post "/s/:space_id/nav_mesh", SpaceController, :save_nav_mesh
   end
 
   scope "/admin", ThexrWeb do

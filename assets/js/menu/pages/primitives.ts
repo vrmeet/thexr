@@ -60,19 +60,7 @@ export class MenuPagePrimitives extends GUI.Container {
                 signalHub.outgoing.emit('event', entity_event)
                 signalHub.incoming.emit('event', entity_event)
 
-                // this.orchestrator.sceneManager.findOrCreateMesh({
-                //     type: prim,
-                //     name,
-                //     id: uuid,
-                //     components: Object.entries(components).map(([key, value]) => {
-                //         if (key === "color") {
-                //             return { type: key, data: { value: value } }
-                //         }
-                //         return { type: key, data: value }
-                //     })
-                // })
 
-                // signalHub.outgoing.emit("spaces_api", { func: "added_entity_with_broadcast", args: [uuid, name, prim, components] })
             }
             return a({ callback }, prim)
         })
