@@ -15,6 +15,7 @@ import { HudMessager } from "./hud-message";
 import { BulletManager } from "./scene/bullet-manager";
 import { CrowdAgent } from "./scene/crowd-agent";
 import { EventName } from "./event-names"
+import { NavManager } from "./scene/nav-manager";
 
 
 const ANIMATION_FRAME_PER_SECOND = 60
@@ -37,9 +38,9 @@ export class SceneManager {
     public bulletManager: BulletManager
     public crowdAgent: CrowdAgent
     public isLeader: boolean
+    public navManager: NavManager
 
 
-    public navigationPlugin: BABYLON.RecastJSPlugin
 
 
     constructor(public orchestrator: Orchestrator) {
@@ -260,7 +261,6 @@ export class SceneManager {
         // Create a basic BJS Scene object
         this.scene = new BABYLON.Scene(this.engine);
 
-
         var gravityVector = new BABYLON.Vector3(0, -9.81, 0);
         const ammo = await Ammo()
 
@@ -273,6 +273,7 @@ export class SceneManager {
 
         // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
         var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), this.scene);
+        this.navManager = new NavManager(this)
         this.parseInitialScene(this.entities)
 
         new DamageOverlay(this.orchestrator)
@@ -396,53 +397,15 @@ export class SceneManager {
 
 
 
-    parseInitialScene(entities) {
+    async parseInitialScene(entities) {
+
+
         const meshes = entities.map(entity => this.findOrCreateMesh(entity))
-        this.createNavMesh(meshes)
+        await this.navManager.loadCacheOrCreateNavMesh(meshes)
+
         this.crowdAgent = new CrowdAgent(this)
     }
 
-    async createNavMesh(meshes: BABYLON.Mesh[]) {
-        //console.log("in create Nav Mesh")
-        //  const recast = await window['recast']
-
-        //console.log('awaited recast', recast)
-        this.navigationPlugin = new BABYLON.RecastJSPlugin();
-
-
-        // if (!this.navigationPlugin) {
-        //     return
-        // }
-        // try to create a nav mesh
-        var navmeshParameters = {
-            cs: 0.2,
-            ch: 0.2,
-            walkableSlopeAngle: 90,
-            walkableHeight: 1.0,
-            walkableClimb: 1,
-            walkableRadius: 1,
-            maxEdgeLen: 12.,
-            maxSimplificationError: 1.3,
-            minRegionArea: 8,
-            mergeRegionArea: 20,
-            maxVertsPerPoly: 6,
-            detailSampleDist: 6,
-            detailSampleMaxError: 1,
-        };
-        //    this.navigationPlugin.setWorkerURL("/assets/navMeshWorker.js");
-
-        this.navigationPlugin.createNavMesh(meshes, navmeshParameters)
-        // , navMeshData => {
-
-        //  this.navigationPlugin.buildFromNavmeshData(navMeshData)
-        const navmeshdebug = this.navigationPlugin.createDebugNavMesh(this.scene);
-        var matdebug = new BABYLON.StandardMaterial("matdebug", this.scene);
-        matdebug.diffuseColor = new BABYLON.Color3(0, 0, 1);
-        matdebug.alpha = 0.3;
-        navmeshdebug.material = matdebug;
-        // })
-
-    }
 
     findOrCreateMaterial(opts: { type: "color" | "grid", colorString?: string }) {
         if (opts.type === "color" && opts.colorString) {

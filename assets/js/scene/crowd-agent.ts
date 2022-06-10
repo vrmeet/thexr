@@ -9,7 +9,7 @@ export class CrowdAgent {
     public navigationPlugin: BABYLON.RecastJSPlugin
     constructor(public sceneManager: SceneManager) {
         this.scene = sceneManager.scene
-        this.navigationPlugin = sceneManager.navigationPlugin
+        // this.navigationPlugin = sceneManager.navigationPlugin
 
         // signalHub.incoming.on("event").pipe(
         //     filter(msg => msg.m === "game_started")

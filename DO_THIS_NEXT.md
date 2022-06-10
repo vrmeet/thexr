@@ -1,5 +1,7 @@
 TODO:
 
+bake the nav mesh after you change the scene
+
 handle client, storing leader status
 
 select a client leader

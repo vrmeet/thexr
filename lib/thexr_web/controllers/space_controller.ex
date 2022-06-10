@@ -25,6 +25,21 @@ defmodule ThexrWeb.SpaceController do
     end
   end
 
+  def save_nav_mesh(conn, %{"space_id" => space_id}) do
+    {:ok, body, conn} = Plug.Conn.read_body(conn)
+
+    IO.inspect(body, label: "body that i got in controller")
+    Spaces.set_nav_mesh(space_id, body)
+    conn |> json(%{})
+  end
+
+  def get_nav_mesh(conn, %{"space_id" => space_id}) do
+    case Spaces.get_nav_mesh(space_id) do
+      nil -> send_resp(conn, :no_content, "")
+      data -> send_resp(conn, :ok, data)
+    end
+  end
+
   def nudge_space(space) do
     Thexr.SpaceSupervisor.start_space(space)
   end

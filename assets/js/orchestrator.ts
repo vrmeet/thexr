@@ -8,7 +8,6 @@ import { SpaceBroker } from './space-broker';
 import type { scene_settings, serialized_space } from './types'
 import { WebRTCManager } from './web-rtc-manager';
 import { MemberStates } from './member-states';
-import { RecastJSCrowd } from 'babylonjs';
 import { signalHub } from './signalHub';
 
 
@@ -53,6 +52,10 @@ export class Orchestrator {
     }
 
 
+    debug() {
+        this.sceneManager.scene.debugLayer.show({ embedMode: true })
+    }
+
 
 
 
@@ -68,8 +71,15 @@ window.addEventListener('DOMContentLoaded', async () => {
     const orchestrator = new Orchestrator('spaceCanvas', member_id, serializedSpace)
     orchestrator.start()
     window.onerror = function (message, source, lineno, colno, error) {
-        signalHub.local.emit("hud_msg", JSON.stringify({ message, source, lineno, colno, error }));
-        throw error;
+        try {
+            // catch errors and display them to self
+            signalHub.local.emit("hud_msg", JSON.stringify({ message, source, lineno, colno, error }));
+        } catch (e) {
+
+        }
+        if (window['Honeybadger']) {
+            window['Honeybadger'].notify(error)
+        }
     };
 })
 
