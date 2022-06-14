@@ -694,10 +694,6 @@ defmodule Thexr.Spaces do
     Repo.delete_all(query)
   end
 
-  def set_nav_mesh(space_id, "") do
-    set_nav_mesh(space_id, nil)
-  end
-
   def set_nav_mesh(space_id, data) do
     Repo.insert!(
       %NavMesh{space_id: space_id, data: data},

@@ -33,7 +33,7 @@ export class NavManager {
         this.navigationPlugin = new BABYLON.RecastJSPlugin();
         this.csrfToken = document.getElementsByName("csrf-token")[0]['content'];
         signalHub.outgoing.on("event").pipe(
-            filter(msg => EventName.entity_created === msg.m || EventName.entity_transformed === msg.m || EventName.entity_deleted === msg.m)
+            filter(msg => EventName.box_created === msg.m || EventName.entity_transformed === msg.m || EventName.entity_deleted === msg.m)
         ).subscribe(() => {
             console.log("scene changed, uncache nav mesh")
             this.sceneManager.navManager.uncacheNavMesh()
@@ -90,7 +90,6 @@ export class NavManager {
             return
         }
         this.navigationPlugin.createNavMesh(meshes, NAV_MESH_PARAMS)
-        console.log("created nav mesh here!")
         this.navMeshCreated = true
     }
 
