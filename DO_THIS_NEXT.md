@@ -1,5 +1,94 @@
 TODO:
 
+-spike on protocol buffers as a more official way of managing a message contract between
+  js and elixir (as message types grow)
+
+- spike on serializing/deserializing in js
+ on serializing/deserializing in elixir
+ on using binary format in channels
+ 
+
+1. create a set of events to design the 'map' of a game
+    - DOOM (first person shooter)
+    - Red light / Green light
+    - A bridge crew
+    - A solo fighter jet
+
+2. create event api for playing said game
+   - recognizes when things are picked up
+   - when guns are fired
+   - when enemies are hit
+   - when joy stick is pulled on
+
+3. the environment is always shared and interactive
+   - if one person is editing (soft rule: can't be attacked)
+   - another person can be playing
+
+3. event hander to parse events needed to persist the game and load it
+   - currently is entities -> components
+   maybe want:
+     - lights
+     - meshes
+     - spawn points
+     - scenes
+     
+4. create db schema to persist the game, and load the game with
+5. create the js engine to load the game and be able to emit runtime events to broadcast
+
+6. create a pipeline to test the flow of these events.
+   - create an event list as if they are being emitted (spaces are always recording)
+   - play the events back in compressed time and observe the results from a browser
+   - playback should not produce new events, so we can run the test over and over.
+
+
+
+- create a visual mesh representation of a spawn point (add to primitive menu)
+disambiguate:
+  asset: (glb)
+  sounds:
+  nav_mesh:
+  meshes - things you render in the scene that you can move around (color, scale, move)
+  lights - move
+  spawn_points - move
+  enemies - place
+  settings - occur globally, fog, background music
+
+- api, place an enemy agent into the space
+   - decision:
+       - is it part of the entity graph?
+           it does have position, rotation, scale and an id
+  - so initially i think yes, the monster has an initial position
+
+====
+
+  Add override field for components
+
+  - there are also interactable objects that might have two forms of initial position
+    - the 'reset' position
+    - the 'runtime' position, moved but only temporarily, but needs to be synced with other players
+
+  then we need a genserver to keep track of enemy state
+     - new location, damage, visiblity, potentially also rotation and scale
+
+
+
+- client:
+     a navigation manager
+        - a baked cache (from db)
+            Y -> load the nav mesh from binary data
+            N -> create new nav mesh from meshes, and bake -> DB
+
+    - db NavMesh, space 1:1 nav_mesh
+        - space_id, data 
+
+===
+
+leader
+  create nav mesh commands,  send to server
+    then server will (moveTo x,y,z)
+     
+
+
 bake the nav mesh after you change the scene
 
 handle client, storing leader status

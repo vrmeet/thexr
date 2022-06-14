@@ -4,6 +4,8 @@ const { couldStartTrivia } = require('typescript')
 const sourceFilePath = './js/event-names.ts'
 const targetFilePath = "../lib/event_name.ex"
 
+console.log("watcher started for event-names...")
+
 fs.watch(sourceFilePath, () => {
     console.log('file changed')
     fs.readFile(sourceFilePath, 'utf8', (err, data) => {
@@ -15,14 +17,29 @@ fs.watch(sourceFilePath, () => {
         const events = data.substring(
             data.indexOf("{") + 1,
             data.lastIndexOf("}")
-        ).split(',')
-            .map(event => {
-                return event.replace(/[^a-z_]/g, '')
+        ).split("\n")
+            .map(line => {
+                // ignore empty lines and comments
+                if (line.match(/^\s*\/\//)) {
+                    return null
+                } else if (line.match(/^[\s\t\n]*$/)) {
+                    return null
+                } else {
+                    return line
+                }
+            })
+            .filter(line => line !== null)
+            .map(line => {
+                let [name, num] = line.split(' = ')
+                num = num.replace(/[^0-9]/g, '')
+                name = name.replace(/[^a-z_]/g, '')
+                return [name, num]
             })
 
-        const functions = events.reduce((acc, event, index) => {
-            acc.int_to_atoms.push(`  def int_to_atom(${index + 1}), do: :${event}`)
-            acc.atom_to_ints.push(`  def atom_to_int(:${event}), do: ${index + 1}`)
+
+        const functions = events.reduce((acc, event) => {
+            acc.int_to_atoms.push(`  def int_to_atom(${event[1]}), do: :${event[0]}`)
+            acc.atom_to_ints.push(`  def atom_to_int(:${event[0]}), do: ${event[1]}`)
             return acc
         }, { int_to_atoms: [], atom_to_ints: [] })
 
