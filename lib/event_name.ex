@@ -22,6 +22,7 @@ defmodule EventName do
   def int_to_atom(217), do: :wall_created
   def int_to_atom(218), do: :ribbon_created
   def int_to_atom(219), do: :line_path_created
+  def int_to_atom(220), do: :entity_created
   def int_to_atom(300), do: :light_created
   def int_to_atom(301), do: :light_intensity_set
   def int_to_atom(302), do: :light_property_set
@@ -63,6 +64,7 @@ defmodule EventName do
   def atom_to_int(:wall_created), do: 217
   def atom_to_int(:ribbon_created), do: 218
   def atom_to_int(:line_path_created), do: 219
+  def atom_to_int(:entity_created), do: 220
   def atom_to_int(:light_created), do: 300
   def atom_to_int(:light_intensity_set), do: 301
   def atom_to_int(:light_property_set), do: 302

@@ -57,8 +57,8 @@ export type event =
     { m: EventName.member_observed, p: { member_id: string }, ts?: number } |
     { m: EventName.member_moved, p: { member_id: string, pos_rot: PosRot, left?: PosRot, right?: PosRot }, ts?: number } |
     { m: EventName.member_left, p: { member_id: string }, ts?: number } |
-    { m: EventName.box_created, p: { type: string, id: string, name: string, components: Component[] }, ts?: number } |
-    { m: EventName.entity_translated, p: { id: string, components: Component[] }, ts?: number } |
+    { m: EventName.entity_created, p: { type: string, id: string, name: string, components: Component[] }, ts?: number } |
+    { m: EventName.entity_transformed, p: { id: string, components: Component[] }, ts?: number } |
     { m: EventName.entity_colored, p: { id: string, color: string }, ts?: number } |
     { m: EventName.entity_deleted, p: { id: string }, ts?: number } |
     { m: EventName.entity_grabbed, p: { member_id: string, entity_id: string, hand: string, hand_pos_rot: PosRot, entity_pos_rot: PosRot } } |

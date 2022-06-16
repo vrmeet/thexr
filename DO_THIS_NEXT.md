@@ -1,12 +1,10 @@
 TODO:
 
--spike on protocol buffers as a more official way of managing a message contract between
-  js and elixir (as message types grow)
+0. Seed history of events into a event_stream table
+1. Play history of events from event_stream table into any space
 
-- spike on serializing/deserializing in js
- on serializing/deserializing in elixir
- on using binary format in channels
- 
+
+
 
 1. create a set of events to design the 'map' of a game
     - DOOM (first person shooter)
