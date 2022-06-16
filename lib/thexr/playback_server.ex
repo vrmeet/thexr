@@ -37,14 +37,15 @@ defmodule Thexr.PlaybackServer do
         :ignore
 
       [first | rest] ->
-        send(self(), {:event, first})
+        send(self(), {:stream_entry, first})
 
         {:ok,
          %{
            space_id: space_id,
            end_seq: ending_sequence,
-           events: rest,
-           last_timestamp: first.event_timestamp
+           stream_entries: rest,
+           last_timestamp: first.event["ts"],
+           client: AWS.Client.create()
          }}
     end
 
@@ -56,17 +57,27 @@ defmodule Thexr.PlaybackServer do
     # when to play 2nd event (how long to wait?)
   end
 
-  def handle_info({:event, event}, state) do
-    modified_payload = modify_payload(event.payload)
-    payload = %{"m" => event.type, "p" => modified_payload, "ts" => :os.system_time(:millisecond)}
+  def handle_info({:stream_entry, stream_entry}, state) do
+    modified_payload = modify_payload(stream_entry.event["p"])
+
+    payload = %{
+      stream_entry.event
+      | "p" => modified_payload,
+        "ts" => :os.system_time(:millisecond)
+    }
+
+    # payload = %{"m" => event.type, "p" => modified_payload, "ts" => :os.system_time(:millisecond)}
     Thexr.SpaceServer.process_event(state.space_id, payload, nil)
 
-    if event.sequence == state.end_seq do
+    if stream_entry.sequence >= state.end_seq do
+      IO.inspect("exiting playback, hit last event of #{stream_entry.sequence}")
+
       Process.exit(self(), :done)
     end
 
-    case state.events do
+    case state.stream_entries do
       [] ->
+        IO.inspect("exiting playback, no further events")
         Process.exit(self(), :done)
 
       [first | rest] ->
@@ -82,8 +93,9 @@ defmodule Thexr.PlaybackServer do
               rest
           end
 
-        Process.send_after(self(), {:event, first}, first.event_timestamp - state.last_timestamp)
-        {:noreply, %{state | events: rest, last_timestamp: first.event_timestamp}}
+        # first.event_timestamp - state.last_timestamp
+        Process.send_after(self(), {:stream_entry, first}, 100)
+        {:noreply, %{state | stream_entries: rest, last_timestamp: first.event["ts"]}}
     end
   end
 

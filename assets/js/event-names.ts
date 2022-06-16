@@ -22,6 +22,7 @@ export enum EventName {
     wall_created = 217,
     ribbon_created = 218,
     line_path_created = 219,
+    entity_created = 220,
 
     light_created = 300,
     light_intensity_set = 301,

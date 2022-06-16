@@ -64,7 +64,7 @@ export class HudMessager {
 
         // show on screen the broadcasted message from another player
         signalHub.incoming.on("event").pipe(
-            filter(msg => (msg.m === EventName.message_broadcasted))
+            filter(msg => (msg.m === EventName.hud_message_broadcasted))
         ).subscribe(event => {
             signalHub.local.emit("hud_msg", event.p['msg'])
         })

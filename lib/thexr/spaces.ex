@@ -614,7 +614,7 @@ defmodule Thexr.Spaces do
   """
   @event_stream_defaults %{last_evaluated_sequence: 0, limit: 100}
 
-  def event_stream(space_id, options \\ []) do
+  def get_event_stream(space_id, options \\ []) do
     %{last_evaluated_sequence: last_evaluated_sequence, limit: limit} =
       Enum.into(options, @event_stream_defaults)
 
@@ -662,7 +662,27 @@ defmodule Thexr.Spaces do
     Repo.one(query) || 0
   end
 
-  def batch_archive_eventstream_to_s3(space_id, sequence, chunk_size, client) do
+  # given the batch name 1-100, 101-200 etc, fetch the archive data from s3 if it was archived
+  def batch_fetch_eventstream_from_s3(space_id, batch_name, client) do
+    case AWS.S3.get_object(
+           client,
+           "thexr-eventstream-archive",
+           "#{space_id}/#{batch_name}"
+         ) do
+      {:ok, _, result} ->
+        Jason.decode!(result.body)
+        |> Enum.map(fn event_stream ->
+          %{event: event_stream["event"], sequence: event_stream["sequence"]}
+        end)
+
+      {:error, _} ->
+        []
+    end
+  end
+
+  # when seeing the 'last' sequence of modulo 100, backup the
+  # previous 1-100, 101-200, etc to s3, then free the records from postgres
+  def batch_archive_eventstream_to_s3(space_id, sequence, client) do
     query =
       from e in EventStream,
         select: map(e, [:sequence, :event]),
@@ -674,7 +694,7 @@ defmodule Thexr.Spaces do
     case AWS.S3.put_object(
            client,
            "thexr-eventstream-archive",
-           "#{space_id}/#{sequence - chunk_size + 1}-#{sequence}",
+           "#{space_id}/#{sequence - 99}-#{sequence}",
            %{
              "Body" => body,
              "ContentType" => "application/json"
@@ -686,6 +706,65 @@ defmodule Thexr.Spaces do
             where: e.space_id == ^space_id and e.sequence <= ^sequence
 
         Repo.delete_all(query)
+    end
+  end
+
+  # gets the event stream first from DB then from S3 if doesn't exist in DB
+  def event_stream(space_id, last_evaluated_sequence, client) do
+    max_seq = max_event_sequence(space_id)
+    # any sequence between these two numbers hasn't been archived yet
+    current_page_max = upper_bound(max_seq)
+    current_page_min = lower_bound(max_seq)
+    seq_page_max = upper_bound(last_evaluated_sequence + 1)
+    seq_page_min = lower_bound(last_evaluated_sequence + 1)
+
+    cond do
+      last_evaluated_sequence >= max_seq ->
+        []
+
+      last_evaluated_sequence + 1 >= current_page_min &&
+          last_evaluated_sequence + 1 <= current_page_max ->
+        # potentially in the DB or being uploaded now... tricky race condition here
+        get_event_stream(space_id, last_evaluated_sequence: last_evaluated_sequence)
+
+      last_evaluated_sequence < current_page_min ->
+        # probably uploaded to s3
+        batch_name = "#{seq_page_min}-#{seq_page_max}" |> IO.inspect(label: "batch_name")
+
+        result =
+          batch_fetch_eventstream_from_s3(
+            space_id,
+            batch_name,
+            client
+          )
+
+        # don't return sequences earlier than what we're asking for
+        Enum.reduce_while(result, result, fn e, acc ->
+          if e.sequence <= last_evaluated_sequence do
+            [_ | rest] = acc
+            {:cont, rest}
+          else
+            {:halt, acc}
+          end
+        end)
+    end
+  end
+
+  def upper_bound(sequence) do
+    bucket_place = Float.floor(sequence / 100)
+
+    cond do
+      rem(sequence, 100) == 0 -> sequence |> trunc()
+      true -> ((bucket_place + 1) * 100) |> trunc()
+    end
+  end
+
+  def lower_bound(sequence) do
+    bucket_place = Float.floor(sequence / 100)
+
+    cond do
+      rem(sequence, 100) == 0 -> (sequence - 99) |> trunc()
+      true -> ((bucket_place + 1) * 100 - 99) |> trunc()
     end
   end
 
