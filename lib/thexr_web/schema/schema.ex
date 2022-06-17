@@ -71,7 +71,6 @@ defmodule ThexrWeb.Schema.Schema do
     field :events, non_null(list_of(:event_stream)) do
       arg(:space_id, non_null(:string))
       arg(:last_evaluated_sequence, :integer)
-      arg(:limit, :integer)
       resolve(&SpaceResolver.event_stream/3)
     end
 

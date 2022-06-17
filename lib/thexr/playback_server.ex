@@ -1,21 +1,57 @@
 defmodule Thexr.PlaybackServer do
-  use GenServer
+  use GenServer, restart: :temporary
   require Logger
 
   # Client (Public) Interface
 
+  def start_link({source_space_id, target_space_id, start_seq, end_seq}) do
+    IO.inspect("booting up playback server")
+    start_link(source_space_id, target_space_id, start_seq, end_seq, true)
+  end
+
   @doc """
-  Spawns a new space server process registered under the given `space.id`.
-  options are passed to initialize the space state
+  Spawns a new space server process registered under the given target space id
+  opts:
+  source_space_id: source_space_id,
+  target_space_id: target_space_id
+  start_seq: beginning_sequence,
+  end_seq: ending_sequence
   """
-  def start_link(opts) do
+  def start_link(source_space_id, target_space_id, start_seq, end_seq, autoplay \\ false) do
+    # make sure there is a process to receive the events
+    Thexr.SpaceSupervisor.start_space(target_space_id)
+
     GenServer.start_link(
       __MODULE__,
-      {:ok, opts}
+      {:ok,
+       %{
+         source_space_id: source_space_id,
+         target_space_id: target_space_id,
+         start_seq: start_seq,
+         end_seq: end_seq,
+         autoplay: autoplay
+       }},
+      name: via_tuple(target_space_id)
     )
   end
 
-  @buffer_size 20
+  def next(target_space_id) do
+    GenServer.call(via_tuple(target_space_id), :next)
+  end
+
+  def stop(target_space_id) do
+    GenServer.call(via_tuple(target_space_id), :stop)
+  end
+
+  def pid(space_id) do
+    space_id
+    |> via_tuple()
+    |> GenServer.whereis()
+  end
+
+  def via_tuple(space_id) do
+    {:via, Registry, {Thexr.SpacePlaybackRegistry, space_id}}
+  end
 
   #################################################################
   # Server Callbacks
@@ -24,28 +60,37 @@ defmodule Thexr.PlaybackServer do
   def init(
         {:ok,
          %{
-           space_id: space_id,
-           start_seq: beginning_sequence,
-           end_seq: ending_sequence
+           source_space_id: source_space_id,
+           target_space_id: target_space_id,
+           start_seq: start_seq,
+           end_seq: end_seq,
+           autoplay: autoplay
          }}
       ) do
-    case Thexr.Spaces.event_stream(space_id,
-           last_evaluated_sequence: beginning_sequence,
-           limit: @buffer_size
-         ) do
+    IO.inspect("in init of playback server")
+
+    case Thexr.Spaces.event_stream(source_space_id, start_seq - 1) do
       [] ->
         :ignore
 
       [first | rest] ->
-        send(self(), {:stream_entry, first})
+        entries =
+          if autoplay == true do
+            send(self(), {:stream_entry, first})
+            rest
+          else
+            [first | rest]
+          end
 
         {:ok,
          %{
-           space_id: space_id,
-           end_seq: ending_sequence,
-           stream_entries: rest,
-           last_timestamp: first.event["ts"],
-           client: AWS.Client.create()
+           source_space_id: source_space_id,
+           target_space_id: target_space_id,
+           end_seq: end_seq,
+           stream_entries: entries,
+           last_timestamp: nil,
+           client: AWS.Client.create(),
+           autoplay: autoplay
          }}
     end
 
@@ -57,7 +102,27 @@ defmodule Thexr.PlaybackServer do
     # when to play 2nd event (how long to wait?)
   end
 
+  def handle_call(:next, _from, state) do
+    IO.inspect("in next")
+
+    case state.stream_entries do
+      [] ->
+        {:stop, :normal, :no_events, state}
+
+      [first | rest] ->
+        send(self(), {:stream_entry, first})
+        state = %{state | stream_entries: rest}
+        {:reply, :ok, state}
+    end
+  end
+
+  def handle_call(:stop, _from, state) do
+    {:stop, :normal, :stop, state}
+  end
+
   def handle_info({:stream_entry, stream_entry}, state) do
+    # enhances member_id and entity_id into another uuid to avoid conflicting with existing
+    # entities and members already in the space during playback
     modified_payload = modify_payload(stream_entry.event["p"])
 
     payload = %{
@@ -66,36 +131,40 @@ defmodule Thexr.PlaybackServer do
         "ts" => :os.system_time(:millisecond)
     }
 
-    # payload = %{"m" => event.type, "p" => modified_payload, "ts" => :os.system_time(:millisecond)}
-    Thexr.SpaceServer.process_event(state.space_id, payload, nil)
+    Thexr.SpaceServer.process_event(state.target_space_id, payload, nil)
+    stream_entry |> IO.inspect(label: "handling stream event")
 
-    if stream_entry.sequence >= state.end_seq do
-      IO.inspect("exiting playback, hit last event of #{stream_entry.sequence}")
+    IO.inspect("comparing stream entry sequence #{stream_entry.sequence} and #{state.end_seq}")
 
-      Process.exit(self(), :done)
-    end
+    cond do
+      stream_entry.sequence >= state.end_seq ->
+        IO.inspect("exiting playback, hit last event of #{stream_entry.sequence}")
 
-    case state.stream_entries do
-      [] ->
-        IO.inspect("exiting playback, no further events")
-        Process.exit(self(), :done)
+        {:stop, :normal, state}
 
-      [first | rest] ->
-        rest =
-          case rest do
-            [] ->
-              Thexr.Spaces.event_stream(state.space_id,
-                last_evaluated_sequence: first.sequence,
-                limit: @buffer_size
-              )
+      true ->
+        case state.stream_entries do
+          [] ->
+            {:stop, :normal, state}
 
-            _ ->
-              rest
-          end
+          [first | rest] ->
+            rest =
+              case rest do
+                [] ->
+                  Thexr.Spaces.event_stream(state.source_space_id, first.sequence)
 
-        # first.event_timestamp - state.last_timestamp
-        Process.send_after(self(), {:stream_entry, first}, 100)
-        {:noreply, %{state | stream_entries: rest, last_timestamp: first.event["ts"]}}
+                _ ->
+                  rest
+              end
+
+            if state.autoplay do
+              # first.event_timestamp - state.last_timestamp
+              Process.send_after(self(), {:stream_entry, first}, 2000)
+              {:noreply, %{state | stream_entries: rest, last_timestamp: first.event["ts"]}}
+            else
+              {:noreply, %{state | stream_entries: [first | rest]}}
+            end
+        end
     end
   end
 

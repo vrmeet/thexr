@@ -13,9 +13,21 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
     end
   end
 
-  def event_stream(_root, %{space_id: space_id} = args, _info) do
-    options = args |> Enum.into([]) |> Keyword.drop([:space_id])
-    events = Spaces.event_stream(space_id, options)
+  def event_stream(
+        _root,
+        %{space_id: space_id, last_evaluated_sequence: last_evaluated_sequence},
+        _info
+      ) do
+    events = Spaces.event_stream(space_id, last_evaluated_sequence)
+    {:ok, events}
+  end
+
+  def event_stream(
+        _root,
+        %{space_id: space_id},
+        _info
+      ) do
+    events = Spaces.event_stream(space_id, 0)
     {:ok, events}
   end
 

@@ -629,6 +629,11 @@ defmodule Thexr.Spaces do
     Repo.all(q)
   end
 
+  def delete_event_stream(space_id) do
+    q = from(e in EventStream, where: e.space_id == ^space_id)
+    Repo.delete_all(q)
+  end
+
   @doc """
   Creates a event.
 
@@ -710,7 +715,7 @@ defmodule Thexr.Spaces do
   end
 
   # gets the event stream first from DB then from S3 if doesn't exist in DB
-  def event_stream(space_id, last_evaluated_sequence, client) do
+  def event_stream(space_id, last_evaluated_sequence) do
     max_seq = max_event_sequence(space_id)
     # any sequence between these two numbers hasn't been archived yet
     current_page_max = upper_bound(max_seq)
@@ -730,6 +735,7 @@ defmodule Thexr.Spaces do
       last_evaluated_sequence < current_page_min ->
         # probably uploaded to s3
         batch_name = "#{seq_page_min}-#{seq_page_max}" |> IO.inspect(label: "batch_name")
+        client = AWS.Client.create()
 
         result =
           batch_fetch_eventstream_from_s3(
