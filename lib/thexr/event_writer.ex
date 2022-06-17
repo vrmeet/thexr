@@ -1,7 +1,7 @@
 defmodule Thexr.EventWriter do
-  use GenStage
+  use GenStage, restart: :permanent
 
-  @archive_chuck_size 100
+  @archive_chunck_size 100
 
   def start_link([]) do
     GenStage.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -30,11 +30,10 @@ defmodule Thexr.EventWriter do
     Enum.map(events, fn {msg, event_stream_attr} ->
       Thexr.Spaces.create_event(event_stream_attr)
 
-      if rem(event_stream_attr.sequence, @archive_chuck_size) == 0 do
+      if rem(event_stream_attr.sequence, @archive_chunck_size) == 0 do
         Thexr.Spaces.batch_archive_eventstream_to_s3(
           event_stream_attr.space_id,
           event_stream_attr.sequence,
-          @archive_chuck_size,
           state.aws_client
         )
       end

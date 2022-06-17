@@ -1,5 +1,5 @@
 defmodule Thexr.QueueBroadcaster do
-  use GenStage
+  use GenStage, restart: :permanent
 
   @doc "Starts the broadcaster."
   def start_link([]) do
