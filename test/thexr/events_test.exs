@@ -24,7 +24,7 @@ defmodule Thexr.EventsTest do
     end)
 
     Process.sleep(50)
-    stored_events = Thexr.Spaces.event_stream(space.id)
+    stored_events = Thexr.Spaces.get_event_stream(space.id)
     assert(stored_events |> length() == 2)
 
     first = List.first(stored_events)

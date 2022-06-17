@@ -159,7 +159,7 @@ defmodule Thexr.PlaybackServer do
 
             if state.autoplay do
               # first.event_timestamp - state.last_timestamp
-              Process.send_after(self(), {:stream_entry, first}, 2000)
+              Process.send_after(self(), {:stream_entry, first}, 1000)
               {:noreply, %{state | stream_entries: rest, last_timestamp: first.event["ts"]}}
             else
               {:noreply, %{state | stream_entries: [first | rest]}}
