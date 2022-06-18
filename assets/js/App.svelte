@@ -6,7 +6,6 @@
     import { signalHub } from "./signalHub";
     import { sessionPersistance } from "./sessionPersistance";
     import { initClient, operationStore, query } from "@urql/svelte";
-    import type { Orchestrator } from "./orchestrator";
     import { isMobileVR } from "./utils";
 
     initClient({
@@ -15,14 +14,13 @@
     });
 
     //props
-    export let orchestrator: Orchestrator;
-    const canvasId = orchestrator.canvasId;
-    const space_id = orchestrator.space_id;
+    export let space_id: string;
+    export let member_id: string;
+
     let choice: "enter" | "observe";
 
-    setContext("orchestrator", orchestrator);
     setContext("space_id", space_id);
-    // message bus with orchestrator
+    setContext("member_id", member_id);
 
     //state
     let didInteract = false;
@@ -46,7 +44,8 @@
     //callbacks
     const avatarAndNicknameCallback = (nickname: string) => {
         sessionPersistance.saveNickname({ nickname });
-        orchestrator.memberStates.update_my_nickname(nickname);
+        // orchestrator.memberStates.update_my_nickname(nickname);
+        signalHub.menu.emit("update_nickname", nickname);
         showAvatarAndNickNameForm = false;
         if (isMobileVR()) {
             // no need to check mic and speaker, there is only one option
@@ -79,7 +78,7 @@
 
     const ready = () => {
         signalHub.local.emit("client_ready", choice);
-        let canvas = document.getElementById(canvasId);
+        let canvas = document.getElementById(space_id);
         canvas.focus();
     };
 

@@ -4,7 +4,6 @@ import { Observable, Subscription } from 'rxjs'
 import { filter, takeUntil } from "rxjs/operators"
 import { TeleportationManager } from './xr-teleportation-manager'
 import type { xr_component } from '../types'
-import type { Orchestrator } from '../orchestrator'
 import { XRGripManager } from './xr-grip-manager'
 
 const exitingXR$ = signalHub.local.on("xr_state_changed").pipe(
@@ -17,10 +16,8 @@ export class XRManager {
     public right_input_source: BABYLON.WebXRInputSource
     //  public inXR: boolean
     public teleportationManager: TeleportationManager
-    public scene: BABYLON.Scene
     public controllerPhysicsFeature: BABYLON.WebXRControllerPhysics
-    constructor(public orchestrator: Orchestrator) {
-        this.scene = orchestrator.sceneManager.scene
+    constructor(public member_id: string, public scene: BABYLON.Scene) {
         //      this.inXR = false
     }
 
@@ -117,11 +114,18 @@ export class XRManager {
 
     initController(inputSource: BABYLON.WebXRInputSource, motionController: BABYLON.WebXRAbstractMotionController) {
 
-        // this.setupSendHandPosRot(inputSource)
         this.setupSendComponentData(motionController)
         this.setupVibration(motionController)
 
-        new XRGripManager(this.orchestrator, inputSource, motionController, this.controllerPhysicsFeature.getImpostorForController(inputSource))
+        new XRGripManager(this.member_id,
+            this.scene,
+            inputSource,
+            motionController,
+            this.controllerPhysicsFeature.getImpostorForController(inputSource),
+            (inputSource: BABYLON.WebXRInputSource) => {
+                return this.setupSendHandPosRot(inputSource)
+            }
+        )
 
 
     }
@@ -139,8 +143,6 @@ export class XRManager {
     }
 
     setupSendHandPosRot(inputSource: BABYLON.WebXRInputSource): Subscription {
-
-
 
         const hand = inputSource.inputSource.handedness as "left" | "right"
         return this.makeXRFrameSignal().pipe(

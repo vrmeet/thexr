@@ -6,15 +6,12 @@ to indicate damage
 import * as BABYLON from "babylonjs"
 import { filter } from "rxjs/operators"
 import { EventName } from "./event-names"
-import type { Orchestrator } from "./orchestrator"
 import { signalHub } from "./signalHub"
 
 
 export class DamageOverlay {
-    public scene: BABYLON.Scene
 
-    constructor(public orchestrator: Orchestrator) {
-        this.scene = orchestrator.sceneManager.scene;
+    constructor(public member_id: string, public scene: BABYLON.Scene) {
         // BABYLON.Effect.ShadersStore['damageOverlayEffectFragmentShader'] = `
         //     varying vec2 vUV;
         //     uniform sampler2D textureSampler;
@@ -29,8 +26,8 @@ export class DamageOverlay {
         //     `
 
         signalHub.incoming.on("event").pipe(
-            filter(msg => (msg.m === EventName.member_damaged && msg.p.member_id === this.orchestrator.member_id))
-        ).subscribe(rate => {
+            filter(msg => (msg.m === EventName.member_damaged && msg.p.member_id === this.member_id))
+        ).subscribe(() => {
             this.flashdamageOverlay2()
         })
     }

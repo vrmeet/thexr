@@ -7,7 +7,7 @@ import { sessionPersistance } from "./sessionPersistance";
 import { MenuManager } from "./menu/menu-manager"
 import { reduceSigFigs } from "./utils";
 import { XRManager } from "./xr/xr-manager";
-import type { Orchestrator } from "./orchestrator";
+
 import { signalHub } from "./signalHub";
 import { DamageOverlay } from "./damage-overlay";
 import { isMobileVR } from "./utils";
@@ -22,7 +22,7 @@ const ANIMATION_FRAME_PER_SECOND = 60
 const TOTAL_ANIMATION_FRAMES = 5
 
 export class SceneManager {
-    public canvas: HTMLCanvasElement;
+    public canvas: HTMLCanvasElement
     public scene: BABYLON.Scene;
     public engine: BABYLON.Engine;
     public entities: any[]
@@ -33,23 +33,16 @@ export class SceneManager {
     public freeCamera: BABYLON.FreeCamera
     public xrManager: XRManager
     public canvasId: string
-    public member_id: string
-    public serializedSpace: serialized_space
     public bulletManager: BulletManager
     public crowdAgent: CrowdAgent
     public isLeader: boolean
     public navManager: NavManager
 
 
-
-
-    constructor(public orchestrator: Orchestrator) {
+    constructor(public member_id: string, public serializedSpace: serialized_space) {
         this.isLeader = false
-        this.canvasId = orchestrator.canvasId
-        this.member_id = orchestrator.member_id
-        this.serializedSpace = orchestrator.serializedSpace
-        this.space_id = this.orchestrator.space_id
-        this.canvas = document.getElementById(this.canvasId) as HTMLCanvasElement;
+        this.space_id = this.serializedSpace.id
+        this.canvas = document.getElementById(this.space_id) as HTMLCanvasElement;
         this.engine = new BABYLON.Engine(this.canvas, true, { preserveDrawingBuffer: true, stencil: true });
         this.settings = this.serializedSpace.settings
         this.entities = this.serializedSpace.entities
@@ -57,9 +50,9 @@ export class SceneManager {
         this.setChannelListeners()
 
         signalHub.local.on("client_ready").subscribe(async () => {
-            this.xrManager = new XRManager(this.orchestrator)
+
             await this.xrManager.enableWebXRExperience()
-            this.menuManager = new MenuManager(this.orchestrator)
+
             if (isMobileVR()) {
                 this.xrManager.enterXR()
             }
@@ -276,7 +269,10 @@ export class SceneManager {
         this.navManager = new NavManager(this)
         await this.parseInitialScene(this.entities)
 
-        new DamageOverlay(this.orchestrator)
+        this.xrManager = new XRManager(this.member_id, this.scene)
+        this.menuManager = new MenuManager(this.scene, this.xrManager)
+
+        new DamageOverlay(this.member_id, this.scene)
         new HudMessager(this.scene)
         this.bulletManager = new BulletManager(this)
 

@@ -11,10 +11,9 @@ import type { Component, event } from "../../types"
 import { EventName } from "../../event-names";
 
 export class MenuPagePrimitives extends GUI.Container {
-    public scene: BABYLON.Scene
-    constructor(public orchestrator: Orchestrator) {
+
+    constructor(public scene: BABYLON.Scene) {
         super()
-        this.scene = this.orchestrator.sceneManager.scene
 
         const callback = () => {
             signalHub.menu.emit("menu_topic", "tools")

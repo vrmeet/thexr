@@ -8,7 +8,8 @@
     "watch": "node esbuild.js --watch",
     "typecheck": "tsc --watch",
     "sync_event_types": "node event-name-watcher.js",
-    "check": "svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "jest"
   },
   "dependencies": {
     "@fal-works/esbuild-plugin-global-externals": "^2.1.2",
@@ -30,13 +31,16 @@
   "devDependencies": {
     "@rollup/plugin-typescript": "^8.3.2",
     "@tsconfig/svelte": "^3.0.0",
+    "@types/jest": "^28.1.2",
     "@types/phoenix": "^1.5.4",
     "@types/uuid": "^8.3.4",
     "esbuild": "^0.14.8",
     "esbuild-svelte": "^0.6.2",
     "fs": "^0.0.1-security",
+    "jest": "^28.1.1",
     "svelte-check": "^2.3.0",
     "svelte-preprocess": "^4.10.2",
+    "ts-jest": "^28.0.5",
     "tslib": "^2.0.0",
     "typescript": "^4.6.2"
   }

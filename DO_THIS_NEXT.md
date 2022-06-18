@@ -1,7 +1,17 @@
 TODO:
 
-0. Seed history of events into a event_stream table
-1. Play history of events from event_stream table into any space
+- added jest
+
+- write some js tests
+
+- functions should take simple primitives as arguments
+
+
+Create a story of doom game creation.  
+  - create the events
+  - playback the events
+  - backend check that the correct snapshot is created
+  - frontend check that babylon infrastructure is created
 
 
 

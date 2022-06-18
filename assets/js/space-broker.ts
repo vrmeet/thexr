@@ -1,7 +1,7 @@
 import { Socket, Channel } from 'phoenix'
-import type { Orchestrator } from './orchestrator'
+
 import { signalHub } from './signalHub'
-import { merge, mergeWith, scan, take, tap, throttleTime, withLatestFrom } from 'rxjs/operators'
+import { mergeWith, scan, throttleTime } from 'rxjs/operators'
 import { combineLatest, map, filter } from 'rxjs'
 import type { IncomingEvents } from './signalHub'
 import type { PosRot } from './types'
@@ -23,17 +23,14 @@ type ChannelParams = {
 
 
 export class SpaceBroker {
-    public space_id: string
+
     public socket: Socket
     public spaceChannel: Channel
-    public member_id: string
 
     // public initialized: Promise<any>
     public channelParams: { choice: string }
 
-    constructor(public orchestrator: Orchestrator) {
-        this.member_id = orchestrator.member_id
-        this.space_id = orchestrator.space_id
+    constructor(public member_id: string, public space_id: string) {
         this.socket = new Socket('/socket', { params: { token: window['userToken'] } })
         this.channelParams = { choice: null }
         this.spaceChannel = this.socket.channel(`space:${this.space_id}`, this.channelParams)
@@ -63,17 +60,7 @@ export class SpaceBroker {
 
         })
 
-        // send a command to enter | observe after we've joined the channel
-        const $space_channel_connected = signalHub.local.on('space_channel_connected')
-        combineLatest([$cameraReady, $client_ready, $space_channel_connected]).subscribe(([pos_rot, choice, _]) => {
 
-            if (choice === 'enter') {
-                signalHub.outgoing.emit('event', { m: EventName.member_entered, p: { member_id: this.member_id, pos_rot: pos_rot, state: this.orchestrator.memberStates.my_state() } })
-            } else {
-                signalHub.outgoing.emit('event', { m: EventName.member_observed, p: { member_id: this.member_id } })
-            }
-
-        })
 
     }
 
@@ -164,8 +151,6 @@ export class SpaceBroker {
                     p: { member_id: this.member_id, pos_rot: data.cam, left: data.left, right: data.right }
                 })
             } else {
-                // a debug
-                // signalHub.outgoing.emit("event", { m: EventName.message_broadcasted, p: { member_id: this.orchestrator.member_id, msg: `no hands` } })
 
                 signalHub.outgoing.emit("event", {
                     m: EventName.member_moved,

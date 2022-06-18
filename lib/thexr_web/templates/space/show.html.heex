@@ -10,7 +10,7 @@
             radial-gradient(ellipse at bottom, #000021, transparent);
   }
 
-  #spaceCanvas {
+  .spaceCanvas {
       position: absolute;
       width   : 100%;
       height  : 100%;
@@ -21,7 +21,7 @@
 
 </style>
 
-<canvas id="spaceCanvas"></canvas>
+<canvas class="spaceCanvas" id={ @space.id }></canvas>
 
 <script>
   window['serializedSpace'] = <%= raw Thexr.Spaces.serialize(@space) %>;
