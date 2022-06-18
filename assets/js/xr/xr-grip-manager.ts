@@ -1,8 +1,8 @@
 
 import * as BABYLON from "babylonjs"
-import { race } from "rxjs";
+import { race, Subscription } from "rxjs";
 import { filter, map, distinctUntilChanged, tap, take, raceWith, takeUntil, throttleTime } from "rxjs/operators";
-import type { Orchestrator } from "../orchestrator";
+
 import { signalHub } from "../signalHub";
 import type { event } from "../types"
 import * as utils from "../utils"
@@ -18,15 +18,17 @@ export class XRGripManager {
     public palmMesh: BABYLON.AbstractMesh
     public intersectedMesh: BABYLON.AbstractMesh
     public intersectedMeshTags: string[]
-    public scene: BABYLON.Scene
 
-    constructor(public orchestrator: Orchestrator, public inputSource: BABYLON.WebXRInputSource, public motionController: BABYLON.WebXRAbstractMotionController, public imposter: BABYLON.PhysicsImpostor) {
-        this.scene = orchestrator.sceneManager.scene
+    constructor(public member_id: string, public scene: BABYLON.Scene,
+        public inputSource: BABYLON.WebXRInputSource,
+        public motionController: BABYLON.WebXRAbstractMotionController,
+        public imposter: BABYLON.PhysicsImpostor,
+        callback: (inputSource: BABYLON.WebXRInputSource) => Subscription) {
         this.hand = motionController.handedness as "left" | "right"
         this.other_hand = (this.hand === "left") ? "right" : "left"
 
         motionController.onModelLoadedObservable.add(model => {
-            const meshName = `avatar_${this.orchestrator.member_id}_${this.hand}`
+            const meshName = `avatar_${this.member_id}_${this.hand}`
             // delete previous if there was some race condition or blip that made it
             const foundMesh = this.scene.getMeshByName(meshName)
             if (foundMesh) {
@@ -34,7 +36,7 @@ export class XRGripManager {
             }
             this.palmMesh = BABYLON.MeshBuilder.CreateBox(meshName, { width: 0.053, height: 0.08, depth: 0.1 }, this.scene)
             this.palmMesh.showBoundingBox = true
-            let subscription = this.orchestrator.sceneManager.xrManager.setupSendHandPosRot(inputSource)
+            let subscription = callback(inputSource)
             this.palmMesh.onDisposeObservable.add(() => {
                 subscription.unsubscribe()
             })
@@ -123,7 +125,7 @@ export class XRGripManager {
                 let event: event = {
                     m: EventName.entity_trigger_squeezed,
                     p: {
-                        member_id: this.orchestrator.member_id,
+                        member_id: this.member_id,
                         entity_id: this.intersectedMesh.id,
                         pos: this.inputSource.pointer.absolutePosition.asArray(),
                         direction: this.inputSource.pointer.forward.asArray()
@@ -146,7 +148,7 @@ export class XRGripManager {
             ),
             // another player stole our object
             signalHub.incoming.on("event").pipe(
-                filter(msg => (msg.m === EventName.entity_grabbed && msg.p.entity_id === this.intersectedMesh.id && msg.p.member_id != this.orchestrator.member_id)),
+                filter(msg => (msg.m === EventName.entity_grabbed && msg.p.entity_id === this.intersectedMesh.id && msg.p.member_id != this.member_id)),
                 tap(() => { console.log("other player steal") })
             ),
 
@@ -180,7 +182,7 @@ export class XRGripManager {
     createEventPayload() {
 
         let payload = {
-            member_id: this.orchestrator.member_id,
+            member_id: this.member_id,
             entity_id: this.intersectedMesh.id,
             hand_pos_rot: {
                 pos: utils.arrayReduceSigFigs(this.palmMesh.absolutePosition.asArray()),

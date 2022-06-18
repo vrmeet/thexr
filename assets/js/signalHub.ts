@@ -15,7 +15,7 @@ type LocalEvents = {
     member_states_changed: { [member_id: string]: types.member_state }
     hud_msg: string
     pulse: { hand: "left" | "right", intensity: number, duration: number }
-
+    my_state: types.member_state
 }
 
 export type IncomingEvents = {
@@ -36,6 +36,8 @@ export type MenuEvents = {
     menu_opened: boolean
     menu_topic: string
     menu_editing_tool: types.EditMode
+    toggle_mic: any
+    update_nickname: string
 }
 
 // export type HandPosRot = {

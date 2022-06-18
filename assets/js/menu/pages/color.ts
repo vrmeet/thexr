@@ -4,7 +4,6 @@ import * as BABYLON from 'babylonjs'
 import * as GUI from 'babylonjs-gui'
 import { EventName } from '../../event-names';
 import type { Orchestrator } from '../../orchestrator';
-import type { SceneManager } from '../../sceneManager';
 import { signalHub } from '../../signalHub';
 import type { event } from '../../types'
 
@@ -13,12 +12,9 @@ import { div, g, a } from '../helpers';
 export class MenuColor extends GUI.Container {
     public pointerObs: BABYLON.Observer<BABYLON.PointerInfo>
     public currentColor: BABYLON.Color3
-    sceneManager: SceneManager;
-    scene: BABYLON.Scene;
-    constructor(public orchestrator: Orchestrator) {
+
+    constructor(public scene: BABYLON.Scene) {
         super()
-        this.sceneManager = orchestrator.sceneManager
-        this.scene = orchestrator.sceneManager.scene
         this.currentColor = BABYLON.Color3.Red()
         const callback = () => {
             signalHub.menu.emit("menu_topic", "tools")

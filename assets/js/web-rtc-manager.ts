@@ -1,6 +1,6 @@
-import { BehaviorSubject, merge } from "rxjs";
-import { scan, map, take, tap, distinctUntilChanged, mergeAll, filter } from "rxjs/operators";
-import type { Orchestrator } from "./orchestrator";
+
+import { map, take, distinctUntilChanged } from "rxjs/operators";
+
 import { signalHub } from "./signalHub";
 import { WebRTCClientAgora } from "./web-rtc-client-agora";
 import type { member_state } from './types'
@@ -9,8 +9,8 @@ export class WebRTCManager {
     public webRTCClient: WebRTCClientAgora
     public agora_app_id: string
 
-    constructor(public orchestrator: Orchestrator) {
-        this.webRTCClient = new WebRTCClientAgora(this.orchestrator.space_id, this.orchestrator.member_id)
+    constructor(public member_id: string, public space_id: string) {
+        this.webRTCClient = new WebRTCClientAgora(this.space_id, this.member_id)
         //     // default audio playback behavior
         this.webRTCClient.addRemoteStreamPublishedCallback((member_id, mediaType, playable, mediaStreamTrack) => {
             console.log('this user is now publishing audio', member_id);

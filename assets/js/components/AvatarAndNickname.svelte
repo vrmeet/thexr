@@ -1,12 +1,12 @@
 <script lang="ts">
     import { getContext } from "svelte";
-    import type { Orchestrator } from "../orchestrator";
     import { sessionPersistance } from "../sessionPersistance";
     export let avatarAndNicknameCallback;
-    const orchestrator: Orchestrator = getContext("orchestrator");
+
+    let member_id: string = getContext("member_id");
 
     let nickname: string =
-        sessionPersistance.getNickname()?.nickname || orchestrator.member_id;
+        sessionPersistance.getNickname()?.nickname || member_id;
 </script>
 
 <div class="modal">

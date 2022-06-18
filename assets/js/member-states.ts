@@ -1,25 +1,41 @@
 
-import type { Orchestrator } from "./orchestrator";
+
 import { signalHub } from "./signalHub";
 import type { member_state } from "./types";
 import { filter } from 'rxjs/operators'
 import type { event } from './types'
 import { EventName } from "./event-names";
+import { combineLatest } from "rxjs";
 
 export class MemberStates {
     public my_member_id: string
     public members: { [member_id: string]: member_state }
     public client_ready: boolean
 
-    constructor(public orchestrator: Orchestrator) {
-        this.my_member_id = orchestrator.member_id
+    constructor(member_id: string) {
+        this.my_member_id = member_id
         this.client_ready = false
+
+        const $cameraReady = signalHub.local.on('camera_ready')
+        const $client_ready = signalHub.local.on('client_ready')
+        // send a command to enter | observe after we've joined the channel
+        const $space_channel_connected = signalHub.local.on('space_channel_connected')
+        combineLatest([$cameraReady, $client_ready, $space_channel_connected]).subscribe(([pos_rot, choice, _]) => {
+
+            if (choice === 'enter') {
+                signalHub.outgoing.emit('event', { m: EventName.member_entered, p: { member_id: this.my_member_id, pos_rot: pos_rot, state: this.my_state() } })
+            } else {
+                signalHub.outgoing.emit('event', { m: EventName.member_observed, p: { member_id: this.my_member_id } })
+            }
+
+        })
+
 
         this.members = {
             [this.my_member_id]: { mic_muted: true, nickname: "unset nickname" }
         }
 
-        signalHub.local.on("client_ready").subscribe(() => {
+        $client_ready.subscribe(() => {
             this.client_ready = true
         })
 
@@ -52,6 +68,22 @@ export class MemberStates {
 
             this.merge_state(evt.p.member_id, evt.p)
         })
+
+        signalHub.menu.on("toggle_mic").subscribe(() => {
+            let newValue = !this.my_mic_muted_pref()
+            this.update_my_mic_muted_pref(newValue)
+            signalHub.local.emit("my_state", this.my_state())
+        })
+
+        signalHub.menu.on("update_nickname").subscribe((nickname) => {
+            this.update_my_nickname(nickname)
+            signalHub.local.emit("my_state", this.my_state())
+        })
+
+        signalHub.local.on("client_ready").subscribe(() => {
+            console.log('client is ready and state is', this.my_state())
+            signalHub.local.emit("my_state", this.my_state())
+        })
     }
 
     merge_state(member_id: string, attr: any | null) {
@@ -79,7 +111,7 @@ export class MemberStates {
         this.merge_state(this.my_member_id, { mic_muted: mic_muted_pref })
         const data: event = {
             m: EventName.member_changed_mic_pref,
-            p: { member_id: this.orchestrator.member_id, mic_muted: mic_muted_pref }
+            p: { member_id: this.my_member_id, mic_muted: mic_muted_pref }
         }
         this.emit_event(data)
     }
@@ -89,7 +121,7 @@ export class MemberStates {
         this.merge_state(this.my_member_id, { nickname: nickname })
         const data: event = {
             m: EventName.member_changed_nickname,
-            p: { member_id: this.orchestrator.member_id, nickname: nickname }
+            p: { member_id: this.my_member_id, nickname: nickname }
         }
         this.emit_event(data)
     }
@@ -109,3 +141,4 @@ export class MemberStates {
         return this.members[this.my_member_id].mic_muted
     }
 }
+

@@ -12,8 +12,7 @@ import { signalHub } from './signalHub';
 
 
 export class Orchestrator {
-    public canvas;
-    public engine;
+
     public space_id: string
     public entities: any[]
     public settings: scene_settings
@@ -25,17 +24,20 @@ export class Orchestrator {
 
 
 
-    constructor(public canvasId: string, public member_id: string, public serializedSpace: serialized_space) {
+    constructor(public member_id: string, public serializedSpace: serialized_space) {
         this.space_id = serializedSpace.id;
-        this.memberStates = new MemberStates(this)
-        this.spaceBroker = new SpaceBroker(this)
+        this.memberStates = new MemberStates(member_id)
+        this.spaceBroker = new SpaceBroker(member_id, this.space_id)
 
-        this.sceneManager = new SceneManager(this)
-        this.webRTCManager = new WebRTCManager(this)
+        this.sceneManager = new SceneManager(member_id, serializedSpace)
+        this.webRTCManager = new WebRTCManager(member_id, this.space_id)
 
         window['orchestrator'] = this
 
-        new App({ target: document.body, props: { orchestrator: this } });
+        new App({
+            target: document.body,
+            props: { space_id: this.space_id, member_id: this.member_id }
+        });
 
     }
 
@@ -68,7 +70,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     await window['Recast']()
     const serializedSpace = window['serializedSpace']
     const member_id = window['member_id']
-    const orchestrator = new Orchestrator('spaceCanvas', member_id, serializedSpace)
+    const orchestrator = new Orchestrator(member_id, serializedSpace)
     orchestrator.start()
     window.onerror = function (message, source, lineno, colno, error) {
         try {

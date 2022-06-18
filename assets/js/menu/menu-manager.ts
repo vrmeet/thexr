@@ -3,14 +3,13 @@ import * as GUI from 'babylonjs-gui'
 import type { SceneManager } from '../sceneManager'
 import { signalHub } from "../signalHub";
 
-import { filter, map, mergeAll } from 'rxjs/operators'
+import { filter, take, map, mergeAll } from 'rxjs/operators'
 import { MenuPageAbout } from './pages/about'
 import { MenuPageMain } from './pages/main'
 import { MenuPagePrimitives } from './pages/primitives'
 import { MenuPageLogs } from './pages/logs'
 
 import { div, a } from './helpers';
-import type { Orchestrator } from '../orchestrator';
 import { MenuTools } from './pages/tools';
 import { MenuColor } from './pages/color';
 
@@ -18,6 +17,8 @@ import { MenuColor } from './pages/color';
 import { CollaborativeEditTransformManager } from "../collab-edit/transform";
 import { CollabEditDeleteManager } from "../collab-edit/delete";
 import { MenuPageSpawner } from './pages/spawner';
+import type { XRManager } from '../xr/xr-manager';
+import type { member_state } from "../types";
 
 /*
 inline -mode
@@ -47,23 +48,33 @@ export class MenuManager {
     public browsePlane: BABYLON.AbstractMesh
     public wristGui: GUI.AdvancedDynamicTexture
     public browseGui: GUI.AdvancedDynamicTexture
-    public scene: BABYLON.Scene
-    public sceneManager: SceneManager
     public menu_opened: boolean
     public menu_topic: string
     public collabEditManager: CollaborativeEditTransformManager
     public collabDeleteManager: CollabEditDeleteManager
+    public myState: member_state
 
-    constructor(public orchestrator: Orchestrator) {
-        this.sceneManager = orchestrator.sceneManager
-        this.scene = orchestrator.sceneManager.scene
+    constructor(public scene: BABYLON.Scene, public xrManager: XRManager) {
         this.collabEditManager = new CollaborativeEditTransformManager(this.scene)
         this.collabDeleteManager = new CollabEditDeleteManager(this.scene)
         this.menu_opened = false
         this.menu_topic = "main"
 
+        signalHub.local.on("my_state").subscribe(state => {
+            console.log('setting my state', state)
+            this.myState = state
+            this.render()
+        })
+
+        signalHub.local.on("client_ready").pipe(
+            take(1)
+        ).subscribe(() => {
+            this.createFullScreenUI()
+        })
+
+
         // signalHub.local.on('camera_ready').subscribe(() => {
-        this.createFullScreenUI()
+
         // })
 
         signalHub.local.on('controller_ready').pipe(
@@ -129,7 +140,7 @@ export class MenuManager {
         this.wristPlane.rotation.x = BABYLON.Angle.FromDegrees(60).radians()
 
 
-        this.wristPlane.parent = this.sceneManager.xrManager.left_input_source.grip
+        this.wristPlane.parent = this.xrManager.left_input_source.grip
         this.wristGui = GUI.AdvancedDynamicTexture.CreateForMesh(this.wristPlane, 256, 256)
 
         this.browsePlane = BABYLON.MeshBuilder.CreatePlane("browse_plane", { height: 0.5, width: 0.5 }, this.scene)
@@ -144,7 +155,7 @@ export class MenuManager {
         //   this.browsePlane.rotation.y = BABYLON.Angle.FromDegrees(-60).radians()
         //  this.browsePlane.rotation.x = BABYLON.Angle.FromDegrees(45).radians()
 
-        this.browsePlane.parent = this.sceneManager.xrManager.left_input_source.grip
+        this.browsePlane.parent = this.xrManager.left_input_source.grip
 
         this.browseGui = GUI.AdvancedDynamicTexture.CreateForMesh(this.browsePlane, 640, 640)
 
@@ -222,17 +233,14 @@ export class MenuManager {
         }
 
         const micCallback = () => {
-
-            const newValue: boolean = !this.orchestrator.memberStates.my_mic_muted_pref()
-            this.orchestrator.memberStates.update_my_mic_muted_pref(newValue)
-
-            this.render()
+            signalHub.menu.emit("toggle_mic", true)
+            //this.render()
             // !signalHub.observables.mic_muted_pref.getValue()
             //signalHub.observables.mic_muted_pref.next(newValue)
         }
 
         const menuLabel = this.menu_opened ? "close" : "menu"
-        const micLabel = this.orchestrator.memberStates.my_mic_muted_pref() ? "Unmute" : "Mute"
+        const micLabel = this.myState.mic_muted ? "Unmute" : "Mute"
         return div({ name: 'menu-div' },
             a({ name: 'menu-btn', callback: menuCallback }, menuLabel),
             a({ name: 'mute-btn', callback: micCallback }, micLabel),
@@ -259,11 +267,11 @@ export class MenuManager {
     }
 
     color() {
-        return new MenuColor(this.orchestrator)
+        return new MenuColor(this.scene)
     }
 
     primitives() {
-        return new MenuPagePrimitives(this.orchestrator)
+        return new MenuPagePrimitives(this.scene)
     }
 
     spawner() {
