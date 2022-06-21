@@ -95,6 +95,19 @@ defmodule ThexrWeb.Schema.Schema do
       resolve(&SpaceResolver.create_entity/3)
     end
 
+    @desc "create box"
+    field :create_box, :id do
+      arg(:space_id, non_null(:string))
+      arg(:depth, :float)
+      arg(:width, :float)
+      arg(:height, :float)
+      arg(:size, :float)
+      arg(:position, list_of(:float))
+      arg(:scaling, list_of(:float))
+      arg(:rotation, list_of(:float))
+      resolve(&SpaceResolver.create_box/3)
+    end
+
     @desc "delete an entity from a space"
     field :delete_entity, :boolean do
       @desc "the id of the space"

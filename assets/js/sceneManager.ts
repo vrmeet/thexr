@@ -393,7 +393,10 @@ export class SceneManager {
 
 
     async parseInitialScene(entities) {
-        const meshes = entities.map(entity => this.findOrCreateMesh(entity))
+        const meshes = entities.map(entity => {
+
+            this.findOrCreateMesh(entity)
+        })
         await this.navManager.loadOrMakeNavMesh(meshes)
         this.crowdAgent = new CrowdAgent(this)
     }
@@ -415,6 +418,20 @@ export class SceneManager {
         }
     }
 
+    argifyComponents(components: { type: string, data: { value: any } }[]) {
+        const blackList = ["scaling", "position", "rotation"]
+        return components.reduce((acc, component) => {
+            if (!blackList.includes(component.type)) {
+                acc[component.type] = component.data.value
+            }
+            return acc
+        }, {})
+    }
+
+    createBox(name, components) {
+
+        return BABYLON.MeshBuilder.CreateBox(name, this.argifyComponents(components), this.scene)
+    }
 
     findOrCreateMesh(entity: { type: string, name: string, id: string, components: Component[], parent?: string }): BABYLON.AbstractMesh {
 
@@ -423,7 +440,8 @@ export class SceneManager {
         if (!mesh) {
 
             if (entity.type === "box") {
-                mesh = BABYLON.MeshBuilder.CreateBox(entity.name, {}, this.scene)
+                // mesh = BABYLON.MeshBuilder.CreateBox(entity.name, {}, this.scene)
+                mesh = this.createBox(entity.name, entity.components)
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable targetable")
             } else if (entity.type === "cylinder") {
                 mesh = BABYLON.MeshBuilder.CreateCylinder(entity.name, {}, this.scene)
@@ -538,7 +556,7 @@ export class SceneManager {
                 }
                 break;
             default:
-                console.error("unknown component", component)
+                console.warn("unknown component", component)
 
         }
     }

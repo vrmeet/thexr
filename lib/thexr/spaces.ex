@@ -62,6 +62,21 @@ defmodule Thexr.Spaces do
     Repo.all(q1)
   end
 
+  def find_and_nudge_space(space_id) do
+    case get_space_by_id(space_id) do
+      nil ->
+        nil
+
+      space ->
+        nudge_space(space)
+        space
+    end
+  end
+
+  def nudge_space(space_or_id) do
+    Thexr.SpaceSupervisor.start_space(space_or_id)
+  end
+
   # about querying entity tree for editing
 
   def entity_tree_flat(space_id, []) do
@@ -269,6 +284,11 @@ defmodule Thexr.Spaces do
     #   result ->
     #     result
     # end
+  end
+
+  def entity_count(space_id) do
+    q = from e in Entity, select: count("*"), where: e.space_id == ^space_id
+    Repo.one(q)
   end
 
   @doc """

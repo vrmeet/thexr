@@ -31,6 +31,9 @@ export class MenuPagePrimitives extends GUI.Container {
         return pre({ name: "scrollable-prim-options" }, ...this.primOptions())
     }
 
+
+
+
     primOptions() {
         const options = ["gun", "capsule", "box", "cone", "sphere", "grid", "cylinder", "plane"];
 

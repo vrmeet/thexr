@@ -1,5 +1,58 @@
 TODO:
 
+create 'find_and_nudge_space'
+
+create box, cone, cylinder, ribbon (has a good graphql api for individual mutations)
+create a light
+color a mesh
+combine meshes
+parent mesh
+subtract meshes
+group meshes
+ungroup meshes
+create enemy spawner
+gltf placed
+created ammo spawner
+
+
+other concepts:
+
+audio recorder
+image uploader
+gltf uploader
+sound uploader
+animation recorder
+avatar designer
+triggerable designer
+sword designer
+
+
+
+combine prims into a combined mesh
+
+serialized scene ->
+   lights
+   meshes
+      - optimized for performance
+
+- create prim
+    menu -> prim -> event
+    graphQL -> create entity command handler
+
+  ==> 
+
+  create box, create cone, 
+
+- frontend gets spawner through serialization or
+  event broadcast
+
+- if leader, 
+    navigation of enemies
+   -- creation, make one.
+
+
+- verify functionality still works with refactor
+
 - added jest
 
 - write some js tests

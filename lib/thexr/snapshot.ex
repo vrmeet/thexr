@@ -25,6 +25,7 @@ defmodule Thexr.Snapshot do
     changeset =
       %Entity{space_id: space_id}
       |> Entity.changeset(payload)
+      |> IO.inspect(label: "entity_created changeset")
 
     Multi.new()
     |> Multi.insert(:entity, changeset)
@@ -87,6 +88,21 @@ defmodule Thexr.Snapshot do
         %{type: "rotation", data: %{value: rot}}
       ]
     })
+  end
+
+  def process(space_id, :enemy_spawner_created, %{id: id, name: name, pos: pos}) do
+    changeset =
+      %Entity{space_id: space_id}
+      |> Entity.changeset(%{
+        id: id,
+        name: name,
+        type: "enemy_spawner",
+        components: [%{type: "position", data: %{value: pos}}]
+      })
+
+    Multi.new()
+    |> Multi.insert(:entity, changeset)
+    |> Repo.transaction()
   end
 
   def process(s, m, e) do
