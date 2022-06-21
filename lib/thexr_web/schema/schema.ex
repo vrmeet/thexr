@@ -108,6 +108,13 @@ defmodule ThexrWeb.Schema.Schema do
       resolve(&SpaceResolver.create_box/3)
     end
 
+    @desc "create enemy spawner"
+    field :create_enemy_spawner, :id do
+      arg(:space_id, non_null(:string))
+      arg(:position, list_of(:float))
+      resolve(&SpaceResolver.create_enemy_spawner/3)
+    end
+
     @desc "delete an entity from a space"
     field :delete_entity, :boolean do
       @desc "the id of the space"

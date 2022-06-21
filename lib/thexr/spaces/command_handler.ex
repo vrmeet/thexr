@@ -23,8 +23,6 @@ defmodule Thexr.Spaces.CommandHandler do
         %{type: to_string(k), data: %{value: v}}
       end)
 
-    IO.inspect(components, label: "components")
-
     payload = %{
       m: EventName.atom_to_int(:entity_created),
       p: %{

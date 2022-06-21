@@ -87,10 +87,10 @@ defmodule Thexr.SnapshotTest do
 
     CommandHandler.member_enter(space.id, "bob")
     CommandHandler.create_entity(space.id, "grid")
-    CommandHandler.create_entity(space.id, "box")
+    CommandHandler.create_entity(space.id, "enemy_spawner")
 
     :timer.sleep(10)
     assert Spaces.entity_count(space.id) == 2
-    # Spaces.serialize(space) |> IO.inspect()
+    Spaces.serialize(space) |> IO.inspect()
   end
 end

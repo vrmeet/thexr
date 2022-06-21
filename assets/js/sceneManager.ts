@@ -391,12 +391,24 @@ export class SceneManager {
     }
 
 
+    parseEntity(entity): any {
+        if (entity.type === "enemy_spawner") {
+            console.log("create enemy spawner")
+            return null
+        } else {
+            return this.findOrCreateMesh(entity)
+        }
+    }
 
     async parseInitialScene(entities) {
-        const meshes = entities.map(entity => {
+        const meshes = entities.reduce((acc, entity) => {
+            const result = this.parseEntity(entity)
+            if (typeof result === 'object' && typeof result['getClassName'] === 'function' && result.getClassName() === 'Mesh') {
+                acc.push(result)
+            }
+            return acc
 
-            this.findOrCreateMesh(entity)
-        })
+        }, [])
         await this.navManager.loadOrMakeNavMesh(meshes)
         this.crowdAgent = new CrowdAgent(this)
     }
