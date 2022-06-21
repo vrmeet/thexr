@@ -7,15 +7,13 @@ defmodule ThexrWeb.SpaceController do
   alias Thexr.Spaces
 
   def show(conn, %{"space_id" => space_id}) do
-    case Spaces.get_space_by_id(space_id) do
+    case Spaces.find_and_nudge_space(space_id) do
       nil ->
         conn
         |> put_flash(:error, "Unrecognized Space ID in the URL")
         |> redirect(to: Routes.page_path(conn, :index))
 
       space ->
-        Spaces.nudge_space(space)
-
         render(conn, "show.html",
           member_id: conn.assigns.unique_id,
           space: space,
