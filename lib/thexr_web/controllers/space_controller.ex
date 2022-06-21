@@ -14,7 +14,7 @@ defmodule ThexrWeb.SpaceController do
         |> redirect(to: Routes.page_path(conn, :index))
 
       space ->
-        nudge_space(space)
+        Spaces.nudge_space(space)
 
         render(conn, "show.html",
           member_id: conn.assigns.unique_id,
@@ -44,9 +44,5 @@ defmodule ThexrWeb.SpaceController do
       # 200
       data -> send_resp(conn, :ok, data)
     end
-  end
-
-  def nudge_space(space) do
-    Thexr.SpaceSupervisor.start_space(space)
   end
 end

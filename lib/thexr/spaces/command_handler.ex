@@ -1,8 +1,42 @@
 defmodule Thexr.Spaces.CommandHandler do
   alias Thexr.SpaceServer
 
-  def create_entity(space_id, type) do
+  def member_enter(space_id, member_id) do
+    payload = %{
+      m: EventName.atom_to_int(:member_entered),
+      p: %{
+        member_id: member_id,
+        pos_rot: %{pos: [0, 0, 0], rot: [0, 0, 0, 1]},
+        member_state: %{mic_muted: true, nick_name: "abc"}
+      },
+      ts: :os.system_time(:millisecond)
+    }
+
+    SpaceServer.process_event(space_id, :member_entered, payload, nil)
+  end
+
+  def create_enemy_spawner(space_id, name, pos) do
+    payload = %{
+      m: EventName.atom_to_int(:enemy_spawner_created),
+      p: %{
+        id: Ecto.UUID.generate(),
+        name: name,
+        pos: pos
+      }
+    }
+
+    SpaceServer.process_event(space_id, :enemy_spawner_created, payload, nil)
+  end
+
+  def create_entity(space_id, type, params \\ []) do
     id = Ecto.UUID.generate()
+
+    components =
+      Enum.map(params, fn {k, v} ->
+        %{type: to_string(k), data: %{value: v}}
+      end)
+
+    IO.inspect(components, label: "components")
 
     payload = %{
       m: EventName.atom_to_int(:entity_created),
@@ -10,11 +44,7 @@ defmodule Thexr.Spaces.CommandHandler do
         type: type,
         id: id,
         name: "#{type}_#{Thexr.Utils.random_id(5)}",
-        components: [
-          %{type: "position", data: %{"value" => [0, 0, 0]}},
-          %{type: "rotation", data: %{"value" => [0, 0, 0]}},
-          %{type: "scaling", data: %{"value" => [1, 1, 1]}}
-        ]
+        components: components
       },
       ts: :os.system_time(:millisecond)
     }

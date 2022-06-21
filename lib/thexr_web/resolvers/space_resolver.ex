@@ -7,7 +7,7 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
   end
 
   def space(_root, %{space_id: space_id}, _info) do
-    case Spaces.get_space_by_id(space_id) do
+    case Spaces.find_and_nudge_space(space_id) do
       nil -> {:error, :not_found}
       space -> {:ok, space}
     end
@@ -35,18 +35,30 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
   #   {:ok, Spaces.list_components_for_entity(args.entity_id)}
   # end
 
-  def create_entity(_root, %{space_id: space_id, type: type}, _) do
-    case Spaces.get_space_by_id(space_id) do
+  # def create_entity(_root, %{space_id: space_id, type: type}, _) do
+  #   case Spaces.find_and_nudge_space(space_id) do
+  #     nil ->
+  #       {:error, :space_not_found}
+
+  #     space ->
+  #       Thexr.Spaces.CommandHandler.create_entity(space.id, type)
+  #   end
+  # end
+
+  def create_box(_root, %{space_id: space_id} = args, _) do
+    case Spaces.find_and_nudge_space(space_id) do
       nil ->
         {:error, :space_not_found}
 
       space ->
-        Thexr.Spaces.CommandHandler.create_entity(space.id, type)
+        params = Map.delete(args, :space_id) |> Map.to_list()
+
+        Thexr.Spaces.CommandHandler.create_entity(space.id, "box", params)
     end
   end
 
   def delete_entity(_root, %{space_id: space_id, entity_id: entity_id}, _) do
-    case Spaces.get_space_by_id(space_id) do
+    case Spaces.find_and_nudge_space(space_id) do
       nil ->
         {:error, :space_not_found}
 
@@ -63,7 +75,7 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
   end
 
   def translate_entity(_root, %{space_id: space_id, entity_id: entity_id, position: position}, _) do
-    case Spaces.get_space_by_id(space_id) do
+    case Spaces.find_and_nudge_space(space_id) do
       nil ->
         {:error, :space_not_found}
 
@@ -83,7 +95,7 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
   end
 
   def rotate_entity(_root, %{space_id: space_id, entity_id: entity_id, rotation: rotation}, _) do
-    case Spaces.get_space_by_id(space_id) do
+    case Spaces.find_and_nudge_space(space_id) do
       nil ->
         {:error, :space_not_found}
 
@@ -103,7 +115,7 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
   end
 
   def scale_entity(_root, %{space_id: space_id, entity_id: entity_id, scaling: scaling}, _) do
-    case Spaces.get_space_by_id(space_id) do
+    case Spaces.find_and_nudge_space(space_id) do
       nil ->
         {:error, :space_not_found}
 
@@ -123,7 +135,7 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
   end
 
   def color_entity(_root, %{space_id: space_id, entity_id: entity_id, color: color}, _) do
-    case Spaces.get_space_by_id(space_id) do
+    case Spaces.find_and_nudge_space(space_id) do
       nil ->
         {:error, :space_not_found}
 
@@ -140,7 +152,7 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
   end
 
   def update_space(_, %{space_id: space_id, attributes: attributes}, _) do
-    case Spaces.get_space_by_id(space_id) do
+    case Spaces.find_and_nudge_space(space_id) do
       nil ->
         {:error, :space_not_found}
 
