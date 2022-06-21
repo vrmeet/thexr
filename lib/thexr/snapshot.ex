@@ -21,6 +21,8 @@ defmodule Thexr.Snapshot do
     end)
   end
 
+  # TODO: should this also be an upsert?  So that the entity can be re-created with different
+  # params, like changing the depth, height of a cone?
   def process(space_id, :entity_created, payload) do
     changeset =
       %Entity{space_id: space_id}
@@ -32,26 +34,26 @@ defmodule Thexr.Snapshot do
     |> Repo.transaction()
   end
 
+  # actually allows upserting any and all components for an entity
   def process(_space_id, :entity_transformed, %{id: entity_id, components: components}) do
-    multi = Multi.new()
-
     Enum.reduce(
       components,
-      multi,
+      Multi.new(),
       fn component, prev_multi ->
-        query =
-          from(c in Component,
-            where: c.entity_id == ^entity_id and c.type == ^component.type,
-            update: [set: [data: ^component.data]]
-          )
-
-        Multi.update_all(prev_multi, component.type, query, [])
+        Ecto.Multi.insert(
+          prev_multi,
+          :name,
+          %Component{entity_id: entity_id, type: component.type, data: component.data},
+          on_conflict: [set: [data: component.data]],
+          conflict_target: [:entity_id, :type]
+        )
       end
     )
     |> Repo.transaction()
   end
 
   def process(_space_id, :entity_colored, %{id: entity_id, color: color}) do
+    # upsert color component
     Repo.insert_all(
       Component,
       [%{entity_id: entity_id, type: "color", data: %{value: color}}],
@@ -88,21 +90,6 @@ defmodule Thexr.Snapshot do
         %{type: "rotation", data: %{value: rot}}
       ]
     })
-  end
-
-  def process(space_id, :enemy_spawner_created, %{id: id, name: name, pos: pos}) do
-    changeset =
-      %Entity{space_id: space_id}
-      |> Entity.changeset(%{
-        id: id,
-        name: name,
-        type: "enemy_spawner",
-        components: [%{type: "position", data: %{value: pos}}]
-      })
-
-    Multi.new()
-    |> Multi.insert(:entity, changeset)
-    |> Repo.transaction()
   end
 
   def process(s, m, e) do

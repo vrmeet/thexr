@@ -88,12 +88,12 @@ defmodule ThexrWeb.Schema.Schema do
       resolve(&SpaceResolver.update_space/3)
     end
 
-    @desc "create entity for a space"
-    field :create_entity, :id do
-      arg(:space_id, non_null(:string))
-      arg(:type, non_null(:string))
-      resolve(&SpaceResolver.create_entity/3)
-    end
+    # @desc "create entity for a space"
+    # field :create_entity, :id do
+    #   arg(:space_id, non_null(:string))
+    #   arg(:type, non_null(:string))
+    #   resolve(&SpaceResolver.create_entity/3)
+    # end
 
     @desc "create box"
     field :create_box, :id do

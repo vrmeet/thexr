@@ -58,8 +58,6 @@ export type event =
     { m: EventName.member_moved, p: { member_id: string, pos_rot: PosRot, left?: PosRot, right?: PosRot }, ts?: number } |
     { m: EventName.member_left, p: { member_id: string }, ts?: number } |
     { m: EventName.entity_created, p: { type: string, id: string, name: string, components: Component[] }, ts?: number } |
-    { m: EventName.box_created, p: { id: string, name: string, components: Component[] }, ts?: number } |
-
 
     { m: EventName.entity_transformed, p: { id: string, components: Component[] }, ts?: number } |
     { m: EventName.entity_colored, p: { id: string, color: string }, ts?: number } |
@@ -68,8 +66,7 @@ export type event =
     { m: EventName.entity_released, p: { member_id: string, entity_id: string, hand: string, hand_pos_rot: PosRot, entity_pos_rot: PosRot, lv?: number[], av?: number[] } } |
     { m: EventName.entity_trigger_squeezed, p: { member_id: string, entity_id: string, pos: number[], direction: number[] } } |
     { m: EventName.member_damaged, p: { member_id: string } } |
-    { m: EventName.hud_message_broadcasted, p: { member_id: string, msg: string } } |
-    { m: EventName.enemy_spawner_created, p: { id: string, name: string, pos: number[] } }
+    { m: EventName.hud_message_broadcasted, p: { member_id: string, msg: string } }
     // { m: EventName.agent_path_planned, p: { agent_id: string, pos_rot: PosRot } } |
     // { m: EventName.agent_removed, p: { agent_id: string } }
     // ["member_left", { member_id: string }] |

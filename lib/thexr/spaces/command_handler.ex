@@ -15,19 +15,6 @@ defmodule Thexr.Spaces.CommandHandler do
     SpaceServer.process_event(space_id, :member_entered, payload, nil)
   end
 
-  def create_enemy_spawner(space_id, name, pos) do
-    payload = %{
-      m: EventName.atom_to_int(:enemy_spawner_created),
-      p: %{
-        id: Ecto.UUID.generate(),
-        name: name,
-        pos: pos
-      }
-    }
-
-    SpaceServer.process_event(space_id, :enemy_spawner_created, payload, nil)
-  end
-
   def create_entity(space_id, type, params \\ []) do
     id = Ecto.UUID.generate()
 

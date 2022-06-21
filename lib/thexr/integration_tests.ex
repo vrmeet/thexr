@@ -9,6 +9,5 @@ defmodule Thexr.IntegrationTests do
 
     CommandHandler.member_enter(space.id, "bob")
     CommandHandler.create_entity(space.id, "grid")
-    CommandHandler.create_enemy_spawner(space.id, "spawner1", [3, 0, 3])
   end
 end

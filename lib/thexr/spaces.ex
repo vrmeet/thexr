@@ -800,6 +800,7 @@ defmodule Thexr.Spaces do
   end
 
   def set_nav_mesh(space_id, data) do
+    # upsert nav mesh
     Repo.insert!(
       %NavMesh{space_id: space_id, data: data},
       on_conflict: [set: [data: data]],
