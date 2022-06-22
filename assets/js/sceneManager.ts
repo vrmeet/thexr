@@ -13,7 +13,7 @@ import { DamageOverlay } from "./damage-overlay";
 import { isMobileVR } from "./utils";
 import { HudMessager } from "./hud-message";
 import { BulletManager } from "./scene/bullet-manager";
-import { CrowdAgent } from "./scene/crowd-agent";
+
 import { EventName } from "./event-names"
 import { NavManager } from "./scene/nav-manager";
 
@@ -34,7 +34,7 @@ export class SceneManager {
     public xrManager: XRManager
     public canvasId: string
     public bulletManager: BulletManager
-    public crowdAgent: CrowdAgent
+
     public isLeader: boolean
     public navManager: NavManager
 
@@ -75,6 +75,20 @@ export class SceneManager {
 
 
         })
+        window['sceneManager'] = this
+    }
+
+    initLeaderDuties() {
+        this.entities
+            .filter(entity => entity.type === "enemy_spawner")
+            .forEach(spawner => {
+                console.log('create a spawner', spawner.name)
+                const position = spawner.components.filter(c => c.type === "position")[0] || { type: "position", data: { value: [0, 0, 0] } }
+
+                this.navManager.agentManager.addAgentSpawnPoint(spawner.name, position.data.value)
+            })
+
+        this.navManager.agentManager.startSpawning()
     }
 
     setChannelListeners() {
@@ -83,6 +97,7 @@ export class SceneManager {
             if (this.member_id === member_id) {
                 this.isLeader = true
                 console.log("i'm leader")
+                this.initLeaderDuties()
             } else {
                 this.isLeader = false
                 console.log("i'm not leader")
@@ -266,7 +281,7 @@ export class SceneManager {
 
         // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
         var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), this.scene);
-        this.navManager = new NavManager(this)
+        this.navManager = new NavManager(this.space_id, this.scene)
         await this.parseInitialScene(this.entities)
 
         this.xrManager = new XRManager(this.member_id, this.scene)
@@ -410,8 +425,8 @@ export class SceneManager {
             return acc
 
         }, [])
+
         await this.navManager.loadOrMakeNavMesh(meshes)
-        this.crowdAgent = new CrowdAgent(this)
     }
 
 

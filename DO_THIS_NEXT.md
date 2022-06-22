@@ -1,5 +1,15 @@
 TODO:
 
+How to create a shared enemy experience?
+  - nav mesh (every client creates / downloads )
+  - leader should:
+     - assess (how many current enemies there are)
+     - decide when to create new enemies
+     - navigate the enemies to the players
+
+  
+
+
 create 'find_and_nudge_space'
 
 create box, cone, cylinder, ribbon (has a good graphql api for individual mutations)

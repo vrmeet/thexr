@@ -69,7 +69,7 @@ export class BulletManager {
         const removeTargetable = (pickedMesh: BABYLON.AbstractMesh) => {
             // if is crowdAgent, remove that first, so we can move it freely
             if (pickedMesh.metadata && pickedMesh.metadata.agentIndex !== undefined) {
-                this.sceneManager.crowdAgent.crowd.removeAgent(pickedMesh.metadata.agentIndex)
+                // this.sceneManager.crowdAgent.crowd.removeAgent(pickedMesh.metadata.agentIndex)
                 if (pickedMesh.parent) {
                     pickedMesh.setParent(null)
 

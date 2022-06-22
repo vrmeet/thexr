@@ -3,6 +3,7 @@ import { filter } from "rxjs/operators"
 import { EventName } from "../event-names"
 import type { SceneManager } from "../sceneManager"
 import { signalHub } from "../signalHub"
+import { AgentManager } from "./agent-manager"
 
 const NAV_MESH_PARAMS = {
     cs: 0.2,
@@ -20,23 +21,33 @@ const NAV_MESH_PARAMS = {
     detailSampleMaxError: 1,
 }
 
+const MAX_AGENTS = 25
+const MAX_AGENT_RADIUS = 1
+
 export class NavManager {
     public navigationPlugin: BABYLON.RecastJSPlugin
-    public scene: BABYLON.Scene
     public csrfToken: string
     public navMeshCreated: boolean
     public debugMesh: BABYLON.Mesh
+    public crowd: BABYLON.ICrowd
+    public agentManager: AgentManager
 
-    constructor(public sceneManager: SceneManager) {
+    constructor(public space_id: string, public scene: BABYLON.Scene) {
         this.navMeshCreated = false
-        this.scene = sceneManager.scene
         this.navigationPlugin = new BABYLON.RecastJSPlugin();
+
         this.csrfToken = document.getElementsByName("csrf-token")[0]['content'];
         signalHub.outgoing.on("event").pipe(
             filter(msg => EventName.entity_created === msg.m || EventName.entity_transformed === msg.m || EventName.entity_deleted === msg.m)
         ).subscribe(() => {
             console.log("scene changed, uncache nav mesh")
-            this.sceneManager.navManager.uncacheNavMesh()
+            this.uncacheNavMesh()
+        })
+
+        signalHub.local.on("client_ready").subscribe(() => {
+            this.crowd = this.navigationPlugin.createCrowd(MAX_AGENTS, MAX_AGENT_RADIUS, this.scene)
+            this.agentManager = new AgentManager(this.crowd, this.scene)
+
         })
     }
 
@@ -57,7 +68,7 @@ export class NavManager {
     }
 
     async fetchCachedBinaryData() {
-        const response = await fetch(`/s/${this.sceneManager.space_id}/nav_mesh`, {
+        const response = await fetch(`/s/${this.space_id}/nav_mesh`, {
             method: "GET",
             headers: {
                 "Accept": "*/*"
@@ -74,7 +85,7 @@ export class NavManager {
 
 
     async uncacheNavMesh() {
-        const response = await fetch(`/s/${this.sceneManager.space_id}/nav_mesh`, { // Your POST endpoint
+        const response = await fetch(`/s/${this.space_id}/nav_mesh`, { // Your POST endpoint
             method: 'DELETE',
             headers: {
                 'Accept': 'application/json, text/plain, text/html, *.*',
@@ -100,7 +111,7 @@ export class NavManager {
         }
         let data = this.navigationPlugin.getNavmeshData()
         const blob = new Blob([data.buffer], { type: "application/octet-stream" })
-        const response = await fetch(`/s/${this.sceneManager.space_id}/nav_mesh`, { // Your POST endpoint
+        const response = await fetch(`/s/${this.space_id}/nav_mesh`, { // Your POST endpoint
             method: 'POST',
             headers: {
                 'Accept': 'application/json, text/plain, text/html, *.*',
