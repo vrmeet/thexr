@@ -403,7 +403,8 @@ export class SceneManager {
     async parseInitialScene(entities) {
         const meshes = entities.reduce((acc, entity) => {
             const result = this.parseEntity(entity)
-            if (typeof result === 'object' && typeof result['getClassName'] === 'function' && result.getClassName() === 'Mesh') {
+            if (result && typeof result['getClassName'] === 'function' && result.getClassName() === 'Mesh') {
+                console.log('getClassName', result.getClassName(), result.name)
                 acc.push(result)
             }
             return acc
