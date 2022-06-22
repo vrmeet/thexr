@@ -5,6 +5,11 @@ import { v4 as uuidv4 } from "uuid";
 import type { Component, event } from "../types"
 import { EventName } from "../event-names";
 
+/*
+temp test for a 'game', randomly spawn shootable targets that will be 'destroyed' when you shoot
+them with a gun
+*/
+
 export class TargetSpawner {
     constructor(public scene: BABYLON.Scene) {
         signalHub.local.on("space_channel_connected").subscribe(() => {
