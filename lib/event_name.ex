@@ -23,6 +23,7 @@ defmodule EventName do
   def int_to_atom(5020), do: :entity_trigger_squeezed
   def int_to_atom(6000), do: :hud_message_broadcasted
   def int_to_atom(7000), do: :agent_spawned
+  def int_to_atom(7100), do: :agent_directed
 
   def atom_to_int(:member_entered), do: 1000
   def atom_to_int(:member_left), do: 1010
@@ -43,6 +44,7 @@ defmodule EventName do
   def atom_to_int(:entity_trigger_squeezed), do: 5020
   def atom_to_int(:hud_message_broadcasted), do: 6000
   def atom_to_int(:agent_spawned), do: 7000
+  def atom_to_int(:agent_directed), do: 7100
 
 end
         
