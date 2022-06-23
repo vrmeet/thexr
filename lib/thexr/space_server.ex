@@ -128,12 +128,14 @@ defmodule Thexr.SpaceServer do
   end
 
   def handle_cast({:event, :member_entered, evt, _pid} = tuple, state) do
+    if state.leader == nil || state.leader == evt.p.member_id do
+      ThexrWeb.Endpoint.broadcast("space:#{state.space.id}", "new_leader", %{
+        member_id: evt.p.member_id
+      })
+    end
+
     state =
       if state.leader == nil do
-        ThexrWeb.Endpoint.broadcast("space:#{state.space.id}", "new_leader", %{
-          member_id: evt.p.member_id
-        })
-
         %{state | leader: evt.p.member_id}
       else
         state
@@ -163,24 +165,25 @@ defmodule Thexr.SpaceServer do
   end
 
   def handle_cast({:event, :member_left, evt, _pid} = tuple, state) do
-    if evt.p.member_id == state.leader do
-      # find a new leader
-      member_ids = Thexr.Utils.member_states_to_map(state.member_states) |> Map.keys()
+    state =
+      if evt.p.member_id == state.leader do
+        # find a new leader
+        member_ids = Thexr.Utils.member_states_to_map(state.member_states) |> Map.keys()
 
-      if length(member_ids) > 0 do
-        member_id = List.first(member_ids)
+        if length(member_ids) > 0 do
+          member_id = List.first(member_ids)
 
-        ThexrWeb.Endpoint.broadcast("space:#{state.space.id}", "new_leader", %{
-          member_id: member_id
-        })
+          ThexrWeb.Endpoint.broadcast("space:#{state.space.id}", "new_leader", %{
+            member_id: member_id
+          })
 
-        %{state | leader: member_id}
+          %{state | leader: member_id}
+        else
+          %{state | leader: nil}
+        end
       else
-        %{state | leader: nil}
+        state
       end
-    else
-      state
-    end
 
     handle_event(tuple, state)
   end

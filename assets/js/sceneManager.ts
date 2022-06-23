@@ -95,10 +95,11 @@ export class SceneManager {
     setChannelListeners() {
 
         signalHub.incoming.on("new_leader").subscribe(({ member_id }) => {
+            console.log('leader is', member_id)
             if (this.member_id === member_id) {
                 this.isLeader = true
                 console.log("i'm leader")
-                this.initLeaderDuties()
+                this.initLeaderDuties() // should only run once
             } else {
                 this.isLeader = false
                 console.log("i'm not leader")
@@ -226,10 +227,6 @@ export class SceneManager {
 
 
                 }
-            } else if (mpts.m === EventName.entity_trigger_squeezed) {
-                this.bulletManager.fireBullet(mpts.p.member_id, mpts.p.pos, mpts.p.direction, 10)
-
-
             }
         })
 
@@ -290,7 +287,7 @@ export class SceneManager {
 
         new DamageOverlay(this.member_id, this.scene)
         new HudMessager(this.scene)
-        this.bulletManager = new BulletManager(this)
+        this.bulletManager = new BulletManager(this.member_id, this.scene)
 
         return this.scene;
 
