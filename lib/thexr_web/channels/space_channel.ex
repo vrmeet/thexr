@@ -95,6 +95,8 @@ defmodule ThexrWeb.SpaceChannel do
           "movements" => Thexr.Utils.movements_to_map(member_movements)
         })
 
+        push(socket, "about_agents", %{agents: SpaceServer.agents(socket.assigns.space_id)})
+
         SpaceServer.member_connected(socket.assigns.space_id, socket.assigns.member_id)
         {:noreply, socket}
     end
