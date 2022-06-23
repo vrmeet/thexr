@@ -110,7 +110,7 @@ defmodule Thexr.SpaceServer do
      }, @timeout}
   end
 
-  def handle_cast({:event, msg, evt, pid}, state) do
+  def handle_event({:event, msg, evt, pid}, state) do
     state = %{state | sequence: state.sequence + 1}
 
     event_stream_attrs = %{
@@ -123,16 +123,70 @@ defmodule Thexr.SpaceServer do
     # TODO: every msg is broadcast to every client?
     # we can consolidate that to on 'need to know' basis
     broadcast_event(state.space, msg, evt, pid)
-    state = choose_leader(msg, evt, state)
-    # save agents
+
+    {:noreply, state}
+  end
+
+  def handle_cast({:event, :member_entered, evt, _pid} = tuple, state) do
     state =
-      if msg == :agent_spawned do
-        %{state | agents: [%{name: evt.p.name, position: evt.p.position} | state.agents]}
+      if state.leader == nil do
+        ThexrWeb.Endpoint.broadcast("space:#{state.space.id}", "new_leader", %{
+          member_id: evt.p.member_id
+        })
+
+        %{state | leader: evt.p.member_id}
       else
         state
       end
 
-    {:noreply, state}
+    handle_event(tuple, state)
+  end
+
+  def handle_cast({:event, :agent_spawned, evt, _pid} = tuple, state) do
+    # save agents
+    state = %{state | agents: [%{name: evt.p.name, position: evt.p.position} | state.agents]}
+    handle_event(tuple, state)
+  end
+
+  def handle_cast({:event, :agent_directed, evt, _pid} = tuple, state) do
+    updated_agents =
+      Enum.map(state.agents, fn agent ->
+        if agent.name == evt.p.name do
+          %{agent | position: evt.p.current_position}
+        else
+          agent
+        end
+      end)
+
+    state = %{state | agents: updated_agents}
+    handle_event(tuple, state)
+  end
+
+  def handle_cast({:event, :member_left, evt, _pid} = tuple, state) do
+    if evt.p.member_id == state.leader do
+      # find a new leader
+      member_ids = Thexr.Utils.member_states_to_map(state.member_states) |> Map.keys()
+
+      if length(member_ids) > 0 do
+        member_id = List.first(member_ids)
+
+        ThexrWeb.Endpoint.broadcast("space:#{state.space.id}", "new_leader", %{
+          member_id: member_id
+        })
+
+        %{state | leader: member_id}
+      else
+        %{state | leader: nil}
+      end
+    else
+      state
+    end
+
+    handle_event(tuple, state)
+  end
+
+  def handle_cast({:event, _, _, _} = tuple, state) do
+    handle_event(tuple, state)
   end
 
   def handle_cast({:member_connected, member_id}, state) do
@@ -199,17 +253,17 @@ defmodule Thexr.SpaceServer do
     ThexrWeb.Endpoint.broadcast_from(from, "space:#{space.id}", "event", evt)
   end
 
-  def choose_leader(:member_entered, evt, state) do
-    if state.leader == nil do
-      ThexrWeb.Endpoint.broadcast("space:#{state.space.id}", "new_leader", %{
-        member_id: evt.p.member_id
-      })
+  # def choose_leader(:member_entered, evt, state) do
+  #   if state.leader == nil do
+  #     ThexrWeb.Endpoint.broadcast("space:#{state.space.id}", "new_leader", %{
+  #       member_id: evt.p.member_id
+  #     })
 
-      %{state | leader: evt.p.member_id}
-    else
-      state
-    end
-  end
+  #     %{state | leader: evt.p.member_id}
+  #   else
+  #     state
+  #   end
+  # end
 
   def choose_leader(:member_left, evt, state) do
     if evt.p.member_id == state.leader do

@@ -89,6 +89,7 @@ export class SceneManager {
             })
 
         this.navManager.agentManager.startSpawning()
+        this.navManager.agentManager.planMovementForAllAgents()
     }
 
     setChannelListeners() {

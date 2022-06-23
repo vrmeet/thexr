@@ -46,7 +46,7 @@ export class NavManager {
 
         signalHub.local.on("client_ready").subscribe(() => {
             this.crowd = this.navigationPlugin.createCrowd(MAX_AGENTS, MAX_AGENT_RADIUS, this.scene)
-            this.agentManager = new AgentManager(this.crowd, this.scene)
+            this.agentManager = new AgentManager(this.navigationPlugin, this.crowd, this.scene)
 
         })
     }
