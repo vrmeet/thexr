@@ -26,6 +26,7 @@ export type IncomingEvents = {
     server_lost: any
     new_leader: { member_id: string }
     about_members: { movements: { [member_id: string]: { pos_rot: types.PosRot } }, states: { [member_id: string]: types.member_state } }
+    about_agents: { agents: { name: string, position: number[] }[] }
 }
 
 export type OutgoingEvents = {

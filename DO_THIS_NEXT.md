@@ -3,6 +3,14 @@ TODO:
 How to create a shared enemy experience?
   - nav mesh (every client creates / downloads )
   - leader should:
+     - leader duties
+        - start spawn
+           => agent_spawned
+
+  - receiver (agent_spawned)
+     - crowd agent
+
+
      - assess (how many current enemies there are)
      - decide when to create new enemies
      - navigate the enemies to the players

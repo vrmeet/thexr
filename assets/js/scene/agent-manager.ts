@@ -7,8 +7,16 @@ import { random_id } from "../utils"
 
 export class AgentManager {
     public agentSpawnPoints: { [name: string]: number[] }
+    public agents: { [name: string]: number }
     constructor(public crowd: BABYLON.ICrowd, public scene: BABYLON.Scene) {
         this.agentSpawnPoints = {}
+        this.agents = {}
+
+        signalHub.incoming.on("about_agents").subscribe(({ agents }) => {
+            agents.forEach(agent => {
+                this.createAgent(agent.name, agent.position)
+            })
+        })
 
         signalHub.incoming.on("event").pipe(
             filter(event => event.m === EventName.agent_spawned)
@@ -16,6 +24,9 @@ export class AgentManager {
             console.log('incoming spawn event', event)
             this.createAgent(event.p["name"], event.p["position"])
         })
+
+
+
         // this.navigationPlugin = sceneManager.navigationPlugin
 
         // signalHub.incoming.on("event").pipe(
@@ -86,7 +97,7 @@ export class AgentManager {
         if (Object.keys(this.agentSpawnPoints).length === 0) {
             return
         }
-        // TODO: random select
+        // TODO: random select, (decision making based on some logic)
         setTimeout(() => {
             const position = Object.values(this.agentSpawnPoints)[0]
             let event: event = { m: EventName.agent_spawned, p: { name: `agent_${random_id(5)}`, position: position } }
@@ -107,10 +118,16 @@ export class AgentManager {
             pathOptimizationRange: 0.0,
             separationWeight: 1.0
         };
-        let enemy = BABYLON.MeshBuilder.CreateBox("enemy", { width: 1, depth: 1, height: 2 }, this.scene)
-        let transform = new BABYLON.TransformNode("");
+        let enemy = BABYLON.MeshBuilder.CreateBox(`mesh_${agentName}`, { width: 1, depth: 1, height: 2 }, this.scene)
+        let transform = new BABYLON.TransformNode(agentName);
         enemy.parent = transform
         const agentIndex = this.crowd.addAgent(BABYLON.Vector3.FromArray(position), agentParams, transform)
+        this.agents[agentName] = agentIndex
 
+    }
+
+    deleteAgent(agentName: string) {
+        this.crowd.removeAgent(this.agents[agentName])
+        delete this.agents[agentName]
     }
 }

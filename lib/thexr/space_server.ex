@@ -59,6 +59,10 @@ defmodule Thexr.SpaceServer do
     end
   end
 
+  def agents(space_id) do
+    GenServer.call(via_tuple(space_id), :agents)
+  end
+
   def summary(space_id) do
     GenServer.call(via_tuple(space_id), :summary)
   end
@@ -101,14 +105,10 @@ defmodule Thexr.SpaceServer do
        member_states: member_states,
        sequence: Thexr.Spaces.max_event_sequence(space.id),
        disconnected: MapSet.new(),
-       leader: nil
+       leader: nil,
+       agents: []
      }, @timeout}
   end
-
-  # :ets.insert(
-  #   socket.assigns.ets_refs,
-  #   {socket.assigns.member_id, p0, p1, p2, r0, r1, r2, r3, left, right}
-  # )
 
   def handle_cast({:event, msg, evt, pid}, state) do
     state = %{state | sequence: state.sequence + 1}
@@ -124,6 +124,13 @@ defmodule Thexr.SpaceServer do
     # we can consolidate that to on 'need to know' basis
     broadcast_event(state.space, msg, evt, pid)
     state = choose_leader(msg, evt, state)
+    # save agents
+    state =
+      if msg == :agent_spawned do
+        %{state | agents: [%{name: evt.p.name, position: evt.p.position} | state.agents]}
+      else
+        state
+      end
 
     {:noreply, state}
   end
@@ -143,6 +150,10 @@ defmodule Thexr.SpaceServer do
 
   def handle_call(:summary, _from, state) do
     {:reply, state, state, @timeout}
+  end
+
+  def handle_call(:agents, _from, state) do
+    {:reply, state.agents, state, @timeout}
   end
 
   def handle_call(:get_ets_refs, _from, state) do
