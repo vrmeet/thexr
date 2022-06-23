@@ -36,6 +36,13 @@ export class AgentManager {
             this.crowd.agentGoto(agentIndex, dest)
         })
 
+        // remove agents
+        signalHub.local.on("agent_damaged").subscribe(({ agent_name }) => {
+            this.deleteAgent(agent_name)
+        })
+
+
+
         // support mesh agent rotation
         this.scene.onBeforeRenderObservable.add(() => {
             Object.values(this.agents).forEach(agentObj => {
@@ -114,24 +121,51 @@ export class AgentManager {
         this.agentSpawnPoints[name] = position
     }
 
+    getRandomAgent() {
+        const agentNames = Object.keys(this.agents)
+        return agentNames[Math.floor(Math.random() * agentNames.length)]
+    }
+
     planMovementForAllAgents() {
-        setInterval(() => {
+        setTimeout(() => {
 
-            Object.keys(this.agents).forEach(agentName => {
-                const currentPosition = this.crowd.getAgentPosition(this.agents[agentName].agentIndex)
-                const nextPosition = this.plugin.getRandomPointAround(currentPosition, 3)
-                const payload: event = {
-                    m: EventName.agent_directed,
-                    p: {
-                        name: agentName, current_position: currentPosition.asArray(),
-                        next_position: nextPosition.asArray()
-                    }
+            const agentName = this.getRandomAgent()
+            console.log("attempt to plan momvent for agent", agentName)
+            if (!agentName) {
+                this.planMovementForAllAgents()
+                return
+            }
+            const currentPosition = this.crowd.getAgentPosition(this.agents[agentName].agentIndex)
+            const nextPosition = this.plugin.getRandomPointAround(currentPosition, 3)
+            const payload: event = {
+                m: EventName.agent_directed,
+                p: {
+                    name: agentName, current_position: currentPosition.asArray(),
+                    next_position: nextPosition.asArray()
                 }
-                signalHub.outgoing.emit("event", payload)
-                signalHub.incoming.emit("event", payload)
-            })
+            }
+            signalHub.outgoing.emit("event", payload)
+            signalHub.incoming.emit("event", payload)
 
-        }, 5000)
+            this.planMovementForAllAgents()
+        }, Math.random() * 5000)
+        // setInterval(() => {
+
+        //     Object.keys(this.agents).forEach(agentName => {
+        //         const currentPosition = this.crowd.getAgentPosition(this.agents[agentName].agentIndex)
+        //         const nextPosition = this.plugin.getRandomPointAround(currentPosition, 3)
+        //         const payload: event = {
+        //             m: EventName.agent_directed,
+        //             p: {
+        //                 name: agentName, current_position: currentPosition.asArray(),
+        //                 next_position: nextPosition.asArray()
+        //             }
+        //         }
+        //         signalHub.outgoing.emit("event", payload)
+        //         signalHub.incoming.emit("event", payload)
+        //     })
+
+        // }, 5000)
 
     }
 
@@ -168,13 +202,16 @@ export class AgentManager {
         const transform = new BABYLON.TransformNode(agentName);
         mesh.parent = transform
         const agentIndex = this.crowd.addAgent(BABYLON.Vector3.FromArray(position), agentParams, transform)
+        mesh.metadata ||= {}
+        mesh.metadata['agentIndex'] = agentIndex // used by bullet system to check if target was an agent
+        mesh.metadata['agentName'] = agentName
         this.agents[agentName] = { mesh, transform, agentIndex }
 
     }
 
     deleteAgent(agentName: string) {
-
-        this.crowd.removeAgent(this.agents[agentName].agentIndex)
+        const agentIndex = this.agents[agentName].agentIndex
         delete this.agents[agentName]
     }
+
 }

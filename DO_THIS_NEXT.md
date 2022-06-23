@@ -6,9 +6,25 @@ How to create a shared enemy experience?
      - leader duties
         - start spawn
            => agent_spawned
+           - create one agent
+           - periodically move all agents
 
   - receiver (agent_spawned)
      - crowd agent
+     - agent_directed, move that agent
+
+  - initial state: about_agents
+     - create local agents, in those positions
+
+====
+
+ x  shoot and remove an agent
+ x  make agent movement less twitchy, more natural
+   spawn enough agents for the number of members
+   move the agent toward closest member
+   
+   
+   create damage when agent is on self...
 
 
      - assess (how many current enemies there are)

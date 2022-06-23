@@ -16,6 +16,7 @@ type LocalEvents = {
     hud_msg: string
     pulse: { hand: "left" | "right", intensity: number, duration: number }
     my_state: types.member_state
+    agent_damaged: { agent_name: string }
 }
 
 export type IncomingEvents = {

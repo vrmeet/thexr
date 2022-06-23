@@ -33,7 +33,9 @@ export enum EventName {
     hud_message_broadcasted = 6000,
 
     agent_spawned = 7000,
-    agent_directed = 7100
+    agent_directed = 7100,
+
+    target_hit = 8000
 
 
 
