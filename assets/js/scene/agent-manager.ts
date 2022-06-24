@@ -184,7 +184,11 @@ export class AgentManager {
             signalHub.outgoing.emit("event", event)
             signalHub.incoming.emit("event", event)
 
-        }, 5000)
+            let event2: event = { m: EventName.agent_spawned, p: { name: `agent_${random_id(5)}`, position: position } }
+            signalHub.outgoing.emit("event", event2)
+            signalHub.incoming.emit("event", event2)
+
+        }, 3000)
 
     }
 
@@ -212,6 +216,7 @@ export class AgentManager {
 
     deleteAgent(agentName: string) {
         const agentIndex = this.agents[agentName].agentIndex
+        this.crowd.removeAgent(agentIndex)
         delete this.agents[agentName]
     }
 
