@@ -151,7 +151,7 @@ defmodule Thexr.SpaceServer do
       | agents: Map.put(state.agents, evt.p.name, %{position: evt.p.position})
     }
 
-    handle_event(tuple, state)
+    handle_event(put_elem(tuple, 3, nil), state)
   end
 
   # hande agent_removed
@@ -159,20 +159,20 @@ defmodule Thexr.SpaceServer do
   def handle_cast({:event, :agents_directed, %{p: %{agents: agents}}, _pid} = tuple, state) do
     updated_agents =
       Enum.reduce(agents, state.agents, fn agent, acc ->
-        Map.put(acc, agent.name, %{position: agent.current_position})
+        Map.put(acc, agent.name, Map.delete(agent, :name))
       end)
 
     # updated_agents =
     #   Enum.map(state.agents, fn agent ->
     #     if agent.name == evt.p.name do
-    #       %{agent | position: evt.p.current_position}
+    #       %{agent | position: evt.p.prev_position}
     #     else
     #       agent
     #     end
     #   end)
 
     state = %{state | agents: updated_agents}
-    handle_event(tuple, state)
+    handle_event(put_elem(tuple, 3, nil), state)
   end
 
   def handle_cast({:event, :member_left, evt, _pid} = tuple, state) do
