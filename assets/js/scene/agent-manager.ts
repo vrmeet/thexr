@@ -14,8 +14,10 @@ export class AgentManager {
 
         // creates any previously spawned agents
         signalHub.incoming.on("about_agents").subscribe((payload) => {
+            console.log("about_agents", payload)
             Object.entries(payload.agents).forEach(([agentName, agent]) => {
-                this.createAgent(agentName, BABYLON.Vector3.FromArray(agent.position))
+                this.createAgent(agentName, BABYLON.Vector3.FromArray(agent.prev_position))
+                this.crowd.agentGoto(this.agents[agentName].agentIndex, BABYLON.Vector3.FromArray(agent.next_position))
             })
         })
 
@@ -137,33 +139,37 @@ export class AgentManager {
         return agentNames[Math.floor(Math.random() * agentNames.length)]
     }
 
+    sendAgentMovements() {
+        if (Object.keys(this.agents).length < 1) {
+            return
+        }
+        const futurePositions = Object.entries(this.agents).map(([agentName, agent]) => {
+            const currentPosition = agent.transform.position
+            const nextPosition = this.plugin.getRandomPointAround(currentPosition, 2)
+            const delay = Math.random() * 500
+            return { name: agentName, currentPosition, nextPosition, delay }
+        }).map(temp => {
+            return {
+                name: temp.name,
+                prev_position: arrayReduceSigFigs(temp.currentPosition.asArray()),
+                next_position: arrayReduceSigFigs(temp.nextPosition.asArray()),
+                delay: reduceSigFigs(temp.delay),
+            }
+        })
+
+
+        const payload: event = {
+            m: EventName.agents_directed,
+            p: { agents: futurePositions }
+        }
+        signalHub.outgoing.emit("event", payload)
+
+    }
+
     planMovementForAllAgents() {
+        this.sendAgentMovements()
         setInterval(() => {
-            if (Object.keys(this.agents).length < 1) {
-                return
-            }
-            const futurePositions = Object.entries(this.agents).map(([agentName, agent]) => {
-                const currentPosition = agent.transform.position
-                const nextPosition = this.plugin.getRandomPointAround(currentPosition, 2)
-                const delay = Math.random() * 500
-                return { name: agentName, currentPosition, nextPosition, delay }
-            }).map(temp => {
-                return {
-                    name: temp.name,
-                    current_position: arrayReduceSigFigs(temp.currentPosition.asArray()),
-                    next_position: arrayReduceSigFigs(temp.nextPosition.asArray()),
-                    delay: reduceSigFigs(temp.delay),
-                }
-            })
-
-
-            const payload: event = {
-                m: EventName.agents_directed,
-                p: { agents: futurePositions }
-            }
-            signalHub.outgoing.emit("event", payload)
-            signalHub.incoming.emit("event", payload)
-
+            this.sendAgentMovements()
         }, 5000)
         // setInterval(() => {
 
@@ -173,7 +179,7 @@ export class AgentManager {
         //         const payload: event = {
         //             m: EventName.agent_directed,
         //             p: {
-        //                 name: agentName, current_position: currentPosition.asArray(),
+        //                 name: agentName, prev_position: currentPosition.asArray(),
         //                 next_position: nextPosition.asArray()
         //             }
         //         }
@@ -199,7 +205,6 @@ export class AgentManager {
             const position = this.scene.getMeshByName(spawnerName).position.asArray()
             let event: event = { m: EventName.agent_spawned, p: { name: `agent_${random_id(5)}`, position: position } }
             signalHub.outgoing.emit("event", event)
-            signalHub.incoming.emit("event", event)
 
             // let event2: event = { m: EventName.agent_spawned, p: { name: `agent_${random_id(5)}`, position: position } }
             // signalHub.outgoing.emit("event", event2)
