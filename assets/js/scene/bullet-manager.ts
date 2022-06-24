@@ -70,7 +70,7 @@ export class BulletManager {
         }
 
 
-        let animation = BABYLON.Animation.CreateAndStartAnimation("bullet", bullet,
+        let animation = BABYLON.Animation.CreateAndStartAnimation("animate_bullet", bullet,
             "position", FRAME_RATE, FRAME_RATE * distance / speed, bullet.position, target, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, null, () => {
                 removeBullet()
                 this.scene.unregisterBeforeRender(checkBulletForIntersect)

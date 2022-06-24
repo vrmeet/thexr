@@ -199,6 +199,7 @@ export class AgentManager {
             separationWeight: 1.0
         };
         let mesh = BABYLON.MeshBuilder.CreateBox(`mesh_${agentName}`, { width: 1, depth: 1, height: 2 }, this.scene)
+        BABYLON.Tags.AddTagsTo(mesh, "targetable")
         const transform = new BABYLON.TransformNode(agentName);
         mesh.parent = transform
         const agentIndex = this.crowd.addAgent(BABYLON.Vector3.FromArray(position), agentParams, transform)
