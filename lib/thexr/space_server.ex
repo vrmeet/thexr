@@ -146,7 +146,11 @@ defmodule Thexr.SpaceServer do
 
   def handle_cast({:event, :agent_spawned, evt, _pid} = tuple, state) do
     # save agents
-    state = %{state | agents: Map.put(state.agents, evt.p.name, %{position: evt.p.position})}
+    state = %{
+      state
+      | agents: Map.put(state.agents, evt.p.name, %{position: evt.p.position})
+    }
+
     handle_event(tuple, state)
   end
 
@@ -154,8 +158,8 @@ defmodule Thexr.SpaceServer do
 
   def handle_cast({:event, :agents_directed, %{p: %{agents: agents}}, _pid} = tuple, state) do
     updated_agents =
-      Enum.reduce(agents, state.agents, fn {agent_name, agent}, acc ->
-        Map.put(acc, agent_name, %{position: agent.current_position})
+      Enum.reduce(agents, state.agents, fn agent, acc ->
+        Map.put(acc, agent.name, %{position: agent.current_position})
       end)
 
     # updated_agents =
