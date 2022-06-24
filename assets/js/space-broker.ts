@@ -26,11 +26,13 @@ export class SpaceBroker {
 
     public socket: Socket
     public spaceChannel: Channel
+    public spaceChannelJoined: boolean
 
     // public initialized: Promise<any>
     public channelParams: { choice: string }
 
     constructor(public member_id: string, public space_id: string) {
+        this.spaceChannelJoined = false
         this.socket = new Socket('/socket', { params: { token: window['userToken'] } })
         this.channelParams = { choice: null }
         this.spaceChannel = this.socket.channel(`space:${this.space_id}`, this.channelParams)
@@ -93,8 +95,9 @@ export class SpaceBroker {
         // })
 
         signalHub.outgoing.on('event').subscribe(mp => {
-
-            this.spaceChannel.push('event', { ...mp, ts: (new Date()).getTime() })
+            if (this.spaceChannelJoined) {
+                this.spaceChannel.push('event', { ...mp, ts: (new Date()).getTime() })
+            }
         })
 
         signalHub.incoming.on("server_lost").subscribe(() => {
@@ -106,6 +109,7 @@ export class SpaceBroker {
         this.socket.connect()
         this.spaceChannel.join()
             .receive('ok', resp => {
+                this.spaceChannelJoined = true
                 signalHub.local.emit('space_channel_connected', resp)
                 window['channel'] = this.spaceChannel
             })

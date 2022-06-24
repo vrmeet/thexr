@@ -137,24 +137,28 @@ export class BulletManager {
         return (pickedMesh.metadata && pickedMesh.metadata.agentName !== undefined)
     }
 
+    clearPhysicsImposter(mesh: BABYLON.AbstractMesh) {
+        if (mesh.physicsImpostor) {
+            mesh.physicsImpostor.setAngularVelocity(BABYLON.Vector3.Zero())
+            mesh.physicsImpostor.setLinearVelocity(BABYLON.Vector3.Zero())
+            mesh.physicsImpostor.dispose()
+            mesh.physicsImpostor = null
+        }
+    }
+
 
     affectTargetable = (pickedMesh: BABYLON.AbstractMesh, pickedPoint: BABYLON.Vector3, direction: BABYLON.Vector3) => {
+        //this.clearPhysicsImposter(pickedMesh)
 
-
-        if (pickedMesh.physicsImpostor) {
-            pickedMesh.physicsImpostor.setAngularVelocity(BABYLON.Vector3.Zero())
-            pickedMesh.physicsImpostor.setLinearVelocity(BABYLON.Vector3.Zero())
-            pickedMesh.physicsImpostor.dispose()
-            pickedMesh.physicsImpostor = null
-        }
         this.scene.stopAnimation(pickedMesh)
         const prevPosition = pickedMesh.absolutePosition.clone()
-        setTimeout(() => {
-            pickedMesh.physicsImpostor = new BABYLON.PhysicsImpostor(pickedMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, friction: 0.8, restitution: 0.5 }, this.scene);
-            pickedMesh.physicsImpostor.applyImpulse(direction.scale(10), pickedPoint)
-        }, 50)
+        // setTimeout(() => {
+        pickedMesh.physicsImpostor = new BABYLON.PhysicsImpostor(pickedMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, friction: 0.8, restitution: 0.5 }, this.scene);
+        pickedMesh.physicsImpostor.applyImpulse(direction.scale(10), pickedPoint)
+        //}, 30)
         // put the object you shot back in place
         setTimeout(() => {
+            this.clearPhysicsImposter(pickedMesh)
             pickedMesh.setAbsolutePosition(prevPosition)
         }, 10000)
         // pickedMesh.physicsImpostor.setAngularVelocity(BABYLON.Vector3.FromArray(mpts.p.av))

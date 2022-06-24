@@ -10,11 +10,11 @@ import { combineLatest } from "rxjs";
 export class MemberStates {
     public my_member_id: string
     public members: { [member_id: string]: member_state }
-    public client_ready: boolean
+    //  public client_ready: boolean
 
     constructor(member_id: string) {
         this.my_member_id = member_id
-        this.client_ready = false
+        //  this.client_ready = false
 
         const $cameraReady = signalHub.local.on('camera_ready')
         const $client_ready = signalHub.local.on('client_ready')
@@ -35,9 +35,9 @@ export class MemberStates {
             [this.my_member_id]: { mic_muted: true, nickname: "unset nickname" }
         }
 
-        $client_ready.subscribe(() => {
-            this.client_ready = true
-        })
+        // $client_ready.subscribe(() => {
+        //     this.client_ready = true
+        // })
 
         signalHub.incoming.on("about_members").subscribe(members => {
             for (const [member_id, state] of Object.entries(members.states)) {
@@ -100,9 +100,9 @@ export class MemberStates {
                 }
             }
         }
-        if (this.client_ready) {
-            signalHub.local.emit("member_states_changed", this.members)
-        }
+        //   if (this.client_ready) {
+        signalHub.local.emit("member_states_changed", this.members)
+        //   }
     }
 
 
@@ -127,9 +127,10 @@ export class MemberStates {
     }
 
     emit_event(event) {
-        if (this.client_ready) {
-            signalHub.outgoing.emit("event", event)
-        }
+        // if (this.client_ready) {
+        console.log("attempting to send event", JSON.stringify(event))
+        signalHub.outgoing.emit("event", event)
+        // }
     }
 
 
