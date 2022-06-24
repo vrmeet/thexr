@@ -130,6 +130,7 @@ export class NavManager {
         // named: NavMeshDebug
         let debugMesh = this.navigationPlugin.createDebugNavMesh(this.scene);
         debugMesh.showBoundingBox = true;
+        debugMesh.isPickable = false;
         // debugMesh.position = new BABYLON.Vector3(0, 0.01, 0);
         var matdebug = new BABYLON.StandardMaterial("matdebug", this.scene);
         matdebug.diffuseColor = new BABYLON.Color3(1, 0, 0);

@@ -405,12 +405,7 @@ export class SceneManager {
 
 
     parseEntity(entity): any {
-        if (entity.type === "enemy_spawner") {
-            console.log("create enemy spawner")
-            return null
-        } else {
-            return this.findOrCreateMesh(entity)
-        }
+        return this.findOrCreateMesh(entity)
     }
 
     async parseInitialScene(entities) {
@@ -504,7 +499,11 @@ export class SceneManager {
             } else if (entity.type === "cone") {
                 mesh = BABYLON.MeshBuilder.CreateCylinder(entity.name, { diameterTop: 0 }, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
+            } else if (entity.type === "enemy_spawner") {
+                mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 1, depth: 1, height: 0.1 }, this.scene)
             }
+
+
             if (mesh) {
                 mesh.id = entity.id
                 BABYLON.Tags.AddTagsTo(mesh, "editable")
