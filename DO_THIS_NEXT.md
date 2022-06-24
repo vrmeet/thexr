@@ -1,5 +1,14 @@
 TODO:
 
+improve sync timing by making leader and everyone else receive agent commands near the same time
+
+
+- agent name not case sensitive (leading to dups?)
+
+- about_agent send or receive?
+
+- 
+
 remove agent from genserver when destroyed
 about_agents needs to use object not array
 

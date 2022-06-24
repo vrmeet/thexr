@@ -32,18 +32,18 @@ export class AgentManager {
             filter(event => event.m === EventName.agents_directed)
         ).subscribe(event => {
             // console.log("agents_directed", JSON.stringify(event.p["agents"], null, 2))
-            const agents = event.p["agents"]
-            for (const [agentName, agent] of Object.entries(agents)) {
-                if (this.agents[agentName]) {
+            event.p["agents"].forEach(agent => {
+                if (this.agents[agent.name]) {
                     setTimeout(() => {
-                        const agentIndex = this.agents[agentName].agentIndex
-                        const dest = BABYLON.Vector3.FromArray(agent["next_position"])
+                        const agentIndex = this.agents[agent.name].agentIndex
+                        const dest = BABYLON.Vector3.FromArray(agent.next_position)
                         this.crowd.agentGoto(agentIndex, dest)
-                    }, agent["delay"])
+                    }, agent.delay)
                 } else {
-                    console.error("missing agent for", agentName)
+                    console.error("missing agent for", agent)
                 }
-            }
+            })
+
 
         })
 
@@ -58,12 +58,12 @@ export class AgentManager {
         this.scene.onBeforeRenderObservable.add(() => {
             Object.values(this.agents).forEach(agentObj => {
                 const agentIndex = agentObj.agentIndex
-                const position = this.crowd.getAgentPosition(agentIndex)
+                // const position = this.crowd.getAgentPosition(agentIndex)
                 const velocity = this.crowd.getAgentVelocity(agentIndex);
                 if (velocity.length() > 0.2) {
                     velocity.normalize();
                     var desiredRotation = Math.atan2(velocity.x, velocity.z);
-                    agentObj.mesh.rotation.y = agentObj.mesh.rotation.y + (desiredRotation - agentObj.mesh.rotation.y) * 0.05;
+                    agentObj.mesh.rotation.y = agentObj.mesh.rotation.y + (desiredRotation - agentObj.mesh.rotation.y) * 0.01;
                 }
             })
         });
@@ -143,17 +143,18 @@ export class AgentManager {
                 return
             }
             const futurePositions = Object.entries(this.agents).map(([agentName, agent]) => {
-                const currentPosition = this.crowd.getAgentPosition(agent.agentIndex)
-                const nextPosition = this.plugin.getRandomPointAround(currentPosition, 3)
-                const delay = Math.random() * 1000
+                const currentPosition = agent.transform.position
+                const nextPosition = this.plugin.getRandomPointAround(currentPosition, 2)
+                const delay = Math.random() * 500
                 return { name: agentName, currentPosition, nextPosition, delay }
-            }).reduce((acc, temp) => {
-                acc[temp.name] = {
+            }).map(temp => {
+                return {
+                    name: temp.name,
                     current_position: arrayReduceSigFigs(temp.currentPosition.asArray()),
-                    next_position: arrayReduceSigFigs(temp.nextPosition.asArray()), delay: reduceSigFigs(temp.delay)
+                    next_position: arrayReduceSigFigs(temp.nextPosition.asArray()),
+                    delay: reduceSigFigs(temp.delay),
                 }
-                return acc
-            }, {})
+            })
 
 
             const payload: event = {
@@ -163,7 +164,7 @@ export class AgentManager {
             signalHub.outgoing.emit("event", payload)
             signalHub.incoming.emit("event", payload)
 
-        }, 1000)
+        }, 5000)
         // setInterval(() => {
 
         //     Object.keys(this.agents).forEach(agentName => {
@@ -200,23 +201,23 @@ export class AgentManager {
             signalHub.outgoing.emit("event", event)
             signalHub.incoming.emit("event", event)
 
-            let event2: event = { m: EventName.agent_spawned, p: { name: `agent_${random_id(5)}`, position: position } }
-            signalHub.outgoing.emit("event", event2)
-            signalHub.incoming.emit("event", event2)
+            // let event2: event = { m: EventName.agent_spawned, p: { name: `agent_${random_id(5)}`, position: position } }
+            // signalHub.outgoing.emit("event", event2)
+            // signalHub.incoming.emit("event", event2)
 
-        }, 3000)
+        }, 1000)
 
     }
 
     createAgent(agentName: string, position: BABYLON.Vector3) {
         const agentParams = {
-            radius: 1,
-            height: 2,
-            maxAcceleration: 4.0,
+            radius: 0.5,
+            height: 1.8,
+            maxAcceleration: 3.0,
             maxSpeed: 1.0,
             collisionQueryRange: 0.5,
             pathOptimizationRange: 0.0,
-            separationWeight: 1.0
+            separationWeight: 0.5
         };
         let mesh = BABYLON.MeshBuilder.CreateBox(`mesh_${agentName}`, { width: 1, depth: 1, height: 2 }, this.scene)
         BABYLON.Tags.AddTagsTo(mesh, "targetable")
