@@ -42,7 +42,7 @@ defmodule Thexr.Snapshot do
       fn component, prev_multi ->
         Ecto.Multi.insert(
           prev_multi,
-          :name,
+          String.to_atom(component.name),
           %Component{entity_id: entity_id, type: component.type, data: component.data},
           on_conflict: [set: [data: component.data]],
           conflict_target: [:entity_id, :type]
