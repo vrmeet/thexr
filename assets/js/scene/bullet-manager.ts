@@ -95,6 +95,7 @@ export class BulletManager {
                     if (hitTest.pickedMesh.metadata != null && hitTest.pickedMesh.metadata["member_id"] != undefined) {
                         signalHub.outgoing.emit("event", { m: EventName.member_damaged, p: { member_id: hitTest.pickedMesh.metadata["member_id"] } })
                     } else if (<string[]>BABYLON.Tags.GetTags(hitTest.pickedMesh)?.includes("targetable")) {
+                        signalHub.incoming.emit("event", { m: EventName.target_hit, p: { entity_id: hitTest.pickedMesh.id, pos: hitTest.pickedPoint.asArray(), direction: direction } })
                         signalHub.outgoing.emit("event", { m: EventName.target_hit, p: { entity_id: hitTest.pickedMesh.id, pos: hitTest.pickedPoint.asArray(), direction: direction } })
                     }
                 }
@@ -127,6 +128,7 @@ export class BulletManager {
         // if is crowdAgent, remove that first, so we can move it freely
         if (pickedMesh.metadata && pickedMesh.metadata.agentName !== undefined) {
             // this.sceneManager.crowdAgent.crowd.removeAgent(pickedMesh.metadata.agentIndex)
+            signalHub.local.emit("hud_msg", "an agent is damaged")
             signalHub.local.emit("agent_damaged", { agent_name: pickedMesh.metadata.agentName })
         }
         if (pickedMesh.physicsImpostor) {
