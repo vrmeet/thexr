@@ -152,6 +152,7 @@ export class BulletManager {
 
         this.scene.stopAnimation(pickedMesh)
         const prevPosition = pickedMesh.absolutePosition.clone()
+        const prevRotation = pickedMesh.absoluteRotationQuaternion.clone()
         // setTimeout(() => {
         pickedMesh.physicsImpostor = new BABYLON.PhysicsImpostor(pickedMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, friction: 0.8, restitution: 0.5 }, this.scene);
         pickedMesh.physicsImpostor.applyImpulse(direction.scale(10), pickedPoint)
@@ -160,7 +161,8 @@ export class BulletManager {
         setTimeout(() => {
             this.clearPhysicsImposter(pickedMesh)
             pickedMesh.setAbsolutePosition(prevPosition)
-        }, 10000)
+            pickedMesh.rotationQuaternion.copyFrom(prevRotation)
+        }, 5000)
         // pickedMesh.physicsImpostor.setAngularVelocity(BABYLON.Vector3.FromArray(mpts.p.av))
         // setTimeout(() => {
         //     const event: event = { m: "entity_deleted", p: { id: pickedMesh.id } }
