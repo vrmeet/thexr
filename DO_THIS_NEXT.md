@@ -1,40 +1,10 @@
 TODO:
 
-improve sync timing by making leader and everyone else receive agent commands near the same time
-
-
-- agent name not case sensitive (leading to dups?)
-
-- about_agent send or receive?
-
-- 
-
 remove agent from genserver when destroyed
-about_agents needs to use object not array
-
-How to create a shared enemy experience?
-  - nav mesh (every client creates / downloads )
-  - leader should:
-     - leader duties
-        - start spawn
-           => agent_spawned
-           - create one agent
-           - periodically move all agents
-
-  - receiver (agent_spawned)
-     - crowd agent
-     - agent_directed, move that agent
-
-  - initial state: about_agents
-     - create local agents, in those positions
-
-====
-
- x  shoot and remove an agent
- x  make agent movement less twitchy, more natural
+give agent a head direction
    spawn enough agents for the number of members
    move the agent toward closest member
-   
+   fix the strange spinning of agents
    
    create damage when agent is on self...
 

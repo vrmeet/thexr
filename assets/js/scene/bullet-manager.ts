@@ -24,11 +24,19 @@ export class BulletManager {
             this.fireBullet(mpts.p["member_id"], mpts.p["pos"], mpts.p["direction"], 10)
         })
 
-        // remove agent when fired upon
+
+        // blast target when fired upon
         signalHub.incoming.on("event").pipe(
             filter(event => event.m === EventName.target_hit)
         ).subscribe(event => {
-            this.removeTargetable(event.p["entity_id"], event.p["direction"])
+            const pickedMesh = this.scene.getMeshById(event.p["entity_id"])
+            if (!pickedMesh) {
+                return
+            }
+            const direction = BABYLON.Vector3.FromArray(event.p["direction"])
+            const pickedPoint = BABYLON.Vector3.FromArray(event.p["pos"])
+
+            this.affectTargetable(pickedMesh, pickedPoint, direction)
         })
 
     }
@@ -90,13 +98,20 @@ export class BulletManager {
                 this.scene.unregisterAfterRender(checkBulletForIntersect)
                 animation.stop()
 
+                // only remove targets when we own that bullet
                 if (this.my_member_id === bullet_owner_member_id) {
                     // check if we hit a member and dish out damage (avatars will have a member_id set in metadata)
                     if (hitTest.pickedMesh.metadata != null && hitTest.pickedMesh.metadata["member_id"] != undefined) {
                         signalHub.outgoing.emit("event", { m: EventName.member_damaged, p: { member_id: hitTest.pickedMesh.metadata["member_id"] } })
-                    } else if (<string[]>BABYLON.Tags.GetTags(hitTest.pickedMesh)?.includes("targetable")) {
-                        signalHub.incoming.emit("event", { m: EventName.target_hit, p: { entity_id: hitTest.pickedMesh.id, pos: hitTest.pickedPoint.asArray(), direction: direction } })
-                        signalHub.outgoing.emit("event", { m: EventName.target_hit, p: { entity_id: hitTest.pickedMesh.id, pos: hitTest.pickedPoint.asArray(), direction: direction } })
+                    } else if (this.pickedMeshIsAgent(hitTest.pickedMesh)) {
+                        const payload: event = { m: EventName.agent_hit, p: { name: hitTest.pickedMesh.metadata["agentName"], pos: hitTest.pickedPoint.asArray(), direction: direction } }
+                        signalHub.incoming.emit("event", payload)
+                        signalHub.outgoing.emit("event", payload)
+                    }
+                    else if (<string[]>BABYLON.Tags.GetTags(hitTest.pickedMesh)?.includes("targetable")) {
+                        const payload: event = { m: EventName.target_hit, p: { entity_id: hitTest.pickedMesh.id, pos: hitTest.pickedPoint.asArray(), direction: direction } }
+                        signalHub.incoming.emit("event", payload)
+                        signalHub.outgoing.emit("event", payload)
                     }
                 }
 
@@ -118,19 +133,14 @@ export class BulletManager {
 
     }
 
+    pickedMeshIsAgent(pickedMesh: BABYLON.AbstractMesh) {
+        return (pickedMesh.metadata && pickedMesh.metadata.agentName !== undefined)
+    }
 
-    removeTargetable = (entity_id: string, dir: number[]) => {
-        const pickedMesh = this.scene.getMeshById(entity_id)
-        const direction = BABYLON.Vector3.FromArray(dir)
-        if (!pickedMesh) {
-            return
-        }
-        // if is crowdAgent, remove that first, so we can move it freely
-        if (pickedMesh.metadata && pickedMesh.metadata.agentName !== undefined) {
-            // this.sceneManager.crowdAgent.crowd.removeAgent(pickedMesh.metadata.agentIndex)
-            signalHub.local.emit("hud_msg", "an agent is damaged")
-            signalHub.local.emit("agent_damaged", { agent_name: pickedMesh.metadata.agentName })
-        }
+
+    affectTargetable = (pickedMesh: BABYLON.AbstractMesh, pickedPoint: BABYLON.Vector3, direction: BABYLON.Vector3) => {
+
+
         if (pickedMesh.physicsImpostor) {
             pickedMesh.physicsImpostor.setAngularVelocity(BABYLON.Vector3.Zero())
             pickedMesh.physicsImpostor.setLinearVelocity(BABYLON.Vector3.Zero())
@@ -138,10 +148,15 @@ export class BulletManager {
             pickedMesh.physicsImpostor = null
         }
         this.scene.stopAnimation(pickedMesh)
+        const prevPosition = pickedMesh.absolutePosition.clone()
         setTimeout(() => {
             pickedMesh.physicsImpostor = new BABYLON.PhysicsImpostor(pickedMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, friction: 0.8, restitution: 0.5 }, this.scene);
-            pickedMesh.physicsImpostor.setLinearVelocity(direction.scale(100))
+            pickedMesh.physicsImpostor.applyImpulse(direction.scale(10), pickedPoint)
         }, 50)
+        // put the object you shot back in place
+        setTimeout(() => {
+            pickedMesh.setAbsolutePosition(prevPosition)
+        }, 10000)
         // pickedMesh.physicsImpostor.setAngularVelocity(BABYLON.Vector3.FromArray(mpts.p.av))
         // setTimeout(() => {
         //     const event: event = { m: "entity_deleted", p: { id: pickedMesh.id } }
