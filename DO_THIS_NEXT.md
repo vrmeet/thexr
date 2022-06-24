@@ -1,8 +1,8 @@
 TODO:
 
-remove agent from genserver when destroyed
-give agent a head direction
-   spawn enough agents for the number of members
+
+
+   spawn enough agents for the number of members (logic to keep spawning)
    move the agent toward closest member
    fix the strange spinning of agents
    

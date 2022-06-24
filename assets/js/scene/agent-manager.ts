@@ -2,15 +2,21 @@ import * as BABYLON from "babylonjs"
 import { filter } from "rxjs"
 import { EventName } from "../event-names"
 import { signalHub } from "../signalHub"
-import type { event } from "../types"
+import type { event, member_state } from "../types"
 import { random_id, arrayReduceSigFigs, reduceSigFigs } from "../utils"
 
 export class AgentManager {
     public agentSpawnPoints: { [name: string]: any }
+    public memberStates: { [member_id: string]: member_state }
     public agents: { [name: string]: { agentIndex: number, mesh: BABYLON.AbstractMesh, transform: BABYLON.TransformNode } }
     constructor(public plugin: BABYLON.RecastJSPlugin, public crowd: BABYLON.ICrowd, public scene: BABYLON.Scene) {
         this.agentSpawnPoints = {}
         this.agents = {}
+        this.memberStates = {}
+
+        signalHub.local.on("member_states_changed").subscribe(event => {
+            this.memberStates = event
+        })
 
         // creates any previously spawned agents
         signalHub.incoming.on("about_agents").subscribe((payload) => {
@@ -197,26 +203,35 @@ export class AgentManager {
 
     }
 
+    countAgents() {
+        return Object.keys(this.agents).length
+    }
+
+    countMembers() {
+        return Object.keys(this.memberStates).length
+    }
+
+    oneChanceInX(x: number) {
+        return (Math.floor(Math.random() * x) + 1) % x == 0
+    }
+
     startSpawning() {
         // called by leader
         // create an event
+        setInterval(() => {
+            // no-op if no spawn points
+            if (Object.keys(this.agentSpawnPoints).length === 0) {
+                return
+            }
+            if ((this.countAgents() < this.countMembers()) && this.oneChanceInX(5)) {
+                const spawnerName = Object.keys(this.agentSpawnPoints)[0]
+                const position = this.scene.getMeshByName(spawnerName).position.asArray()
+                let event: event = { m: EventName.agent_spawned, p: { name: `agent_${random_id(5)}`, position: position } }
+                signalHub.outgoing.emit("event", event)
+            }
 
-        // no-op if no spawn points
-        if (Object.keys(this.agentSpawnPoints).length === 0) {
-            return
-        }
-        // TODO: random select, (decision making based on some logic)
-        setTimeout(() => {
-            const spawnerName = Object.keys(this.agentSpawnPoints)[0]
-            const position = this.scene.getMeshByName(spawnerName).position.asArray()
-            let event: event = { m: EventName.agent_spawned, p: { name: `agent_${random_id(5)}`, position: position } }
-            signalHub.outgoing.emit("event", event)
+        }, 2000)
 
-            // let event2: event = { m: EventName.agent_spawned, p: { name: `agent_${random_id(5)}`, position: position } }
-            // signalHub.outgoing.emit("event", event2)
-            // signalHub.incoming.emit("event", event2)
-
-        }, 1000)
 
     }
 
@@ -230,7 +245,11 @@ export class AgentManager {
             pathOptimizationRange: 0.0,
             separationWeight: 0.5
         };
-        let mesh = BABYLON.MeshBuilder.CreateBox(`mesh_${agentName}`, { width: 1, depth: 1, height: 2 }, this.scene)
+        let head = BABYLON.MeshBuilder.CreateCylinder(`head_${agentName}`, { diameterBottom: 0, diameterTop: 0.5, height: 0.8 }, this.scene)
+        head.rotation.x = BABYLON.Angle.FromDegrees(90).radians()
+        head.position.y = 1.5
+        let body = BABYLON.MeshBuilder.CreateBox(`mesh_${agentName}`, { width: 1, depth: 1, height: 2 }, this.scene)
+        let mesh = BABYLON.Mesh.MergeMeshes([head, body], true);
         BABYLON.Tags.AddTagsTo(mesh, "targetable")
         const transform = new BABYLON.TransformNode(agentName);
         mesh.parent = transform

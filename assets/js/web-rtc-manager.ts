@@ -1,5 +1,5 @@
 
-import { map, take, distinctUntilChanged } from "rxjs/operators";
+import { map, take, distinctUntilChanged, tap } from "rxjs/operators";
 
 import { signalHub } from "./signalHub";
 import { WebRTCClientAgora } from "./web-rtc-client-agora";
@@ -32,6 +32,7 @@ export class WebRTCManager {
         console.log('web rtc events setting up')
 
         signalHub.local.on("member_states_changed").pipe(
+            tap(event => { console.log('member_states_changed', event) }),
             map((states: { [member_id: string]: member_state }) => {
                 return Object.entries(states).reduce((acc, [member_id, state]) => {
                     acc.member_count += 1

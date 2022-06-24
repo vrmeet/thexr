@@ -44,11 +44,15 @@ export class NavManager {
             this.uncacheNavMesh()
         })
 
-        signalHub.local.on("client_ready").subscribe(() => {
+        //  signalHub.local.on("client_ready").subscribe(() => {
+        setTimeout(() => {
+            // nav plugin takes some time to create
             this.crowd = this.navigationPlugin.createCrowd(MAX_AGENTS, MAX_AGENT_RADIUS, this.scene)
             this.agentManager = new AgentManager(this.navigationPlugin, this.crowd, this.scene)
 
-        })
+        }, 500)
+
+        // })
     }
 
     async loadOrMakeNavMesh(meshes: BABYLON.Mesh[]) {
