@@ -153,15 +153,20 @@ export class BulletManager {
         this.scene.stopAnimation(pickedMesh)
         const prevPosition = pickedMesh.absolutePosition.clone()
         const prevRotation = pickedMesh.absoluteRotationQuaternion.clone()
-        // setTimeout(() => {
-        pickedMesh.physicsImpostor = new BABYLON.PhysicsImpostor(pickedMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, friction: 0.8, restitution: 0.5 }, this.scene);
-        pickedMesh.physicsImpostor.applyImpulse(direction.scale(10), pickedPoint)
-        //}, 30)
+        this.clearPhysicsImposter(pickedMesh)
+
+        // using the setTimeout to try to prevent crazy gitters
+        setTimeout(() => {
+            pickedMesh.physicsImpostor = new BABYLON.PhysicsImpostor(pickedMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, friction: 0.8, restitution: 0.5 }, this.scene);
+            pickedMesh.physicsImpostor.applyImpulse(direction.scale(10), pickedPoint)
+        }, 30)
         // put the object you shot back in place
         setTimeout(() => {
             this.clearPhysicsImposter(pickedMesh)
-            pickedMesh.setAbsolutePosition(prevPosition)
-            pickedMesh.rotationQuaternion.copyFrom(prevRotation)
+            setTimeout(() => {
+                pickedMesh.setAbsolutePosition(prevPosition)
+                pickedMesh.rotationQuaternion.copyFrom(prevRotation)
+            }, 30)
         }, 5000)
         // pickedMesh.physicsImpostor.setAngularVelocity(BABYLON.Vector3.FromArray(mpts.p.av))
         // setTimeout(() => {
