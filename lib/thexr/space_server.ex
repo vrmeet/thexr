@@ -106,7 +106,7 @@ defmodule Thexr.SpaceServer do
        sequence: Thexr.Spaces.max_event_sequence(space.id),
        disconnected: MapSet.new(),
        leader: nil,
-       agents: []
+       agents: %{}
      }, @timeout}
   end
 
@@ -146,19 +146,26 @@ defmodule Thexr.SpaceServer do
 
   def handle_cast({:event, :agent_spawned, evt, _pid} = tuple, state) do
     # save agents
-    state = %{state | agents: [%{name: evt.p.name, position: evt.p.position} | state.agents]}
+    state = %{state | agents: Map.put(state.agents, evt.p.name, %{position: evt.p.position})}
     handle_event(tuple, state)
   end
 
-  def handle_cast({:event, :agent_directed, evt, _pid} = tuple, state) do
+  # hande agent_removed
+
+  def handle_cast({:event, :agents_directed, %{p: %{agents: agents}}, _pid} = tuple, state) do
     updated_agents =
-      Enum.map(state.agents, fn agent ->
-        if agent.name == evt.p.name do
-          %{agent | position: evt.p.current_position}
-        else
-          agent
-        end
+      Enum.reduce(agents, state.agents, fn {agent_name, agent}, acc ->
+        Map.put(acc, agent_name, %{position: agent.current_position})
       end)
+
+    # updated_agents =
+    #   Enum.map(state.agents, fn agent ->
+    #     if agent.name == evt.p.name do
+    #       %{agent | position: evt.p.current_position}
+    #     else
+    #       agent
+    #     end
+    #   end)
 
     state = %{state | agents: updated_agents}
     handle_event(tuple, state)

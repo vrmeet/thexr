@@ -26,15 +26,8 @@ defmodule ThexrWeb.SpaceChannel do
         %{member_id: member_id, pos_rot: pos_rot, state: member_state},
         socket
       ) do
-    [px, py, pz] = pos_rot.pos
-    [rx, ry, rz, rw] = pos_rot.rot
-
-    :ets.insert(
-      socket.assigns.member_movements,
-      {member_id, {px, py, pz, rx, ry, rz, rw}}
-    )
-
-    :ets.insert(socket.assigns.member_states, {member_id, member_state})
+    update_pos_rot(member_id, pos_rot, socket)
+    merge_state(member_id, member_state, socket)
   end
 
   def cache_members(
@@ -42,13 +35,7 @@ defmodule ThexrWeb.SpaceChannel do
         %{member_id: member_id, pos_rot: pos_rot},
         socket
       ) do
-    [px, py, pz] = pos_rot.pos
-    [rx, ry, rz, rw] = pos_rot.rot
-
-    :ets.insert(
-      socket.assigns.member_movements,
-      {member_id, {px, py, pz, rx, ry, rz, rw}}
-    )
+    update_pos_rot(member_id, pos_rot, socket)
   end
 
   def cache_members(
@@ -56,10 +43,7 @@ defmodule ThexrWeb.SpaceChannel do
         %{member_id: member_id, mic_muted: mic_muted},
         socket
       ) do
-    payload = get_state(member_id, socket.assigns.member_states)
-
-    state = Map.merge(payload, %{mic_muted: mic_muted})
-    :ets.insert(socket.assigns.member_states, {member_id, state})
+    merge_state(member_id, %{mic_muted: mic_muted}, socket)
   end
 
   def cache_members(
@@ -67,10 +51,7 @@ defmodule ThexrWeb.SpaceChannel do
         %{member_id: member_id, nickname: nickname},
         socket
       ) do
-    payload = get_state(member_id, socket.assigns.member_states)
-
-    state = Map.merge(payload, %{nickname: nickname})
-    :ets.insert(socket.assigns.member_states, {member_id, state})
+    merge_state(member_id, %{nickname: nickname}, socket)
   end
 
   def cache_members(_, _, _) do
@@ -146,6 +127,30 @@ defmodule ThexrWeb.SpaceChannel do
 
       _ ->
         {:error, "not_found"}
+    end
+  end
+
+  def merge_state(member_id, map, socket) when is_map(map) do
+    if Map.has_key?(socket.assigns, :member_states) do
+      case get_state(member_id, socket.assigns.member_states) do
+        {:error, _} ->
+          :ets.insert(socket.assigns.member_states, {member_id, map})
+
+        state ->
+          :ets.insert(socket.assigns.member_states, {member_id, Map.merge(state, map)})
+      end
+    end
+  end
+
+  def update_pos_rot(member_id, pos_rot, socket) when is_map(pos_rot) do
+    if Map.has_key?(socket.assigns, :member_movements) do
+      [px, py, pz] = pos_rot.pos
+      [rx, ry, rz, rw] = pos_rot.rot
+
+      :ets.insert(
+        socket.assigns.member_movements,
+        {member_id, {px, py, pz, rx, ry, rz, rw}}
+      )
     end
   end
 end
