@@ -3,19 +3,19 @@ import { filter } from "rxjs"
 import { EventName } from "../event-names"
 import { signalHub } from "../signalHub"
 import type { event } from "../types"
-import { random_id } from "../utils"
+import { random_id, arrayReduceSigFigs, reduceSigFigs } from "../utils"
 
 export class AgentManager {
-    public agentSpawnPoints: { [name: string]: number[] }
+    public agentSpawnPoints: { [name: string]: any }
     public agents: { [name: string]: { agentIndex: number, mesh: BABYLON.AbstractMesh, transform: BABYLON.TransformNode } }
     constructor(public plugin: BABYLON.RecastJSPlugin, public crowd: BABYLON.ICrowd, public scene: BABYLON.Scene) {
         this.agentSpawnPoints = {}
         this.agents = {}
 
         // creates any previously spawned agents
-        signalHub.incoming.on("about_agents").subscribe(({ agents }) => {
-            agents.forEach(agent => {
-                this.createAgent(agent.name, agent.position)
+        signalHub.incoming.on("about_agents").subscribe((payload) => {
+            Object.entries(payload.agents).forEach(([agentName, agent]) => {
+                this.createAgent(agentName, BABYLON.Vector3.FromArray(agent.position))
             })
         })
 
@@ -24,16 +24,27 @@ export class AgentManager {
             filter(event => event.m === EventName.agent_spawned)
         ).subscribe(event => {
             console.log('incoming spawn event', event)
-            this.createAgent(event.p["name"], event.p["position"])
+            this.createAgent(event.p["name"], BABYLON.Vector3.FromArray(event.p["position"]))
         })
 
         // move agents
         signalHub.incoming.on("event").pipe(
-            filter(event => event.m === EventName.agent_directed)
+            filter(event => event.m === EventName.agents_directed)
         ).subscribe(event => {
-            const agentIndex = this.agents[event.p["name"]].agentIndex
-            const dest = BABYLON.Vector3.FromArray(event.p["next_position"])
-            this.crowd.agentGoto(agentIndex, dest)
+            // console.log("agents_directed", JSON.stringify(event.p["agents"], null, 2))
+            const agents = event.p["agents"]
+            for (const [agentName, agent] of Object.entries(agents)) {
+                if (this.agents[agentName]) {
+                    setTimeout(() => {
+                        const agentIndex = this.agents[agentName].agentIndex
+                        const dest = BABYLON.Vector3.FromArray(agent["next_position"])
+                        this.crowd.agentGoto(agentIndex, dest)
+                    }, agent["delay"])
+                } else {
+                    console.error("missing agent for", agentName)
+                }
+            }
+
         })
 
         // remove agents
@@ -117,8 +128,8 @@ export class AgentManager {
 
     }
 
-    addAgentSpawnPoint(name: string, position: number[]) {
-        this.agentSpawnPoints[name] = position
+    addAgentSpawnPoint(name: string) {
+        this.agentSpawnPoints[name] = true
     }
 
     getRandomAgent() {
@@ -127,28 +138,32 @@ export class AgentManager {
     }
 
     planMovementForAllAgents() {
-        setTimeout(() => {
-
-            const agentName = this.getRandomAgent()
-            console.log("attempt to plan momvent for agent", agentName)
-            if (!agentName) {
-                this.planMovementForAllAgents()
+        setInterval(() => {
+            if (Object.keys(this.agents).length < 1) {
                 return
             }
-            const currentPosition = this.crowd.getAgentPosition(this.agents[agentName].agentIndex)
-            const nextPosition = this.plugin.getRandomPointAround(currentPosition, 3)
-            const payload: event = {
-                m: EventName.agent_directed,
-                p: {
-                    name: agentName, current_position: currentPosition.asArray(),
-                    next_position: nextPosition.asArray()
+            const futurePositions = Object.entries(this.agents).map(([agentName, agent]) => {
+                const currentPosition = this.crowd.getAgentPosition(agent.agentIndex)
+                const nextPosition = this.plugin.getRandomPointAround(currentPosition, 3)
+                const delay = Math.random() * 1000
+                return { name: agentName, currentPosition, nextPosition, delay }
+            }).reduce((acc, temp) => {
+                acc[temp.name] = {
+                    current_position: arrayReduceSigFigs(temp.currentPosition.asArray()),
+                    next_position: arrayReduceSigFigs(temp.nextPosition.asArray()), delay: reduceSigFigs(temp.delay)
                 }
+                return acc
+            }, {})
+
+
+            const payload: event = {
+                m: EventName.agents_directed,
+                p: { agents: futurePositions }
             }
             signalHub.outgoing.emit("event", payload)
             signalHub.incoming.emit("event", payload)
 
-            this.planMovementForAllAgents()
-        }, Math.random() * 5000)
+        }, 1000)
         // setInterval(() => {
 
         //     Object.keys(this.agents).forEach(agentName => {
@@ -179,7 +194,8 @@ export class AgentManager {
         }
         // TODO: random select, (decision making based on some logic)
         setTimeout(() => {
-            const position = Object.values(this.agentSpawnPoints)[0]
+            const spawnerName = Object.keys(this.agentSpawnPoints)[0]
+            const position = this.scene.getMeshByName(spawnerName).position.asArray()
             let event: event = { m: EventName.agent_spawned, p: { name: `agent_${random_id(5)}`, position: position } }
             signalHub.outgoing.emit("event", event)
             signalHub.incoming.emit("event", event)
@@ -192,7 +208,7 @@ export class AgentManager {
 
     }
 
-    createAgent(agentName: string, position: number[]) {
+    createAgent(agentName: string, position: BABYLON.Vector3) {
         const agentParams = {
             radius: 1,
             height: 2,
@@ -206,7 +222,7 @@ export class AgentManager {
         BABYLON.Tags.AddTagsTo(mesh, "targetable")
         const transform = new BABYLON.TransformNode(agentName);
         mesh.parent = transform
-        const agentIndex = this.crowd.addAgent(BABYLON.Vector3.FromArray(position), agentParams, transform)
+        const agentIndex = this.crowd.addAgent(position, agentParams, transform)
         mesh.metadata ||= {}
         mesh.metadata['agentIndex'] = agentIndex // used by bullet system to check if target was an agent
         mesh.metadata['agentName'] = agentName
@@ -215,8 +231,10 @@ export class AgentManager {
     }
 
     deleteAgent(agentName: string) {
-        const agentIndex = this.agents[agentName].agentIndex
-        this.crowd.removeAgent(agentIndex)
+        const agent = this.agents[agentName]
+        this.crowd.removeAgent(agent.agentIndex)
+        agent.mesh.dispose()
+        agent.transform.dispose()
         delete this.agents[agentName]
     }
 

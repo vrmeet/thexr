@@ -1,5 +1,8 @@
 TODO:
 
+remove agent from genserver when destroyed
+about_agents needs to use object not array
+
 How to create a shared enemy experience?
   - nav mesh (every client creates / downloads )
   - leader should:

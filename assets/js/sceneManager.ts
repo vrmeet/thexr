@@ -82,10 +82,8 @@ export class SceneManager {
         this.entities
             .filter(entity => entity.type === "enemy_spawner")
             .forEach(spawner => {
-                console.log('create a spawner', spawner.name)
-                const position = spawner.components.filter(c => c.type === "position")[0] || { type: "position", data: { value: [0, 0, 0] } }
 
-                this.navManager.agentManager.addAgentSpawnPoint(spawner.name, position.data.value)
+                this.navManager.agentManager.addAgentSpawnPoint(spawner.name)
             })
 
         this.navManager.agentManager.startSpawning()
