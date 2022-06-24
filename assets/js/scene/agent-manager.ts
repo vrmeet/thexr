@@ -37,9 +37,11 @@ export class AgentManager {
             event.p["agents"].forEach(agent => {
                 if (this.agents[agent.name]) {
                     setTimeout(() => {
-                        const agentIndex = this.agents[agent.name].agentIndex
-                        const dest = BABYLON.Vector3.FromArray(agent.next_position)
-                        this.crowd.agentGoto(agentIndex, dest)
+                        if (this.agents[agent.name]) {
+                            const agentIndex = this.agents[agent.name].agentIndex
+                            const dest = BABYLON.Vector3.FromArray(agent.next_position)
+                            this.crowd.agentGoto(agentIndex, dest)
+                        }
                     }, agent.delay)
                 } else {
                     console.error("missing agent for", agent)
@@ -49,9 +51,13 @@ export class AgentManager {
 
         })
 
-        // remove agents
-        signalHub.local.on("agent_damaged").subscribe(({ agent_name }) => {
-            this.deleteAgent(agent_name)
+        signalHub.incoming.on("event").pipe(
+            filter(event => event.m === EventName.agent_hit)
+        ).subscribe(event => {
+            const agentName = event.p["name"]
+            const direction = BABYLON.Vector3.FromArray(event.p["direction"])
+            const pickedPoint = BABYLON.Vector3.FromArray(event.p["pos"])
+            this.deleteAgent(agentName)
         })
 
 

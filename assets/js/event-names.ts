@@ -34,6 +34,7 @@ export enum EventName {
 
     agent_spawned = 7000,
     agents_directed = 7100,
+    agent_hit = 7200,
 
     target_hit = 8000
 
