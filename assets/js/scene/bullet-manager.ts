@@ -170,12 +170,7 @@ export class BulletManager {
 
         pickedMesh.physicsImpostor.applyImpulse(direction.scale(15), pickedPoint)
 
-        // pickedMesh.physicsImpostor.setAngularVelocity(BABYLON.Vector3.FromArray(mpts.p.av))
-        // setTimeout(() => {
-        //     const event: event = { m: "entity_deleted", p: { id: pickedMesh.id } }
-        //     signalHub.outgoing.emit("event", event)
-        //     signalHub.incoming.emit("event", event)
-        // }, 5000)
+
     }
 
 }

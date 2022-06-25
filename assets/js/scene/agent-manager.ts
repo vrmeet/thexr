@@ -8,7 +8,7 @@ import { random_id, arrayReduceSigFigs, reduceSigFigs } from "../utils"
 export class AgentManager {
     public agentSpawnPoints: { [name: string]: any }
     public memberStates: { [member_id: string]: member_state }
-    public agents: { [name: string]: { agentIndex: number, mesh: BABYLON.AbstractMesh, transform: BABYLON.TransformNode } }
+    public agents: { [name: string]: { agentIndex: number, mesh: BABYLON.AbstractMesh, visiblityCone: BABYLON.AbstractMesh, transform: BABYLON.TransformNode } }
     constructor(public plugin: BABYLON.RecastJSPlugin, public crowd: BABYLON.ICrowd, public scene: BABYLON.Scene) {
         this.agentSpawnPoints = {}
         this.agents = {}
@@ -149,13 +149,40 @@ export class AgentManager {
         return agentNames[Math.floor(Math.random() * agentNames.length)]
     }
 
+    agentSeesMe(visiblityCone: BABYLON.AbstractMesh, position: BABYLON.Vector3) {
+        if (visiblityCone.intersectsPoint(position)) {
+            console.log("the agent sees me")
+            return position
+        }
+        return null
+    }
+
+    seenAgent(visiblityCone: BABYLON.AbstractMesh, avatars: BABYLON.AbstractMesh[]) {
+        for (let i = 0; i < avatars.length; i++) {
+            if (avatars[i].intersectsMesh(visiblityCone)) {
+                return avatars[i].position
+            }
+        }
+        return this.agentSeesMe(visiblityCone, this.scene.activeCamera.position)
+    }
+
+    closestPointToSeenAgent(visiblityCone: BABYLON.AbstractMesh, avatars: BABYLON.AbstractMesh[]) {
+        const result = this.seenAgent(visiblityCone, avatars)
+        if (result) {
+            return this.plugin.getClosestPoint(result)
+        }
+        return null
+    }
+
     sendAgentMovements() {
         if (Object.keys(this.agents).length < 1) {
             return
         }
+        const avatars = this.scene.getMeshesByTags("avatar")
         const futurePositions = Object.entries(this.agents).map(([agentName, agent]) => {
             const currentPosition = agent.transform.position
-            const nextPosition = this.plugin.getRandomPointAround(currentPosition, 2)
+            const nextPosition = this.closestPointToSeenAgent(agent.visiblityCone, avatars) || this.plugin.getRandomPointAround(currentPosition, 2)
+            console.log('nextPostion', JSON.stringify(nextPosition.asArray()))
             const delay = Math.random() * 500
             return { name: agentName, currentPosition, nextPosition, delay }
         }).map(temp => {
@@ -172,6 +199,7 @@ export class AgentManager {
             m: EventName.agents_directed,
             p: { agents: futurePositions }
         }
+        console.log('sending payload', JSON.stringify(payload))
         signalHub.outgoing.emit("event", payload)
 
     }
@@ -180,7 +208,7 @@ export class AgentManager {
         this.sendAgentMovements()
         setInterval(() => {
             this.sendAgentMovements()
-        }, 5000)
+        }, 1000)
         // setInterval(() => {
 
         //     Object.keys(this.agents).forEach(agentName => {
@@ -246,16 +274,25 @@ export class AgentManager {
         let head = BABYLON.MeshBuilder.CreateCylinder(`head_${agentName}`, { diameterBottom: 0, diameterTop: 0.5, height: 0.8 }, this.scene)
         head.rotation.x = BABYLON.Angle.FromDegrees(90).radians()
         head.position.y = 1.5
+
+        let coneOfSight = BABYLON.MeshBuilder.CreateCylinder(`head_${agentName}`, { diameterBottom: 0.2, diameterTop: 8, height: 15 }, this.scene)
+        coneOfSight.rotation.x = BABYLON.Angle.FromDegrees(92).radians()
+        coneOfSight.position.y = 1.3
+        coneOfSight.scaling.x = 2
+        coneOfSight.scaling.z = 0.5
+        coneOfSight.position.z = 7
+        coneOfSight.visibility = 0.5
         let body = BABYLON.MeshBuilder.CreateBox(`mesh_${agentName}`, { width: 1, depth: 1, height: 2 }, this.scene)
         let mesh = BABYLON.Mesh.MergeMeshes([head, body], true);
         BABYLON.Tags.AddTagsTo(mesh, "targetable")
         const transform = new BABYLON.TransformNode(agentName);
         mesh.parent = transform
+        coneOfSight.parent = mesh
         const agentIndex = this.crowd.addAgent(position, agentParams, transform)
         mesh.metadata ||= {}
         mesh.metadata['agentIndex'] = agentIndex // used by bullet system to check if target was an agent
         mesh.metadata['agentName'] = agentName
-        this.agents[agentName] = { mesh, transform, agentIndex }
+        this.agents[agentName] = { mesh, transform, agentIndex, visiblityCone: coneOfSight }
 
     }
 

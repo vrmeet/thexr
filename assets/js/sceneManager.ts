@@ -308,6 +308,7 @@ export class SceneManager {
             //  box.isPickable = false
             box.metadata ||= {}
             box.metadata['member_id'] = member_id
+            BABYLON.Tags.AddTagsTo(box, "avatar")
         }
         return box
     }

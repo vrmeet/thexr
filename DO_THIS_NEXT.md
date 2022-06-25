@@ -2,7 +2,6 @@ TODO:
 
 
 
-   spawn enough agents for the number of members (logic to keep spawning)
    move the agent toward closest member
    fix the strange spinning of agents
    
