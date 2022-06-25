@@ -11,8 +11,10 @@ export class BulletManager {
     public bulletTrail: BABYLON.IParticleSystem
     public ray: BABYLON.Ray
     public rayHelper: BABYLON.RayHelper
+    public targets: { [entity_id: string]: { origPosition: BABYLON.Vector3, origRotation: BABYLON.Quaternion, resetCallback: any } }
 
     constructor(public my_member_id: string, public scene: BABYLON.Scene) {
+        this.targets = {}
         this.cacheParticleSystem()
         this.ray = new BABYLON.Ray(BABYLON.Vector3.Zero(), BABYLON.Vector3.One(), 1)
         this.rayHelper = new BABYLON.RayHelper(this.ray)
@@ -148,26 +150,26 @@ export class BulletManager {
 
 
     affectTargetable = (pickedMesh: BABYLON.AbstractMesh, pickedPoint: BABYLON.Vector3, direction: BABYLON.Vector3) => {
-        //this.clearPhysicsImposter(pickedMesh)
+        if (!this.targets[pickedMesh.id]) {
+            const origPosition = pickedMesh.absolutePosition.clone()
+            const origRotation = pickedMesh.absoluteRotationQuaternion.clone()
+            if (!pickedMesh.physicsImpostor) {
+                pickedMesh.physicsImpostor = new BABYLON.PhysicsImpostor(pickedMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, friction: 0.8, restitution: 0.5 }, this.scene);
+            }
+            const resetCallback = setTimeout(() => {
+                delete this.targets[pickedMesh.id]
+                this.clearPhysicsImposter(pickedMesh)
+                setTimeout(() => {
+                    pickedMesh.setAbsolutePosition(origPosition)
+                    pickedMesh.rotationQuaternion.copyFrom(origRotation)
+                }, 30)
+            }, 5000)
+            this.targets[pickedMesh.id] = { origPosition, origRotation, resetCallback }
+        }
 
-        this.scene.stopAnimation(pickedMesh)
-        const prevPosition = pickedMesh.absolutePosition.clone()
-        const prevRotation = pickedMesh.absoluteRotationQuaternion.clone()
-        this.clearPhysicsImposter(pickedMesh)
 
-        // using the setTimeout to try to prevent crazy gitters
-        setTimeout(() => {
-            pickedMesh.physicsImpostor = new BABYLON.PhysicsImpostor(pickedMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, friction: 0.8, restitution: 0.5 }, this.scene);
-            pickedMesh.physicsImpostor.applyImpulse(direction.scale(10), pickedPoint)
-        }, 30)
-        // put the object you shot back in place
-        setTimeout(() => {
-            this.clearPhysicsImposter(pickedMesh)
-            setTimeout(() => {
-                pickedMesh.setAbsolutePosition(prevPosition)
-                pickedMesh.rotationQuaternion.copyFrom(prevRotation)
-            }, 30)
-        }, 5000)
+        pickedMesh.physicsImpostor.applyImpulse(direction.scale(15), pickedPoint)
+
         // pickedMesh.physicsImpostor.setAngularVelocity(BABYLON.Vector3.FromArray(mpts.p.av))
         // setTimeout(() => {
         //     const event: event = { m: "entity_deleted", p: { id: pickedMesh.id } }

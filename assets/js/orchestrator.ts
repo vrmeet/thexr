@@ -75,7 +75,18 @@ window.addEventListener('DOMContentLoaded', async () => {
     window.onerror = function (message, source, lineno, colno, error) {
         try {
             // catch errors and display them to self
-            signalHub.local.emit("hud_msg", JSON.stringify({ message, source, lineno, colno, error }));
+            const line = JSON.stringify({ message, source, lineno, colno, error })
+            const size = 50
+            const numChunks = Math.ceil(line.length / size)
+            const chunks = new Array(numChunks)
+
+            for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
+                chunks[i] = line.substr(o, size)
+            }
+            chunks.forEach(chunk => {
+                signalHub.local.emit("hud_msg", chunk);
+            })
+
         } catch (e) {
 
         }
