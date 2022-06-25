@@ -76,6 +76,7 @@ export class HudMessager {
     }
 
     showHudMessages(msgs: string[]) {
+
         if (this.animation) {
             this.animation.stop()
             this.animation = null;

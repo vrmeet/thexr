@@ -49,8 +49,6 @@ export class AgentManager {
                             this.crowd.agentGoto(agentIndex, dest)
                         }
                     }, agent.delay)
-                } else {
-                    console.error("missing agent for", agent)
                 }
             })
 
