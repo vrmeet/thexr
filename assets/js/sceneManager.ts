@@ -79,15 +79,15 @@ export class SceneManager {
     }
 
     initLeaderDuties() {
-        this.entities
-            .filter(entity => entity.type === "enemy_spawner")
-            .forEach(spawner => {
+        // this.entities
+        //     .filter(entity => entity.type === "enemy_spawner")
+        //     .forEach(spawner => {
 
-                this.navManager.agentManager.addAgentSpawnPoint(spawner.name)
-            })
+        //         this.navManager.agentManager.addAgentSpawnPoint(spawner.name)
+        //     })
 
-        this.navManager.agentManager.startSpawning()
-        this.navManager.agentManager.planMovementForAllAgents()
+        // this.navManager.agentManager.startSpawning()
+        // this.navManager.agentManager.planMovementForAllAgents()
     }
 
     setChannelListeners() {

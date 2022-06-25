@@ -1,9 +1,10 @@
 import * as BABYLON from 'babylonjs'
 import * as GUI from 'babylonjs-gui'
-import type { SceneManager } from '../sceneManager'
-import { signalHub } from "../signalHub";
 
-import { filter, take, map, mergeAll } from 'rxjs/operators'
+import { signalHub } from "../signalHub";
+import { isMobile } from "../utils"
+
+import { filter, take, map, mergeAll, takeUntil } from 'rxjs/operators'
 import { MenuPageAbout } from './pages/about'
 import { MenuPageMain } from './pages/main'
 import { MenuPagePrimitives } from './pages/primitives'
@@ -19,6 +20,8 @@ import { CollabEditDeleteManager } from "../collab-edit/delete";
 import { MenuPageSpawner } from './pages/spawner';
 import type { XRManager } from '../xr/xr-manager';
 import type { member_state } from "../types";
+import { Observable } from 'rxjs';
+import type { Vector2WithInfo } from 'babylonjs-gui';
 
 /*
 inline -mode
@@ -165,13 +168,129 @@ export class MenuManager {
 
     createFullScreenUI() {
         this.fsGui = GUI.AdvancedDynamicTexture.CreateFullscreenUI("fsGui")
+
         this.render()
+    }
+
+    makeThumbArea(name, thickness, color, background) {
+        let ellipse = new GUI.Ellipse();
+        ellipse.name = name;
+        ellipse.thickness = thickness;
+        ellipse.color = color;
+        ellipse.background = background;
+        ellipse.paddingLeft = "0px";
+        ellipse.paddingRight = "0px";
+        ellipse.paddingTop = "0px";
+        ellipse.paddingBottom = "0px";
+
+        return ellipse;
+    }
+
+    makeContainerObservable(container: GUI.Container, observableName: string) {
+        return new Observable<Vector2WithInfo>(subscriber => {
+            let babylonObs = container[observableName] as BABYLON.Observable<Vector2WithInfo>
+            const obs = babylonObs.add(value => subscriber.next(value))
+
+            return () => {
+                container[observableName].remove(obs)
+            }
+        })
+    }
+
+    makeRegisterBeforeRenderObservable(scene: BABYLON.Scene) {
+        return new Observable<any>(subscriber => {
+            let obs = scene.onBeforeRenderObservable.add(value => subscriber.next(value))
+
+            return () => {
+                scene.onBeforeRenderObservable.remove(obs)
+            }
+        })
+
+    }
+
+    makeJoyStick() {
+        const SIDE_JOYSTICK_OFFSET = 150;
+        const BOTTOM_JOYSTICK_OFFSET = -50;
+
+        let leftThumbContainer = this.makeThumbArea("leftThumb", 2, "blue", null);
+        leftThumbContainer.height = "200px";
+        leftThumbContainer.width = "200px";
+        leftThumbContainer.isPointerBlocker = true;
+        leftThumbContainer.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+        leftThumbContainer.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        leftThumbContainer.alpha = 0.4;
+        leftThumbContainer.left = SIDE_JOYSTICK_OFFSET;
+        leftThumbContainer.top = BOTTOM_JOYSTICK_OFFSET;
+
+        let leftInnerThumbContainer = this.makeThumbArea("leftInnterThumb", 4, "blue", null);
+        leftInnerThumbContainer.height = "80px";
+        leftInnerThumbContainer.width = "80px";
+        leftInnerThumbContainer.isPointerBlocker = true;
+        leftInnerThumbContainer.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        leftInnerThumbContainer.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+
+        let leftPuck = this.makeThumbArea("leftPuck", 0, "blue", "blue");
+        leftPuck.height = "60px";
+        leftPuck.width = "60px";
+        leftPuck.isPointerBlocker = true;
+        leftPuck.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        leftPuck.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        console.log('left', leftPuck.left, leftPuck.top)
+
+        let containerPointerDown$ = this.makeContainerObservable(leftThumbContainer, "onPointerDownObservable")
+
+        let subscription = containerPointerDown$.subscribe((coordinates) => {
+            // listen for one pointer UP and unsubscribe
+            let containerPointerUp$ = this.makeContainerObservable(leftThumbContainer, "onPointerUpObservable")
+            containerPointerUp$.pipe(take(1)).subscribe(() => {
+                leftPuck.isVisible = false;
+                leftThumbContainer.alpha = 0.4;
+                leftPuck.left = 0;
+                leftPuck.top = 0;
+            })
+
+            // listen for pointer move UNTIL pointer up
+            let containerPointerMove$ = this.makeContainerObservable(leftThumbContainer, "onPointerMoveObservable")
+            containerPointerMove$.pipe(
+                takeUntil(containerPointerUp$)
+            ).subscribe((coordinates) => {
+                leftPuck.left = coordinates.x - (leftThumbContainer._currentMeasure.width * .5) - SIDE_JOYSTICK_OFFSET;
+                leftPuck.top = (this.fsGui["_canvas"].height - coordinates.y - (leftThumbContainer._currentMeasure.height * .5) + BOTTOM_JOYSTICK_OFFSET) * - 1;
+            })
+
+            let renderObs$ = this.makeRegisterBeforeRenderObservable(this.scene)
+            renderObs$.pipe(takeUntil(containerPointerUp$)).subscribe(() => {
+                let camera = this.scene.activeCamera as BABYLON.FreeCamera
+                let forward = - leftPuck._top.getValue(this.fsGui) / 3000
+                let side = leftPuck._left.getValue(this.fsGui) / 3000
+                let translateTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(side, 0, forward), BABYLON.Matrix.RotationY(camera.absoluteRotation.toEulerAngles().y));
+                camera.cameraDirection.addInPlace(translateTransform);
+            })
+
+            leftPuck.isVisible = true;
+            leftPuck.left = coordinates.x - (leftThumbContainer._currentMeasure.width * .5) - SIDE_JOYSTICK_OFFSET;
+            leftPuck.top = (this.fsGui["_canvas"].height - coordinates.y - (leftThumbContainer._currentMeasure.height * .5) + BOTTOM_JOYSTICK_OFFSET) * - 1;
+            leftThumbContainer.alpha = 0.9;
+        })
+
+        this.fsGui.rootContainer.onDisposeObservable.addOnce(() => {
+            subscription.unsubscribe()
+        })
+
+        this.fsGui.addControl(leftThumbContainer);
+        leftThumbContainer.addControl(leftInnerThumbContainer);
+        leftThumbContainer.addControl(leftPuck)
+        leftPuck.isVisible = false;
+
     }
 
     render() {
         const content = this.stateToCtrls()
         if (this.fsGui) {
             this.fsGui.rootContainer.dispose()
+            if (isMobile()) {
+                this.makeJoyStick()
+            }
 
             this.fsGui.addControl(this.adaptMenuCtrlForFsGUI(content.menuCtrl))
             if (this.menu_opened) {
