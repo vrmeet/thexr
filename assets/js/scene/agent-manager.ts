@@ -8,8 +8,8 @@ import { random_id, arrayReduceSigFigs, reduceSigFigs } from "../utils"
 export class AgentManager {
     public agentSpawnPoints: { [name: string]: any }
     public memberStates: { [member_id: string]: member_state }
-    public agents: { [name: string]: { agentIndex: number, mesh: BABYLON.AbstractMesh, visiblityCone: BABYLON.AbstractMesh, transform: BABYLON.TransformNode } }
-    constructor(public plugin: BABYLON.RecastJSPlugin, public crowd: BABYLON.ICrowd, public scene: BABYLON.Scene) {
+    public agents: { [name: string]: { agentIndex: number, mesh: BABYLON.AbstractMesh, visiblityCone: BABYLON.AbstractMesh, transform: BABYLON.TransformNode, moving: boolean } }
+    constructor(public member_id: string, public plugin: BABYLON.RecastJSPlugin, public crowd: BABYLON.ICrowd, public scene: BABYLON.Scene) {
         this.agentSpawnPoints = {}
         this.agents = {}
         this.memberStates = {}
@@ -20,7 +20,6 @@ export class AgentManager {
 
         // creates any previously spawned agents
         signalHub.incoming.on("about_agents").subscribe((payload) => {
-            console.log("about_agents", payload)
             Object.entries(payload.agents).forEach(([agentName, agent]) => {
                 this.createAgent(agentName, BABYLON.Vector3.FromArray(agent.prev_position))
                 this.crowd.agentGoto(this.agents[agentName].agentIndex, BABYLON.Vector3.FromArray(agent.next_position))
@@ -31,7 +30,6 @@ export class AgentManager {
         signalHub.incoming.on("event").pipe(
             filter(event => event.m === EventName.agent_spawned)
         ).subscribe(event => {
-            console.log('incoming spawn event', event)
             this.createAgent(event.p["name"], BABYLON.Vector3.FromArray(event.p["position"]))
         })
 
@@ -44,6 +42,7 @@ export class AgentManager {
                 if (this.agents[agent.name]) {
                     setTimeout(() => {
                         if (this.agents[agent.name]) {
+                            this.agents[agent.name].moving = true
                             const agentIndex = this.agents[agent.name].agentIndex
                             const dest = BABYLON.Vector3.FromArray(agent.next_position)
                             this.crowd.agentGoto(agentIndex, dest)
@@ -78,6 +77,24 @@ export class AgentManager {
                     agentObj.mesh.rotation.y = agentObj.mesh.rotation.y + (desiredRotation - agentObj.mesh.rotation.y) * 0.01;
                 }
             })
+        });
+
+        this.crowd['onReachTargetObservable'].add((agentInfos) => {
+            const agentIndex = agentInfos.agentIndex
+            const [agentName, agent] = Object.entries(this.agents).filter(([agentName, agent]) => (agent.agentIndex === agentIndex))[0]
+            this.agents[agentName].moving = false
+            const proximity = BABYLON.Vector3.Distance(agent.transform.position, this.scene.activeCamera.position)
+
+            if (proximity < 1) {
+                signalHub.outgoing.emit("event", { m: EventName.member_damaged, p: { member_id: this.member_id } })
+                signalHub.incoming.emit("event", { m: EventName.member_damaged, p: { member_id: this.member_id } })
+                signalHub.local.emit("pulse", { hand: "left", intensity: 0.3, duration: 120 })
+                signalHub.local.emit("pulse", { hand: "right", intensity: 0.3, duration: 120 })
+            }
+            //console.log("agent reah destination: ", agentInfos.agentIndex);
+            // signalHub.incoming.emit("event", { m: "member_damaged", p: { member_id: this. } })
+            // signalHub.local.emit("pulse", { hand: "left", intensity: 0.3, duration: 120 })
+            // signalHub.local.emit("pulse", { hand: "right", intensity: 0.3, duration: 120 })
         });
 
 
@@ -151,7 +168,6 @@ export class AgentManager {
 
     agentSeesMe(visiblityCone: BABYLON.AbstractMesh, position: BABYLON.Vector3) {
         if (visiblityCone.intersectsPoint(position)) {
-            console.log("the agent sees me")
             return position
         }
         return null
@@ -179,27 +195,30 @@ export class AgentManager {
             return
         }
         const avatars = this.scene.getMeshesByTags("avatar")
-        const futurePositions = Object.entries(this.agents).map(([agentName, agent]) => {
-            const currentPosition = agent.transform.position
-            const nextPosition = this.closestPointToSeenAgent(agent.visiblityCone, avatars) || this.plugin.getRandomPointAround(currentPosition, 2)
-            console.log('nextPostion', JSON.stringify(nextPosition.asArray()))
-            const delay = Math.random() * 500
-            return { name: agentName, currentPosition, nextPosition, delay }
-        }).map(temp => {
-            return {
-                name: temp.name,
-                prev_position: arrayReduceSigFigs(temp.currentPosition.asArray()),
-                next_position: arrayReduceSigFigs(temp.nextPosition.asArray()),
-                delay: reduceSigFigs(temp.delay),
-            }
-        })
+        const futurePositions = Object.entries(this.agents)
+            .filter(([agentName, agent]) => (agent.moving === false))
+            .map(([agentName, agent]) => {
+                const currentPosition = agent.transform.position
+                const nextPosition = this.closestPointToSeenAgent(agent.visiblityCone, avatars) || this.plugin.getRandomPointAround(currentPosition, 2)
+                const delay = Math.random() * 500
+                return { name: agentName, currentPosition, nextPosition, delay }
+            }).map(temp => {
+                return {
+                    name: temp.name,
+                    prev_position: arrayReduceSigFigs(temp.currentPosition.asArray()),
+                    next_position: arrayReduceSigFigs(temp.nextPosition.asArray()),
+                    delay: reduceSigFigs(temp.delay),
+                }
+            })
 
+        if (futurePositions.length < 1) {
+            return
+        }
 
         const payload: event = {
             m: EventName.agents_directed,
             p: { agents: futurePositions }
         }
-        console.log('sending payload', JSON.stringify(payload))
         signalHub.outgoing.emit("event", payload)
 
     }
@@ -292,7 +311,7 @@ export class AgentManager {
         mesh.metadata ||= {}
         mesh.metadata['agentIndex'] = agentIndex // used by bullet system to check if target was an agent
         mesh.metadata['agentName'] = agentName
-        this.agents[agentName] = { mesh, transform, agentIndex, visiblityCone: coneOfSight }
+        this.agents[agentName] = { mesh, transform, agentIndex, visiblityCone: coneOfSight, moving: false }
 
     }
 

@@ -1,8 +1,7 @@
 TODO:
 
-- test "wall"
    
-   create damage when agent is on self...
+create damage when agent is on self...
 
 - create events for temporarily moving something, as opposed to permanently editing the scene
   
