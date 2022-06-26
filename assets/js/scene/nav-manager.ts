@@ -32,7 +32,7 @@ export class NavManager {
     public crowd: BABYLON.ICrowd
     public agentManager: AgentManager
 
-    constructor(public space_id: string, public scene: BABYLON.Scene) {
+    constructor(public member_id: string, public space_id: string, public scene: BABYLON.Scene) {
         this.navMeshCreated = false
         this.navigationPlugin = new BABYLON.RecastJSPlugin();
 
@@ -40,7 +40,6 @@ export class NavManager {
         signalHub.outgoing.on("event").pipe(
             filter(msg => EventName.entity_created === msg.m || EventName.entity_transformed === msg.m || EventName.entity_deleted === msg.m)
         ).subscribe(() => {
-            console.log("scene changed, uncache nav mesh")
             this.uncacheNavMesh()
         })
 
@@ -48,7 +47,7 @@ export class NavManager {
         setTimeout(() => {
             // nav plugin takes some time to create
             this.crowd = this.navigationPlugin.createCrowd(MAX_AGENTS, MAX_AGENT_RADIUS, this.scene)
-            this.agentManager = new AgentManager(this.navigationPlugin, this.crowd, this.scene)
+            this.agentManager = new AgentManager(this.member_id, this.navigationPlugin, this.crowd, this.scene)
 
         }, 500)
 
@@ -101,7 +100,6 @@ export class NavManager {
 
     async createNavMesh(meshes: BABYLON.Mesh[]) {
         if (meshes.length < 1) {
-            console.log('skip bake mesh, no meshes')
             return
         }
         this.navigationPlugin.createNavMesh(meshes, NAV_MESH_PARAMS)
@@ -130,8 +128,6 @@ export class NavManager {
         if (!this.navMeshCreated) {
             return
         }
-        console.log("building debug mesh")
-        // named: NavMeshDebug
         let debugMesh = this.navigationPlugin.createDebugNavMesh(this.scene);
         debugMesh.showBoundingBox = true;
         debugMesh.isPickable = false;

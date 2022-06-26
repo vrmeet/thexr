@@ -155,7 +155,6 @@ export class XRGripManager {
             // or the first hand released the mesh
             signalHub.movement.on(`${this.hand}_grip_released`).pipe(
                 tap(() => {
-                    console.log("I release")
                     let event: event = {
                         m: EventName.entity_released,
                         p: this.createEventPayload()

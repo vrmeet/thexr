@@ -14,8 +14,6 @@ export const createWall = (name: string, height: number, points: number[], scene
 
         let point1 = new BABYLON.Vector3(data.points[0][0], 0, data.points[0][1])
         let point2 = new BABYLON.Vector3(data.points[1][0], 0, data.points[1][1])
-        console.log("point1", point1.asArray())
-        console.log("point2", point2.asArray())
         // length of the wall is the distance between points
         let length = BABYLON.Vector3.Distance(point1, point2)
         let wall = BABYLON.MeshBuilder.CreateBox("", { width: 0.1, depth: length, height }, scene)

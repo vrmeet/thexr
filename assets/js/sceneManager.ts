@@ -80,15 +80,15 @@ export class SceneManager {
     }
 
     initLeaderDuties() {
-        // this.entities
-        //     .filter(entity => entity.type === "enemy_spawner")
-        //     .forEach(spawner => {
+        this.entities
+            .filter(entity => entity.type === "enemy_spawner")
+            .forEach(spawner => {
 
-        //         this.navManager.agentManager.addAgentSpawnPoint(spawner.name)
-        //     })
+                this.navManager.agentManager.addAgentSpawnPoint(spawner.name)
+            })
 
-        // this.navManager.agentManager.startSpawning()
-        // this.navManager.agentManager.planMovementForAllAgents()
+        this.navManager.agentManager.startSpawning()
+        this.navManager.agentManager.planMovementForAllAgents()
     }
 
     setChannelListeners() {
@@ -278,7 +278,7 @@ export class SceneManager {
 
         // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
         var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), this.scene);
-        this.navManager = new NavManager(this.space_id, this.scene)
+        this.navManager = new NavManager(this.member_id, this.space_id, this.scene)
         await this.parseInitialScene(this.entities)
 
         this.xrManager = new XRManager(this.member_id, this.scene)
