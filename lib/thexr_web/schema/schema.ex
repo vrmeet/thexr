@@ -108,6 +108,14 @@ defmodule ThexrWeb.Schema.Schema do
       resolve(&SpaceResolver.create_box/3)
     end
 
+    @desc "create a wall"
+    field :create_wall, :id do
+      arg(:space_id, non_null(:string))
+      arg(:height, :float)
+      arg(:points, non_null(list_of(:float)))
+      resolve(&SpaceResolver.create_wall/3)
+    end
+
     @desc "create enemy spawner"
     field :create_enemy_spawner, :id do
       arg(:space_id, non_null(:string))

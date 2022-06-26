@@ -1,21 +1,11 @@
 TODO:
 
-
-
-   move the agent toward closest member
-   fix the strange spinning of agents
+- test "wall"
    
    create damage when agent is on self...
 
-
-     - assess (how many current enemies there are)
-     - decide when to create new enemies
-     - navigate the enemies to the players
-
+- create events for temporarily moving something, as opposed to permanently editing the scene
   
-
-
-create 'find_and_nudge_space'
 
 create box, cone, cylinder, ribbon (has a good graphql api for individual mutations)
 create a light

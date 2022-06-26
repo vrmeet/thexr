@@ -56,6 +56,18 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
     end
   end
 
+  def create_wall(_root, %{space_id: space_id} = args, _) do
+    case Spaces.find_and_nudge_space(space_id) do
+      nil ->
+        {:error, :space_not_found}
+
+      space ->
+        params = Map.delete(args, :space_id) |> Map.to_list()
+
+        Thexr.Spaces.CommandHandler.create_entity(space.id, "wall", params)
+    end
+  end
+
   def create_enemy_spawner(_root, %{space_id: space_id} = args, _) do
     case Spaces.find_and_nudge_space(space_id) do
       nil ->

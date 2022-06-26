@@ -43,7 +43,13 @@ export type Component =
     { type: "position", data: { value: number[] } } |
     { type: "rotation", data: { value: number[] } } |
     { type: "scaling", data: { value: number[] } } |
-    { type: "color", data: { value: string } }
+    { type: "color", data: { value: string } } |
+    { type: "height", data: { value: number } } |
+    { type: "width", data: { value: number } } |
+    { type: "depth", data: { value: number } } |
+    { type: "points", data: { value: number[] } }
+
+
 
 
 /**
