@@ -16,6 +16,7 @@ import { BulletManager } from "./scene/bullet-manager";
 
 import { EventName } from "./event-names"
 import { NavManager } from "./scene/nav-manager";
+import { createWall } from "./scene/constructs";
 
 
 const ANIMATION_FRAME_PER_SECOND = 60
@@ -463,6 +464,11 @@ export class SceneManager {
                 // mesh = BABYLON.MeshBuilder.CreateBox(entity.name, {}, this.scene)
                 mesh = this.createBox(entity.name, entity.components)
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable targetable")
+            } else if (entity.type === "wall") {
+                const height: number = (entity.components.filter(comp => comp.type === "height")[0]?.data?.value || 2) as number
+                const points: number[] = entity.components.filter(comp => comp.type === "points")[0].data.value as number[]
+                mesh = createWall(entity.name, height, points, this.scene)
+
             } else if (entity.type === "cylinder") {
                 mesh = BABYLON.MeshBuilder.CreateCylinder(entity.name, {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable targetable")
