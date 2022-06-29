@@ -17,6 +17,7 @@ import { BulletManager } from "./scene/bullet-manager";
 import { EventName } from "./event-names"
 import { NavManager } from "./scene/nav-manager";
 import { createWall } from "./scene/constructs";
+import { filter } from "rxjs/operators";
 
 
 const ANIMATION_FRAME_PER_SECOND = 60
@@ -26,7 +27,7 @@ export class SceneManager {
     public canvas: HTMLCanvasElement
     public scene: BABYLON.Scene;
     public engine: BABYLON.Engine;
-    public entities: any[]
+    public entities: { id: string, type: string, name: string, parent: string, components: { type: string, data: { value: any } }[] }[]
     public skyBox: BABYLON.Mesh
     public settings: scene_settings
     public space_id: string;
@@ -76,6 +77,26 @@ export class SceneManager {
 
 
         })
+
+
+
+
+        signalHub.incoming.on("event").pipe(
+            filter(evt => evt.m === EventName.member_died && evt.p["member_id"] === this.member_id)
+        ).subscribe(() => {
+
+            setTimeout(() => {
+                let spawnPosRot = this.findSpawnPoint()
+                let cam = this.scene.activeCamera as BABYLON.FreeCamera
+                cam.position.copyFromFloats(spawnPosRot.pos[0], spawnPosRot.pos[1], spawnPosRot.pos[2])
+                cam.rotationQuaternion = BABYLON.Quaternion.FromArray(spawnPosRot.rot)
+
+                signalHub.outgoing.emit("event", { m: EventName.member_respawned, p: { member_id: this.member_id, pos_rot: spawnPosRot } })
+            }, 5000)
+
+        })
+
+
         window['sceneManager'] = this
     }
 
@@ -135,6 +156,14 @@ export class SceneManager {
 
             } else if (mpts.m === EventName.member_left) {
                 this.removeAvatar(mpts.p.member_id)
+            } else if (mpts.m === EventName.member_died) {
+                // do something
+            } else if (mpts.m === EventName.member_respawned) {
+                const payload = mpts.p
+                const avatar = this.findOrCreateAvatar(payload.member_id)
+                this.setComponent(avatar, { type: "position", data: { value: payload.pos_rot.pos } })
+                this.setComponent(avatar, { type: "rotation", data: { value: payload.pos_rot.rot } })
+
             } else if (mpts.m === EventName.entity_created) {
                 this.findOrCreateMesh(mpts.p)
             } else if (mpts.m === EventName.entity_transformed) {
@@ -318,8 +347,9 @@ export class SceneManager {
     findSpawnPoint() {
         const result = this.entities.filter(entity => entity.type === "spawn_point")
         if (result.length > 0) {
-            let pos = result[0].components[0].data
-            return { pos: [pos.x, pos.y, pos.z], rot: [0, 0, 0, 1] }
+            let pos = result[0].components.filter(c => c.type === "position")[0].data.value
+            let rot = BABYLON.Vector3.FromArray(result[0].components.filter(c => c.type === "rotation")[0].data.value).toQuaternion().asArray()
+            return { pos: pos, rot: rot }
         } else {
             return { pos: [0, 1.7, -8], rot: [0, 0, 0, 1] }
         }
@@ -412,7 +442,6 @@ export class SceneManager {
         const meshes = entities.reduce((acc, entity) => {
             const result = this.parseEntity(entity)
             if (result && typeof result['getClassName'] === 'function' && result.getClassName() === 'Mesh') {
-                console.log('getClassName', result.getClassName(), result.name)
                 acc.push(result)
             }
             return acc
@@ -464,6 +493,8 @@ export class SceneManager {
                 // mesh = BABYLON.MeshBuilder.CreateBox(entity.name, {}, this.scene)
                 mesh = this.createBox(entity.name, entity.components)
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable targetable")
+            } else if (entity.type === "spawn_point") {
+                mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 1, depth: 1, height: 0.3 }, this.scene)
             } else if (entity.type === "wall") {
                 const height: number = (entity.components.filter(comp => comp.type === "height")[0]?.data?.value || 2) as number
                 const points: number[] = entity.components.filter(comp => comp.type === "points")[0].data.value as number[]

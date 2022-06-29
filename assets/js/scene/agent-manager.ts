@@ -85,7 +85,6 @@ export class AgentManager {
             this.agents[agentName].moving = false
 
             const proximity = BABYLON.Vector3.Distance(agent.transform.position, this.scene.activeCamera.position)
-            console.log("proximity", proximity)
             if (proximity < 2) {
                 signalHub.outgoing.emit("event", { m: EventName.member_damaged, p: { member_id: this.member_id } })
                 signalHub.incoming.emit("event", { m: EventName.member_damaged, p: { member_id: this.member_id } })
@@ -171,7 +170,7 @@ export class AgentManager {
         this.sendAgentMovements()
         setInterval(() => {
             this.sendAgentMovements()
-        }, 1000)
+        }, 500)
     }
 
     countAgents() {
@@ -227,6 +226,8 @@ export class AgentManager {
         coneOfSight.scaling.z = 0.5
         coneOfSight.position.z = 7
         coneOfSight.visibility = 0.5
+        coneOfSight.isPickable = false
+
         let body = BABYLON.MeshBuilder.CreateBox(`mesh_${agentName}`, { width: 1, depth: 1, height: 2 }, this.scene)
         let mesh = BABYLON.Mesh.MergeMeshes([head, body], true);
         BABYLON.Tags.AddTagsTo(mesh, "targetable")

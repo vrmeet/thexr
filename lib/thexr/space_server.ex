@@ -180,12 +180,12 @@ defmodule Thexr.SpaceServer do
   end
 
   def handle_cast({:event, :member_left, evt, _pid} = tuple, state) do
-    state =
-      if evt.p.member_id == state.leader do
-        # find a new leader
-        member_ids = Thexr.Utils.member_states_to_map(state.member_states) |> Map.keys()
+    member_ids = Thexr.Utils.member_states_to_map(state.member_states) |> Map.keys()
 
-        if length(member_ids) > 0 do
+    state =
+      if length(member_ids) > 0 do
+        if evt.p.member_id == state.leader do
+          # assign new leader if previous leader left
           member_id = List.first(member_ids)
 
           ThexrWeb.Endpoint.broadcast("space:#{state.space.id}", "new_leader", %{
@@ -194,10 +194,11 @@ defmodule Thexr.SpaceServer do
 
           %{state | leader: member_id}
         else
-          %{state | leader: nil}
+          state
         end
       else
-        state
+        # if all members left, clear leader and agents
+        %{state | leader: nil, agents: %{}}
       end
 
     handle_event(tuple, state)

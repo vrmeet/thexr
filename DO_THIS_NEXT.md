@@ -1,8 +1,17 @@
 TODO:
 
-feature: teleport member to jail or initial spawn point if dead
+teleporting a member when in XR leads to an error:
 
-guns should respawn too after all members leave
+TypeError: Failed to construct 'PointerEvent': Failed to read the 'screenX' property from 'MouseEventInit': The provided double value is non-finite.
+
+but it worked when there were no attacking agents
+
+
+
+what is isNearGrabbable on mesh?
+
+there seems to be a huge number of agent movement messages, despite me not moving out of the way
+
 
 guns should have limited number of bullets
 
