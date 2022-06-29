@@ -42,6 +42,15 @@ defmodule ThexrWeb.SpaceChannel do
   end
 
   def cache_members(
+        :member_respawned,
+        %{member_id: member_id, pos_rot: pos_rot},
+        socket
+      ) do
+    update_pos_rot(member_id, pos_rot, socket)
+    merge_state(member_id, %{health: 100}, socket)
+  end
+
+  def cache_members(
         :member_entered,
         %{member_id: member_id, pos_rot: pos_rot, state: member_state},
         socket
