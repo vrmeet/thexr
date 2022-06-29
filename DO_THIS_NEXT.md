@@ -1,8 +1,34 @@
 TODO:
 
-   
-create damage when agent is on self...
+feature: teleport member to jail or initial spawn point if dead
 
+guns should respawn too after all members leave
+
+guns should have limited number of bullets
+
+drawing new avatar head
+
+sculpting anything in VR
+
+
+doors, ammo, guns have some state (how many bullets left).  and ammo is collected or not and transfers bullets to the member.  health is connected or not and gives health back to the member.  it is session state.  temporary.
+
+
+
+when designing a space, set it's initial state as position, open/closed, energy etc.
+
+when playing, update those components temporarily.  After the session is over, clear those variables.
+
+- create an edit mode toggle
+    - when in edit mode, your events don't include session
+    - when not in edit mode, your events include session: true
+
+- snapshot of events without session go into entity and components
+     components have type, state for unique constraint, then data
+    event with state of session go into components as well
+
+- when genserver terminates (or just when all members leave), all component with state of session is deleted
+   
 - create events for temporarily moving something, as opposed to permanently editing the scene
   
 

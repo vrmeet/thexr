@@ -83,77 +83,16 @@ export class AgentManager {
             const agentIndex = agentInfos.agentIndex
             const [agentName, agent] = Object.entries(this.agents).filter(([agentName, agent]) => (agent.agentIndex === agentIndex))[0]
             this.agents[agentName].moving = false
-            const proximity = BABYLON.Vector3.Distance(agent.transform.position, this.scene.activeCamera.position)
 
-            if (proximity < 1) {
+            const proximity = BABYLON.Vector3.Distance(agent.transform.position, this.scene.activeCamera.position)
+            if (proximity < 2) {
                 signalHub.outgoing.emit("event", { m: EventName.member_damaged, p: { member_id: this.member_id } })
                 signalHub.incoming.emit("event", { m: EventName.member_damaged, p: { member_id: this.member_id } })
                 signalHub.local.emit("pulse", { hand: "left", intensity: 0.3, duration: 120 })
                 signalHub.local.emit("pulse", { hand: "right", intensity: 0.3, duration: 120 })
             }
-            //console.log("agent reah destination: ", agentInfos.agentIndex);
-            // signalHub.incoming.emit("event", { m: "member_damaged", p: { member_id: this. } })
-            // signalHub.local.emit("pulse", { hand: "left", intensity: 0.3, duration: 120 })
-            // signalHub.local.emit("pulse", { hand: "right", intensity: 0.3, duration: 120 })
+
         });
-
-
-
-        // this.navigationPlugin = sceneManager.navigationPlugin
-
-        // signalHub.incoming.on("event").pipe(
-        //     filter(msg => msg.m === "game_started")
-        // ).subscribe(() => {
-        //     let enemy = BABYLON.MeshBuilder.CreateBox("enemy", { width: 1, depth: 1, height: 2 }, this.scene)
-        //     BABYLON.Tags.AddTagsTo(enemy, "targetable")
-        //     enemy.position.y = 1
-        //     this.crowd = this.navigationPlugin.createCrowd(10, 0.5, this.scene)
-        //     const agentParams = {
-        //         radius: 1,
-        //         height: 2,
-        //         maxAcceleration: 4.0,
-        //         maxSpeed: 1.0,
-        //         collisionQueryRange: 0.5,
-        //         pathOptimizationRange: 0.0,
-        //         separationWeight: 1.0
-        //     };
-
-        //     let transform = new BABYLON.TransformNode("");
-        //     enemy.parent = transform
-        //     const agentIndex = this.crowd.addAgent(BABYLON.Vector3.FromArray([0, 1, 0]), agentParams, transform)
-        //     enemy.metadata ||= {}
-        //     enemy.metadata['agentIndex'] = agentIndex
-        //     this.scene.onBeforeRenderObservable.add(() => {
-        //         // move agent toward next target
-        //         transform.position = this.crowd.getAgentPosition(agentIndex)
-        //         let vel = this.crowd.getAgentVelocity(agentIndex);
-        //         //crowd.getAgentNextTargetPathToRef(agentIndex, ag.target.position);
-        //         if (vel.length() > 0.2) {
-        //             vel.normalize();
-        //             var desiredRotation = Math.atan2(vel.x, vel.z);
-        //             transform.rotation.y = transform.rotation.y + (desiredRotation - transform.rotation.y) * 0.05;
-        //         }
-
-        //     })
-        //     this.crowd['onReachTargetObservable'].add((agentInfos) => {
-        //         //console.log("agent reach destination: ", agentInfos.agentIndex);
-        //         signalHub.incoming.emit("event", { m: "member_damaged", p: { member_id: this.sceneManager.member_id } })
-        //         signalHub.local.emit("pulse", { hand: "left", intensity: 0.3, duration: 120 })
-        //         signalHub.local.emit("pulse", { hand: "right", intensity: 0.3, duration: 120 })
-        //     });
-
-        //     // crowd  .add((agentInfos) => {
-        //     //     console.log("agent reach destination: ", agentInfos.agentIndex);
-        //     // });
-        //     setInterval(async () => {
-        //         //  console.log("send agent to", this.scene.activeCamera.position)
-        //         this.crowd.agentGoto(agentIndex, this.scene.activeCamera.position);
-
-
-        //     }, 1000)
-
-        // })
-
 
     }
 
@@ -196,18 +135,22 @@ export class AgentManager {
         }
         const avatars = this.scene.getMeshesByTags("avatar")
         const futurePositions = Object.entries(this.agents)
-            .filter(([agentName, agent]) => (agent.moving === false))
+            // .filter(([agentName, agent]) => (agent.moving === false))
             .map(([agentName, agent]) => {
+
+                const seeAvatarAt = this.closestPointToSeenAgent(agent.visiblityCone, avatars)
+                return { name: agentName, seeAvatarAt, agent }
+            }).filter(({ name, seeAvatarAt, agent }) => (agent.moving === false || seeAvatarAt !== null))
+            .map(({ name, seeAvatarAt, agent }) => {
                 const currentPosition = agent.transform.position
-                const nextPosition = this.closestPointToSeenAgent(agent.visiblityCone, avatars) || this.plugin.getRandomPointAround(currentPosition, 2)
+                const nextPosition = (seeAvatarAt) ? seeAvatarAt : this.plugin.getRandomPointAround(currentPosition, 2)
                 const delay = Math.random() * 500
-                return { name: agentName, currentPosition, nextPosition, delay }
-            }).map(temp => {
+
                 return {
-                    name: temp.name,
-                    prev_position: arrayReduceSigFigs(temp.currentPosition.asArray()),
-                    next_position: arrayReduceSigFigs(temp.nextPosition.asArray()),
-                    delay: reduceSigFigs(temp.delay),
+                    name: name,
+                    prev_position: arrayReduceSigFigs(currentPosition.asArray()),
+                    next_position: arrayReduceSigFigs(nextPosition.asArray()),
+                    delay: reduceSigFigs(delay),
                 }
             })
 
@@ -228,24 +171,6 @@ export class AgentManager {
         setInterval(() => {
             this.sendAgentMovements()
         }, 1000)
-        // setInterval(() => {
-
-        //     Object.keys(this.agents).forEach(agentName => {
-        //         const currentPosition = this.crowd.getAgentPosition(this.agents[agentName].agentIndex)
-        //         const nextPosition = this.plugin.getRandomPointAround(currentPosition, 3)
-        //         const payload: event = {
-        //             m: EventName.agent_directed,
-        //             p: {
-        //                 name: agentName, prev_position: currentPosition.asArray(),
-        //                 next_position: nextPosition.asArray()
-        //             }
-        //         }
-        //         signalHub.outgoing.emit("event", payload)
-        //         signalHub.incoming.emit("event", payload)
-        //     })
-
-        // }, 5000)
-
     }
 
     countAgents() {
