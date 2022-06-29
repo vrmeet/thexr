@@ -21,6 +21,26 @@ defmodule ThexrWeb.SpaceChannel do
     {:noreply, socket}
   end
 
+  def cache_members(:member_damaged, %{member_id: member_id}, socket) do
+    prev_state = get_state(member_id, socket.assigns.member_states)
+    prev_health = prev_state.health
+
+    if prev_health > 0 do
+      new_health = prev_health - 10
+
+      if new_health <= 0 do
+        ThexrWeb.Endpoint.broadcast("space:#{socket.assigns.space_id}", "event", %{
+          m: EventName.atom_to_int(:member_died),
+          p: %{member_id: member_id}
+        })
+
+        merge_state(member_id, %{prev_state | health: 0}, socket)
+      else
+        merge_state(member_id, %{prev_state | health: new_health}, socket)
+      end
+    end
+  end
+
   def cache_members(
         :member_entered,
         %{member_id: member_id, pos_rot: pos_rot, state: member_state},

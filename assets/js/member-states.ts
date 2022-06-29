@@ -32,7 +32,7 @@ export class MemberStates {
 
 
         this.members = {
-            [this.my_member_id]: { mic_muted: true, nickname: "unset nickname" }
+            [this.my_member_id]: { mic_muted: true, nickname: "unset nickname", health: 100 }
         }
 
         // $client_ready.subscribe(() => {
@@ -43,6 +43,13 @@ export class MemberStates {
             for (const [member_id, state] of Object.entries(members.states)) {
                 this.merge_state(member_id, state)
             }
+        })
+
+        signalHub.incoming.on("event").pipe(
+            filter(msg => msg.m === EventName.member_died)
+        ).subscribe((evt: any) => {
+            const nickname = this.members[evt.p["member_id"]].nickname
+            signalHub.local.emit("hud_msg", `${nickname} died`)
         })
 
         signalHub.incoming.on("event").pipe(
@@ -91,7 +98,7 @@ export class MemberStates {
             delete this.members[member_id]
         } else {
             if (!this.members[member_id] && attr) {
-                this.members[member_id] = { mic_muted: true, nickname: "unset nickname" }
+                this.members[member_id] = { mic_muted: true, nickname: "unset nickname", health: 100 }
             }
             // copy in only the keys that are part of the state
             for (const key of Object.keys(attr)) {
@@ -125,6 +132,7 @@ export class MemberStates {
         }
         this.emit_event(data)
     }
+
 
     emit_event(event) {
         // if (this.client_ready) {
