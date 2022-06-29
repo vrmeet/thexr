@@ -67,6 +67,16 @@ defmodule Thexr.SpaceServer do
     GenServer.call(via_tuple(space_id), :summary)
   end
 
+  def member_movements(space_id) do
+    {member_movements, _} = ets_refs(space_id)
+    Thexr.Utils.movements_to_map(member_movements)
+  end
+
+  def member_states(space_id) do
+    {_, member_states} = ets_refs(space_id)
+    Thexr.Utils.member_states_to_map(member_states)
+  end
+
   # space channel calls this after join
   def member_connected(space_id, member_id) do
     GenServer.cast(via_tuple(space_id), {:member_connected, member_id})

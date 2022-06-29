@@ -21,6 +21,7 @@ export type xr_component = {
 export interface member_state {
     mic_muted?: boolean
     nickname?: string
+    health: number
 }
 
 export type PosRot = {
@@ -63,6 +64,7 @@ export type event =
     { m: EventName.member_observed, p: { member_id: string }, ts?: number } |
     { m: EventName.member_moved, p: { member_id: string, pos_rot: PosRot, left?: PosRot, right?: PosRot }, ts?: number } |
     { m: EventName.member_left, p: { member_id: string }, ts?: number } |
+    { m: EventName.member_died, p: { member_id: string } } |
     { m: EventName.entity_created, p: { type: string, id: string, name: string, components: Component[] }, ts?: number } |
     { m: EventName.entity_transformed, p: { id: string, components: Component[] }, ts?: number } |
     { m: EventName.entity_colored, p: { id: string, color: string }, ts?: number } |

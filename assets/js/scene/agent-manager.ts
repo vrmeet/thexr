@@ -85,6 +85,7 @@ export class AgentManager {
             this.agents[agentName].moving = false
 
             const proximity = BABYLON.Vector3.Distance(agent.transform.position, this.scene.activeCamera.position)
+            console.log("proximity", proximity)
             if (proximity < 2) {
                 signalHub.outgoing.emit("event", { m: EventName.member_damaged, p: { member_id: this.member_id } })
                 signalHub.incoming.emit("event", { m: EventName.member_damaged, p: { member_id: this.member_id } })
