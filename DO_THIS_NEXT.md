@@ -1,5 +1,23 @@
 TODO:
 
+global "mode" editing: boolean
+
+- events: transform_entity, mode: "session"
+
+components table: needs mode column, set unique entity_id, type => entity_id, mode, type
+
+We need guns to reset to original position, 
+
+
+and we need to pick up a gun in 2d mode.
+
+The way we are moving the enemies, looking around based randomly, and intersecting vision code with an avatar, we might not actually need the navigation mesh
+
+We just need to send out rays in each direction, once it hits a mesh, you know where the limits of exploration are.  (you still have to raise them up over steps and small obstacles).  soo... agents might need a rewrite.  But it might simplify things if we can do without a navigation mesh.  We'll see...
+
+
+
+
 teleporting a member when in XR leads to an error:
 
 TypeError: Failed to construct 'PointerEvent': Failed to read the 'screenX' property from 'MouseEventInit': The provided double value is non-finite.
