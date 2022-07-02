@@ -52,21 +52,24 @@ export class XRManager {
         this.xrHelper.baseExperience.onStateChangedObservable.add(state => {
             // tell menu manager about what kind of menu to load
             signalHub.local.emit('xr_state_changed', state)
-            // hold state so menu gui knows if we're rendering UI for fullscreen or XR
-            // switch (state) {
-            //     case BABYLON.WebXRState.IN_XR:
-            //         this.inXR = true;
-            //         break;
-            //     case BABYLON.WebXRState.NOT_IN_XR:
-            //         this.inXR = false;
-            //         break;
-            // }
-            // if (state === BABYLON.WebXRState.ENTERING_XR) {
-            //     //   this.teleporationManager.populateTeleporationWithFloors()
-            // }
-            // if (state === BABYLON.WebXRState.EXITING_XR) {
-            //     // this.teleporationManager.unpopulateTeleporationFloors()
-            // }
+
+            // ENTERING_XR = 0,
+            // /**
+            //  * Transitioning to non XR mode
+            //  */
+            // EXITING_XR = 1,
+            // /**
+            //  * In XR mode and presenting
+            //  */
+            // IN_XR = 2,
+            // /**
+            //  * Not entered XR mode
+            //  */
+            // NOT_IN_XR = 3
+
+
+
+
         })
 
         this.setupEmitCameraMovement()

@@ -18,6 +18,7 @@ import { EventName } from "./event-names"
 import { NavManager } from "./scene/nav-manager";
 import { createWall } from "./scene/constructs";
 import { filter } from "rxjs/operators";
+import { findOrCreateAvatar, findOrCreateAvatarHand, removeAvatar, removeAvatarHand } from "./scene/avatar-utils";
 
 
 const ANIMATION_FRAME_PER_SECOND = 60
@@ -128,7 +129,7 @@ export class SceneManager {
 
         signalHub.incoming.on("about_members").subscribe(members => {
             for (const [member_id, payload] of Object.entries(members.movements)) {
-                const avatar = this.findOrCreateAvatar(member_id)
+                const avatar = findOrCreateAvatar(member_id, this.scene)
                 this.setComponent(avatar, { type: "position", data: { value: payload.pos_rot.pos } })
                 this.setComponent(avatar, { type: "rotation", data: { value: payload.pos_rot.rot } })
             }
@@ -138,29 +139,30 @@ export class SceneManager {
         signalHub.incoming.on("event").subscribe((mpts) => {
             if (mpts.m === EventName.member_entered) {
                 const payload = mpts.p
-                const avatar = this.findOrCreateAvatar(payload.member_id)
+                const avatar = findOrCreateAvatar(payload.member_id, this.scene)
                 this.setComponent(avatar, { type: "position", data: { value: payload.pos_rot.pos } })
                 this.setComponent(avatar, { type: "rotation", data: { value: payload.pos_rot.rot } })
             } else if (mpts.m === EventName.member_moved) {
                 const payload = mpts.p
-                const avatar = this.findOrCreateAvatar(payload.member_id)
+                const avatar = findOrCreateAvatar(payload.member_id, this.scene)
                 this.animateComponent(avatar, { type: "position", data: { value: payload.pos_rot.pos } })
                 this.animateComponent(avatar, { type: "rotation", data: { value: payload.pos_rot.rot } })
+
                 if (payload.left) {
-                    this.findOrCreateAvatarHand(payload.member_id, "left", payload.left)
+                    this.createAndMoveAvatarHand(payload.member_id, "left", payload.left)
                 }
                 if (payload.right) {
-                    this.findOrCreateAvatarHand(payload.member_id, "right", payload.right)
+                    this.createAndMoveAvatarHand(payload.member_id, "right", payload.right)
                 }
 
 
             } else if (mpts.m === EventName.member_left) {
-                this.removeAvatar(mpts.p.member_id)
+                removeAvatar(mpts.p.member_id, this.scene)
             } else if (mpts.m === EventName.member_died) {
                 // do something
             } else if (mpts.m === EventName.member_respawned) {
                 const payload = mpts.p
-                const avatar = this.findOrCreateAvatar(payload.member_id)
+                const avatar = findOrCreateAvatar(payload.member_id, this.scene)
                 this.setComponent(avatar, { type: "position", data: { value: payload.pos_rot.pos } })
                 this.setComponent(avatar, { type: "rotation", data: { value: payload.pos_rot.rot } })
 
@@ -266,30 +268,12 @@ export class SceneManager {
 
     }
 
-    removeAvatarHand(member_id: string, hand: string) {
-        let mesh = this.scene.getMeshByName(`avatar_${member_id}_${hand}`)
-        if (mesh) {
-            mesh.dispose()
-        }
+
+    createAndMoveAvatarHand(member_id: string, handedness: string, pos_rot: PosRot) {
+        const mesh = findOrCreateAvatarHand(member_id, handedness, pos_rot, this.scene)
+        this.animateComponent(mesh, { type: "position", data: { value: pos_rot.pos } })
+        this.animateComponent(mesh, { type: "rotation", data: { value: pos_rot.rot } })
     }
-
-    findOrCreateAvatarHand(member_id: string, hand: string, pos_rot: PosRot): BABYLON.AbstractMesh {
-        const meshName = `avatar_${member_id}_${hand}`
-        let mesh = this.scene.getMeshByName(meshName)
-        if (!mesh) {
-            mesh = BABYLON.MeshBuilder.CreateBox(meshName, { size: 0.1 }, this.scene)
-            mesh.isPickable = false
-            mesh.position.fromArray(pos_rot.pos)
-            mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(pos_rot.rot)
-        } else {
-            this.animateComponent(mesh, { type: "position", data: { value: pos_rot.pos } })
-            this.animateComponent(mesh, { type: "rotation", data: { value: pos_rot.rot } })
-        }
-        return mesh
-    }
-
-
-
 
     async createScene() {
         // Create a basic BJS Scene object
@@ -322,27 +306,6 @@ export class SceneManager {
     }
 
 
-    removeAvatar(member_id: string) {
-        let box = this.scene.getMeshByName(`avatar_${member_id}`)
-        if (box) {
-            box.dispose()
-        }
-        this.removeAvatarHand(member_id, "left")
-        this.removeAvatarHand(member_id, "right")
-    }
-
-    findOrCreateAvatar(member_id: string) {
-        let box = this.scene.getMeshByName(`avatar_${member_id}`)
-        if (!box) {
-            box = BABYLON.MeshBuilder.CreateBox(`avatar_${member_id}`, { size: 0.3 }, this.scene)
-            //  box.isPickable = false
-            box.metadata ||= {}
-            box.metadata['member_id'] = member_id
-            BABYLON.Tags.AddTagsTo(box, "avatar")
-        }
-        return box
-    }
-
 
     findSpawnPoint() {
         const result = this.entities.filter(entity => entity.type === "spawn_point")
@@ -370,6 +333,21 @@ export class SceneManager {
         }
     }
 
+    createInlineHands() {
+        removeAvatarHand(this.member_id, "left", this.scene)
+        removeAvatarHand(this.member_id, "right", this.scene)
+
+        // create our hands
+        const left = findOrCreateAvatarHand(this.member_id, "left", { pos: [-0.1, 0, 0.2], rot: [0, 0, 0, 1] }, this.scene)
+        left.parent = this.freeCamera
+        left.visibility = 0.1
+
+        const right = findOrCreateAvatarHand(this.member_id, "right", { pos: [0.1, 0, 0.2], rot: [0, 0, 0, 1] }, this.scene)
+        right.parent = this.freeCamera
+        right.visibility = 0.1
+
+    }
+
     async createCamera() {
         let posRot = this.getLastPosRot()
         this.freeCamera = new BABYLON.FreeCamera("freeCam", BABYLON.Vector3.FromArray(posRot.pos), this.scene);
@@ -380,6 +358,14 @@ export class SceneManager {
         this.freeCamera.minZ = 0.05
         this.freeCamera.onViewMatrixChangedObservable.add(cam => {
             signalHub.movement.emit("camera_moved", { pos: cam.position.asArray(), rot: cam.absoluteRotation.asArray() })
+        })
+
+        this.createInlineHands()
+
+        signalHub.local.on("xr_state_changed").pipe(
+            filter(msg => msg === BABYLON.WebXRState.EXITING_XR)
+        ).subscribe(() => {
+            this.createInlineHands()
         })
 
         //  const env = this.scene.createDefaultEnvironment();

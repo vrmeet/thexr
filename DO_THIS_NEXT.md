@@ -1,10 +1,27 @@
 TODO:
 
-global "mode" editing: boolean
+when recreating (disposing and recreating hands) what happens if we were holding something at the time?
 
-- events: transform_entity, mode: "session"
+inline mode, needs hands (always need hands)
+  - createAvatar, should always create hands
+  - createCamera, should create our own hands
+  - enterXR (hand creation)
+  - exitXR hand re-parenting
 
-components table: needs mode column, set unique entity_id, type => entity_id, mode, type
+- allow grabbing in 2D (shift + click )
+
+- events: , entity_released, sess: "editing", "live"
+
+We need to be able to test "grabbing" in 2D as well.  Should avatars always have hands?
+But in 2D they are invisible and parented to the face.
+
+If you enter XR, then you unparent the hands
+if you enter XR, then you parent the hands to the head and hide them
+
+then we need a message to know when members enter or exit XR
+
+
+components table: needs state column, set unique entity_id, type => entity_id, state, type
 
 We need guns to reset to original position, 
 
