@@ -5,7 +5,7 @@ import * as MAT from "babylonjs-materials"
 import type { Component, PosRot, scene_settings, serialized_space } from "./types"
 import { sessionPersistance } from "./sessionPersistance";
 import { MenuManager } from "./menu/menu-manager"
-import { reduceSigFigs } from "./utils";
+import { reduceSigFigs, unsetPosRot } from "./utils";
 import { XRManager } from "./xr/xr-manager";
 
 import { signalHub } from "./signalHub";
@@ -18,7 +18,7 @@ import { EventName } from "./event-names"
 import { NavManager } from "./scene/nav-manager";
 import { createWall } from "./scene/constructs";
 import { filter } from "rxjs/operators";
-import { findOrCreateAvatar, findOrCreateAvatarHand, removeAvatar, removeAvatarHand } from "./scene/avatar-utils";
+import { createAvatarHand, findAvatarHand, findOrCreateAvatar, findOrCreateAvatarHand, removeAvatar, removeAvatarHand } from "./scene/avatar-utils";
 
 
 const ANIMATION_FRAME_PER_SECOND = 60
@@ -334,17 +334,27 @@ export class SceneManager {
     }
 
     createInlineHands() {
-        removeAvatarHand(this.member_id, "left", this.scene)
-        removeAvatarHand(this.member_id, "right", this.scene)
-
-        // create our hands
-        const left = findOrCreateAvatarHand(this.member_id, "left", { pos: [-0.1, 0, 0.2], rot: [0, 0, 0, 1] }, this.scene)
+        // if found, unparent,
+        let left = findAvatarHand(this.member_id, "left", this.scene)
+        if (left) {
+            unsetPosRot(left)
+            left.position.copyFromFloats(-0.1, 0, 0.2)
+        } else {
+            left = createAvatarHand(this.member_id, "left", { pos: [-0.1, 0, 0.2], rot: [0, 0, 0, 1] }, this.scene)
+        }
         left.parent = this.freeCamera
         left.visibility = 0.1
 
-        const right = findOrCreateAvatarHand(this.member_id, "right", { pos: [0.1, 0, 0.2], rot: [0, 0, 0, 1] }, this.scene)
+        let right = findAvatarHand(this.member_id, "right", this.scene)
+        if (right) {
+            unsetPosRot(right)
+            right.position.copyFromFloats(0.1, 0, 0.2)
+        } else {
+            right = createAvatarHand(this.member_id, "right", { pos: [0.1, 0, 0.2], rot: [0, 0, 0, 1] }, this.scene)
+        }
         right.parent = this.freeCamera
         right.visibility = 0.1
+
 
     }
 
