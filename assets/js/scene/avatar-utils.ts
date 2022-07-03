@@ -21,18 +21,21 @@ export const findAvatarHand = (member_id: string, hand: string, scene: BABYLON.S
 
 
 export const findOrCreateAvatarHand = (member_id: string, hand: string, pos_rot: PosRot, scene: BABYLON.Scene): BABYLON.AbstractMesh => {
-    const meshName = `avatar_${member_id}_${hand}`
     let mesh = findAvatarHand(member_id, hand, scene)
     if (!mesh) {
-        mesh = BABYLON.MeshBuilder.CreateBox(meshName, { size: 0.1 }, scene)
-        mesh.isPickable = false
-        mesh.position.fromArray(pos_rot.pos)
-        mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(pos_rot.rot)
+        createAvatarHand(member_id, hand, pos_rot, scene)
     }
     return mesh
 }
 
-
+export const createAvatarHand = (member_id: string, hand: string, pos_rot: PosRot, scene: BABYLON.Scene) => {
+    const meshName = `avatar_${member_id}_${hand}`
+    let mesh = BABYLON.MeshBuilder.CreateBox(meshName, { width: 0.053, height: 0.08, depth: 0.1 }, scene)
+    mesh.isPickable = false
+    mesh.position.fromArray(pos_rot.pos)
+    mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(pos_rot.rot)
+    return mesh
+}
 
 export const removeAvatarHand = (member_id: string, hand: string, scene: BABYLON.Scene) => {
     let mesh = findAvatarHand(member_id, hand, scene)

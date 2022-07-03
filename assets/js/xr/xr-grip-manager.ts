@@ -7,6 +7,7 @@ import { signalHub } from "../signalHub";
 import type { event } from "../types"
 import * as utils from "../utils"
 import { EventName } from "../event-names";
+import { findAvatarHand, findOrCreateAvatarHand } from "../scene/avatar-utils";
 
 const exitingXR$ = signalHub.local.on("xr_state_changed").pipe(
     filter(msg => msg === BABYLON.WebXRState.EXITING_XR)
@@ -28,13 +29,9 @@ export class XRGripManager {
         this.other_hand = (this.hand === "left") ? "right" : "left"
 
         motionController.onModelLoadedObservable.add(model => {
-            const meshName = `avatar_${this.member_id}_${this.hand}`
-            // delete previous if there was some race condition or blip that made it
-            const foundMesh = this.scene.getMeshByName(meshName)
-            if (foundMesh) {
-                foundMesh.dispose()
-            }
-            this.palmMesh = BABYLON.MeshBuilder.CreateBox(meshName, { width: 0.053, height: 0.08, depth: 0.1 }, this.scene)
+            this.palmMesh = findAvatarHand(this.member_id, this.hand, this.scene)
+            this.palmMesh.parent = null
+
             this.palmMesh.showBoundingBox = true
             let subscription = callback(inputSource)
             this.palmMesh.onDisposeObservable.add(() => {

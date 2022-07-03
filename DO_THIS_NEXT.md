@@ -1,6 +1,18 @@
 TODO:
 
-when recreating (disposing and recreating hands) what happens if we were holding something at the time?
+have a solution for our avatar presence for others:
+  when do we create the hands?
+  are they parented always?
+  or do they move independently?
+  Q: Can we send hand data that is relative to avatar local space?
+
+
+Bug: presence of previously joined member isn't drawing a box unless it has moved?  needs verification
+
+Q: do we really need to keep disposing and recreating the hands?
+- > INTO XR, if the the hands have parent, then unparent them
+LEAVING XR, parent them
+
 
 inline mode, needs hands (always need hands)
   - createAvatar, should always create hands

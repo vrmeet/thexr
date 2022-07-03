@@ -1,4 +1,5 @@
 import { filter, map, pipe, scan } from "rxjs";
+import type * as BABYLON from "babylonjs"
 import type { PosRot } from "./types";
 
 export const reduceSigFigs = (value: number) => {
@@ -6,6 +7,11 @@ export const reduceSigFigs = (value: number) => {
 }
 export const arrayReduceSigFigs = (value: number[]) => {
     return value.map(el => reduceSigFigs(el))
+}
+
+export const unsetPosRot = (mesh: BABYLON.AbstractMesh) => {
+    mesh.position.copyFromFloats(0, 0, 0)
+    mesh.rotationQuaternion.copyFromFloats(0, 0, 0, 1)
 }
 
 export function random_id(length: number) {
