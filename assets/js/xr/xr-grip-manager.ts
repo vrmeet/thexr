@@ -7,7 +7,7 @@ import { signalHub } from "../signalHub";
 import type { event } from "../types"
 import * as utils from "../utils"
 import { EventName } from "../event-names";
-import { findAvatarHand, findOrCreateAvatarHand } from "../scene/avatar-utils";
+import { Avatar } from "../scene/avatar"
 
 const exitingXR$ = signalHub.local.on("xr_state_changed").pipe(
     filter(msg => msg === BABYLON.WebXRState.EXITING_XR)
@@ -29,7 +29,8 @@ export class XRGripManager {
         this.other_hand = (this.hand === "left") ? "right" : "left"
 
         motionController.onModelLoadedObservable.add(model => {
-            this.palmMesh = findAvatarHand(this.member_id, this.hand, this.scene)
+            this.palmMesh = Avatar.findAvatarHand(this.member_id, this.hand, this.scene)
+            console.log("the palm mesh is", this.palmMesh)
             this.palmMesh.parent = null
 
             this.palmMesh.showBoundingBox = true

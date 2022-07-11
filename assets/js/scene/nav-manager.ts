@@ -46,9 +46,10 @@ export class NavManager {
         //  signalHub.local.on("client_ready").subscribe(() => {
         setTimeout(() => {
             // nav plugin takes some time to create
-            this.crowd = this.navigationPlugin.createCrowd(MAX_AGENTS, MAX_AGENT_RADIUS, this.scene)
-            this.agentManager = new AgentManager(this.member_id, this.navigationPlugin, this.crowd, this.scene)
-
+            if (this.navMeshCreated) {
+                this.crowd = this.navigationPlugin.createCrowd(MAX_AGENTS, MAX_AGENT_RADIUS, this.scene)
+                this.agentManager = new AgentManager(this.member_id, this.navigationPlugin, this.crowd, this.scene)
+            }
         }, 500)
 
         // })
