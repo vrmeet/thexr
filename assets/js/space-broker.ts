@@ -1,7 +1,7 @@
 import { Socket, Channel } from 'phoenix'
 
 import { signalHub } from './signalHub'
-import { mergeWith, scan, throttleTime } from 'rxjs/operators'
+import { combineLatestWith, defaultIfEmpty, mergeWith, scan, throttleTime } from 'rxjs/operators'
 import { combineLatest, map, filter } from 'rxjs'
 import type { IncomingEvents } from './signalHub'
 import type { PosRot } from './types'
@@ -119,46 +119,69 @@ export class SpaceBroker {
     }
 
     forwardCameraMovement() {
+
+        let payload = {
+            left: null,
+            right: null,
+            cam: null
+        }
+
+        signalHub.local.on("xr_state_changed").pipe(
+            filter(msg => msg === BABYLON.WebXRState.EXITING_XR)
+        ).subscribe(() => {
+            payload.left = null
+            payload.right = null
+        })
+
         const leftMovement$ = signalHub.movement.on("left_hand_moved").pipe(
-            throttleTime(80),
+            throttleTime(50),
             map(orig => ({ pos: arrayReduceSigFigs(orig.pos), rot: arrayReduceSigFigs(orig.rot) })),
-            throttleByMovement(0.005),
-            map(value => ({ left: value }))
+            throttleByMovement(0.005)
         )
 
+        leftMovement$.subscribe(left => {
+            payload.left = left
+        })
+
         const rightMovement$ = signalHub.movement.on("right_hand_moved").pipe(
-            throttleTime(80),
+            throttleTime(50),
             map(orig => ({ pos: arrayReduceSigFigs(orig.pos), rot: arrayReduceSigFigs(orig.rot) })),
-            throttleByMovement(0.005),
-            map(value => ({ right: value }))
+            throttleByMovement(0.005)
         )
+        rightMovement$.subscribe(right => {
+            payload.right = right
+        })
+
         const camMovement$ = signalHub.movement.on("camera_moved").pipe(
-            throttleTime(80),
+            throttleTime(50),
             map(orig => ({ pos: arrayReduceSigFigs(orig.pos), rot: arrayReduceSigFigs(orig.rot) })),
-            throttleByMovement(0.005),
-            map(cam => ({ cam: cam }))
+            throttleByMovement(0.005)
         )
+
+        camMovement$.subscribe(cam => {
+            payload.cam = cam
+        })
 
         camMovement$.pipe(
             mergeWith(leftMovement$, rightMovement$),
-            scan((acc, data) => ({ ...acc, ...data }), { cam: null, left: null, right: null }),
-            filter(data => ((!!data.cam))),
-            throttleTime(100)
-        ).subscribe(data => {
-            // console.log('combining', JSON.stringify(data))
+            throttleTime(50)
+        ).subscribe(() => {
+            console.log('combining', JSON.stringify(payload))
+            if (!payload.cam) {
+                return
+            }
 
-
-            if (data.left && data.right) {
+            if (payload.cam && payload.left && payload.right) {
 
                 signalHub.outgoing.emit("event", {
                     m: EventName.member_moved,
-                    p: { member_id: this.member_id, pos_rot: data.cam, left: data.left, right: data.right }
+                    p: { member_id: this.member_id, pos_rot: payload.cam, left: payload.left, right: payload.right }
                 })
             } else {
 
                 signalHub.outgoing.emit("event", {
                     m: EventName.member_moved,
-                    p: { member_id: this.member_id, pos_rot: data.cam }
+                    p: { member_id: this.member_id, pos_rot: payload.cam }
                 })
             }
         })

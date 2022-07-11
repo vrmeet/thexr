@@ -1,10 +1,27 @@
 TODO:
 
+Situation:   We have a box for a face and a box for each hand which is
+as close to the shared coordinate space as possible.  An avatar is a puppet which needs to move into the general shape that fits where actual head and hand data were a moment ago.  
+
+There is some trickiness when the head and hand belong to some heirachy because you have to figure out
+how to move the head and hands relative to it's parent bone.  We can ignore that for now by not having
+any skeleton.  Simply move the head and hands directly to the last known position and quaternions directly.  This is the most accurate pose.  Then later figure out how to fill in the blanks, such as shoulders, elbows, body, given that we know the head and hands positions already.
+
+For the POV, there will always be an extra delay if we try to pose a body (needless frame by frame positioning and rotating).  It seems that POV should be an exception and not follow along the avatar pattern.  This is because we don't need to frame the head at all... don't need to see our own head.  And the hands can already be parented to the xrGrip.  So performance wise we don't spend extra cycles on placing geometry / animating geometry that we'll already get in a nicer way.
+
+if someone else goes out of xr mode, we simply don't get hand pos rot.  We can just move hand relative to the head, mimicking what the POV of 2D is.
+
+
+
+First we move the transform into place
+
+
+XR camera get device height
+
 have a solution for our avatar presence for others:
-  when do we create the hands?
-  are they parented always?
-  or do they move independently?
-  Q: Can we send hand data that is relative to avatar local space?
+  when do we create the hands?  upon avatar creation
+  are they parented always?  Y
+  Q: Can we send hand data that is relative to avatar local space?  No need
 
 
 Bug: presence of previously joined member isn't drawing a box unless it has moved?  needs verification
