@@ -2,10 +2,10 @@ import * as BABYLON from "babylonjs"
 import Ammo from 'ammojs-typed'
 
 import * as MAT from "babylonjs-materials"
-import type { Component, PosRot, scene_settings, serialized_space } from "./types"
+import type { Component, event, PosRot, scene_settings, serialized_space } from "./types"
 import { sessionPersistance } from "./sessionPersistance";
 import { MenuManager } from "./menu/menu-manager"
-import { reduceSigFigs, unsetPosRot } from "./utils";
+import { arrayReduceSigFigs, reduceSigFigs, unsetPosRot } from "./utils";
 import { XRManager } from "./xr/xr-manager";
 
 import { signalHub } from "./signalHub";
@@ -60,6 +60,36 @@ export class SceneManager {
             if (isMobileVR()) {
                 this.xrManager.enterXR()
             }
+
+            // see if grabbing a gun in 2D
+            signalHub.local.on("pointer_info").pipe(
+                filter(info => info.type === BABYLON.PointerEventTypes.POINTERPICK)
+            ).subscribe(info => {
+                let mesh = info.pickInfo.pickedMesh
+                if (mesh && BABYLON.Tags.MatchesQuery(mesh, "shootable")) {
+                    const rightHand = Avatar.findAvatarHand(this.member_id, "right", this.scene)
+                    let payload = {
+                        member_id: this.member_id,
+                        entity_id: mesh.id,
+                        hand_pos_rot: {
+                            pos: arrayReduceSigFigs(rightHand.absolutePosition.asArray()),
+                            rot: arrayReduceSigFigs(rightHand.absoluteRotationQuaternion.asArray())
+                        },
+                        entity_pos_rot: {
+                            pos: arrayReduceSigFigs(mesh.absolutePosition.asArray()),
+                            rot: arrayReduceSigFigs(mesh.absoluteRotationQuaternion.asArray())
+                        },
+                        hand: "right"
+                    }
+                    signalHub.outgoing.emit("event", { m: EventName.entity_grabbed, p: payload })
+                    signalHub.incoming.emit("event", { m: EventName.entity_grabbed, p: payload })
+
+
+                }
+                console.log(info)
+            })
+
+
             // falling objects should not fall for ever
             // setInterval(() => {
             //     console.log("checking meshes for falling")
@@ -272,6 +302,11 @@ export class SceneManager {
     async createScene() {
         // Create a basic BJS Scene object
         this.scene = new BABYLON.Scene(this.engine);
+
+        this.scene.onPointerObservable.add(pointerInfo => {
+            signalHub.local.emit("pointer_info", pointerInfo)
+        })
+
         this.scene.metadata = { member_id: this.member_id }  // this is so often needed along with the scene, I can make this available inside the scene
 
         var gravityVector = new BABYLON.Vector3(0, -9.81, 0);
