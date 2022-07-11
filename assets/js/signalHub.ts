@@ -17,6 +17,7 @@ type LocalEvents = {
     pulse: { hand: "left" | "right", intensity: number, duration: number }
     my_state: types.member_state
     agent_damaged: { agent_name: string }
+    pointer_info: BABYLON.PointerInfo
 }
 
 export type IncomingEvents = {
