@@ -124,11 +124,13 @@ export class XRManager {
             this.scene,
             inputSource,
             motionController,
-            this.controllerPhysicsFeature.getImpostorForController(inputSource),
-            (inputSource: BABYLON.WebXRInputSource) => {
-                return this.setupSendHandPosRot(inputSource)
-            }
+            this.controllerPhysicsFeature.getImpostorForController(inputSource)
         )
+        // ,
+        //     (inputSource: BABYLON.WebXRInputSource) => {
+        //         return this.setupSendHandPosRot(inputSource)
+        //     }
+        // )
 
 
     }
@@ -145,22 +147,22 @@ export class XRManager {
         })
     }
 
-    setupSendHandPosRot(inputSource: BABYLON.WebXRInputSource): Subscription {
+    // setupSendHandPosRot(inputSource: BABYLON.WebXRInputSource): Subscription {
 
-        const hand = inputSource.inputSource.handedness as "left" | "right"
-        return this.makeXRFrameSignal().pipe(
-            takeUntil(exitingXR$)
-        ).subscribe(() => {
+    //     const hand = inputSource.inputSource.handedness as "left" | "right"
+    //     return this.makeXRFrameSignal().pipe(
+    //         takeUntil(exitingXR$)
+    //     ).subscribe(() => {
 
-            signalHub.movement.emit(`${hand}_hand_moved`, {
-                pos: inputSource.grip.absolutePosition.asArray(),
-                rot: inputSource.grip.absoluteRotationQuaternion.asArray()
-            })
+    //         signalHub.movement.emit(`${hand}_hand_moved`, {
+    //             pos: inputSource.grip.absolutePosition.asArray(),
+    //             rot: inputSource.grip.absoluteRotationQuaternion.asArray()
+    //         })
 
 
-        })
+    //     })
 
-    }
+    // }
 
     setupSendComponentData(motionController: BABYLON.WebXRAbstractMotionController) {
         const componentIds = motionController.getComponentIds()

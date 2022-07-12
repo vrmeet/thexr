@@ -195,11 +195,13 @@ export class SceneManager {
                     // it will move in local coordinate space and be screwed up
                     if (mpts.p.member_id !== this.member_id) {
                         // unparent incase was grabbed by someone else first
-                        // grabbedEntity.parent = null
-                        // this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
-                        // this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
-                        // this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
-                        // this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
+                        grabbedEntity.parent = null
+                        if (!handMesh.parent) {
+                            this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
+                            this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
+                        }
+                        this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
+                        this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
 
 
                     }
