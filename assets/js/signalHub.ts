@@ -18,6 +18,7 @@ type LocalEvents = {
     my_state: types.member_state
     agent_damaged: { agent_name: string }
     pointer_info: BABYLON.PointerInfo
+    keyboard_info: BABYLON.KeyboardInfo
 }
 
 export type IncomingEvents = {

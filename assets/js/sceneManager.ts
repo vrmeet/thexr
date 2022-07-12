@@ -20,6 +20,7 @@ import { createWall } from "./scene/constructs";
 import { filter } from "rxjs/operators";
 
 import { Avatar } from "./scene/avatar"
+import { Inline } from "./scene/inline";
 
 const ANIMATION_FRAME_PER_SECOND = 60
 const TOTAL_ANIMATION_FRAMES = 5
@@ -60,35 +61,6 @@ export class SceneManager {
             if (isMobileVR()) {
                 this.xrManager.enterXR()
             }
-
-            // see if grabbing a gun in 2D
-            signalHub.local.on("pointer_info").pipe(
-                filter(info => info.type === BABYLON.PointerEventTypes.POINTERPICK)
-            ).subscribe(info => {
-                let mesh = info.pickInfo.pickedMesh
-                if (mesh && BABYLON.Tags.MatchesQuery(mesh, "shootable")) {
-                    const rightHand = Avatar.findAvatarHand(this.member_id, "right", this.scene)
-                    let payload = {
-                        member_id: this.member_id,
-                        entity_id: mesh.id,
-                        hand_pos_rot: {
-                            pos: arrayReduceSigFigs(rightHand.absolutePosition.asArray()),
-                            rot: arrayReduceSigFigs(rightHand.absoluteRotationQuaternion.asArray())
-                        },
-                        entity_pos_rot: {
-                            pos: arrayReduceSigFigs(mesh.absolutePosition.asArray()),
-                            rot: arrayReduceSigFigs(mesh.absoluteRotationQuaternion.asArray())
-                        },
-                        hand: "right"
-                    }
-                    signalHub.outgoing.emit("event", { m: EventName.entity_grabbed, p: payload })
-                    signalHub.incoming.emit("event", { m: EventName.entity_grabbed, p: payload })
-
-
-                }
-                console.log(info)
-            })
-
 
             // falling objects should not fall for ever
             // setInterval(() => {
@@ -223,11 +195,11 @@ export class SceneManager {
                     // it will move in local coordinate space and be screwed up
                     if (mpts.p.member_id !== this.member_id) {
                         // unparent incase was grabbed by someone else first
-                        grabbedEntity.parent = null
-                        this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
-                        this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
-                        this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
-                        this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
+                        // grabbedEntity.parent = null
+                        // this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
+                        // this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
+                        // this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
+                        // this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
 
 
                     }
@@ -306,6 +278,12 @@ export class SceneManager {
         this.scene.onPointerObservable.add(pointerInfo => {
             signalHub.local.emit("pointer_info", pointerInfo)
         })
+
+        this.scene.onKeyboardObservable.add(keyboardInfo => {
+            signalHub.local.emit("keyboard_info", keyboardInfo)
+        })
+
+        new Inline(this.member_id, this.scene)
 
         this.scene.metadata = { member_id: this.member_id }  // this is so often needed along with the scene, I can make this available inside the scene
 
