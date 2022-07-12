@@ -8,10 +8,21 @@ import type { event } from "../types"
 
 export class Inline {
     public heldMesh: BABYLON.AbstractMesh
+    public rightHandMesh: BABYLON.AbstractMesh
+    public direction: BABYLON.Vector3
     constructor(public member_id: string, public scene: BABYLON.Scene) {
         this.heldMesh = null
+        this.rightHandMesh = null
 
         signalHub.local.on("client_ready").subscribe(() => {
+
+            // another player stole our object
+            signalHub.incoming.on("event").pipe(
+                filter(msg => (msg.m === EventName.entity_grabbed && this.heldMesh !== null && msg.p.entity_id === this.heldMesh.id && msg.p.member_id != this.member_id)),
+            ).subscribe(() => {
+                this.heldMesh = null
+            })
+
 
             signalHub.local.on("keyboard_info").pipe(
                 filter(info => (info.type === BABYLON.KeyboardEventTypes.KEYDOWN && info.event.keyCode === 32))
@@ -45,16 +56,20 @@ export class Inline {
     }
 
     emitTriggerSqueezed() {
-        const rightHand = Avatar.findAvatarHand(this.member_id, "right", this.scene)
-        const head = this.scene.activeCamera as BABYLON.FreeCamera
-        const direction = BABYLON.Vector3.TransformCoordinates(BABYLON.Vector3.Forward(), head.getWorldMatrix())
+        if (!this.rightHandMesh) {
+            this.rightHandMesh = Avatar.findAvatarHand(this.member_id, "right", this.scene)
+        }
+        if (!this.direction) {
+            this.direction = this.rightHandMesh.getDirection(BABYLON.Vector3.Forward())
+        }
+
         let event: event = {
             m: EventName.entity_trigger_squeezed,
             p: {
                 member_id: this.member_id,
                 entity_id: this.heldMesh.id,
-                pos: arrayReduceSigFigs(rightHand.absolutePosition.asArray()),
-                direction: direction.asArray()
+                pos: arrayReduceSigFigs(this.rightHandMesh.absolutePosition.asArray()),
+                direction: this.direction.asArray()
             }
         }
 
@@ -63,13 +78,15 @@ export class Inline {
     }
 
     emitReleased(mesh: BABYLON.AbstractMesh) {
-        const rightHand = Avatar.findAvatarHand(this.member_id, "right", this.scene)
+        if (!this.rightHandMesh) {
+            this.rightHandMesh = Avatar.findAvatarHand(this.member_id, "right", this.scene)
+        }
         let payload = {
             member_id: this.member_id,
             entity_id: mesh.id,
             hand_pos_rot: {
-                pos: arrayReduceSigFigs(rightHand.absolutePosition.asArray()),
-                rot: arrayReduceSigFigs(rightHand.absoluteRotationQuaternion.asArray())
+                pos: arrayReduceSigFigs(this.rightHandMesh.absolutePosition.asArray()),
+                rot: arrayReduceSigFigs(this.rightHandMesh.absoluteRotationQuaternion.asArray())
             },
             entity_pos_rot: {
                 pos: arrayReduceSigFigs(mesh.absolutePosition.asArray()),
@@ -84,13 +101,15 @@ export class Inline {
     }
 
     emitGrabbed(mesh: BABYLON.AbstractMesh) {
-        const rightHand = Avatar.findAvatarHand(this.member_id, "right", this.scene)
+        if (!this.rightHandMesh) {
+            this.rightHandMesh = Avatar.findAvatarHand(this.member_id, "right", this.scene)
+        }
         let payload = {
             member_id: this.member_id,
             entity_id: mesh.id,
             hand_pos_rot: {
-                pos: arrayReduceSigFigs(rightHand.absolutePosition.asArray()),
-                rot: arrayReduceSigFigs(rightHand.absoluteRotationQuaternion.asArray())
+                pos: arrayReduceSigFigs(this.rightHandMesh.absolutePosition.asArray()),
+                rot: arrayReduceSigFigs(this.rightHandMesh.absoluteRotationQuaternion.asArray())
             },
             entity_pos_rot: {
                 pos: arrayReduceSigFigs(mesh.absolutePosition.asArray()),

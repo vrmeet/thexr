@@ -23,8 +23,7 @@ export class XRGripManager {
     constructor(public member_id: string, public scene: BABYLON.Scene,
         public inputSource: BABYLON.WebXRInputSource,
         public motionController: BABYLON.WebXRAbstractMotionController,
-        public imposter: BABYLON.PhysicsImpostor,
-        callback: (inputSource: BABYLON.WebXRInputSource) => Subscription) {
+        public imposter: BABYLON.PhysicsImpostor) {
         this.hand = motionController.handedness as "left" | "right"
         this.other_hand = (this.hand === "left") ? "right" : "left"
 
@@ -34,14 +33,23 @@ export class XRGripManager {
             this.palmMesh.parent = null
 
             this.palmMesh.showBoundingBox = true
-            let subscription = callback(inputSource)
-            this.palmMesh.onDisposeObservable.add(() => {
-                subscription.unsubscribe()
-            })
+
             this.palmMesh.visibility = 0.5
             this.palmMesh.position = (this.hand[0] === "l") ? new BABYLON.Vector3(0.03, -0.05, 0.0) : new BABYLON.Vector3(-0.03, -0.05, 0.0)
-            this.palmMesh.rotation.x = BABYLON.Angle.FromDegrees(45).radians()
+            this.palmMesh.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(BABYLON.Angle.FromDegrees(45).radians(), 0, 0)
             this.palmMesh.parent = inputSource.grip
+
+            // send hand movement
+            const sub = this.palmMesh.onAfterWorldMatrixUpdateObservable.add(() => {
+                signalHub.movement.emit(`${this.hand}_hand_moved`, {
+                    pos: this.palmMesh.absolutePosition.asArray(),
+                    rot: this.palmMesh.absoluteRotationQuaternion.asArray()
+                })
+            })
+
+            exitingXR$.subscribe(() => {
+                this.palmMesh.onAfterWorldMatrixUpdateObservable.remove(sub)
+            })
 
             // listen for clean grip and release
 
@@ -118,7 +126,7 @@ export class XRGripManager {
     shootable() {
         return signalHub.movement.on(`${this.hand}_trigger_squeezed`).pipe(
             takeUntil(exitingXR$),
-            throttleTime(50),
+            throttleTime(100),
             tap(() => {
                 let event: event = {
                     m: EventName.entity_trigger_squeezed,
