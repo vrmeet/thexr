@@ -1,5 +1,15 @@
 TODO:
 
+add ability to press space bar to shoot when holding
+add ability to ungrab by clicking the gun again
+
+make a class out of this ability to hold the gun in 2d
+
+XR - fix palm mesh orientation to the grip, it's not aligned right
+fix grab in 2D, look ok to my POV, but for another client the arm shot off in another direction
+
+
+
 Situation:   We have a box for a face and a box for each hand which is
 as close to the shared coordinate space as possible.  An avatar is a puppet which needs to move into the general shape that fits where actual head and hand data were a moment ago.  
 

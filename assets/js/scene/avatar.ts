@@ -11,8 +11,7 @@ export class Avatar {
     public head: BABYLON.AbstractMesh
     public rightHand: BABYLON.AbstractMesh
     public leftHand: BABYLON.AbstractMesh
-    public rightHandParented: boolean
-    public leftHandParented: boolean
+
     public debug: boolean
     public animatables: BABYLON.Animatable[]
 
@@ -30,8 +29,8 @@ export class Avatar {
         this.head.position.y = this.height
         this.leftHand = Avatar.findOrCreateAvatarHand(this.member_id, "left", this.scene)
         this.rightHand = Avatar.findOrCreateAvatarHand(this.member_id, "right", this.scene)
-        Avatar.setHandRaisedPosition(this.head, this.leftHand, "left")
-        Avatar.setHandRaisedPosition(this.head, this.rightHand, "right")
+        this.setHandRaisedPosition(this.leftHand, "left")
+        this.setHandRaisedPosition(this.rightHand, "right")
         // create debug spheres
         if (this.debug) {
             this.debugHead = BABYLON.MeshBuilder.CreateSphere("", { diameter: 0.2 }, this.scene)
@@ -80,12 +79,12 @@ export class Avatar {
 
     }
 
-    setHandRaisedPosition(hand: string) {
-        if (this[`${hand}Hand`].parent) {
+    setHandRaisedPosition(handMesh: BABYLON.AbstractMesh, hand: string) {
+        if (handMesh.parent) {
             return
         }
-        Avatar.setHandRaisedPosition(this.head, this[`${hand}Hand`], hand)
-        this[`${hand}Hand`].setParent(this.head)
+        Avatar.setHandRaisedPosition(this.head, handMesh, hand)
+        handMesh.setParent(this.head)
     }
 
     static setHandRaisedPosition(headNode: BABYLON.TransformNode, handMesh: BABYLON.AbstractMesh, hand: string) {
@@ -95,7 +94,6 @@ export class Avatar {
         } else {
             offset = [0.2, 0, 0.2]
         }
-        console.log("in set hand raised")
         handMesh.parent = headNode
         handMesh.rotationQuaternion.copyFromFloats(0, 0, 0, 1)
         handMesh.position.copyFromFloats(offset[0], offset[1], offset[2])
@@ -126,20 +124,25 @@ export class Avatar {
         if (leftPose) {
             this.poseMeshUsingPosRot(this.leftHand, leftPose)
         } else {
-            this.setHandRaisedPosition("left")
+            this.setHandRaisedPosition(this.leftHand, "left")
         }
         if (rightPose) {
             this.poseMeshUsingPosRot(this.rightHand, rightPose)
         } else {
-            this.setHandRaisedPosition("right")
+            this.setHandRaisedPosition(this.rightHand, "right")
         }
+    }
+
+    static findAvatarHead(member_id: string, scene: BABYLON.Scene) {
+        const headName = `avatar_${member_id}_head`
+        return scene.getMeshByName(headName)
     }
 
 
 
     static findOrCreateAvatarHead(member_id: string, scene: BABYLON.Scene) {
         const headName = `avatar_${member_id}_head`
-        let head = scene.getMeshByName(headName)
+        let head = this.findAvatarHead(member_id, scene)
         if (head) {
             return head
         }
