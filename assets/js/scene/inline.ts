@@ -1,20 +1,47 @@
 import { filter } from "rxjs/operators";
 import { EventName } from "../event-names";
 import { signalHub } from "../signalHub";
-import { arrayReduceSigFigs } from "../utils";
+import { arrayReduceSigFigs, unsetPosRot } from "../utils";
 import { Avatar } from "./avatar";
 import * as BABYLON from "babylonjs"
 import type { event } from "../types"
+import { FreeCameraKeyboardFlyingInput } from "./camera-inputs/free-camera-keyboard-flying-input";
+import { FreeCameraKeyboardWalkInput } from "./camera-inputs/free-camera-keyboard-walk-input";
 
 export class Inline {
     public heldMesh: BABYLON.AbstractMesh
     public rightHandMesh: BABYLON.AbstractMesh
     public direction: BABYLON.Vector3
-    constructor(public member_id: string, public scene: BABYLON.Scene) {
+    public flying: boolean
+    constructor(public member_id: string, public scene: BABYLON.Scene, public camera: BABYLON.FreeCamera) {
         this.heldMesh = null
         this.rightHandMesh = null
+        this.flying = false
+
+        // Attach the camera to the canvas
+        this.camera.attachControl(this.scene.getEngine()._workingCanvas, false);
+        this.camera.inputs.removeByType("FreeCameraKeyboardMoveInput")
+        this.camera.inputs.add(new FreeCameraKeyboardWalkInput())
+        this.camera.inertia = 0.2;
+        this.camera.angularSensibility = 250;
+        this.camera.minZ = 0.05
+        this.camera.onViewMatrixChangedObservable.add(cam => {
+            signalHub.movement.emit("camera_moved", { pos: cam.position.asArray(), rot: cam.absoluteRotation.asArray() })
+        })
+
+
+
+        this.createInlineHands()
+
+        signalHub.local.on("xr_state_changed").pipe(
+            filter(msg => msg === BABYLON.WebXRState.EXITING_XR)
+        ).subscribe(() => {
+            this.createInlineHands()
+        })
 
         signalHub.local.on("client_ready").subscribe(() => {
+
+            this.bindFKeyForFlight()
 
             // another player stole our object
             signalHub.incoming.on("event").pipe(
@@ -52,6 +79,38 @@ export class Inline {
             })
 
 
+        })
+    }
+
+    createInlineHands() {
+
+        let left = Avatar.findOrCreateAvatarHand(this.member_id, "left", this.scene)
+        left.parent = this.camera
+        unsetPosRot(left)
+        left.position.copyFromFloats(-0.2, 0, 0.2)
+        left.visibility = 0.2
+
+        let right = Avatar.findOrCreateAvatarHand(this.member_id, "right", this.scene)
+        right.parent = this.camera
+        unsetPosRot(right)
+        right.position.copyFromFloats(0.2, 0, 0.2)
+        right.visibility = 0.2
+
+    }
+
+    bindFKeyForFlight() {
+
+        signalHub.local.on("keyboard_info").pipe(
+            filter(data => (data.event.keyCode === 70 && data.type === BABYLON.KeyboardEventTypes.KEYUP))
+        ).subscribe(data => {
+            if (this.flying === false) {
+                this.camera.inputs.removeByType("FreeCameraKeyboardWalkInput")
+                this.camera.inputs.add(new FreeCameraKeyboardFlyingInput())
+            } else {
+                this.camera.inputs.removeByType("FreeCameraKeyboardFlyingInput");
+                this.camera.inputs.add(new FreeCameraKeyboardWalkInput())
+            }
+            this.flying = !this.flying
         })
     }
 

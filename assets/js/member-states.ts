@@ -88,7 +88,6 @@ export class MemberStates {
         })
 
         signalHub.local.on("client_ready").subscribe(() => {
-            console.log('client is ready and state is', this.my_state())
             signalHub.local.emit("my_state", this.my_state())
         })
     }
@@ -135,10 +134,7 @@ export class MemberStates {
 
 
     emit_event(event) {
-        // if (this.client_ready) {
-        console.log("attempting to send event", JSON.stringify(event))
         signalHub.outgoing.emit("event", event)
-        // }
     }
 
 

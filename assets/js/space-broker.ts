@@ -166,7 +166,6 @@ export class SpaceBroker {
             mergeWith(leftMovement$, rightMovement$),
             throttleTime(50)
         ).subscribe(() => {
-            console.log('combining', JSON.stringify(payload))
             if (!payload.cam) {
                 return
             }
