@@ -1,6 +1,6 @@
 TODO:
 
-free camera movement restrict to plane
+parented gun in inline 2D does not shoot straight
 
 - events: , entity_released, sess: "editing", "live"
 

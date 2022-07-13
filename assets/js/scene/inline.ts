@@ -11,7 +11,6 @@ import { FreeCameraKeyboardWalkInput } from "./camera-inputs/free-camera-keyboar
 export class Inline {
     public heldMesh: BABYLON.AbstractMesh
     public rightHandMesh: BABYLON.AbstractMesh
-    public direction: BABYLON.Vector3
     public flying: boolean
     constructor(public member_id: string, public scene: BABYLON.Scene, public camera: BABYLON.FreeCamera) {
         this.heldMesh = null
@@ -118,9 +117,7 @@ export class Inline {
         if (!this.rightHandMesh) {
             this.rightHandMesh = Avatar.findAvatarHand(this.member_id, "right", this.scene)
         }
-        if (!this.direction) {
-            this.direction = this.rightHandMesh.getDirection(BABYLON.Vector3.Forward())
-        }
+        const direction = this.rightHandMesh.getDirection(BABYLON.Vector3.Forward())
 
         let event: event = {
             m: EventName.entity_trigger_squeezed,
@@ -128,7 +125,7 @@ export class Inline {
                 member_id: this.member_id,
                 entity_id: this.heldMesh.id,
                 pos: arrayReduceSigFigs(this.rightHandMesh.absolutePosition.asArray()),
-                direction: this.direction.asArray()
+                direction: direction.asArray()
             }
         }
 
