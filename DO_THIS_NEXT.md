@@ -1,71 +1,12 @@
 TODO:
 
-add ability to press space bar to shoot when holding
-add ability to ungrab by clicking the gun again
-
-make a class out of this ability to hold the gun in 2d
-
-XR - fix palm mesh orientation to the grip, it's not aligned right
-fix grab in 2D, look ok to my POV, but for another client the arm shot off in another direction
-
-
-
-Situation:   We have a box for a face and a box for each hand which is
-as close to the shared coordinate space as possible.  An avatar is a puppet which needs to move into the general shape that fits where actual head and hand data were a moment ago.  
-
-There is some trickiness when the head and hand belong to some heirachy because you have to figure out
-how to move the head and hands relative to it's parent bone.  We can ignore that for now by not having
-any skeleton.  Simply move the head and hands directly to the last known position and quaternions directly.  This is the most accurate pose.  Then later figure out how to fill in the blanks, such as shoulders, elbows, body, given that we know the head and hands positions already.
-
-For the POV, there will always be an extra delay if we try to pose a body (needless frame by frame positioning and rotating).  It seems that POV should be an exception and not follow along the avatar pattern.  This is because we don't need to frame the head at all... don't need to see our own head.  And the hands can already be parented to the xrGrip.  So performance wise we don't spend extra cycles on placing geometry / animating geometry that we'll already get in a nicer way.
-
-if someone else goes out of xr mode, we simply don't get hand pos rot.  We can just move hand relative to the head, mimicking what the POV of 2D is.
-
-
-
-First we move the transform into place
-
-
-XR camera get device height
-
-have a solution for our avatar presence for others:
-  when do we create the hands?  upon avatar creation
-  are they parented always?  Y
-  Q: Can we send hand data that is relative to avatar local space?  No need
-
-
-Bug: presence of previously joined member isn't drawing a box unless it has moved?  needs verification
-
-Q: do we really need to keep disposing and recreating the hands?
-- > INTO XR, if the the hands have parent, then unparent them
-LEAVING XR, parent them
-
-
-inline mode, needs hands (always need hands)
-  - createAvatar, should always create hands
-  - createCamera, should create our own hands
-  - enterXR (hand creation)
-  - exitXR hand re-parenting
-
-- allow grabbing in 2D (shift + click )
+free camera movement restrict to plane
 
 - events: , entity_released, sess: "editing", "live"
-
-We need to be able to test "grabbing" in 2D as well.  Should avatars always have hands?
-But in 2D they are invisible and parented to the face.
-
-If you enter XR, then you unparent the hands
-if you enter XR, then you parent the hands to the head and hide them
-
-then we need a message to know when members enter or exit XR
-
 
 components table: needs state column, set unique entity_id, type => entity_id, state, type
 
 We need guns to reset to original position, 
-
-
-and we need to pick up a gun in 2d mode.
 
 The way we are moving the enemies, looking around based randomly, and intersecting vision code with an avatar, we might not actually need the navigation mesh
 

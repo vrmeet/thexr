@@ -5,7 +5,7 @@ import * as MAT from "babylonjs-materials"
 import type { Component, event, PosRot, scene_settings, serialized_space } from "./types"
 import { sessionPersistance } from "./sessionPersistance";
 import { MenuManager } from "./menu/menu-manager"
-import { arrayReduceSigFigs, reduceSigFigs, unsetPosRot } from "./utils";
+import { reduceSigFigs } from "./utils";
 import { XRManager } from "./xr/xr-manager";
 
 import { signalHub } from "./signalHub";
@@ -21,6 +21,8 @@ import { filter } from "rxjs/operators";
 
 import { Avatar } from "./scene/avatar"
 import { Inline } from "./scene/inline";
+import { FreeCameraKeyboardMoveInput } from "babylonjs";
+import { FreeCameraKeyboardWalkInput } from "./scene/camera-inputs/free-camera-keyboard-walk-input";
 
 const ANIMATION_FRAME_PER_SECOND = 60
 const TOTAL_ANIMATION_FRAMES = 5
@@ -146,7 +148,6 @@ export class SceneManager {
                 avatar.pose(payload.pos_rot, null, null)
             } else if (mpts.m === EventName.member_moved) {
                 const payload = mpts.p
-                console.log("member moved", JSON.stringify(payload))
                 const avatar = this.createAvatar(payload.member_id)
                 avatar.pose(payload.pos_rot, payload.left, payload.right)
             } else if (mpts.m === EventName.member_left) {
@@ -285,7 +286,6 @@ export class SceneManager {
             signalHub.local.emit("keyboard_info", keyboardInfo)
         })
 
-        new Inline(this.member_id, this.scene)
 
         this.scene.metadata = { member_id: this.member_id }  // this is so often needed along with the scene, I can make this available inside the scene
 
@@ -298,6 +298,7 @@ export class SceneManager {
         this.processscene_settings(this.settings as scene_settings)
         window["scene"] = this.scene
         this.createCamera()
+
 
         // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
         var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), this.scene);
@@ -343,47 +344,27 @@ export class SceneManager {
         }
     }
 
-    createInlineHands() {
 
-        let left = Avatar.findOrCreateAvatarHand(this.member_id, "left", this.scene)
-        left.parent = this.freeCamera
-        unsetPosRot(left)
-        left.position.copyFromFloats(-0.2, 0, 0.2)
-        left.visibility = 0.2
 
-        let right = Avatar.findOrCreateAvatarHand(this.member_id, "right", this.scene)
-        right.parent = this.freeCamera
-        unsetPosRot(right)
-        right.position.copyFromFloats(0.2, 0, 0.2)
-        right.visibility = 0.2
+    /*
+     this.camera.attachControl(this.engine._workingCanvas, false)
+        this.camera.angularSensibility = 250
+        console.log("default camera angular sensibility", this.camera.angularSensibility)
+    
+        this.camera.inputs.removeByType("FreeCameraKeyboardMoveInput");
+        this.camera.inputs.add(new FreeCameraKeyboardWalkInput())
+    
+    */
 
-    }
 
-    async createCamera() {
+    createCamera() {
         let posRot = this.getLastPosRot()
         this.freeCamera = new BABYLON.FreeCamera("freeCam", BABYLON.Vector3.FromArray(posRot.pos), this.scene);
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.FromArray(posRot.rot)
-        // Attach the camera to the canvas
-        this.freeCamera.attachControl(this.canvas, true);
-        this.freeCamera.inertia = 0.7;
-        this.freeCamera.minZ = 0.05
-        this.freeCamera.onViewMatrixChangedObservable.add(cam => {
-            signalHub.movement.emit("camera_moved", { pos: cam.position.asArray(), rot: cam.absoluteRotation.asArray() })
-        })
 
-        this.createInlineHands()
-
-        signalHub.local.on("xr_state_changed").pipe(
-            filter(msg => msg === BABYLON.WebXRState.EXITING_XR)
-        ).subscribe(() => {
-            this.createInlineHands()
-        })
-
-        //  const env = this.scene.createDefaultEnvironment();
-
-        // signalHub.local.next({ event: "camera_ready", payload: {} })
+        // setup tools for 2D grabbing and avatar
+        new Inline(this.member_id, this.scene, this.freeCamera)
         signalHub.local.emit("camera_ready", posRot)
-        // this.tempMenu()
 
         addEventListener("beforeunload", () => {
             let cam = this.scene.activeCamera
@@ -391,6 +372,8 @@ export class SceneManager {
             let rot = cam.absoluteRotation.asArray().map(reduceSigFigs)
             sessionPersistance.saveCameraPosRot({ pos, rot })
         }, { capture: true });
+
+        return this.freeCamera
 
 
     }

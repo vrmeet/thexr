@@ -158,7 +158,6 @@ export class Avatar {
 
     static findAvatarHand(member_id: string, hand: string, scene: BABYLON.Scene) {
         const meshName = `avatar_${member_id}_${hand}`
-        console.log("mesh name", meshName)
         return scene.getMeshByName(meshName)
     }
 

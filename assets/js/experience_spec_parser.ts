@@ -110,13 +110,10 @@ export class ExperienceSpecParser {
             let entity = stateElement.children[j]
             let mesh = this.findOrCreateMesh(entity)
             this.updateMesh(mesh, entity)
-            console.log('created or found', mesh.name)
         }
         if (this.previousState) {
-            console.log("the previous state is", this.previousState)
             let previousMeshes = this.scene.getMeshesByTags(this.previousState)
             previousMeshes.forEach(mesh => {
-                console.log("mesh to delete", mesh.name)
                 mesh.dispose()
             })
         }

@@ -29,7 +29,6 @@ export class XRGripManager {
 
         motionController.onModelLoadedObservable.add(model => {
             this.palmMesh = Avatar.findAvatarHand(this.member_id, this.hand, this.scene)
-            console.log("the palm mesh is", this.palmMesh)
             this.palmMesh.parent = null
 
             this.palmMesh.showBoundingBox = true
