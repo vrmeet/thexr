@@ -78,22 +78,6 @@ export class SpaceBroker {
             return payload
         }
 
-
-
-        // forward outgoing from eventbus to channel
-        // TODO, this is kinda redundant
-        // signalHub.outgoing.on('member_state_changed').subscribe(state => {
-        //     this.spaceChannel.push('member_state_changed', state)
-        // })
-        // signalHub.outgoing.on('member_state_patched').subscribe(state => {
-        //     console.log('receive member state patched', state)
-        //     //this.spaceChannel.push('member_state_patched', state)
-        // })
-        // signalHub.outgoing.on('spaces_api').subscribe(payload => {
-
-        //     this.spaceChannel.push('spaces_api', payload)
-        // })
-
         signalHub.outgoing.on('event').subscribe(mp => {
             if (this.spaceChannelJoined) {
                 this.spaceChannel.push('event', { ...mp, ts: (new Date()).getTime() })

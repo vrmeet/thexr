@@ -5,7 +5,7 @@ import * as MAT from "babylonjs-materials"
 import type { Component, event, PosRot, scene_settings, serialized_space } from "./types"
 import { sessionPersistance } from "./sessionPersistance";
 import { MenuManager } from "./menu/menu-manager"
-import { reduceSigFigs } from "./utils";
+import { reduceSigFigs, unsetPosRot } from "./utils";
 import { XRManager } from "./xr/xr-manager";
 
 import { signalHub } from "./signalHub";
@@ -17,12 +17,13 @@ import { BulletManager } from "./scene/bullet-manager";
 import { EventName } from "./event-names"
 import { NavManager } from "./scene/nav-manager";
 import { createWall } from "./scene/constructs";
-import { filter } from "rxjs/operators";
+import { filter, sample } from "rxjs/operators";
 
 import { Avatar } from "./scene/avatar"
 import { Inline } from "./scene/inline";
 import { FreeCameraKeyboardMoveInput } from "babylonjs";
 import { FreeCameraKeyboardWalkInput } from "./scene/camera-inputs/free-camera-keyboard-walk-input";
+import { Observable, Subject } from "rxjs";
 
 const ANIMATION_FRAME_PER_SECOND = 60
 const TOTAL_ANIMATION_FRAMES = 5
@@ -133,11 +134,59 @@ export class SceneManager {
             }
         })
 
+
+        signalHub.incoming.on("about_space").subscribe(about_space => {
+            for (const [entity_id, payload] of Object.entries(about_space.grabbed)) {
+                let entity = this.scene.getMeshById(entity_id)
+                if (entity) {
+                    const hand = Avatar.findAvatarHand(payload.member_id, payload.hand, this.scene)
+                    if (hand) {
+                        unsetPosRot(entity)
+                        entity.parent = null
+                        if (!BABYLON.Tags.MatchesQuery(entity, "shootable")) {
+                            entity.position = BABYLON.Vector3.FromArray(payload.entity_pos_rot.pos)
+                            entity.rotationQuaternion = BABYLON.Quaternion.FromArray(payload.entity_pos_rot.rot)
+                            entity.setParent(hand)
+                        } else {
+                            entity.parent = hand
+                        }
+
+                    }
+                }
+            }
+
+
+        })
+
+
         signalHub.incoming.on("about_members").subscribe(members => {
             for (const [member_id, payload] of Object.entries(members.movements)) {
                 const avatar = this.createAvatar(member_id)
                 avatar.pose(payload.pos_rot, null, null)
             }
+
+            // for (const [member_id, payload] of Object.entries(members.states)) {
+            //     if (payload.left) {
+            //         const mesh = this.scene.getMeshById(payload.left)
+            //         unsetPosRot(mesh)
+            //         if (mesh) {
+            //             const hand = Avatar.findAvatarHand(member_id, "left", this.scene)
+            //             if (hand) {
+            //                 mesh.parent = hand
+            //             }
+            //         }
+            //     }
+            //     if (payload.right) {
+            //         const mesh = this.scene.getMeshById(payload.right)
+            //         unsetPosRot(mesh)
+            //         if (mesh) {
+            //             const hand = Avatar.findAvatarHand(member_id, "right", this.scene)
+            //             if (hand) {
+            //                 mesh.parent = hand
+            //             }
+            //         }
+            //     }
+            // }
         })
 
 
@@ -350,10 +399,10 @@ export class SceneManager {
      this.camera.attachControl(this.engine._workingCanvas, false)
         this.camera.angularSensibility = 250
         console.log("default camera angular sensibility", this.camera.angularSensibility)
-    
+     
         this.camera.inputs.removeByType("FreeCameraKeyboardMoveInput");
         this.camera.inputs.add(new FreeCameraKeyboardWalkInput())
-    
+     
     */
 
 

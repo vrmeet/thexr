@@ -66,31 +66,31 @@ defmodule Thexr.Snapshot do
     from(e in Entity, where: e.id == ^entity_id) |> Repo.delete_all()
   end
 
-  def process(space_id, :entity_grabbed, %{
-        entity_id: entity_id,
-        entity_pos_rot: %{pos: pos, rot: rot}
-      }) do
-    process(space_id, :entity_transformed, %{
-      id: entity_id,
-      components: [
-        %{type: "position", data: %{value: pos}},
-        %{type: "rotation", data: %{value: rot}}
-      ]
-    })
-  end
+  # def process(space_id, :entity_grabbed, %{
+  #       entity_id: entity_id,
+  #       entity_pos_rot: %{pos: pos, rot: rot}
+  #     }) do
+  #   process(space_id, :entity_transformed, %{
+  #     id: entity_id,
+  #     components: [
+  #       %{type: "position", data: %{value: pos}},
+  #       %{type: "rotation", data: %{value: rot}}
+  #     ]
+  #   })
+  # end
 
-  def process(space_id, :entity_released, %{
-        entity_id: entity_id,
-        entity_pos_rot: %{pos: pos, rot: rot}
-      }) do
-    process(space_id, :entity_transformed, %{
-      id: entity_id,
-      components: [
-        %{type: "position", data: %{value: pos}},
-        %{type: "rotation", data: %{value: rot}}
-      ]
-    })
-  end
+  # def process(space_id, :entity_released, %{
+  #       entity_id: entity_id,
+  #       entity_pos_rot: %{pos: pos, rot: rot}
+  #     }) do
+  #   process(space_id, :entity_transformed, %{
+  #     id: entity_id,
+  #     components: [
+  #       %{type: "position", data: %{value: pos}},
+  #       %{type: "rotation", data: %{value: rot}}
+  #     ]
+  #   })
+  # end
 
   def process(s, m, e) do
     # temp logging to see what events we're getting

@@ -22,6 +22,8 @@ export interface member_state {
     mic_muted?: boolean
     nickname?: string
     health: number
+    left?: string | null
+    right?: string | null
 }
 
 export type PosRot = {
