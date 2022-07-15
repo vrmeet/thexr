@@ -7,7 +7,7 @@ import { SpaceBroker } from './space-broker';
 
 import type { scene_settings, serialized_space } from './types'
 import { WebRTCManager } from './web-rtc-manager';
-import { MemberStates } from './member-states';
+import { member_states } from './member-states';
 import { signalHub } from './signalHub';
 
 
@@ -20,13 +20,12 @@ export class Orchestrator {
     public sceneManager: SceneManager
     public spaceBroker: SpaceBroker
     public webRTCManager: WebRTCManager
-    public memberStates: MemberStates
 
 
 
     constructor(public member_id: string, public serializedSpace: serialized_space) {
         this.space_id = serializedSpace.id;
-        this.memberStates = new MemberStates(member_id)
+        member_states.initializeSelf(member_id)
         this.spaceBroker = new SpaceBroker(member_id, this.space_id)
 
         this.sceneManager = new SceneManager(member_id, serializedSpace)

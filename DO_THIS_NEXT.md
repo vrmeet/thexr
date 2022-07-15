@@ -1,18 +1,62 @@
 TODO:
 
-parented gun in inline 2D does not shoot straight
+Bug: releasing gun, moves the hand on the inline 2d avatar
+- should make a class handing grabbing and releasing objects
 
-- events: , entity_released, sess: "editing", "live"
+Refactor - remove left/right from member state
 
-components table: needs state column, set unique entity_id, type => entity_id, state, type
+add release entity state handling
 
-We need guns to reset to original position, 
+
+
+Transient items - items that are temporarily moved, the state is stored for this session
+but when the session is over, the state returns to the original setting
+
+- items that are picked up/grabbed
+- items that are released
+- ammo left in a gun
+- ammo that is collected and assigned to a gun
+- health that is collected
+- keys that are picked up
+- doors that are opened
+- switches that are opened/closed
+- enemies
+
+if in genserver, automatically cleans up when session terminates
+
+
+
+Create utility for placing a shootable in any avatar's hand
+Probably need more member_state info for a held entity to know it's pos and rot, if not a shootable
+
+
+
+- if someone grabs a gun and is holding it,
+  but then someone joins, they will not receive the grab event, so don't have updated
+  info about who is holding what
+
+  - extend member state to include left_holding, right_holding entity_id 
+  - about_members then when you join you can parent the entity to the member's hand
+
+
+- on release, it permanently changes the future position of the gun
+
+  - add a state column to components
+  - entity_transformed event -> state => 'base'
+  - entity_released save new components position/rotation state => 'session'
+
+= when gen_server terminates => delete all components with state == 'session'
+
+
+entities
+   components (rotation, position)
+      id, type, entity_id, state/session: "base" | "session" 
+
+
 
 The way we are moving the enemies, looking around based randomly, and intersecting vision code with an avatar, we might not actually need the navigation mesh
 
 We just need to send out rays in each direction, once it hits a mesh, you know where the limits of exploration are.  (you still have to raise them up over steps and small obstacles).  soo... agents might need a rewrite.  But it might simplify things if we can do without a navigation mesh.  We'll see...
-
-
 
 
 teleporting a member when in XR leads to an error:
@@ -21,11 +65,8 @@ TypeError: Failed to construct 'PointerEvent': Failed to read the 'screenX' prop
 
 but it worked when there were no attacking agents
 
-
-
-what is isNearGrabbable on mesh?
-
 there seems to be a huge number of agent movement messages, despite me not moving out of the way
+
 
 
 guns should have limited number of bullets

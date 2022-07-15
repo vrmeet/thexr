@@ -63,8 +63,13 @@ defmodule Thexr.SpaceServer do
     GenServer.call(via_tuple(space_id), :agents)
   end
 
-  def summary(space_id) do
-    GenServer.call(via_tuple(space_id), :summary)
+  # about this space
+  def about(space_id) do
+    GenServer.call(via_tuple(space_id), :about)
+  end
+
+  def state(space_id) do
+    GenServer.call(via_tuple(space_id), :state)
   end
 
   def member_movements(space_id) do
@@ -116,7 +121,11 @@ defmodule Thexr.SpaceServer do
        sequence: Thexr.Spaces.max_event_sequence(space.id),
        disconnected: MapSet.new(),
        leader: nil,
-       agents: %{}
+       agents: %{},
+       grabbed: %{},
+       released: %{},
+       collected: %{},
+       used: %{}
      }, @timeout}
   end
 
@@ -135,6 +144,27 @@ defmodule Thexr.SpaceServer do
     broadcast_event(state.space, msg, evt, pid)
 
     {:noreply, state}
+  end
+
+  def handle_cast({:event, :entity_grabbed, evt, _pid} = tuple, state) do
+    entity_id = evt.p.entity_id
+    new_grabbed = Map.put(state.grabbed, entity_id, Map.delete(evt.p, :entity_id))
+    new_released = Map.delete(state.released, entity_id)
+    state = Map.put(state, :grabbed, new_grabbed)
+    state = Map.put(state, :released, new_released)
+    handle_event(tuple, state)
+  end
+
+  def handle_cast({:event, :entity_released, evt, _pid} = tuple, state) do
+    entity_id = evt.p.entity_id
+    new_grabbed = Map.delete(state.grabbed, entity_id)
+
+    new_released =
+      Map.put(state.released, evt.p.entity_id, %{entity_pos_rot: evt.p.entity_pos_rot})
+
+    state = Map.put(state, :grabbed, new_grabbed)
+    state = Map.put(state, :released, new_released)
+    handle_event(tuple, state)
   end
 
   def handle_cast({:event, :member_entered, evt, _pid} = tuple, state) do
@@ -221,8 +251,13 @@ defmodule Thexr.SpaceServer do
     {:noreply, state}
   end
 
-  def handle_call(:summary, _from, state) do
+  def handle_call(:state, _from, state) do
     {:reply, state, state, @timeout}
+  end
+
+  def handle_call(:about, _form, state) do
+    response = Map.take(state, ~W|agents collected grabbed released used|a)
+    {:reply, response, state, @timeout}
   end
 
   def handle_call(:agents, _from, state) do

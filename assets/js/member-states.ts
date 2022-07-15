@@ -12,9 +12,8 @@ export class MemberStates {
     public members: { [member_id: string]: member_state }
     //  public client_ready: boolean
 
-    constructor(member_id: string) {
-        this.my_member_id = member_id
-        //  this.client_ready = false
+    constructor() {
+
 
         const $cameraReady = signalHub.local.on('camera_ready')
         const $client_ready = signalHub.local.on('client_ready')
@@ -31,15 +30,8 @@ export class MemberStates {
         })
 
 
-        this.members = {
-            [this.my_member_id]: { mic_muted: true, nickname: "unset nickname", health: 100 }
-        }
-
-        // $client_ready.subscribe(() => {
-        //     this.client_ready = true
-        // })
-
         signalHub.incoming.on("about_members").subscribe(members => {
+            console.log("about_members", JSON.stringify(members, null, 2))
             for (const [member_id, state] of Object.entries(members.states)) {
                 this.merge_state(member_id, state)
             }
@@ -92,6 +84,15 @@ export class MemberStates {
         })
     }
 
+    initializeSelf(member_id: string) {
+        this.my_member_id = member_id
+
+        this.members = {
+            [this.my_member_id]: { mic_muted: true, nickname: "unset nickname", health: 100, left: null, right: null }
+        }
+
+    }
+
     merge_state(member_id: string, attr: any | null) {
         if (attr === null) {
             delete this.members[member_id]
@@ -99,11 +100,9 @@ export class MemberStates {
             if (!this.members[member_id] && attr) {
                 this.members[member_id] = { mic_muted: true, nickname: "unset nickname", health: 100 }
             }
-            // copy in only the keys that are part of the state
+
             for (const key of Object.keys(attr)) {
-                if (key in this.members[member_id]) {
-                    this.members[member_id][key] = attr[key];
-                }
+                this.members[member_id][key] = attr[key];
             }
         }
         //   if (this.client_ready) {
@@ -146,4 +145,6 @@ export class MemberStates {
         return this.members[this.my_member_id].mic_muted
     }
 }
+
+export const member_states = new MemberStates()
 

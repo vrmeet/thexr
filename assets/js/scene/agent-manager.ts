@@ -20,6 +20,7 @@ export class AgentManager {
 
         // creates any previously spawned agents
         signalHub.incoming.on("about_agents").subscribe((payload) => {
+
             Object.entries(payload.agents).forEach(([agentName, agent]) => {
                 this.createAgent(agentName, BABYLON.Vector3.FromArray(agent.prev_position))
                 this.crowd.agentGoto(this.agents[agentName].agentIndex, BABYLON.Vector3.FromArray(agent.next_position))
