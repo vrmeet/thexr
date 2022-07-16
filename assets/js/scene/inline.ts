@@ -7,15 +7,19 @@ import * as BABYLON from "babylonjs"
 import type { event } from "../types"
 import { FreeCameraKeyboardFlyingInput } from "./camera-inputs/free-camera-keyboard-flying-input";
 import { FreeCameraKeyboardWalkInput } from "./camera-inputs/free-camera-keyboard-walk-input";
+import type { Subscription } from "rxjs";
 
 export class Inline {
     public heldMesh: BABYLON.AbstractMesh
     public rightHandMesh: BABYLON.AbstractMesh
     public flying: boolean
+
+    public subscriptions: Subscription[]
     constructor(public member_id: string, public scene: BABYLON.Scene, public camera: BABYLON.FreeCamera) {
         this.heldMesh = null
         this.rightHandMesh = null
         this.flying = false
+        this.subscriptions = []
 
         // Attach the camera to the canvas
         this.camera.attachControl(this.scene.getEngine()._workingCanvas, false);
@@ -36,53 +40,75 @@ export class Inline {
             filter(msg => msg === BABYLON.WebXRState.EXITING_XR)
         ).subscribe(() => {
             this.createInlineHands()
+            this.bindInlineEvents()
+        })
+
+        signalHub.local.on("xr_state_changed").pipe(
+            filter(msg => msg === BABYLON.WebXRState.ENTERING_XR)
+        ).subscribe(() => {
+            this.unbindInlineEvents()
         })
 
         signalHub.local.on("client_ready").subscribe(() => {
 
-            this.bindFKeyForFlight()
-
-            // another player stole our object
-            signalHub.incoming.on("event").pipe(
-                filter(msg => (msg.m === EventName.entity_grabbed && this.heldMesh !== null && msg.p.entity_id === this.heldMesh.id && msg.p.member_id != this.member_id)),
-            ).subscribe(() => {
-                this.heldMesh = null
-            })
-
-
-            signalHub.local.on("keyboard_info").pipe(
-                filter(info => (info.type === BABYLON.KeyboardEventTypes.KEYDOWN && info.event.keyCode === 32))
-            ).subscribe(() => {
-                signalHub.local.emit("trigger_substitute", true)
-            })
-
-            signalHub.local.on("trigger_substitute").subscribe(() => {
-                if (this.heldMesh) {
-                    this.emitTriggerSqueezed()
-                }
-            })
-
-            // see if grabbing a gun in 2D
-            signalHub.local.on("pointer_info").pipe(
-                filter(info => info.type === BABYLON.PointerEventTypes.POINTERPICK)
-            ).subscribe(info => {
-
-                let mesh = info.pickInfo.pickedMesh
-                if (mesh && BABYLON.Tags.MatchesQuery(mesh, "shootable || interactable")) {
-                    if (this.heldMesh === null) {
-                        this.emitGrabbed(mesh)
-                        this.heldMesh = mesh
-                    } else {
-                        // let go,
-                        this.emitReleased(mesh)
-                        this.heldMesh = null
-                    }
-                }
-
-            })
-
+            this.bindInlineEvents()
 
         })
+    }
+
+    unbindInlineEvents() {
+        this.subscriptions.forEach(sub => {
+            sub.unsubscribe()
+        })
+        this.subscriptions = []
+    }
+
+    bindInlineEvents() {
+        this.subscriptions.push(this.bindFKeyForFlight())
+
+        // another player stole our object
+        let a = signalHub.incoming.on("event").pipe(
+            filter(msg => (msg.m === EventName.entity_grabbed && this.heldMesh !== null && msg.p.entity_id === this.heldMesh.id && msg.p.member_id != this.member_id)),
+        ).subscribe(() => {
+            this.heldMesh = null
+        })
+        this.subscriptions.push(a)
+
+
+        let b = signalHub.local.on("keyboard_info").pipe(
+            filter(info => (info.type === BABYLON.KeyboardEventTypes.KEYDOWN && info.event.keyCode === 32))
+        ).subscribe(() => {
+            signalHub.local.emit("trigger_substitute", true)
+        })
+        this.subscriptions.push(b)
+
+        let c = signalHub.local.on("trigger_substitute").subscribe(() => {
+            if (this.heldMesh) {
+                this.emitTriggerSqueezed()
+            }
+        })
+        this.subscriptions.push(c)
+
+
+        let d = signalHub.local.on("pointer_info").pipe(
+            filter(info => info.type === BABYLON.PointerEventTypes.POINTERPICK)
+        ).subscribe(info => {
+
+            let mesh = info.pickInfo.pickedMesh
+            if (mesh && BABYLON.Tags.MatchesQuery(mesh, "shootable || interactable")) {
+                if (this.heldMesh === null) {
+                    this.emitGrabbed(mesh)
+                    this.heldMesh = mesh
+                } else {
+                    // let go,
+                    this.emitReleased(mesh)
+                    this.heldMesh = null
+                }
+            }
+
+        })
+        this.subscriptions.push(d)
+
     }
 
     createInlineHands() {
@@ -103,7 +129,7 @@ export class Inline {
 
     bindFKeyForFlight() {
 
-        signalHub.local.on("keyboard_info").pipe(
+        return signalHub.local.on("keyboard_info").pipe(
             filter(data => (data.event.keyCode === 70 && data.type === BABYLON.KeyboardEventTypes.KEYUP))
         ).subscribe(data => {
             if (this.flying === false) {
@@ -115,6 +141,8 @@ export class Inline {
             }
             this.flying = !this.flying
         })
+
+
     }
 
     emitTriggerSqueezed() {
