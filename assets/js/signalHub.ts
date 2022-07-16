@@ -20,6 +20,7 @@ type LocalEvents = {
     pointer_info: BABYLON.PointerInfo
     keyboard_info: BABYLON.KeyboardInfo
     trigger_substitute: any
+    trigger_squeezed_with_entity: { entity_id: string, pos: number[], direction: number[] }
 }
 
 export type IncomingEvents = {

@@ -230,7 +230,8 @@ export class Avatar {
         let entity = this.scene.getMeshById(entity_id)
         if (entity) {
             entity.parent = null
-            entity.dispose()
+            entity.visibility = 0
+            entity.setEnabled(false)
         }
     }
 

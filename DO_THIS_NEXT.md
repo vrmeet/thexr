@@ -1,26 +1,13 @@
 TODO:
 
-bug: inline click object to select is still enabled in XR, we need to disable it
+- create red door, red key
+- add spinning animation to key
 
-maybe bug?: when a member leaves, any entities they held onto should be cleared from genserver
+- local memory, has a collection of keys
+- if try to open door and has correct key, then emit door open
+- door stays open, so that's a transient entity animated to message
 
-bug:
-color didn't persist after refresh
-
-support grab and throw in the avatar release message (linear velocity)
-
-Refactor event handling for grab, release, collect to an AvatarManager
-
-Create Ammo Box primitive
-Listen for intersection (have to be within 2 M, click on it)
-Hide/remove the mesh, as you add it to the collected map
-
-
-
-PIN:
-maybe put all avatar / member states in one place??
-
-
+- rewrite monster movement/agent without using navmesh
 
 
 Transient items - items that are temporarily moved, the state is stored for this session
