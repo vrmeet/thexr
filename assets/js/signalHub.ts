@@ -32,8 +32,7 @@ export type IncomingEvents = {
     about_agents: { agents: { [name: string]: { prev_position: number[], next_position: number[], delay: number } } }
     about_space: {
         agents: { [name: string]: { prev_position: number[], next_position: number[], delay: number } },
-        grabbed: { [entity_id: string]: { member_id: string, hand: string, hand_pos_rot: types.PosRot, entity_pos_rot: types.PosRot } },
-        released: { [entity_id: string]: { entity_pos_rot: types.PosRot } }
+        entities: { [entity_id: string]: types.event },
     }
 
 

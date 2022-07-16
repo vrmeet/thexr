@@ -1,19 +1,24 @@
 TODO:
 
-Bug: releasing gun, moves the hand on the inline 2d avatar
-- should make a class handing grabbing and releasing objects
+Refactor event handling for grab, release, collect to an AvatarManager
 
-Refactor - remove left/right from member state
+Create Ammo Box primitive
+Listen for intersection (have to be within 2 M, click on it)
+Hide/remove the mesh, as you add it to the collected map
 
-add release entity state handling
+
+
+PIN:
+maybe put all avatar / member states in one place??
+
 
 
 
 Transient items - items that are temporarily moved, the state is stored for this session
 but when the session is over, the state returns to the original setting
 
-- items that are picked up/grabbed
-- items that are released
+x items that are picked up/grabbed
+x items that are released
 - ammo left in a gun
 - ammo that is collected and assigned to a gun
 - health that is collected

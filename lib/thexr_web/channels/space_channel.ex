@@ -29,27 +29,6 @@ defmodule ThexrWeb.SpaceChannel do
     update_pos_rot(member_id, pos_rot, socket)
   end
 
-  # { m: EventName.entity_grabbed, p: { member_id: string, entity_id: string, hand: string, hand_pos_rot: PosRot, entity_pos_rot: PosRot } } |
-  # { m: EventName.entity_released, p: { member_id: string, entity_id: string, hand: string, hand_pos_rot: PosRot, entity_pos_rot: PosRot, lv?: number[], av?: number[] } } |
-
-  def cache_members(
-        :entity_grabbed,
-        %{member_id: member_id, entity_id: entity_id, hand: hand},
-        socket
-      ) do
-    hand = String.to_atom(hand)
-    merge_state(member_id, %{hand => entity_id}, socket)
-  end
-
-  def cache_members(
-        :entity_released,
-        %{member_id: member_id, hand: hand},
-        socket
-      ) do
-    hand = String.to_atom(hand)
-    merge_state(member_id, %{hand => nil}, socket)
-  end
-
   def cache_members(:member_damaged, %{member_id: member_id}, socket) do
     prev_state = get_state(member_id, socket.assigns.member_states)
     prev_health = prev_state.health

@@ -88,7 +88,7 @@ export class MemberStates {
         this.my_member_id = member_id
 
         this.members = {
-            [this.my_member_id]: { mic_muted: true, nickname: "unset nickname", health: 100, left: null, right: null }
+            [this.my_member_id]: { mic_muted: true, nickname: "unset nickname", health: 100 }
         }
 
     }

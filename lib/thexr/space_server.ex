@@ -122,9 +122,7 @@ defmodule Thexr.SpaceServer do
        disconnected: MapSet.new(),
        leader: nil,
        agents: %{},
-       grabbed: %{},
-       released: %{},
-       collected: %{},
+       entities: %{},
        used: %{}
      }, @timeout}
   end
@@ -148,22 +146,22 @@ defmodule Thexr.SpaceServer do
 
   def handle_cast({:event, :entity_grabbed, evt, _pid} = tuple, state) do
     entity_id = evt.p.entity_id
-    new_grabbed = Map.put(state.grabbed, entity_id, Map.delete(evt.p, :entity_id))
-    new_released = Map.delete(state.released, entity_id)
-    state = Map.put(state, :grabbed, new_grabbed)
-    state = Map.put(state, :released, new_released)
+    new_entities = Map.put(state.entities, entity_id, evt)
+    state = Map.put(state, :entities, new_entities)
     handle_event(tuple, state)
   end
 
   def handle_cast({:event, :entity_released, evt, _pid} = tuple, state) do
     entity_id = evt.p.entity_id
-    new_grabbed = Map.delete(state.grabbed, entity_id)
+    new_entities = Map.put(state.entities, entity_id, evt)
+    state = Map.put(state, :entities, new_entities)
+    handle_event(tuple, state)
+  end
 
-    new_released =
-      Map.put(state.released, evt.p.entity_id, %{entity_pos_rot: evt.p.entity_pos_rot})
-
-    state = Map.put(state, :grabbed, new_grabbed)
-    state = Map.put(state, :released, new_released)
+  def handle_cast({:event, :entity_collected, evt, _pid} = tuple, state) do
+    entity_id = evt.p.entity_id
+    new_entities = Map.put(state.entities, entity_id, evt)
+    state = Map.put(state, :entities, new_entities)
     handle_event(tuple, state)
   end
 
@@ -256,7 +254,7 @@ defmodule Thexr.SpaceServer do
   end
 
   def handle_call(:about, _form, state) do
-    response = Map.take(state, ~W|agents collected grabbed released used|a)
+    response = Map.take(state, ~W|agents entities used|a)
     {:reply, response, state, @timeout}
   end
 
