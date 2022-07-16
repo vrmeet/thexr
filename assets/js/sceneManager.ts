@@ -405,6 +405,7 @@ export class SceneManager {
                 BABYLON.Tags.AddTagsTo(mesh, "interactable shootable")
             } else if (entity.type === "ammo_box") {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.5, depth: 0.3, height: 0.5 }, this.scene)
+                mesh.metadata = { ammo: 10 }
                 BABYLON.Tags.AddTagsTo(mesh, "collectable")
             } else if (entity.type === "capsule") {
                 mesh = BABYLON.MeshBuilder.CreateCapsule(entity.name, {}, this.scene)

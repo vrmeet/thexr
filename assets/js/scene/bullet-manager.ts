@@ -12,12 +12,34 @@ export class BulletManager {
     public ray: BABYLON.Ray
     public rayHelper: BABYLON.RayHelper
     public targets: { [entity_id: string]: { origPosition: BABYLON.Vector3, origRotation: BABYLON.Quaternion, resetCallback: any } }
-
+    public myAmmoCount: number
     constructor(public my_member_id: string, public scene: BABYLON.Scene) {
         this.targets = {}
+        this.myAmmoCount = 10
         this.cacheParticleSystem()
         this.ray = new BABYLON.Ray(BABYLON.Vector3.Zero(), BABYLON.Vector3.One(), 1)
         this.rayHelper = new BABYLON.RayHelper(this.ray)
+
+        // to fire my bullets, if I have ammo
+        signalHub.local.on("trigger_squeezed_with_entity").subscribe(payload => {
+            if (this.myAmmoCount > 0) {
+                this.myAmmoCount -= 1
+                let event: event = { m: EventName.entity_trigger_squeezed, p: { member_id: this.my_member_id, ...payload } }
+                signalHub.outgoing.emit("event", event)
+                signalHub.incoming.emit("event", event)
+            }
+        })
+
+        // replenish my ammo if I pick up an entity with ammo tag
+        signalHub.incoming.on("event").pipe(
+            filter(evt => evt.m === EventName.entity_collected && evt.p.member_id === this.my_member_id)
+        ).subscribe(evt => {
+            let collectedMesh = this.scene.getMeshById(evt.p["entity_id"])
+            if (collectedMesh && collectedMesh.metadata && collectedMesh.metadata.ammo) {
+                this.myAmmoCount += collectedMesh.metadata.ammo
+            }
+        })
+
         // for debugging
         // this.rayHelper.show(this.scene, BABYLON.Color3.Red())
         signalHub.incoming.on("event").pipe(

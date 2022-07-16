@@ -4,19 +4,18 @@ import { signalHub } from "../signalHub";
 import { arrayReduceSigFigs, unsetPosRot } from "../utils";
 import { Avatar } from "./avatar";
 import * as BABYLON from "babylonjs"
-import type { event } from "../types"
 import { FreeCameraKeyboardFlyingInput } from "./camera-inputs/free-camera-keyboard-flying-input";
 import { FreeCameraKeyboardWalkInput } from "./camera-inputs/free-camera-keyboard-walk-input";
 import type { Subscription } from "rxjs";
 
 export class Inline {
-    public heldMesh: BABYLON.AbstractMesh
+    // public heldMesh: BABYLON.AbstractMesh
     public rightHandMesh: BABYLON.AbstractMesh
     public flying: boolean
 
     public subscriptions: Subscription[]
     constructor(public member_id: string, public scene: BABYLON.Scene, public camera: BABYLON.FreeCamera) {
-        this.heldMesh = null
+        // this.heldMesh = null
         this.rightHandMesh = null
         this.flying = false
         this.subscriptions = []
@@ -63,16 +62,28 @@ export class Inline {
         this.subscriptions = []
     }
 
+    heldMesh() {
+        if (!this.rightHandMesh) {
+            return null
+        }
+        let childMeshes = this.rightHandMesh.getChildMeshes(true)
+        if (childMeshes.length > 0) {
+            return childMeshes[0]
+        } else {
+            return null
+        }
+    }
+
     bindInlineEvents() {
         this.subscriptions.push(this.bindFKeyForFlight())
 
-        // another player stole our object
-        let a = signalHub.incoming.on("event").pipe(
-            filter(msg => (msg.m === EventName.entity_grabbed && this.heldMesh !== null && msg.p.entity_id === this.heldMesh.id && msg.p.member_id != this.member_id)),
-        ).subscribe(() => {
-            this.heldMesh = null
-        })
-        this.subscriptions.push(a)
+        // // another player stole our object
+        // let a = signalHub.incoming.on("event").pipe(
+        //     filter(msg => (msg.m === EventName.entity_grabbed && this.heldMesh() !== null && msg.p.entity_id === this.heldMesh.id && msg.p.member_id != this.member_id)),
+        // ).subscribe(() => {
+        //     this.heldMesh = null
+        // })
+        // this.subscriptions.push(a)
 
 
         let b = signalHub.local.on("keyboard_info").pipe(
@@ -96,13 +107,13 @@ export class Inline {
 
             let mesh = info.pickInfo.pickedMesh
             if (mesh && BABYLON.Tags.MatchesQuery(mesh, "shootable || interactable")) {
-                if (this.heldMesh === null) {
+                if (this.heldMesh() === null) {
                     this.emitGrabbed(mesh)
-                    this.heldMesh = mesh
+                    // this.heldMesh = mesh
                 } else {
                     // let go,
                     this.emitReleased(mesh)
-                    this.heldMesh = null
+                    //  this.heldMesh = null
                 }
             }
 
@@ -150,19 +161,23 @@ export class Inline {
             this.rightHandMesh = Avatar.findAvatarHand(this.member_id, "right", this.scene)
         }
         const direction = this.rightHandMesh.getDirection(BABYLON.Vector3.Forward())
+        signalHub.local.emit("trigger_squeezed_with_entity", {
+            entity_id: this.heldMesh().id,
+            pos: arrayReduceSigFigs(this.rightHandMesh.absolutePosition.asArray()),
+            direction: direction.asArray()
+        })
+        // let event: event = {
+        //     m: EventName.entity_trigger_squeezed,
+        //     p: {
+        //         member_id: this.member_id,
+        //         entity_id: this.heldMesh.id,
+        //         pos: arrayReduceSigFigs(this.rightHandMesh.absolutePosition.asArray()),
+        //         direction: direction.asArray()
+        //     }
+        // }
 
-        let event: event = {
-            m: EventName.entity_trigger_squeezed,
-            p: {
-                member_id: this.member_id,
-                entity_id: this.heldMesh.id,
-                pos: arrayReduceSigFigs(this.rightHandMesh.absolutePosition.asArray()),
-                direction: direction.asArray()
-            }
-        }
-
-        signalHub.outgoing.emit("event", event)
-        signalHub.incoming.emit("event", event)
+        // signalHub.outgoing.emit("event", event)
+        // signalHub.incoming.emit("event", event)
     }
 
     emitReleased(mesh: BABYLON.AbstractMesh) {

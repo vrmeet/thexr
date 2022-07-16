@@ -127,18 +127,23 @@ export class XRGripManager {
             takeUntil(exitingXR$),
             throttleTime(100),
             tap(() => {
-                let event: event = {
-                    m: EventName.entity_trigger_squeezed,
-                    p: {
-                        member_id: this.member_id,
-                        entity_id: this.intersectedMesh.id,
-                        pos: this.inputSource.pointer.absolutePosition.asArray(),
-                        direction: this.inputSource.pointer.forward.asArray()
-                    }
-                }
+                signalHub.local.emit("trigger_squeezed_with_entity", {
+                    entity_id: this.intersectedMesh.id,
+                    pos: this.inputSource.pointer.absolutePosition.asArray(),
+                    direction: this.inputSource.pointer.forward.asArray()
+                })
+                // let event: event = {
+                //     m: EventName.entity_trigger_squeezed,
+                //     p: {
+                //         member_id: this.member_id,
+                //         entity_id: this.intersectedMesh.id,
+                //         pos: this.inputSource.pointer.absolutePosition.asArray(),
+                //         direction: this.inputSource.pointer.forward.asArray()
+                //     }
+                // }
 
-                signalHub.outgoing.emit("event", event)
-                signalHub.incoming.emit("event", event)
+                // signalHub.outgoing.emit("event", event)
+                // signalHub.incoming.emit("event", event)
             }),
             takeUntil(this.basicInteractable())
         )
