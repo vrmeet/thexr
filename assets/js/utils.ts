@@ -56,8 +56,8 @@ export const isMobile = (function () {
             _isMobile = false;
         }
     })(window.navigator.userAgent || window.navigator.vendor || window['opera']);
-
-    return function () { return _isMobile; };
+    const urlParams = new URLSearchParams(location.search)
+    return function () { return _isMobile || urlParams.has('isMobile') };
 })();
 
 

@@ -11,7 +11,6 @@ export class CollectManager {
             filter(pickedMesh => pickedMesh && BABYLON.Tags.MatchesQuery(pickedMesh, "collectable"))
         ).subscribe(mesh => {
             if (mesh.getDistanceToCamera(this.scene.activeCamera) <= 2) {
-                console.log("should collect")
                 signalHub.outgoing.emit("event", { m: EventName.entity_collected, p: { member_id: this.member_id, entity_id: mesh.id } })
                 signalHub.incoming.emit("event", { m: EventName.entity_collected, p: { member_id: this.member_id, entity_id: mesh.id } })
             }

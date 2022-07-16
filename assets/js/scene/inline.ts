@@ -53,11 +53,15 @@ export class Inline {
             signalHub.local.on("keyboard_info").pipe(
                 filter(info => (info.type === BABYLON.KeyboardEventTypes.KEYDOWN && info.event.keyCode === 32))
             ).subscribe(() => {
+                signalHub.local.emit("trigger_substitute", true)
+            })
+
+            signalHub.local.on("trigger_substitute").subscribe(() => {
                 if (this.heldMesh) {
                     this.emitTriggerSqueezed()
                 }
-
             })
+
             // see if grabbing a gun in 2D
             signalHub.local.on("pointer_info").pipe(
                 filter(info => info.type === BABYLON.PointerEventTypes.POINTERPICK)

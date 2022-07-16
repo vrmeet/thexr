@@ -19,6 +19,7 @@ type LocalEvents = {
     agent_damaged: { agent_name: string }
     pointer_info: BABYLON.PointerInfo
     keyboard_info: BABYLON.KeyboardInfo
+    trigger_substitute: any
 }
 
 export type IncomingEvents = {
