@@ -32,6 +32,7 @@ export enum EventName {
     entity_grabbed = 5000,
     entity_released = 5010,
     entity_trigger_squeezed = 5020,
+    entity_collected = 5030,
     hud_message_broadcasted = 6000,
 
     agent_spawned = 7000,

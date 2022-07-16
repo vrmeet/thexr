@@ -24,6 +24,7 @@ import { Inline } from "./scene/inline";
 import { FreeCameraKeyboardMoveInput } from "babylonjs";
 import { FreeCameraKeyboardWalkInput } from "./scene/camera-inputs/free-camera-keyboard-walk-input";
 import { Observable, Subject } from "rxjs";
+import { CollectManager } from "./scene/collect-manager";
 
 const ANIMATION_FRAME_PER_SECOND = 60
 const TOTAL_ANIMATION_FRAMES = 5
@@ -136,24 +137,17 @@ export class SceneManager {
 
 
         signalHub.incoming.on("about_space").subscribe(about_space => {
-            for (const [entity_id, payload] of Object.entries(about_space.grabbed)) {
-                let entity = this.scene.getMeshById(entity_id)
-                if (entity) {
-                    const hand = Avatar.findAvatarHand(payload.member_id, payload.hand, this.scene)
-                    if (hand) {
-                        unsetPosRot(entity)
-                        entity.parent = null
-                        if (!BABYLON.Tags.MatchesQuery(entity, "shootable")) {
-                            entity.position = BABYLON.Vector3.FromArray(payload.entity_pos_rot.pos)
-                            entity.rotationQuaternion = BABYLON.Quaternion.FromArray(payload.entity_pos_rot.rot)
-                            entity.setParent(hand)
-                        } else {
-                            entity.parent = hand
-                        }
-
-                    }
+            // move grabbed entities into the hands of avatars
+            for (const [entity_id, event] of Object.entries(about_space.entities)) {
+                if (event.m === EventName.entity_grabbed) {
+                    Avatar.grabEntity(event.p["member_id"], event.p["hand"], entity_id, event.p["entity_pos_rot"], this.scene)
+                } else if (event.m === EventName.entity_released) {
+                    Avatar.releaseEntity(event.p["entity_id"], event.p["entity_pos_rot"], this.scene)
+                } else if (event.m === EventName.entity_collected) {
+                    Avatar.collectEntity(event.p["entity_id"], this.scene)
                 }
             }
+
 
 
         })
@@ -283,8 +277,10 @@ export class SceneManager {
                     } else {
                         // unset previous grab
                         grabbedEntity.parent = null
-                        this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
-                        this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
+                        if (!handMesh.parent) {
+                            this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
+                            this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
+                        }
                         this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
                         this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
                     }
@@ -360,6 +356,8 @@ export class SceneManager {
         new DamageOverlay(this.member_id, this.scene)
         new HudMessager(this.scene)
         this.bulletManager = new BulletManager(this.member_id, this.scene)
+
+        new CollectManager(this.member_id, this.scene)
 
         return this.scene;
 
@@ -544,8 +542,12 @@ export class SceneManager {
                 entity.components.push({ type: "color", data: { value: "#A0A0A0" } })
                 // mesh = BABYLON.MeshBuilder.CreateTorus("gun", {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "interactable shootable")
+            } else if (entity.type === "ammo_box") {
+                mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.5, depth: 0.3, height: 0.5 }, this.scene)
+                entity.components.push({ type: "color", data: { value: "#909090" } })
+                BABYLON.Tags.AddTagsTo(mesh, "collectable")
             } else if (entity.type === "capsule") {
-                mesh = BABYLON.MeshBuilder.CreateCapsule("capsule", {}, this.scene)
+                mesh = BABYLON.MeshBuilder.CreateCapsule(entity.name, {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
             } else if (entity.type === "plane") {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)

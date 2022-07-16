@@ -1,6 +1,7 @@
 
 import * as BABYLON from "babylonjs"
 import type { PosRot } from "../types"
+import { unsetPosRot } from "../utils"
 
 const ANIMATION_FRAME_PER_SECOND = 60
 const TOTAL_ANIMATION_FRAMES = 5
@@ -172,5 +173,44 @@ export class Avatar {
         mesh.rotationQuaternion = new BABYLON.Quaternion()
         mesh.isPickable = false
         return mesh
+    }
+
+    static grabEntity(member_id: string, hand: string, entity_id: string, entity_pos_rot: PosRot | null, scene: BABYLON.Scene) {
+        let entity = scene.getMeshById(entity_id)
+        if (!entity) {
+            return
+        }
+        const handMesh = Avatar.findAvatarHand(member_id, hand, scene)
+        if (!handMesh) {
+            return
+        }
+        unsetPosRot(entity)
+        entity.parent = null
+        if (!BABYLON.Tags.MatchesQuery(entity, "shootable")) {
+            entity.position = BABYLON.Vector3.FromArray(entity_pos_rot.pos)
+            entity.rotationQuaternion = BABYLON.Quaternion.FromArray(entity_pos_rot.rot)
+            entity.setParent(handMesh)
+        } else {
+            entity.parent = handMesh
+        }
+    }
+
+    static releaseEntity(entity_id: string, entity_pos_rot: PosRot, scene: BABYLON.Scene) {
+        console.log("in release entity", entity_id)
+        let entity = scene.getMeshById(entity_id)
+        console.log("entity", entity)
+        if (entity) {
+            entity.parent = null
+            entity.position = BABYLON.Vector3.FromArray(entity_pos_rot.pos)
+            entity.rotationQuaternion = BABYLON.Quaternion.FromArray(entity_pos_rot.rot)
+        }
+    }
+
+    static collectEntity(entity_id: string, scene: BABYLON.Scene) {
+        let entity = scene.getMeshById(entity_id)
+        if (entity) {
+            entity.parent = null
+            entity.dispose()
+        }
     }
 }

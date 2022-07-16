@@ -23,6 +23,7 @@ defmodule EventName do
   def int_to_atom(5000), do: :entity_grabbed
   def int_to_atom(5010), do: :entity_released
   def int_to_atom(5020), do: :entity_trigger_squeezed
+  def int_to_atom(5030), do: :entity_collected
   def int_to_atom(6000), do: :hud_message_broadcasted
   def int_to_atom(7000), do: :agent_spawned
   def int_to_atom(7100), do: :agents_directed
@@ -48,6 +49,7 @@ defmodule EventName do
   def atom_to_int(:entity_grabbed), do: 5000
   def atom_to_int(:entity_released), do: 5010
   def atom_to_int(:entity_trigger_squeezed), do: 5020
+  def atom_to_int(:entity_collected), do: 5030
   def atom_to_int(:hud_message_broadcasted), do: 6000
   def atom_to_int(:agent_spawned), do: 7000
   def atom_to_int(:agents_directed), do: 7100
