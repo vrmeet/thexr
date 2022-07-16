@@ -25,6 +25,7 @@ import { FreeCameraKeyboardMoveInput } from "babylonjs";
 import { FreeCameraKeyboardWalkInput } from "./scene/camera-inputs/free-camera-keyboard-walk-input";
 import { Observable, Subject } from "rxjs";
 import { CollectManager } from "./scene/collect-manager";
+import { AvatarManager } from "./scene/avatar-manager";
 
 const ANIMATION_FRAME_PER_SECOND = 60
 const TOTAL_ANIMATION_FRAMES = 5
@@ -42,14 +43,13 @@ export class SceneManager {
     public xrManager: XRManager
     public canvasId: string
     public bulletManager: BulletManager
-    public avatars: { [member_id: string]: Avatar }
+    public avatarManager: AvatarManager
     public isLeader: boolean
     public navManager: NavManager
 
 
     constructor(public member_id: string, public serializedSpace: serialized_space) {
         this.isLeader = false
-        this.avatars = {}
         this.space_id = this.serializedSpace.id
         this.canvas = document.getElementById(this.space_id) as HTMLCanvasElement;
         this.engine = new BABYLON.Engine(this.canvas, true, { preserveDrawingBuffer: true, stencil: true });
@@ -136,72 +136,15 @@ export class SceneManager {
         })
 
 
-        signalHub.incoming.on("about_space").subscribe(about_space => {
-            // move grabbed entities into the hands of avatars
-            for (const [entity_id, event] of Object.entries(about_space.entities)) {
-                if (event.m === EventName.entity_grabbed) {
-                    Avatar.grabEntity(event.p["member_id"], event.p["hand"], entity_id, event.p["entity_pos_rot"], this.scene)
-                } else if (event.m === EventName.entity_released) {
-                    Avatar.releaseEntity(event.p["entity_id"], event.p["entity_pos_rot"], this.scene)
-                } else if (event.m === EventName.entity_collected) {
-                    Avatar.collectEntity(event.p["entity_id"], this.scene)
-                }
-            }
 
 
 
-        })
 
-
-        signalHub.incoming.on("about_members").subscribe(members => {
-            for (const [member_id, payload] of Object.entries(members.movements)) {
-                const avatar = this.createAvatar(member_id)
-                avatar.pose(payload.pos_rot, null, null)
-            }
-
-            // for (const [member_id, payload] of Object.entries(members.states)) {
-            //     if (payload.left) {
-            //         const mesh = this.scene.getMeshById(payload.left)
-            //         unsetPosRot(mesh)
-            //         if (mesh) {
-            //             const hand = Avatar.findAvatarHand(member_id, "left", this.scene)
-            //             if (hand) {
-            //                 mesh.parent = hand
-            //             }
-            //         }
-            //     }
-            //     if (payload.right) {
-            //         const mesh = this.scene.getMeshById(payload.right)
-            //         unsetPosRot(mesh)
-            //         if (mesh) {
-            //             const hand = Avatar.findAvatarHand(member_id, "right", this.scene)
-            //             if (hand) {
-            //                 mesh.parent = hand
-            //             }
-            //         }
-            //     }
-            // }
-        })
 
 
         signalHub.incoming.on("event").subscribe((mpts) => {
-            if (mpts.m === EventName.member_entered) {
-                const payload = mpts.p
-                const avatar = this.createAvatar(payload.member_id)
-                avatar.pose(payload.pos_rot, null, null)
-            } else if (mpts.m === EventName.member_moved) {
-                const payload = mpts.p
-                const avatar = this.createAvatar(payload.member_id)
-                avatar.pose(payload.pos_rot, payload.left, payload.right)
-            } else if (mpts.m === EventName.member_left) {
-                this.deleteAvatar(mpts.p.member_id)
-            } else if (mpts.m === EventName.member_died) {
-                // do something
-            } else if (mpts.m === EventName.member_respawned) {
-                const payload = mpts.p
-                const avatar = this.createAvatar(payload.member_id)
-                avatar.pose(payload.pos_rot, null, null)
-            } else if (mpts.m === EventName.entity_created) {
+
+            if (mpts.m === EventName.entity_created) {
                 this.findOrCreateMesh(mpts.p)
             } else if (mpts.m === EventName.entity_transformed) {
                 let meshes = this.scene.getMeshesById(mpts.p.id)
@@ -225,73 +168,6 @@ export class SceneManager {
                         mesh.dispose()
                     });
                 })
-            } else if (mpts.m === EventName.entity_grabbed) {
-
-                let grabbedEntity = this.scene.getMeshById(mpts.p.entity_id)
-                if (grabbedEntity.physicsImpostor) {
-                    grabbedEntity.physicsImpostor.dispose()
-                    grabbedEntity.physicsImpostor = null
-                }
-                const handMesh = Avatar.findAvatarHand(mpts.p.member_id, mpts.p.hand, this.scene)
-                if (grabbedEntity && handMesh) {
-                    // don't positions for yourself because you have most up to date info per frame
-                    // also your hand is parented to a controller grip, so if you move it,
-                    // it will move in local coordinate space and be screwed up
-                    if (mpts.p.member_id !== this.member_id) {
-                        // unparent incase was grabbed by someone else first
-                        grabbedEntity.parent = null
-                        if (!handMesh.parent) {
-                            this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
-                            this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
-                        }
-                        this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
-                        this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
-
-
-                    }
-                    let tags = <string[]>BABYLON.Tags.GetTags(grabbedEntity)
-
-                    // if shootable, we assign parent instead of setParent
-                    // assign will snap child local space into parent space
-                    if (tags.includes("shootable")) {
-                        grabbedEntity.position.copyFromFloats(0, 0, 0)
-                        grabbedEntity.rotationQuaternion.copyFromFloats(0, 0, 0, 1)
-                        grabbedEntity.parent = handMesh
-                    } else {
-                        // keeps world space offset during the parenting
-                        grabbedEntity.setParent(handMesh)
-                    }
-
-                }
-            } else if (mpts.m === EventName.entity_released) {
-                let grabbedEntity = this.scene.getMeshById(mpts.p.entity_id)
-
-                let handMesh = Avatar.findAvatarHand(mpts.p.member_id, mpts.p.hand, this.scene)
-
-                if (grabbedEntity && handMesh) {
-                    if (mpts.p.member_id === this.member_id) {
-
-                        // locally we're the one moving so we don't need to update position
-                        // keep it where it is
-                        grabbedEntity.setParent(null)
-                    } else {
-                        // unset previous grab
-                        grabbedEntity.parent = null
-                        if (!handMesh.parent) {
-                            this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
-                            this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
-                        }
-                        this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
-                        this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
-                    }
-                    if (mpts.p.lv) {
-                        grabbedEntity.physicsImpostor = new BABYLON.PhysicsImpostor(grabbedEntity, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, friction: 0.8, restitution: 0.5 }, this.scene);
-                        grabbedEntity.physicsImpostor.setLinearVelocity(BABYLON.Vector3.FromArray(mpts.p.lv))
-                        grabbedEntity.physicsImpostor.setAngularVelocity(BABYLON.Vector3.FromArray(mpts.p.av))
-                    }
-
-
-                }
             }
         })
 
@@ -302,23 +178,6 @@ export class SceneManager {
         })
 
     }
-
-    createAvatar(member_id: string) {
-        if (this.avatars[member_id]) {
-            return this.avatars[member_id]
-        }
-        this.avatars[member_id] = new Avatar(member_id, this.scene)
-        return this.avatars[member_id]
-    }
-
-    deleteAvatar(member_id: string) {
-        if (!this.avatars[member_id]) {
-            return
-        }
-        this.avatars[member_id].dispose()
-        delete this.avatars[member_id]
-    }
-
     async createScene() {
         // Create a basic BJS Scene object
         this.scene = new BABYLON.Scene(this.engine);
@@ -358,6 +217,8 @@ export class SceneManager {
         this.bulletManager = new BulletManager(this.member_id, this.scene)
 
         new CollectManager(this.member_id, this.scene)
+
+        this.avatarManager = new AvatarManager(this.member_id, this.scene)
 
         return this.scene;
 

@@ -21,13 +21,15 @@ export class Avatar {
     public debugRightHand: BABYLON.AbstractMesh
 
 
-    constructor(public member_id: string, public scene: BABYLON.Scene) {
+    constructor(public member_id: string, public scene: BABYLON.Scene, createhead: boolean = true) {
         this.mode = "STANDING"
         this.animatables = []
         this.debug = false
         this.height = 1.6
-        this.head = Avatar.findOrCreateAvatarHead(this.member_id, this.scene)
-        this.head.position.y = this.height
+        if (createhead) {
+            this.head = Avatar.findOrCreateAvatarHead(this.member_id, this.scene)
+            this.head.position.y = this.height
+        }
         this.leftHand = Avatar.findOrCreateAvatarHand(this.member_id, "left", this.scene)
         this.rightHand = Avatar.findOrCreateAvatarHand(this.member_id, "right", this.scene)
         this.setHandRaisedPosition(this.leftHand, "left")
@@ -175,42 +177,133 @@ export class Avatar {
         return mesh
     }
 
-    static grabEntity(member_id: string, hand: string, entity_id: string, entity_pos_rot: PosRot | null, scene: BABYLON.Scene) {
-        let entity = scene.getMeshById(entity_id)
+    grabEntity(hand: string, entity_id: string, entity_pos_rot: PosRot | null, hand_pos_rot: PosRot | null) {
+        let entity = this.scene.getMeshById(entity_id)
         if (!entity) {
             return
         }
-        const handMesh = Avatar.findAvatarHand(member_id, hand, scene)
+        if (entity.physicsImpostor) {
+            entity.physicsImpostor.dispose()
+            entity.physicsImpostor = null
+        }
+        const handMesh = Avatar.findAvatarHand(this.member_id, hand, this.scene)
         if (!handMesh) {
             return
         }
+
+        // case of avatar hands of someone else, in XR
+        if (!handMesh.parent) {
+            // we can set exact position of handMesh
+            handMesh.position = BABYLON.Vector3.FromArray(hand_pos_rot.pos)
+            handMesh.rotationQuaternion = BABYLON.Quaternion.FromArray(hand_pos_rot.rot)
+        }
+
         unsetPosRot(entity)
         entity.parent = null
-        if (!BABYLON.Tags.MatchesQuery(entity, "shootable")) {
+        if (BABYLON.Tags.MatchesQuery(entity, "shootable")) {
+            entity.parent = handMesh
+        } else {
             entity.position = BABYLON.Vector3.FromArray(entity_pos_rot.pos)
             entity.rotationQuaternion = BABYLON.Quaternion.FromArray(entity_pos_rot.rot)
             entity.setParent(handMesh)
-        } else {
-            entity.parent = handMesh
+
         }
     }
 
-    static releaseEntity(entity_id: string, entity_pos_rot: PosRot, scene: BABYLON.Scene) {
-        console.log("in release entity", entity_id)
-        let entity = scene.getMeshById(entity_id)
+    releaseEntity(entity_id: string, entity_pos_rot: PosRot, linear_velocity?: number[], angular_velocity?: number[]) {
+        let entity = this.scene.getMeshById(entity_id)
         console.log("entity", entity)
         if (entity) {
             entity.parent = null
             entity.position = BABYLON.Vector3.FromArray(entity_pos_rot.pos)
             entity.rotationQuaternion = BABYLON.Quaternion.FromArray(entity_pos_rot.rot)
         }
+        if (linear_velocity) {
+            entity.physicsImpostor = new BABYLON.PhysicsImpostor(entity, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, friction: 0.8, restitution: 0.5 }, this.scene);
+            entity.physicsImpostor.setLinearVelocity(BABYLON.Vector3.FromArray(linear_velocity))
+            if (angular_velocity) {
+                entity.physicsImpostor.setAngularVelocity(BABYLON.Vector3.FromArray(angular_velocity))
+            }
+        }
     }
 
-    static collectEntity(entity_id: string, scene: BABYLON.Scene) {
-        let entity = scene.getMeshById(entity_id)
+    collectEntity(entity_id: string) {
+        let entity = this.scene.getMeshById(entity_id)
         if (entity) {
             entity.parent = null
             entity.dispose()
         }
     }
+
+
+    /*
+else if (mpts.m === EventName.entity_grabbed) {
+
+                let grabbedEntity = this.scene.getMeshById(mpts.p.entity_id)
+                if (grabbedEntity.physicsImpostor) {
+                    grabbedEntity.physicsImpostor.dispose()
+                    grabbedEntity.physicsImpostor = null
+                }
+                const handMesh = Avatar.findAvatarHand(mpts.p.member_id, mpts.p.hand, this.scene)
+                if (grabbedEntity && handMesh) {
+                    // don't positions for yourself because you have most up to date info per frame
+                    // also your hand is parented to a controller grip, so if you move it,
+                    // it will move in local coordinate space and be screwed up
+                    if (mpts.p.member_id !== this.member_id) {
+                        // unparent incase was grabbed by someone else first
+                        grabbedEntity.parent = null
+                        if (!handMesh.parent) {
+                            this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
+                            this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
+                        }
+                        this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
+                        this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
+
+
+                    }
+                    let tags = <string[]>BABYLON.Tags.GetTags(grabbedEntity)
+
+                    // if shootable, we assign parent instead of setParent
+                    // assign will snap child local space into parent space
+                    if (tags.includes("shootable")) {
+                        grabbedEntity.position.copyFromFloats(0, 0, 0)
+                        grabbedEntity.rotationQuaternion.copyFromFloats(0, 0, 0, 1)
+                        grabbedEntity.parent = handMesh
+                    } else {
+                        // keeps world space offset during the parenting
+                        grabbedEntity.setParent(handMesh)
+                    }
+
+                }
+            } else if (mpts.m === EventName.entity_released) {
+                let grabbedEntity = this.scene.getMeshById(mpts.p.entity_id)
+
+                let handMesh = Avatar.findAvatarHand(mpts.p.member_id, mpts.p.hand, this.scene)
+
+                if (grabbedEntity && handMesh) {
+                    if (mpts.p.member_id === this.member_id) {
+
+                        // locally we're the one moving so we don't need to update position
+                        // keep it where it is
+                        grabbedEntity.setParent(null)
+                    } else {
+                        // unset previous grab
+                        grabbedEntity.parent = null
+                        if (!handMesh.parent) {
+                            this.setComponent(handMesh, { type: "position", data: { value: mpts.p.hand_pos_rot.pos } })
+                            this.setComponent(handMesh, { type: "rotation", data: { value: mpts.p.hand_pos_rot.rot } })
+                        }
+                        this.setComponent(grabbedEntity, { type: "position", data: { value: mpts.p.entity_pos_rot.pos } })
+                        this.setComponent(grabbedEntity, { type: "rotation", data: { value: mpts.p.entity_pos_rot.rot } })
+                    }
+                    if (mpts.p.lv) {
+                        grabbedEntity.physicsImpostor = new BABYLON.PhysicsImpostor(grabbedEntity, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, friction: 0.8, restitution: 0.5 }, this.scene);
+                        grabbedEntity.physicsImpostor.setLinearVelocity(BABYLON.Vector3.FromArray(mpts.p.lv))
+                        grabbedEntity.physicsImpostor.setAngularVelocity(BABYLON.Vector3.FromArray(mpts.p.av))
+                    }
+
+
+                }
+            }
+    */
 }
