@@ -64,7 +64,7 @@ export class Inline {
             ).subscribe(info => {
 
                 let mesh = info.pickInfo.pickedMesh
-                if (mesh && BABYLON.Tags.MatchesQuery(mesh, "shootable")) {
+                if (mesh && BABYLON.Tags.MatchesQuery(mesh, "shootable || interactable")) {
                     if (this.heldMesh === null) {
                         this.emitGrabbed(mesh)
                         this.heldMesh = mesh

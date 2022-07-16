@@ -1,5 +1,10 @@
 TODO:
 
+bug:
+color didn't persist after refresh
+
+support grab and throw in the avatar release message (linear velocity)
+
 Refactor event handling for grab, release, collect to an AvatarManager
 
 Create Ammo Box primitive
