@@ -21,12 +21,11 @@ export class AvatarManager {
             // move grabbed entities into the hands of avatars
             for (const [entity_id, event] of Object.entries(about_space.entities)) {
                 if (event.m === EventName.entity_grabbed) {
-                    this.findAvatar(event.p.member_id).grabEntity(event.p.hand, entity_id, event.p.entity_pos_rot, event.p.hand_pos_rot)
+                    this.findAvatar(event.p.member_id)?.grabEntity(event.p.hand, entity_id, event.p.entity_pos_rot, event.p.hand_pos_rot)
                 } else if (event.m === EventName.entity_released) {
-                    this.findAvatar(event.p.member_id).releaseEntity(event.p.entity_id, event.p.entity_pos_rot, event.p.lv, event.p.av)
-
+                    this.findAvatar(event.p.member_id)?.releaseEntity(event.p.entity_id, event.p.entity_pos_rot, event.p.lv, event.p.av)
                 } else if (event.m === EventName.entity_collected) {
-                    this.findAvatar(event.p.member_id).collectEntity(event.p.entity_id)
+                    const avatar = this.findAvatar(event.p.member_id)?.collectEntity(event.p.entity_id)
                 }
             }
         })
