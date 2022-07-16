@@ -1,5 +1,9 @@
 TODO:
 
+bug: inline click object to select is still enabled in XR, we need to disable it
+
+maybe bug?: when a member leaves, any entities they held onto should be cleared from genserver
+
 bug:
 color didn't persist after refresh
 

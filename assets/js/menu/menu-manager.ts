@@ -64,7 +64,6 @@ export class MenuManager {
         this.menu_topic = "main"
 
         signalHub.local.on("my_state").subscribe(state => {
-            console.log('setting my state', state)
             this.myState = state
             this.render()
         })
@@ -235,8 +234,6 @@ export class MenuManager {
         leftPuck.isPointerBlocker = true;
         leftPuck.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         leftPuck.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
-        console.log('left', leftPuck.left, leftPuck.top)
-
 
 
         let containerPointerDown$ = this.makeContainerObservable(leftThumbContainer, "onPointerDownObservable")

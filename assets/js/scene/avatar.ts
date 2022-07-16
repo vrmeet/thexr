@@ -212,7 +212,6 @@ export class Avatar {
 
     releaseEntity(entity_id: string, entity_pos_rot: PosRot, linear_velocity?: number[], angular_velocity?: number[]) {
         let entity = this.scene.getMeshById(entity_id)
-        console.log("entity", entity)
         if (entity) {
             entity.parent = null
             entity.position = BABYLON.Vector3.FromArray(entity_pos_rot.pos)
