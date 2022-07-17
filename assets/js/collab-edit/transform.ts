@@ -87,21 +87,31 @@ export class CollaborativeEditTransformManager {
         this.gizmoManager = new BABYLON.GizmoManager(this.scene);
 
         this.gizmoManager.positionGizmoEnabled = true;
-        this.gizmoManager.boundingBoxGizmoEnabled = true;
+        this.gizmoManager.rotationGizmoEnabled = true;
+        this.gizmoManager.scaleGizmoEnabled = true;
+        // this.gizmoManager.boundingBoxGizmoEnabled = true;
         this.gizmoManager.usePointerToAttachGizmos = false;
 
         this.gizmoManager.gizmos.positionGizmo.onDragEndObservable.add((data, state) => {
             this.broadcastNewPosition()
         })
 
-        this.gizmoManager.gizmos.boundingBoxGizmo.onRotationSphereDragEndObservable.add((data, state) => {
+        this.gizmoManager.gizmos.rotationGizmo.onDragEndObservable.add((data, state) => {
             this.broadcastNewRotation()
         })
 
-        this.gizmoManager.gizmos.boundingBoxGizmo.onScaleBoxDragEndObservable.add((data, state) => {
-            this.broadcastNewPosition()
+        this.gizmoManager.gizmos.scaleGizmo.onDragEndObservable.add((data, state) => {
             this.broadcastNewScale()
         })
+
+        // this.gizmoManager.gizmos.boundingBoxGizmo.onRotationSphereDragEndObservable.add((data, state) => {
+        //     this.broadcastNewRotation()
+        // })
+
+        // this.gizmoManager.gizmos.boundingBoxGizmo.onScaleBoxDragEndObservable.add((data, state) => {
+        //     this.broadcastNewPosition()
+        //     this.broadcastNewScale()
+        // })
 
 
     }

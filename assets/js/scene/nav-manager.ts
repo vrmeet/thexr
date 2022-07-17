@@ -134,8 +134,8 @@ export class NavManager {
         debugMesh.isPickable = false;
         // debugMesh.position = new BABYLON.Vector3(0, 0.01, 0);
         var matdebug = new BABYLON.StandardMaterial("matdebug", this.scene);
-        matdebug.diffuseColor = new BABYLON.Color3(1, 0, 0);
-        matdebug.alpha = 0.5;
+        matdebug.diffuseColor = new BABYLON.Color3(0.8, 0, 0.5);
+        matdebug.alpha = 0.2;
         debugMesh.material = matdebug;
     }
 
