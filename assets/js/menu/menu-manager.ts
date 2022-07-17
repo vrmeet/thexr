@@ -22,6 +22,7 @@ import type { XRManager } from '../xr/xr-manager';
 import type { member_state } from "../types";
 import { Observable } from 'rxjs';
 import type { Vector2WithInfo } from 'babylonjs-gui';
+import { WallMaker } from './pages/wall-maker';
 
 /*
 inline -mode
@@ -396,6 +397,10 @@ export class MenuManager {
 
     primitives() {
         return new MenuPagePrimitives(this.scene)
+    }
+
+    wallmaker() {
+        return new WallMaker(this.scene)
     }
 
     spawner() {

@@ -1,5 +1,7 @@
 TODO:
 
+- do not pick up gun (disable inline when menu is open, re-enable inline when menu is closed)
+
 - handle entity animated offset for rotations
 
 - create red door, red key

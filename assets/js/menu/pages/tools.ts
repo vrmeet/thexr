@@ -4,7 +4,7 @@ import { signalHub } from '../../signalHub';
 import type { EditMode } from '../../types';
 
 
-import { div, a } from '../helpers';
+import { div, a, pre } from '../helpers';
 
 export class MenuTools extends GUI.Container {
     public selectedTool: EditMode
@@ -18,6 +18,7 @@ export class MenuTools extends GUI.Container {
         }
         const gotoPrimitiveCallback = () => { signalHub.menu.emit("menu_topic", 'primitives') }
         const gotoColorCallback = () => { signalHub.menu.emit("menu_topic", 'color') }
+        const gotoWallMaker = () => { signalHub.menu.emit("menu_topic", "wallmaker") }
 
         const makeTool = (toolName: EditMode) => {
             const args = {
@@ -36,11 +37,15 @@ export class MenuTools extends GUI.Container {
         this.addControl(
             div({ name: "div-tools" },
                 a({ name: "back-to-main", callback: backToMainCallback }, "< Back"),
-                makeTool('transform'),
-                makeTool('delete'),
-                a({ name: "goto-primitives", callback: gotoPrimitiveCallback }, "primitives"),
-                a({ name: "goto-color", callback: gotoColorCallback }, "color"),
 
+                pre({ name: "pre-tools" },
+                    makeTool('transform'),
+                    makeTool('delete'),
+                    a({ name: "goto-primitives", callback: gotoPrimitiveCallback }, "primitives"),
+                    a({ name: "goto-color", callback: gotoColorCallback }, "color"),
+                    a({ name: "goto-wall-maker", callback: gotoWallMaker }, "wallmaker")
+
+                )
             )
         )
 
