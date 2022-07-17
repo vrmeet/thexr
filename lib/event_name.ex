@@ -20,6 +20,7 @@ defmodule EventName do
   def int_to_atom(4030), do: :entity_scaled
   def int_to_atom(4040), do: :entity_colored
   def int_to_atom(4050), do: :entity_deleted
+  def int_to_atom(4060), do: :entity_animated_offset
   def int_to_atom(5000), do: :entity_grabbed
   def int_to_atom(5010), do: :entity_released
   def int_to_atom(5020), do: :entity_trigger_squeezed
@@ -46,6 +47,7 @@ defmodule EventName do
   def atom_to_int(:entity_scaled), do: 4030
   def atom_to_int(:entity_colored), do: 4040
   def atom_to_int(:entity_deleted), do: 4050
+  def atom_to_int(:entity_animated_offset), do: 4060
   def atom_to_int(:entity_grabbed), do: 5000
   def atom_to_int(:entity_released), do: 5010
   def atom_to_int(:entity_trigger_squeezed), do: 5020

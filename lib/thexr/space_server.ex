@@ -144,25 +144,27 @@ defmodule Thexr.SpaceServer do
     {:noreply, state}
   end
 
-  def handle_cast({:event, :entity_grabbed, evt, _pid} = tuple, state) do
+  def save_last_event_for_entity(evt, tuple, state) do
     entity_id = evt.p.entity_id
     new_entities = Map.put(state.entities, entity_id, evt)
     state = Map.put(state, :entities, new_entities)
     handle_event(tuple, state)
+  end
+
+  def handle_cast({:event, :entity_grabbed, evt, _pid} = tuple, state) do
+    save_last_event_for_entity(evt, tuple, state)
   end
 
   def handle_cast({:event, :entity_released, evt, _pid} = tuple, state) do
-    entity_id = evt.p.entity_id
-    new_entities = Map.put(state.entities, entity_id, evt)
-    state = Map.put(state, :entities, new_entities)
-    handle_event(tuple, state)
+    save_last_event_for_entity(evt, tuple, state)
   end
 
   def handle_cast({:event, :entity_collected, evt, _pid} = tuple, state) do
-    entity_id = evt.p.entity_id
-    new_entities = Map.put(state.entities, entity_id, evt)
-    state = Map.put(state, :entities, new_entities)
-    handle_event(tuple, state)
+    save_last_event_for_entity(evt, tuple, state)
+  end
+
+  def handle_cast({:event, :entity_animated_offset, evt, _pid} = tuple, state) do
+    save_last_event_for_entity(evt, tuple, state)
   end
 
   def handle_cast({:event, :member_entered, evt, _pid} = tuple, state) do

@@ -68,6 +68,7 @@ export type event =
     { m: EventName.member_respawned, p: { member_id: string, pos_rot: PosRot } } |
     { m: EventName.entity_created, p: { type: string, id: string, name: string, components: Component[] }, ts?: number } |
     { m: EventName.entity_transformed, p: { id: string, components: Component[] }, ts?: number } |
+    { m: EventName.entity_animated_offset, p: { entity_id: string, pos?: number[], rot?: number[], duration: number }, ts?: number } |
     { m: EventName.entity_colored, p: { id: string, color: string }, ts?: number } |
     { m: EventName.entity_deleted, p: { id: string }, ts?: number } |
     { m: EventName.entity_grabbed, p: { member_id: string, entity_id: string, hand: string, hand_pos_rot: PosRot, entity_pos_rot: PosRot } } |

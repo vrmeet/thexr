@@ -21,6 +21,7 @@ export enum EventName {
     entity_scaled = 4030,
     entity_colored = 4040,
     entity_deleted = 4050,
+    entity_animated_offset = 4060,
     // entity_locked = 405,
     // entity_unlocked = 406,
     // entity_set_interactable = 407,

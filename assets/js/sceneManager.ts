@@ -26,6 +26,7 @@ import { FreeCameraKeyboardWalkInput } from "./scene/camera-inputs/free-camera-k
 import { Observable, Subject } from "rxjs";
 import { CollectManager } from "./scene/collect-manager";
 import { AvatarManager } from "./scene/avatar-manager";
+import { DoorManager } from "./scene/door-manager";
 
 const ANIMATION_FRAME_PER_SECOND = 60
 const TOTAL_ANIMATION_FRAMES = 5
@@ -46,6 +47,8 @@ export class SceneManager {
     public avatarManager: AvatarManager
     public isLeader: boolean
     public navManager: NavManager
+    public collectManager: CollectManager
+    public doorManager: DoorManager
 
 
     constructor(public member_id: string, public serializedSpace: serialized_space) {
@@ -136,7 +139,19 @@ export class SceneManager {
         })
 
 
-
+        signalHub.incoming.on("about_space").subscribe(about_space => {
+            // move grabbed entities into the hands of avatars
+            for (const [entity_id, event] of Object.entries(about_space.entities)) {
+                if (event.m === EventName.entity_animated_offset) {
+                    let entity = this.scene.getMeshById(event.p.entity_id)
+                    if (entity) {
+                        if (event.p.pos) {
+                            entity.position.addInPlace(BABYLON.Vector3.FromArray(event.p.pos))
+                        }
+                    }
+                }
+            }
+        })
 
 
 
@@ -154,6 +169,14 @@ export class SceneManager {
                     })
                     // this.setComponent(mesh, { type: mpts.p.type, data: params.data })
                 })
+            } else if (mpts.m === EventName.entity_animated_offset) {
+                let mesh = this.scene.getMeshById(mpts.p.entity_id)
+                if (mesh) {
+                    if (mpts.p.pos) {
+                        BABYLON.Animation.CreateAndStartAnimation("translate", mesh,
+                            "position", ANIMATION_FRAME_PER_SECOND, Math.ceil(mpts.p.duration * 60 / 1000), mesh.position, mesh.position.add(BABYLON.Vector3.FromArray(mpts.p.pos)), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                    }
+                }
             } else if (mpts.m === EventName.entity_colored) {
                 let meshes = this.scene.getMeshesById(mpts.p.id)
                 meshes.forEach(mesh => {
@@ -216,7 +239,8 @@ export class SceneManager {
         new HudMessager(this.scene)
         this.bulletManager = new BulletManager(this.member_id, this.scene)
 
-        new CollectManager(this.member_id, this.scene)
+        this.collectManager = new CollectManager(this.member_id, this.scene)
+        this.doorManager = new DoorManager(this.member_id, this.scene)
 
         this.avatarManager = new AvatarManager(this.member_id, this.scene)
 
@@ -403,6 +427,15 @@ export class SceneManager {
                 entity.components.push({ type: "color", data: { value: "#A0A0A0" } })
                 // mesh = BABYLON.MeshBuilder.CreateTorus("gun", {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "interactable shootable")
+            } else if (entity.type === "red_key") {
+                mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.15, depth: 0.01, height: 0.2 }, this.scene)
+                entity.components.push({ type: "color", data: { value: "#FF0000" } })
+                mesh.metadata = { door: "red" }
+                BABYLON.Tags.AddTagsTo(mesh, "collectable")
+            } else if (entity.type === "red_door") {
+                mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 2, depth: 0.1, height: 3 }, this.scene)
+                entity.components.push({ type: "color", data: { value: "#FF0000" } })
+                mesh.metadata = { door: "red" }
             } else if (entity.type === "ammo_box") {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.5, depth: 0.3, height: 0.5 }, this.scene)
                 mesh.metadata = { ammo: 10 }

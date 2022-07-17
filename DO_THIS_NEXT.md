@@ -1,7 +1,11 @@
 TODO:
 
+- handle entity animated offset for rotations
+
 - create red door, red key
 - add spinning animation to key
+
+Enhancement: Load up initial ammo quota from session storage.
 
 - local memory, has a collection of keys
 - if try to open door and has correct key, then emit door open
