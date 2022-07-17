@@ -510,7 +510,7 @@ export class SceneManager {
                     "rotationQuaternion", ANIMATION_FRAME_PER_SECOND, TOTAL_ANIMATION_FRAMES, mesh.rotationQuaternion, newQuaternion, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
                 break;
             default:
-                console.error("unknown component", component)
+            // console.error("unknown component", component)
 
         }
     }
@@ -543,7 +543,7 @@ export class SceneManager {
                 }
                 break;
             default:
-                console.warn("unknown component", component)
+            // console.warn("unknown component", component)
 
         }
     }
