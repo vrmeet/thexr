@@ -29,12 +29,9 @@ export class WallMaker extends GUI.Container {
                 ...options
             ))
 
-        this.onDisposeObservable.add(() => {
-            this.pointIndicator.dispose()
 
-        })
 
-        signalHub.local.on("pointer_info").pipe(
+        let sub = signalHub.local.on("pointer_info").pipe(
             filter(info => info.type === BABYLON.PointerEventTypes.POINTERPICK),
             map((info: BABYLON.PointerInfo) => info.pickInfo.pickedPoint),
         ).subscribe(point => {
@@ -43,6 +40,11 @@ export class WallMaker extends GUI.Container {
             indicator.position = point
             this.wallPoints.push(indicator)
             console.log("point pushed", indicator)
+        })
+
+        this.onDisposeObservable.add(() => {
+            this.pointIndicator.dispose()
+            sub.unsubscribe()
         })
     }
 
@@ -54,7 +56,7 @@ export class WallMaker extends GUI.Container {
         const wallStart = () => {
             this.wallPoints.forEach(mesh => mesh.dispose())
             this.wallPoints = []
-            console.log("wall started")
+
         }
         const wallEnd = () => {
             const xzPoints = this.wallPoints.reduce((acc, wallPoint) => {

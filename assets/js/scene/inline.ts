@@ -94,7 +94,7 @@ export class Inline {
         this.subscriptions.push(b)
 
         let c = signalHub.local.on("trigger_substitute").subscribe(() => {
-            if (this.heldMesh) {
+            if (this.heldMesh()) {
                 this.emitTriggerSqueezed()
             }
         })
