@@ -250,8 +250,9 @@ export class MenuManager {
                 leftPuck.left = 0;
                 leftPuck.top = 0;
                 const clickSpeed = Date.now() - startTime
-                signalHub.local.emit("hud_msg", `click ${clickSpeed}`)
-                if (clickSpeed < 50) {
+                // signalHub.local.emit("hud_msg", `click ${clickSpeed}`)
+                // clicking on mobile is slow, this is the value i tested with that works on my iphone
+                if (clickSpeed < 125) {
                     //console.log("pure click with no drag")
                     signalHub.local.emit("trigger_substitute", true)
                 }
