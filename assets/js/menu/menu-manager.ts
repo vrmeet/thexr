@@ -240,15 +240,17 @@ export class MenuManager {
         let containerPointerDown$ = this.makeContainerObservable(leftThumbContainer, "onPointerDownObservable")
 
         let subscription = containerPointerDown$.subscribe((coordinates) => {
-            let didMove = false
+            let startTime = Date.now()
+
             // listen for one pointer UP and unsubscribe
             let containerPointerUp$ = this.makeContainerObservable(leftThumbContainer, "onPointerUpObservable")
-            containerPointerUp$.pipe(take(1)).subscribe(() => {
+            containerPointerUp$.pipe(take(1)).subscribe(upCoordinates => {
                 leftPuck.isVisible = false;
                 leftThumbContainer.alpha = 0.4;
                 leftPuck.left = 0;
                 leftPuck.top = 0;
-                if (didMove === false) {
+                const clickSpeed = Date.now() - startTime
+                if (clickSpeed < 50) {
                     //console.log("pure click with no drag")
                     signalHub.local.emit("trigger_substitute", true)
                 }
@@ -259,7 +261,6 @@ export class MenuManager {
             containerPointerMove$.pipe(
                 takeUntil(containerPointerUp$)
             ).subscribe((coordinates) => {
-                didMove = true
                 leftPuck.left = coordinates.x - (leftThumbContainer._currentMeasure.width * .5) - SIDE_JOYSTICK_OFFSET;
                 leftPuck.top = (this.fsGui["_canvas"].height - coordinates.y - (leftThumbContainer._currentMeasure.height * .5) + BOTTOM_JOYSTICK_OFFSET) * - 1;
             })

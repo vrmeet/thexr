@@ -1,19 +1,44 @@
 TODO:
 
+bug: tap to fire in mobile doesn't work well because it's very easy to accidentally drag the position too
+  We should compare how far or how long (time) the drag or time was and if it's a very quick tap, consider that a fire
+
 - do not pick up gun (disable inline when menu is open, re-enable inline when menu is closed)
+   - unbind pickup with shootable | interactable when menu is opened, rebind when menu is closed
+
+- make so you cannot teleport or walk thru doors and walls
+   - add mesh collidable
+
+   // Enable Collisions
+scene.collisionsEnabled = true;
+camera.checkCollisions = true;
+
+ground.checkCollisions = true;
+box.checkCollisions = true;
+
+ /// teleportation
+ pickBlockerMeshesSearch 
 
 - handle entity animated offset for rotations
 
-- create red door, red key
-- add spinning animation to key
+- handle assigning constantly spinning meshes.  Assign with graphQL a spinning component
 
-Enhancement: Load up initial ammo quota from session storage.
+- create red door, red key
+
+Enhancement: Load up initial ammo quota from session storage?
 
 - local memory, has a collection of keys
 - if try to open door and has correct key, then emit door open
 - door stays open, so that's a transient entity animated to message
 
 - rewrite monster movement/agent without using navmesh
+  - remove navmesh DB model
+  - remove controller 
+  - remove router
+  - remove NavManager
+  - modify AgentManager
+     - need replacement for plugin.getClosestPoint and getRandomPoint
+     - replacement for crowd.add agent, removeAgent, agentGoto, callback after agent reaches target
 
 
 Transient items - items that are temporarily moved, the state is stored for this session
