@@ -12,10 +12,18 @@ export class TeleportationManager {
         this.floorMeshes.forEach(mesh => {
             this.teleportation.addFloorMesh(mesh)
         })
+
+
         signalHub.local.on('mesh_built').subscribe(({ name }) => {
             let mesh = scene.getMeshByName(name)
-            if (mesh && BABYLON.Tags.MatchesQuery(mesh, "teleportable")) {
+            if (!mesh) {
+                return
+            }
+            if (BABYLON.Tags.MatchesQuery(mesh, "teleportable")) {
                 this.teleportation.addFloorMesh(mesh)
+            }
+            if (BABYLON.Tags.MatchesQuery(mesh, "blocker")) {
+                this.teleportation.addBlockerMesh(mesh)
             }
         })
 
