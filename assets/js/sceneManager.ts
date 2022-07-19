@@ -204,6 +204,7 @@ export class SceneManager {
     async createScene() {
         // Create a basic BJS Scene object
         this.scene = new BABYLON.Scene(this.engine);
+        this.scene.collisionsEnabled = true;
 
         this.scene.onPointerObservable.add(pointerInfo => {
             signalHub.local.emit("pointer_info", pointerInfo)
@@ -293,7 +294,7 @@ export class SceneManager {
         let posRot = this.getLastPosRot()
         this.freeCamera = new BABYLON.FreeCamera("freeCam", BABYLON.Vector3.FromArray(posRot.pos), this.scene);
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.FromArray(posRot.rot)
-
+        this.freeCamera.checkCollisions = true;
         // setup tools for 2D grabbing and avatar
         new Inline(this.member_id, this.scene, this.freeCamera)
         signalHub.local.emit("camera_ready", posRot)
@@ -411,7 +412,8 @@ export class SceneManager {
                 const height: number = (entity.components.filter(comp => comp.type === "height")[0]?.data?.value || 2) as number
                 const points: number[] = entity.components.filter(comp => comp.type === "points")[0].data.value as number[]
                 mesh = createWall(entity.name, height, points, this.scene)
-
+                mesh.checkCollisions = true;
+                BABYLON.Tags.AddTagsTo(mesh, "blocker")
             } else if (entity.type === "cylinder") {
                 mesh = BABYLON.MeshBuilder.CreateCylinder(entity.name, {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable targetable")
@@ -436,6 +438,8 @@ export class SceneManager {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 2, depth: 0.1, height: 3 }, this.scene)
                 entity.components.push({ type: "color", data: { value: "#FF0000" } })
                 mesh.metadata = { door: "red" }
+                mesh.checkCollisions = true;
+                BABYLON.Tags.AddTagsTo(mesh, "blocker")
             } else if (entity.type === "ammo_box") {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.5, depth: 0.3, height: 0.5 }, this.scene)
                 mesh.metadata = { ammo: 10 }
@@ -445,13 +449,15 @@ export class SceneManager {
                 BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
             } else if (entity.type === "plane") {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
+                mesh.checkCollisions = true
             } else if (entity.type === "grid") {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { size: 25, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
-
+                mesh.checkCollisions = true
                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, this.scene);
 
                 const gridMat = this.findOrCreateMaterial({ type: "grid" })
                 mesh.material = gridMat;
+
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable")
 
             } else if (entity.type === "sphere") {

@@ -7,6 +7,7 @@ import * as BABYLON from "babylonjs"
 import { FreeCameraKeyboardFlyingInput } from "./camera-inputs/free-camera-keyboard-flying-input";
 import { FreeCameraKeyboardWalkInput } from "./camera-inputs/free-camera-keyboard-walk-input";
 import type { Subscription } from "rxjs";
+import { mode } from "../mode"
 
 export class Inline {
     // public heldMesh: BABYLON.AbstractMesh
@@ -104,7 +105,10 @@ export class Inline {
         let d = signalHub.local.on("pointer_info").pipe(
             filter(info => info.type === BABYLON.PointerEventTypes.POINTERPICK)
         ).subscribe(info => {
-
+            // don't pick anything up in inline if you're editing
+            if (mode.editing) {
+                return
+            }
             let mesh = info.pickInfo.pickedMesh
             if (mesh && BABYLON.Tags.MatchesQuery(mesh, "shootable || interactable")) {
                 if (this.heldMesh() === null) {
