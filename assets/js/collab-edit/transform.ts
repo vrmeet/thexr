@@ -88,6 +88,8 @@ export class CollaborativeEditTransformManager {
 
         this.gizmoManager.positionGizmoEnabled = true;
         this.gizmoManager.rotationGizmoEnabled = true;
+        this.gizmoManager.gizmos.positionGizmo.scaleRatio = 2
+        this.gizmoManager.gizmos.rotationGizmo.scaleRatio = 1.5
         this.gizmoManager.scaleGizmoEnabled = true;
         // this.gizmoManager.boundingBoxGizmoEnabled = true;
         this.gizmoManager.usePointerToAttachGizmos = false;
@@ -135,7 +137,13 @@ export class CollaborativeEditTransformManager {
 
     broadcastNewRotation() {
 
-        const rot = this.selectedMesh.rotationQuaternion.toEulerAngles()
+        let rot;
+        if (this.selectedMesh.rotationQuaternion) {
+            rot = this.selectedMesh.rotationQuaternion.toEulerAngles()
+        } else {
+            rot = this.selectedMesh.rotation
+        }
+
         const components: Component[] = [{ type: "rotation", data: { value: arrayReduceSigFigs(rot.asArray()) } }]
         const event: event = {
             m: EventName.entity_transformed, p: { id: this.selectedMesh.id, components: components }

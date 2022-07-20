@@ -142,11 +142,11 @@ export class MenuManager {
         this.wristPlane.position.y = 0.05
         this.wristPlane.rotation.x = BABYLON.Angle.FromDegrees(60).radians()
 
-
         this.wristPlane.parent = this.xrManager.left_input_source.grip
         this.wristGui = GUI.AdvancedDynamicTexture.CreateForMesh(this.wristPlane, 256, 256)
 
         this.browsePlane = BABYLON.MeshBuilder.CreatePlane("browse_plane", { height: 0.5, width: 0.5 }, this.scene)
+        this.browsePlane.metadata = { menu: true }
         this.browsePlane.showBoundingBox = true
         this.browsePlane.setEnabled(false)
 
@@ -159,6 +159,7 @@ export class MenuManager {
         //  this.browsePlane.rotation.x = BABYLON.Angle.FromDegrees(45).radians()
 
         this.browsePlane.parent = this.xrManager.left_input_source.grip
+
 
         this.browseGui = GUI.AdvancedDynamicTexture.CreateForMesh(this.browsePlane, 640, 640)
 

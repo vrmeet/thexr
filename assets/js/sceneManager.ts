@@ -474,7 +474,7 @@ export class SceneManager {
             if (mesh) {
                 mesh.id = entity.id
                 BABYLON.Tags.AddTagsTo(mesh, "editable")
-
+                // signal to teleportation manager
                 signalHub.local.emit("mesh_built", { name: mesh.name })
             }
         }

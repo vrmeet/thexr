@@ -12,12 +12,27 @@ import { EventName } from "../../event-names";
 import { filter, map } from "rxjs/operators";
 
 export class WallMaker extends GUI.Container {
-    public wallPoints = []
-    public pointIndicator: BABYLON.AbstractMesh
+    public wallPoints: BABYLON.Vector3[]
+    public pointIndicators: BABYLON.AbstractMesh[]
+    public referenceIndicator: BABYLON.AbstractMesh
+    public lines: BABYLON.LinesMesh
+
+
     constructor(public scene: BABYLON.Scene) {
         super()
-        this.pointIndicator = BABYLON.MeshBuilder.CreateCylinder("", { height: 1, diameter: 0.1 })
-        this.pointIndicator.setEnabled(false)
+
+        this.wallPoints = []
+        this.pointIndicators = []
+
+        const lineOpts = {
+            points: this.wallPoints,
+            dashSize: 2,
+            gapSize: 1,
+            dashNb: 80
+        }
+
+        this.referenceIndicator = BABYLON.MeshBuilder.CreateCylinder("", { height: 1, diameter: 0.1 })
+        this.referenceIndicator.setEnabled(false)
         const callback = () => {
             signalHub.menu.emit("menu_topic", "tools")
         }
@@ -33,35 +48,52 @@ export class WallMaker extends GUI.Container {
 
         let sub = signalHub.local.on("pointer_info").pipe(
             filter(info => info.type === BABYLON.PointerEventTypes.POINTERPICK),
+            filter(info => info.pickInfo.pickedMesh && info.pickInfo.pickedMesh.metadata?.menu !== true),
             map((info: BABYLON.PointerInfo) => info.pickInfo.pickedPoint),
         ).subscribe(point => {
-            let indicator = this.getPointIndicator()
-            indicator.setEnabled(true)
-            indicator.position = point
-            this.wallPoints.push(indicator)
+            let indicator = this.getPointIndicator(point)
+            this.pointIndicators.push(indicator)
+            this.wallPoints.push(point)
             console.log("point pushed", indicator)
+            if (this.wallPoints.length > 1) {
+                if (this.lines) {
+                    this.lines.dispose()
+                }
+                this.lines = BABYLON.MeshBuilder.CreateDashedLines("wallLines", lineOpts);
+            }
         })
 
         this.onDisposeObservable.add(() => {
-            this.pointIndicator.dispose()
+            this.referenceIndicator.dispose()
             sub.unsubscribe()
         })
     }
 
-    getPointIndicator() {
-        return this.pointIndicator.clone("", null)
+    getPointIndicator(position: BABYLON.Vector3) {
+        let clone = this.referenceIndicator.clone("", null)
+        clone.setEnabled(true)
+        clone.position = position
+        return clone
     }
 
     scrollablePrimOptions() {
-        const wallStart = () => {
-            this.wallPoints.forEach(mesh => mesh.dispose())
-            this.wallPoints = []
+        const reset = () => {
+            this.pointIndicators.forEach(mesh => mesh.dispose())
+            this.pointIndicators.length = 0
+            if (this.lines) {
+                this.lines.dispose()
+            }
+            this.wallPoints.length = 0
 
         }
         const wallEnd = () => {
+            if (this.wallPoints.length < 2) {
+                signalHub.local.emit("hud_msg", "You need at least 2 points to build a wall")
+                return
+            }
             const xzPoints = this.wallPoints.reduce((acc, wallPoint) => {
-                acc.push(reduceSigFigs(wallPoint.position.x))
-                acc.push(reduceSigFigs(wallPoint.position.z))
+                acc.push(reduceSigFigs(wallPoint.x))
+                acc.push(reduceSigFigs(wallPoint.z))
                 return acc
             }, [])
             let payload = {
@@ -80,11 +112,12 @@ export class WallMaker extends GUI.Container {
             signalHub.outgoing.emit("event", event)
             signalHub.incoming.emit("event", event)
 
-            wallStart()
+            reset()
         }
         return pre({ name: "scrollable-prim-options" },
-            a({ callback: wallStart }, "wallstart"),
-            a({ callback: wallEnd }, "wallend")
+            "Point on the floor to create wall corners",
+            a({ callback: reset }, "reset"),
+            a({ callback: wallEnd }, "build")
         )
     }
 
