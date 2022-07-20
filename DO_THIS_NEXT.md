@@ -1,5 +1,12 @@
 TODO:
 
+BUG: merged mesh
+
+BUG: In Vr when try to transform red key, it floats up, as if it's acting like a door
+   - it's because key has meta data of door, so if you collect on key then
+   click on another key, it will act like a door
+
+   - door manager should be shut off during mode.edit === true
 
 
 - handle entity animated offset for rotations
@@ -19,7 +26,7 @@ Enhancement: Load up initial ammo quota from session storage?
      - need replacement for plugin.getClosestPoint and getRandomPoint
      - replacement for crowd.add agent, removeAgent, agentGoto, callback after agent reaches target
 
-pick up health, pick up armor
+pick up health, pick up
 
 
 Transient items - items that are temporarily moved, the state is stored for this session

@@ -43,7 +43,11 @@ export const createWall = (name: string, height: number, points: number[], scene
 
     })
     let mergedMesh = BABYLON.Mesh.MergeMeshes(parts, true)
-    mergedMesh.name = name
-    return mergedMesh
+    if (mergedMesh) {
+        mergedMesh.name = name
+        return mergedMesh
+    } else {
+        throw new Error(`Wall error building ${name}`);
+    }
 
 }
