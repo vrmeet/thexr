@@ -1,6 +1,8 @@
 TODO:
 
-BUG: merged mesh
+Edit toggle should be moved into tools and renamed: persist changes, otherwise all changes go into genserver
+
+The inline and door, maybe even bullet manager should be paused if the menu is open
 
 BUG: In Vr when try to transform red key, it floats up, as if it's acting like a door
    - it's because key has meta data of door, so if you collect on key then

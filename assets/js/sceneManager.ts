@@ -15,18 +15,16 @@ import { HudMessager } from "./hud-message";
 import { BulletManager } from "./scene/bullet-manager";
 
 import { EventName } from "./event-names"
-import { NavManager } from "./scene/nav-manager";
 import { createWall } from "./scene/constructs";
 import { filter, sample } from "rxjs/operators";
 
 import { Avatar } from "./scene/avatar"
 import { Inline } from "./scene/inline";
-import { FreeCameraKeyboardMoveInput } from "babylonjs";
-import { FreeCameraKeyboardWalkInput } from "./scene/camera-inputs/free-camera-keyboard-walk-input";
-import { Observable, Subject } from "rxjs";
+
 import { CollectManager } from "./scene/collect-manager";
 import { AvatarManager } from "./scene/avatar-manager";
 import { DoorManager } from "./scene/door-manager";
+import { AgentManager } from "./scene/agent-manager";
 
 const ANIMATION_FRAME_PER_SECOND = 60
 const TOTAL_ANIMATION_FRAMES = 5
@@ -46,9 +44,10 @@ export class SceneManager {
     public bulletManager: BulletManager
     public avatarManager: AvatarManager
     public isLeader: boolean
-    public navManager: NavManager
+
     public collectManager: CollectManager
     public doorManager: DoorManager
+    public agentManager: AgentManager
 
 
     constructor(public member_id: string, public serializedSpace: serialized_space) {
@@ -116,12 +115,12 @@ export class SceneManager {
             .filter(entity => entity.type === "enemy_spawner")
             .forEach(spawner => {
 
-                this.navManager.agentManager.addAgentSpawnPoint(spawner.name)
+                // this.navManager.agentManager.addAgentSpawnPoint(spawner.name)
             })
-        if (this.navManager.navMeshCreated) {
-            this.navManager.agentManager.startSpawning()
-            this.navManager.agentManager.planMovementForAllAgents()
-        }
+        // if (this.navManager.navMeshCreated) {
+        //     this.navManager.agentManager.startSpawning()
+        //     this.navManager.agentManager.planMovementForAllAgents()
+        // }
     }
 
     setChannelListeners() {
@@ -230,7 +229,8 @@ export class SceneManager {
 
         // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
         var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), this.scene);
-        this.navManager = new NavManager(this.member_id, this.space_id, this.scene)
+        // this.navManager = new NavManager(this.member_id, this.space_id, this.scene)
+
         await this.parseInitialScene(this.entities)
 
         this.xrManager = new XRManager(this.member_id, this.scene)
@@ -244,6 +244,7 @@ export class SceneManager {
         this.doorManager = new DoorManager(this.member_id, this.scene)
 
         this.avatarManager = new AvatarManager(this.member_id, this.scene)
+        this.agentManager = new AgentManager(this.member_id, this.scene)
 
         return this.scene;
 
@@ -361,7 +362,7 @@ export class SceneManager {
 
         }, [])
 
-        await this.navManager.loadOrMakeNavMesh(meshes)
+        // await this.navManager.loadOrMakeNavMesh(meshes)
     }
 
 

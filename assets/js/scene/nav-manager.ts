@@ -3,7 +3,7 @@ import { filter } from "rxjs/operators"
 import { EventName } from "../event-names"
 import type { SceneManager } from "../sceneManager"
 import { signalHub } from "../signalHub"
-import { AgentManager } from "./agent-manager"
+// import { AgentManager } from "./agent-manager"
 
 const NAV_MESH_PARAMS = {
     cs: 0.2,
@@ -30,7 +30,7 @@ export class NavManager {
     public navMeshCreated: boolean
     public debugMesh: BABYLON.Mesh
     public crowd: BABYLON.ICrowd
-    public agentManager: AgentManager
+    // public agentManager: AgentManager
 
     constructor(public member_id: string, public space_id: string, public scene: BABYLON.Scene) {
         this.navMeshCreated = false
@@ -48,7 +48,7 @@ export class NavManager {
             // nav plugin takes some time to create
             if (this.navMeshCreated) {
                 this.crowd = this.navigationPlugin.createCrowd(MAX_AGENTS, MAX_AGENT_RADIUS, this.scene)
-                this.agentManager = new AgentManager(this.member_id, this.navigationPlugin, this.crowd, this.scene)
+                // this.agentManager = new AgentManager(this.member_id, this.navigationPlugin, this.crowd, this.scene)
             }
         }, 500)
 
