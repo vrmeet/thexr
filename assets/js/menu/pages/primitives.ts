@@ -35,7 +35,7 @@ export class MenuPagePrimitives extends GUI.Container {
 
 
     primOptions() {
-        const options = ["spawn_point", "gun", "ammo_box", "red_key", "red_door", "capsule", "box", "cone", "sphere", "grid", "cylinder", "plane", "enemy_spawner"];
+        const options = ["capsule", "box", "cone", "sphere", "grid", "cylinder", "plane"];
 
         return options.map(prim => {
             const callback = () => {
@@ -52,6 +52,7 @@ export class MenuPagePrimitives extends GUI.Container {
                     components.position = [0, -0.01, 0]
                     components.rotation = [1.5708, 0, 0]
                 }
+
 
                 const componentList = Object.entries(components).map(([key, value]) => {
                     return { type: key, data: { value } }

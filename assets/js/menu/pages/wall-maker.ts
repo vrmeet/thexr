@@ -5,7 +5,7 @@ import type { Orchestrator } from "../../orchestrator";
 import { signalHub } from "../../signalHub";
 import { v4 as uuidv4 } from "uuid";
 
-import { a, div, pre } from "../helpers";
+import { a, div, pre, span, toggle } from "../helpers";
 import { random_id, reduceSigFigs } from "../../utils";
 import type { Component, event } from "../../types"
 import { EventName } from "../../event-names";
@@ -34,10 +34,10 @@ export class WallMaker extends GUI.Container {
         this.referenceIndicator = BABYLON.MeshBuilder.CreateCylinder("", { height: 1, diameter: 0.1 })
         this.referenceIndicator.setEnabled(false)
         const callback = () => {
-            signalHub.menu.emit("menu_topic", "tools")
+            signalHub.menu.emit("menu_topic", "gameconstructs")
         }
 
-        let options = [a({ callback }, "< Tools"), this.scrollablePrimOptions()]
+        let options = [a({ callback }, "< Game Constructs"), this.scrollablePrimOptions()]
 
         this.addControl(
             div({ name: "primitives-container" },
@@ -77,6 +77,18 @@ export class WallMaker extends GUI.Container {
     }
 
     scrollablePrimOptions() {
+        let entity_type = "wall"
+        const editToggle = toggle({ value: 0 }) as GUI.Slider
+        editToggle.onValueChangedObservable.add(data => {
+
+            if (data > 0.5) {
+                entity_type = "door" // create a door
+            } else {
+                entity_type = "wall"
+            }
+
+        })
+
         const reset = () => {
             this.pointIndicators.forEach(mesh => mesh.dispose())
             this.pointIndicators.length = 0
@@ -91,16 +103,19 @@ export class WallMaker extends GUI.Container {
                 signalHub.local.emit("hud_msg", "You need at least 2 points to build a wall")
                 return
             }
+            signalHub.local.emit("hud_msg", `Created ${entity_type}`)
+
             const xzPoints = this.wallPoints.reduce((acc, wallPoint) => {
                 acc.push(reduceSigFigs(wallPoint.x))
                 acc.push(reduceSigFigs(wallPoint.z))
                 return acc
             }, [])
             let payload = {
-                type: "wall",
+                type: entity_type,
                 id: uuidv4(),
-                name: `wall_${random_id(5)}`,
+                name: `${entity_type}_${random_id(5)}`,
                 components: [
+                    { type: "color", data: { value: (entity_type === "wall") ? "#09A909" : "#A10202" } },
                     { type: "height", data: { value: 2 } },
                     { type: "points", data: { value: xzPoints } }
                 ]
@@ -116,6 +131,7 @@ export class WallMaker extends GUI.Container {
         }
         return pre({ name: "scrollable-prim-options" },
             "Point on the floor to create wall corners",
+            span({}, "wall", editToggle, "door"),
             a({ callback: reset }, "reset"),
             a({ callback: wallEnd }, "build")
         )
@@ -124,39 +140,39 @@ export class WallMaker extends GUI.Container {
 
 
 
-    primOptions() {
-        const options = ["wall_start", "wall_end"];
+    // primOptions() {
+    //     const options = ["wall_start", "wall_end"];
 
-        return options.map(prim => {
-            const callback = () => {
-                // let ray = this.scene.activeCamera.getForwardRay(1)
-                // let dest = ray.origin.add(ray.direction)
-                const name = `${prim}_${random_id(6)}`
-                const uuid = uuidv4()
-                let components = {
-                    position: [0, 0.86, 0],
-                    rotation: [0, 0, 0],
-                    scaling: [1, 1, 1],
-                }
-                if (prim === "grid") {
-                    components.position = [0, -0.01, 0]
-                    components.rotation = [1.5708, 0, 0]
-                }
+    //     return options.map(prim => {
+    //         const callback = () => {
+    //             // let ray = this.scene.activeCamera.getForwardRay(1)
+    //             // let dest = ray.origin.add(ray.direction)
+    //             const name = `${prim}_${random_id(6)}`
+    //             const uuid = uuidv4()
+    //             let components = {
+    //                 position: [0, 0.86, 0],
+    //                 rotation: [0, 0, 0],
+    //                 scaling: [1, 1, 1],
+    //             }
+    //             if (prim === "grid") {
+    //                 components.position = [0, -0.01, 0]
+    //                 components.rotation = [1.5708, 0, 0]
+    //             }
 
-                const componentList = Object.entries(components).map(([key, value]) => {
-                    return { type: key, data: { value } }
-                }) as Component[]
+    //             const componentList = Object.entries(components).map(([key, value]) => {
+    //                 return { type: key, data: { value } }
+    //             }) as Component[]
 
-                const entity_event: event = { m: EventName.entity_created, p: { type: prim, id: uuid, name, components: componentList } }
+    //             const entity_event: event = { m: EventName.entity_created, p: { type: prim, id: uuid, name, components: componentList } }
 
-                signalHub.outgoing.emit('event', entity_event)
-                signalHub.incoming.emit('event', entity_event)
+    //             signalHub.outgoing.emit('event', entity_event)
+    //             signalHub.incoming.emit('event', entity_event)
 
 
-            }
-            return a({ callback }, prim)
-        })
-    }
+    //         }
+    //         return a({ callback }, prim)
+    //     })
+    // }
 
 
 

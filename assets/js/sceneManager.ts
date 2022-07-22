@@ -111,16 +111,7 @@ export class SceneManager {
     }
 
     initLeaderDuties() {
-        this.entities
-            .filter(entity => entity.type === "enemy_spawner")
-            .forEach(spawner => {
-
-                // this.navManager.agentManager.addAgentSpawnPoint(spawner.name)
-            })
-        // if (this.navManager.navMeshCreated) {
-        //     this.navManager.agentManager.startSpawning()
-        //     this.navManager.agentManager.planMovementForAllAgents()
-        // }
+        this.agentManager.startSpawning()
     }
 
     setChannelListeners() {
@@ -409,7 +400,7 @@ export class SceneManager {
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable targetable")
             } else if (entity.type === "spawn_point") {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 1, depth: 1, height: 0.3 }, this.scene)
-            } else if (entity.type === "wall") {
+            } else if (entity.type === "wall" || entity.type === "door") {
                 const height: number = (entity.components.filter(comp => comp.type === "height")[0]?.data?.value || 2) as number
                 const points: number[] = entity.components.filter(comp => comp.type === "points")[0].data.value as number[]
                 mesh = createWall(entity.name, height, points, this.scene)
@@ -430,20 +421,12 @@ export class SceneManager {
                 entity.components.push({ type: "color", data: { value: "#A0A0A0" } })
                 // mesh = BABYLON.MeshBuilder.CreateTorus("gun", {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "interactable shootable")
-            } else if (entity.type === "red_key") {
+            } else if (entity.type === "key") {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.15, depth: 0.01, height: 0.2 }, this.scene)
-                entity.components.push({ type: "color", data: { value: "#FF0000" } })
-                mesh.metadata = { door: "red" }
                 BABYLON.Tags.AddTagsTo(mesh, "collectable")
-            } else if (entity.type === "red_door") {
-                mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 2, depth: 0.1, height: 3 }, this.scene)
-                entity.components.push({ type: "color", data: { value: "#FF0000" } })
-                mesh.metadata = { door: "red" }
-                mesh.checkCollisions = true;
-                BABYLON.Tags.AddTagsTo(mesh, "blocker")
+
             } else if (entity.type === "ammo_box") {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.5, depth: 0.3, height: 0.5 }, this.scene)
-                mesh.metadata = { ammo: 10 }
                 BABYLON.Tags.AddTagsTo(mesh, "collectable")
             } else if (entity.type === "capsule") {
                 mesh = BABYLON.MeshBuilder.CreateCapsule(entity.name, {}, this.scene)
@@ -469,14 +452,16 @@ export class SceneManager {
                 BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
             } else if (entity.type === "enemy_spawner") {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 1, depth: 1, height: 0.1 }, this.scene)
+                BABYLON.Tags.AddTagsTo(mesh, "enemy_spawner")
             }
 
 
             if (mesh) {
                 mesh.id = entity.id
+                mesh.metadata = { type: entity.type }
                 BABYLON.Tags.AddTagsTo(mesh, "editable")
                 // signal to teleportation manager
-                signalHub.local.emit("mesh_built", { name: mesh.name })
+                signalHub.local.emit("mesh_built", { name: mesh.name, type: entity.type })
             }
         }
         if (mesh) {
@@ -550,6 +535,7 @@ export class SceneManager {
                 }
                 break;
             default:
+                mesh.metadata[component.type] = component.data.value
             // console.warn("unknown component", component)
 
         }

@@ -1,6 +1,10 @@
 TODO:
 
-Edit toggle should be moved into tools and renamed: persist changes, otherwise all changes go into genserver
+Make the persist edits toggle count, right now, does nothing
+
+
+
+fix ammo box,was based on meta data for num of bullets and how door key worked, use  components to store that info, and then maybe populate that info with metadata or tags
 
 The inline and door, maybe even bullet manager should be paused if the menu is open
 

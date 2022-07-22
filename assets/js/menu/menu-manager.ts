@@ -23,6 +23,7 @@ import type { member_state } from "../types";
 import { Observable } from 'rxjs';
 import type { Vector2WithInfo } from 'babylonjs-gui';
 import { WallMaker } from './pages/wall-maker';
+import { GameConstructs } from './pages/game-constructs';
 
 /*
 inline -mode
@@ -405,6 +406,10 @@ export class MenuManager {
 
     wallmaker() {
         return new WallMaker(this.scene)
+    }
+
+    gameconstructs() {
+        return new GameConstructs(this.scene)
     }
 
     spawner() {

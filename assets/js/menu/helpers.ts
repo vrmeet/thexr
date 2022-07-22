@@ -117,7 +117,10 @@ export const span = (props: { [key: string]: any }, ...children: child[]) => {
         text: child
     }
     ))).forEach(child => {
-        child.width = "100px"
+        if (child.widthInPixels < 1) {
+            child.widthInPixels = 100
+        }
+
         horizontalStackPanel.addControl(child)
     })
     return horizontalStackPanel

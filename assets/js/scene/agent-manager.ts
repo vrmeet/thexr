@@ -1,4 +1,4 @@
-import * as BABYLON from "babylonjs"
+import type * as BABYLON from "babylonjs"
 import { filter } from "rxjs"
 import { EventName } from "../event-names"
 import { signalHub } from "../signalHub"
@@ -9,12 +9,16 @@ import { v4 as uuidv4 } from "uuid";
 
 
 export class AgentManager {
-    public agentSpawnPoints: { [name: string]: BABYLON.Vector3 }
     public agents: { [name: string]: Agent }
     constructor(public member_id: string, public scene: BABYLON.Scene) {
-        this.agentSpawnPoints = {}
         this.agents = {}
+
         this.subscribeToAgentCreatedEvent()
+
+    }
+
+    // leader initiated
+    startSpawning() {
 
     }
 
@@ -26,10 +30,7 @@ export class AgentManager {
         })
     }
 
-    // add a location where new agents/enemies spawn out of, to fight our heros
-    addAgentSpawnPoint(name: string, position: number[]) {
-        this.agentSpawnPoints[name] = BABYLON.Vector3.FromArray(position)
-    }
+
 
     addAgent(id: string, name: string, position: number[]) {
         this.agents[name] = new Agent(id, name, position, this.scene)

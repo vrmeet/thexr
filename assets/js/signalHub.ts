@@ -11,7 +11,7 @@ type LocalEvents = {
     //   xr_component_changed: types.xr_component
     xr_state_changed: BABYLON.WebXRState
     new_log: any,
-    mesh_built: { name: string } // required to add new meshes to teleport manager
+    mesh_built: { name: string, type: string } // required to add new meshes to teleport manager
     member_states_changed: { [member_id: string]: types.member_state }
     hud_msg: string
     pulse: { hand: "left" | "right", intensity: number, duration: number }
