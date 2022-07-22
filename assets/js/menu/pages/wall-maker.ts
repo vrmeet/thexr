@@ -6,10 +6,11 @@ import { signalHub } from "../../signalHub";
 import { v4 as uuidv4 } from "uuid";
 
 import { a, div, pre, span, toggle } from "../helpers";
-import { random_id, reduceSigFigs } from "../../utils";
+import { random_id, reduceSigFigs, arrayReduceSigFigs } from "../../utils";
 import type { Component, event } from "../../types"
 import { EventName } from "../../event-names";
 import { filter, map } from "rxjs/operators";
+import { createWall } from "../../scene/constructs";
 
 export class WallMaker extends GUI.Container {
     public wallPoints: BABYLON.Vector3[]
@@ -110,19 +111,38 @@ export class WallMaker extends GUI.Container {
                 acc.push(reduceSigFigs(wallPoint.z))
                 return acc
             }, [])
+            const wallId = uuidv4()
+            const wallName = `${entity_type}_${random_id(5)}`
+            const tempWallMesh = createWall(wallName, 2, xzPoints, this.scene)
+            const tempCenter = tempWallMesh.getBoundingInfo().boundingBox.center
+            const worldOffset = new BABYLON.TransformNode("", this.scene)
+            worldOffset.position = tempCenter
+            this.pointIndicators.forEach(indicator => indicator.setParent(worldOffset))
+            worldOffset.position = BABYLON.Vector3.Zero()
+            const adjustedXZPoints = this.pointIndicators.reduce((acc, indicator) => {
+                acc.push(reduceSigFigs(indicator.position.x))
+                acc.push(reduceSigFigs(indicator.position.z))
+                return acc
+            }, [])
+
+            // for now wall only draws at y = 0
+            tempCenter.y = 0;
+
             let payload = {
                 type: entity_type,
-                id: uuidv4(),
-                name: `${entity_type}_${random_id(5)}`,
+                id: wallId,
+                name: wallName,
                 components: [
+                    { type: "position", data: { value: arrayReduceSigFigs(tempCenter.asArray()) } },
                     { type: "color", data: { value: (entity_type === "wall") ? "#09A909" : "#A10202" } },
                     { type: "height", data: { value: 2 } },
-                    { type: "points", data: { value: xzPoints } }
+                    { type: "points", data: { value: adjustedXZPoints } }
                 ]
             }
 
             let event: any = { m: EventName.entity_created, p: payload }
 
+            tempWallMesh.dispose()
 
             signalHub.outgoing.emit("event", event)
             signalHub.incoming.emit("event", event)
