@@ -26,6 +26,8 @@ import { AvatarManager } from "./scene/avatar-manager";
 import { DoorManager } from "./scene/door-manager";
 import { AgentManager } from "./scene/agent-manager";
 
+import { mode } from "./mode";
+
 const ANIMATION_FRAME_PER_SECOND = 60
 const TOTAL_ANIMATION_FRAMES = 5
 
@@ -43,7 +45,6 @@ export class SceneManager {
     public canvasId: string
     public bulletManager: BulletManager
     public avatarManager: AvatarManager
-    public isLeader: boolean
 
     public collectManager: CollectManager
     public doorManager: DoorManager
@@ -51,7 +52,6 @@ export class SceneManager {
 
 
     constructor(public member_id: string, public serializedSpace: serialized_space) {
-        this.isLeader = false
         this.space_id = this.serializedSpace.id
         this.canvas = document.getElementById(this.space_id) as HTMLCanvasElement;
         this.engine = new BABYLON.Engine(this.canvas, true, { preserveDrawingBuffer: true, stencil: true });
@@ -110,21 +110,13 @@ export class SceneManager {
         window['sceneManager'] = this
     }
 
-    initLeaderDuties() {
-        this.agentManager.startSpawning()
-    }
-
     setChannelListeners() {
 
         signalHub.incoming.on("new_leader").subscribe(({ member_id }) => {
-            console.log('leader is', member_id)
             if (this.member_id === member_id) {
-                this.isLeader = true
-                console.log("i'm leader")
-                this.initLeaderDuties() // should only run once
+                mode.leader = true
             } else {
-                this.isLeader = false
-                console.log("i'm not leader")
+                mode.leader = false
             }
         })
 

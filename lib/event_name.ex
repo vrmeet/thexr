@@ -27,7 +27,7 @@ defmodule EventName do
   def int_to_atom(5030), do: :entity_collected
   def int_to_atom(6000), do: :hud_message_broadcasted
   def int_to_atom(7000), do: :agent_spawned
-  def int_to_atom(7100), do: :agents_directed
+  def int_to_atom(7100), do: :agent_directed
   def int_to_atom(7200), do: :agent_hit
   def int_to_atom(8000), do: :target_hit
 
@@ -54,7 +54,7 @@ defmodule EventName do
   def atom_to_int(:entity_collected), do: 5030
   def atom_to_int(:hud_message_broadcasted), do: 6000
   def atom_to_int(:agent_spawned), do: 7000
-  def atom_to_int(:agents_directed), do: 7100
+  def atom_to_int(:agent_directed), do: 7100
   def atom_to_int(:agent_hit), do: 7200
   def atom_to_int(:target_hit), do: 8000
 

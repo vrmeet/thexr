@@ -2,6 +2,10 @@ import { filter, map, pipe, scan } from "rxjs";
 import type * as BABYLON from "babylonjs"
 import type { PosRot } from "./types";
 
+export const randomDiceRoll = (diceSides: number) => {
+    return Math.random() * Math.floor(diceSides)
+}
+
 export const reduceSigFigs = (value: number) => {
     return Math.round(value * 100000) / 100000
 }

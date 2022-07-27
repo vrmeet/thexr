@@ -77,8 +77,8 @@ export type event =
     { m: EventName.entity_collected, p: { member_id: string, entity_id: string } } |
     { m: EventName.member_damaged, p: { member_id: string } } |
     { m: EventName.hud_message_broadcasted, p: { member_id: string, msg: string } } |
-    { m: EventName.agent_spawned, p: { id: string, name: string, position: number[] } } |
-    { m: EventName.agents_directed, p: { agents: { name: string, prev_position: number[], next_position: number[], delay: number }[] } } |
+    { m: EventName.agent_spawned, p: { name: string, position: number[] } } |
+    { m: EventName.agent_directed, p: { name: string, position: number[], next_position: number[] } } |
     { m: EventName.agent_hit, p: { name: string, pos: number[], direction: number[] } } |
     { m: EventName.target_hit, p: { entity_id: string, pos: number[], direction: number[] } }
 

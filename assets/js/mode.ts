@@ -1,5 +1,6 @@
 export const mode = {
-    editing: false
+    editing: false,
+    leader: false
 }
 
 window['mode'] = mode

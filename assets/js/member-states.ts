@@ -31,7 +31,6 @@ export class MemberStates {
 
 
         signalHub.incoming.on("about_members").subscribe(members => {
-            console.log("about_members", JSON.stringify(members, null, 2))
             for (const [member_id, state] of Object.entries(members.states)) {
                 this.merge_state(member_id, state)
             }
@@ -143,6 +142,10 @@ export class MemberStates {
 
     my_mic_muted_pref() {
         return this.members[this.my_member_id].mic_muted
+    }
+
+    membersCount() {
+        return Object.keys(this.members).length
     }
 }
 

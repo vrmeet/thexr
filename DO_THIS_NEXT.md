@@ -1,5 +1,62 @@
 TODO:
 
+allow an agent to back up when they've failed to make much movement in X tries
+
+- point in a random direction to go to, start moving, /// (the direction should have at least no obstacles for X meter)
+   but if you are about to run into a mesh, 1m forward (forward ray)
+   or you are about to run out of floor, 1m forward down (floor detection ray)
+   repeat
+
+- get a random ray in random direction of the agent
+- set the ray length 5 meters, cast another ray downward to see if intersects floor
+   - if there is floor, move to that point
+
+on each frame, check if mesh intersects short forward ray (2 meters)
+  - if so, cancel current movement and animation
+  - pick a new random point (can't be same degree as the last one)
+
+
+
+
+
+
+
+
+
+
+Agent movement should 
+
+- parse initial scene created all the agent enemy spawn points
+
+agent manager
+  - on load, create all previously existing agents
+  - agent manager forwards agent directions as an "event" to all clients
+  - keep track of wave number, update spawn points with wave number
+  - agent manager forwards spawn point desire to create new agent
+  - keep track of agents
+
+agent
+  - if leader, will direct the next position of the agent
+     - send message back to agent manager
+
+agent spawn point (enemy spawner):
+   - if leader, periodically spawn new agents for it's own position
+     - depending on:
+        - number of members
+        - number of agents
+        - wave number
+    - send a message to agent manager to spawn a new agent
+
+
+Come back with a new plan for moving agents using the leader
+- leader starts paying attention to time elapsed, members playing that are not editors,
+  spawn points, agents and will:
+
+  each agent will operate independently: every 100ms interval:
+    - check for member, if there is a member, in sight, go there (emit message)
+    - else, head forward for random direction (emit message), if there is a floor and no obstacles
+    - else throw beams at random outward directions and choose one with no obstacle and has floor
+
 Make the persist edits toggle count, right now, does nothing
 
 
