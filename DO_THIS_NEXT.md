@@ -1,81 +1,17 @@
 TODO:
 
-fix the atan2 spinning around business
-bug: I see wasted messages that are sent when the agent has no possiblity of movement
+Agent is still walking through walls, are they getting too close ?
 
+Add back that an agent should follow a member unless they are in edit mode
 
-random search for a point, takes more iterations.  
-   - if you can cast a forward point, continue to move forward (find the furthers point forward you can move, or randomly select
-     a distance on a straight forward path)
-     - if you can't move forward then coordinate starting with 90 degrees to the right and distance at 6 m, decreasing by distance and  degress.
-   - ease in and ease out on turning and straight movements
+Fix keys that open doors
 
-find random eligible position, at least 5M away.  If non can be found, don't move.
-   eligible position, has no obstacles up to that point, and the point is on the floor.
+allow enemy agent to take a few hits before going down
 
+play a kill animation before disappearing immediately
 
+record head and hand animations into a BABYLON compatible animation format and give enemies head and arms
 
-problem: large deviation of enemy motion between clients, random rotation is not captured in 
-message?
-
-allow an agent to back up when they've failed to make much movement in X tries
-
-- point in a random direction to go to, start moving, /// (the direction should have at least no obstacles for X meter)
-   but if you are about to run into a mesh, 1m forward (forward ray)
-   or you are about to run out of floor, 1m forward down (floor detection ray)
-   repeat
-
-- get a random ray in random direction of the agent
-- set the ray length 5 meters, cast another ray downward to see if intersects floor
-   - if there is floor, move to that point
-
-on each frame, check if mesh intersects short forward ray (2 meters)
-  - if so, cancel current movement and animation
-  - pick a new random point (can't be same degree as the last one)
-
-
-
-
-
-
-
-
-
-
-Agent movement should 
-
-- parse initial scene created all the agent enemy spawn points
-
-agent manager
-  - on load, create all previously existing agents
-  - agent manager forwards agent directions as an "event" to all clients
-  - keep track of wave number, update spawn points with wave number
-  - agent manager forwards spawn point desire to create new agent
-  - keep track of agents
-
-agent
-  - if leader, will direct the next position of the agent
-     - send message back to agent manager
-
-agent spawn point (enemy spawner):
-   - if leader, periodically spawn new agents for it's own position
-     - depending on:
-        - number of members
-        - number of agents
-        - wave number
-    - send a message to agent manager to spawn a new agent
-
-
-Come back with a new plan for moving agents using the leader
-- leader starts paying attention to time elapsed, members playing that are not editors,
-  spawn points, agents and will:
-
-  each agent will operate independently: every 100ms interval:
-    - check for member, if there is a member, in sight, go there (emit message)
-    - else, head forward for random direction (emit message), if there is a floor and no obstacles
-    - else throw beams at random outward directions and choose one with no obstacle and has floor
-
-Make the persist edits toggle count, right now, does nothing
 
 
 

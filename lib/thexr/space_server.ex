@@ -203,6 +203,15 @@ defmodule Thexr.SpaceServer do
     updated_agents = Map.put(state.agents, payload.name, Map.delete(payload, :name))
 
     state = %{state | agents: updated_agents}
+    # putting nil into last element of tuple forces handle event to broadcast back to self
+    handle_event(put_elem(tuple, 3, nil), state)
+  end
+
+  def handle_cast({:event, :agent_stopped, %{p: payload}, _pid} = tuple, state) do
+    updated_agents = Map.put(state.agents, payload.name, Map.delete(payload, :name))
+
+    state = %{state | agents: updated_agents}
+    # putting nil into last element of tuple forces handle event to broadcast back to self
     handle_event(put_elem(tuple, 3, nil), state)
   end
 

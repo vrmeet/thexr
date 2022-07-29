@@ -40,15 +40,15 @@ export class Agent {
         this.resume()
 
         this.receiveMovementEvent()
+        this.receiveStoppedEvent()
 
         this.startEventLoop()
-
+        this.teleportTo(BABYLON.Vector3.FromArray(position))
 
     }
 
     resume() {
         this.interval = setInterval(() => {
-            console.log("periodic interval update msg")
             if (mode.leader) {
                 this.bus.next("update")
             }
@@ -67,7 +67,7 @@ export class Agent {
         return this.degreeSamples[Math.floor(Math.random() * this.degreeSamples.length)]
     }
 
-    forwardRay(length: number = 1) {
+    forwardRay(length: number = 1.5) {
         this.ray.origin.copyFrom(this.transform.position)
         this.ray.origin.y += 1
         this.ray.direction.copyFrom(this.transform.forward)
@@ -112,15 +112,10 @@ export class Agent {
                 // go someplace new if we can, or just sit here
                 let randomPoint = this.randomPointOrNull()
                 if (randomPoint) {
-                    console.log("distance of new point", randomPoint.subtract(this.transform.position).length())
                     this.createMovementEvent(randomPoint)
                 } else {
-                    console.log("can't find a place to go")
                     this.locked = false
                 }
-            } else if (evt === "cancel") {
-                this.cancelGoTo()
-
             }
 
         })
@@ -134,6 +129,21 @@ export class Agent {
         ).subscribe(evt => {
             this.goTo(BABYLON.Vector3.FromArray(evt.p["next_position"]))
         })
+    }
+
+    receiveStoppedEvent() {
+        signalHub.incoming.on("event").pipe(
+            filter(evt => evt.m === EventName.agent_stopped),
+            filter(evt => evt.p["name"] === this.name)
+        ).subscribe(evt => {
+            this.cancelGoTo()
+            this.teleportTo(BABYLON.Vector3.FromArray(evt.p["position"]))
+        })
+    }
+
+    createStoppedEvent() {
+        let evt: event = { m: EventName.agent_stopped, p: { name: this.name, position: this.transform.position.asArray() } }
+        signalHub.outgoing.emit("event", evt)
     }
 
     createMovementEvent(nextPosition: BABYLON.Vector3) {
@@ -193,7 +203,7 @@ export class Agent {
         let origin = this.transform.position.clone()
         origin.y += 1
         const direction = testPoint.subtract(origin).normalize()
-        origin.addInPlace(direction.scale(1))
+        origin.addInPlace(direction.scale(0.6))
         let newRay = BABYLON.Ray.CreateNewFromTo(origin, testPoint)
         this.ray.origin.copyFrom(newRay.origin)
         this.ray.direction.copyFrom(newRay.direction)
@@ -230,20 +240,19 @@ export class Agent {
     }
 
     tryToGoForward(maxDistance: number = 8) {
-        for (let distance = maxDistance; distance > 2; distance--) {
+        for (let distance = maxDistance; distance > 3; distance--) {
             let testPoint = this.convertDirectionToCoordinate(0, distance)
             let checkedPoint = this.checkPointEligible(testPoint)
             if (checkedPoint) {
                 return checkedPoint
             }
         }
-        console.log("can't move forward")
         return null
     }
 
     scanFromLeft(startingDegree: number, maxDistance: number = 6) {
         for (let degrees = startingDegree; degrees < 150; degrees += 15) {
-            for (let distance = 8; distance > 2; distance--) {
+            for (let distance = 8; distance > 3; distance--) {
                 let testPoint = this.convertDirectionToCoordinate(degrees, distance)
                 let checkedPoint = this.checkPointEligible(testPoint)
                 if (checkedPoint) {
@@ -251,7 +260,6 @@ export class Agent {
                 }
             }
         }
-        console.log("can't move to the side")
         return null
     }
 
@@ -265,7 +273,6 @@ export class Agent {
                 }
             }
         }
-        console.log("can't move to the side")
         return null
     }
 
@@ -273,7 +280,6 @@ export class Agent {
         let rand = Math.random()
         if (rand > 0.5) {
             let forwardPoint = this.tryToGoForward()
-            console.log("forward point", forwardPoint)
             if (forwardPoint) {
                 return forwardPoint
             }
@@ -331,10 +337,6 @@ export class Agent {
             let desiredRotationY = Math.atan2(direction.x, direction.z);
 
             let originalRotationY = this.transform.rotation.y
-
-            console.log("current rotation", this.transform.rotation.y, BABYLON.Angle.FromRadians(this.transform.rotation.y).degrees())
-            console.log("desired rotation", desiredRotationY, BABYLON.Angle.FromRadians(desiredRotationY).degrees())
-
             // if there is a sign change, subtract a full 360 degress from original so we keep the same sign
             if (desiredRotationY < 0 && originalRotationY > 0) {
                 originalRotationY = originalRotationY - 2 * Math.PI
@@ -348,13 +350,13 @@ export class Agent {
 
             let ease = null
             return new Promise((resolve) => {
-                console.log("animate from", originalRotationY, "to", desiredRotationY)
                 this.animatable = BABYLON.Animation.CreateAndStartAnimation("", this.transform, "rotation.y", 60, 30, originalRotationY, desiredRotationY, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, ease, () => {
                     let sub;
                     if (mode.leader) {
                         sub = this.scene.onBeforeRenderObservable.add(() => {
                             if (this.somethingIsInfront() || this.ranOutOfFloor()) {
-                                this.bus.next("cancel")
+                                // this.bus.next("cancel")
+                                this.createStoppedEvent()
                                 this.scene.onBeforeRenderObservable.remove(sub)
                                 sub = null
                                 resolve(false)
@@ -418,6 +420,7 @@ export class Agent {
         let body = BABYLON.MeshBuilder.CreateBox(`body_${this.name}`, { width: 1, depth: 1, height: 2 }, this.scene)
         this.body = BABYLON.Mesh.MergeMeshes([head, body], true)
         this.body.metadata = { agentName: this.name }
+
         BABYLON.Tags.AddTagsTo(this.body, "targetable")
         this.body.id = this.name
         this.body.name = this.name

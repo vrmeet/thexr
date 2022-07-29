@@ -46,11 +46,12 @@ export class AgentManager {
         signalHub.incoming.on("about_space").subscribe(event => {
             Object.entries(event.agents).forEach(([agentName, agent]) => {
                 // this.addAgent("id", agent.)
-                console.log("about_agnet", agent)
+
                 let newAgent = this.addAgent(agentName, agent.position)
                 if (agent.next_position) {
                     // if this agent was moved it will have a next position
-                    newAgent.goTo(BABYLON.Vector3.FromArray(agent.next_position))
+                    //newAgent.goTo(BABYLON.Vector3.FromArray(agent.next_position))
+                    newAgent.teleportTo(BABYLON.Vector3.FromArray(agent.next_position))
                 }
             })
             // console.log("about_space", JSON.stringify(event))
