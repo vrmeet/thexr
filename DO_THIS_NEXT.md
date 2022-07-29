@@ -1,5 +1,23 @@
 TODO:
 
+fix the atan2 spinning around business
+bug: I see wasted messages that are sent when the agent has no possiblity of movement
+
+
+random search for a point, takes more iterations.  
+   - if you can cast a forward point, continue to move forward (find the furthers point forward you can move, or randomly select
+     a distance on a straight forward path)
+     - if you can't move forward then coordinate starting with 90 degrees to the right and distance at 6 m, decreasing by distance and  degress.
+   - ease in and ease out on turning and straight movements
+
+find random eligible position, at least 5M away.  If non can be found, don't move.
+   eligible position, has no obstacles up to that point, and the point is on the floor.
+
+
+
+problem: large deviation of enemy motion between clients, random rotation is not captured in 
+message?
+
 allow an agent to back up when they've failed to make much movement in X tries
 
 - point in a random direction to go to, start moving, /// (the direction should have at least no obstacles for X meter)

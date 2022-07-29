@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 import { mode } from "../mode"
 import { member_states } from "../member-states"
 import { Subject } from "rxjs"
+import { ElasticEase } from "babylonjs"
 
 
 
@@ -33,6 +34,7 @@ export class Agent {
         this.speed = 1.5
         this.createBody()
         this.degreeSamples = this.degrees()
+
         setInterval(() => {
             console.log("periodic interval update msg")
             if (mode.leader) {
@@ -50,11 +52,11 @@ export class Agent {
         return this.degreeSamples[Math.floor(Math.random() * this.degreeSamples.length)]
     }
 
-    forwardRay(length: number = 2) {
-        this.ray.origin = this.transform.position.clone()
+    forwardRay(length: number = 1) {
+        this.ray.origin.copyFrom(this.transform.position)
         this.ray.origin.y += 1
-        this.ray.direction = this.transform.forward.clone()
-        this.ray.origin.addInPlace(this.ray.direction.scale(1.1))
+        this.ray.direction.copyFrom(this.transform.forward)
+        this.ray.origin.addInPlace(this.transform.forward.scale(0.51))
         this.ray.length = length
         return this.ray
     }
@@ -92,18 +94,18 @@ export class Agent {
                 }
 
                 this.locked = true
-                // go someplace new
-                let randomPoint = this.convertDirectionToCoordinate(this.getRandomDegree(), 5)
-
-                this.createMovementEvent(randomPoint)
+                // go someplace new if we can, or just sit here
+                let randomPoint = this.randomPointOrNull()
+                if (randomPoint) {
+                    console.log("distance of new point", randomPoint.subtract(this.transform.position).length())
+                    this.createMovementEvent(randomPoint)
+                } else {
+                    console.log("can't find a place to go")
+                    this.locked = false
+                }
             } else if (evt === "cancel") {
                 this.cancelGoTo()
-            } else {
-                // response to the direction and move self, if done moving, AND leader, send self an update
-                await this.goTo(BABYLON.Vector3.FromArray(evt.p["next_position"]))
-                if (mode.leader) {
-                    this.bus.next("update")
-                }
+
             }
 
         })
@@ -114,8 +116,8 @@ export class Agent {
         signalHub.incoming.on("event").pipe(
             filter(evt => evt.m === EventName.agent_directed),
             filter(evt => evt.p["name"] === this.name)
-        ).subscribe(async (evt) => {
-            this.bus.next(evt)
+        ).subscribe(evt => {
+            this.goTo(BABYLON.Vector3.FromArray(evt.p["next_position"]))
         })
     }
 
@@ -155,36 +157,140 @@ export class Agent {
         // rayHelper.show(this.scene, BABYLON.Color3.Red())
         const pickInfo = this.scene.pickWithRay(ray)
         // if the point picked by ray is near the floor we're currently standing on (say within 30 cm height)
-        return (pickInfo.hit && Math.abs(pickInfo.pickedPoint.y - this.transform.position.y) < 0.3)
+        if (pickInfo.hit && Math.abs(pickInfo.pickedPoint.y - this.transform.position.y) < 0.3) {
+            return pickInfo.pickedPoint.y
+        } else {
+            return null
+        }
     }
 
+    checkIfDestinationHasObstacles(testX: number, testZ: number) {
+        const testRay = this.createObstacleRay(new BABYLON.Vector3(testX, this.transform.position.y + 1, testZ))
+        const pickInfo = this.scene.pickWithRay(testRay)
+        if (pickInfo.hit) {
+            return pickInfo
+        } else {
+            return null
+        }
+    }
 
+    createObstacleRay(testPoint: BABYLON.Vector3) {
+        let origin = this.transform.position.clone()
+        origin.y += 1
+        const direction = testPoint.subtract(origin).normalize()
+        origin.addInPlace(direction.scale(1))
+        let newRay = BABYLON.Ray.CreateNewFromTo(origin, testPoint)
+        this.ray.origin.copyFrom(newRay.origin)
+        this.ray.direction.copyFrom(newRay.direction)
+        this.ray.length = newRay.length
+        return this.ray
+    }
 
     convertDirectionToCoordinate(degree: number, length: number = 10): BABYLON.Vector3 {
-        this.ray.origin = this.transform.position.clone()
-        this.ray.direction = this.transform.forward.clone()
+        this.ray.origin.copyFrom(this.transform.position)
+        this.ray.direction.copyFrom(this.transform.forward)
 
         let matrix = BABYLON.Matrix.RotationY(BABYLON.Angle.FromDegrees(degree).radians())
         const temp = BABYLON.Ray.Transform(this.ray, matrix)
         this.ray.direction.copyFrom(temp.direction)
-        this.ray.length = 10
+        this.ray.length = length
 
-        return this.transform.position.clone().add(this.ray.direction.scale(length))
+        return this.transform.position.add(this.ray.direction.clone().normalize().scale(length))
     }
 
+    randomSign() {
+        return Math.round(Math.random()) * 2 - 1
+    }
 
-    randomPointOrNull(tries = 10) {
-
-        while (tries > 0) {
-            let randomDegree = this.getRandomDegree()
-            // let x = this.transform.position.x + Math.random() * 10 - 5
-            // let z = this.transform.position.z + Math.random() * 10 - 5
-            // if (this.checkIfPointOnMyGround(x, z)) {
-            //     return new BABYLON.Vector3(x, this.transform.position.y, z)
-            // }
-            tries -= 1
+    checkPointEligible(testPoint: BABYLON.Vector3) {
+        let testX = testPoint.x
+        let testZ = testPoint.z
+        let groundHeight = this.checkIfPointOnMyGround(testX, testZ)
+        if (groundHeight) {
+            if (!this.checkIfDestinationHasObstacles(testX, testZ)) {
+                return new BABYLON.Vector3(testX, groundHeight, testZ)
+            }
         }
         return null
+    }
+
+    tryToGoForward(maxDistance: number = 8) {
+        for (let distance = maxDistance; distance > 2; distance--) {
+            let testPoint = this.convertDirectionToCoordinate(0, distance)
+            let checkedPoint = this.checkPointEligible(testPoint)
+            if (checkedPoint) {
+                return checkedPoint
+            }
+        }
+        console.log("can't move forward")
+        return null
+    }
+
+    scanFromLeft(startingDegree: number, maxDistance: number = 6) {
+        for (let degrees = startingDegree; degrees < 150; degrees += 15) {
+            for (let distance = 8; distance > 2; distance--) {
+                let testPoint = this.convertDirectionToCoordinate(degrees, distance)
+                let checkedPoint = this.checkPointEligible(testPoint)
+                if (checkedPoint) {
+                    return checkedPoint
+                }
+            }
+        }
+        console.log("can't move to the side")
+        return null
+    }
+
+    scanFromRight(startingDegree: number, maxDistance: number = 6) {
+        for (let degrees = startingDegree; degrees > -150; degrees -= 15) {
+            for (let distance = 8; distance > 2; distance--) {
+                let testPoint = this.convertDirectionToCoordinate(degrees, distance)
+                let checkedPoint = this.checkPointEligible(testPoint)
+                if (checkedPoint) {
+                    return checkedPoint
+                }
+            }
+        }
+        console.log("can't move to the side")
+        return null
+    }
+
+    randomPointOrNull() {
+        let rand = Math.random()
+        if (rand > 0.5) {
+            let forwardPoint = this.tryToGoForward()
+            console.log("forward point", forwardPoint)
+            if (forwardPoint) {
+                return forwardPoint
+            }
+            return this.scanFromRight(Math.random() * 90 + 5)
+
+        } else if (rand < 0.25) {
+            return this.scanFromRight(90)
+        } else {
+            return this.scanFromLeft(-90)
+        }
+
+
+        // const farDistance = 5
+        // const maxTries = 10
+        // // start 
+        // for (let bufferDistance = farDistance; bufferDistance >= 2; bufferDistance--) {
+        //     for (let tries = 0; tries < maxTries; tries++) {
+        //         let xRandom = (Math.random() * 5 + bufferDistance) * this.randomSign()
+        //         let yRandom = (Math.random() * 5 + bufferDistance) * this.randomSign()
+
+        //         let testX = this.transform.position.x + xRandom
+        //         let testZ = this.transform.position.z + yRandom
+        //         console.log("testing", testX, testZ)
+        //         let groundHeight = this.checkIfPointOnMyGround(testX, testZ)
+        //         if (groundHeight) {
+        //             if (!this.checkIfDestinationHasObstacles(testX, testZ)) {
+        //                 return new BABYLON.Vector3(testX, groundHeight, testZ)
+        //             }
+        //         }
+        //     }
+        //     return null
+        // }
     }
 
     cancelGoTo() {
@@ -207,18 +313,43 @@ export class Agent {
         /// set direction of body
         let direction = position.subtract(this.transform.position)
         if (direction.length() > 0.1) {
-            var desiredRotation = Math.atan2(direction.x, direction.z);
+            let desiredRotationY = Math.atan2(direction.x, direction.z);
+
+            let originalRotationY = this.transform.rotation.y
+
+            console.log("current rotation", this.transform.rotation.y, BABYLON.Angle.FromRadians(this.transform.rotation.y).degrees())
+            console.log("desired rotation", desiredRotationY, BABYLON.Angle.FromRadians(desiredRotationY).degrees())
+
+            if (desiredRotationY < 0 && originalRotationY > 0) {
+                originalRotationY = originalRotationY - 2 * Math.PI
+            } else if (desiredRotationY > 0 && originalRotationY < 0) {
+                originalRotationY = originalRotationY + 2 * Math.PI
+            }
+
+            if (Math.abs(originalRotationY - desiredRotationY) > Math.PI) {
+                originalRotationY = this.transform.rotation.y
+            }
+
+            let ease = null
             return new Promise((resolve) => {
-                this.animatable = BABYLON.Animation.CreateAndStartAnimation("", this.transform, "rotation.y", 60, 30, this.transform.rotation.y, desiredRotation, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, null, () => {
-                    const sub = this.scene.onBeforeRenderObservable.add(() => {
-                        if (this.ranOutOfFloor() || this.somethingIsInfront()) {
-                            this.bus.next("cancel")
-                            resolve(false)
-                            return
+                console.log("animate from", originalRotationY, "to", desiredRotationY)
+                this.animatable = BABYLON.Animation.CreateAndStartAnimation("", this.transform, "rotation.y", 60, 30, originalRotationY, desiredRotationY, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, ease, () => {
+                    let sub;
+                    if (mode.leader) {
+                        sub = this.scene.onBeforeRenderObservable.add(() => {
+                            if (this.somethingIsInfront() || this.ranOutOfFloor()) {
+                                this.bus.next("cancel")
+                                this.scene.onBeforeRenderObservable.remove(sub)
+                                sub = null
+                                resolve(false)
+                                return
+                            }
+                        })
+                    }
+                    this.animatable = BABYLON.Animation.CreateAndStartAnimation("", this.transform, "position", framesPerSecond, totalFrames, this.transform.position, position, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, ease, () => {
+                        if (sub) {
+                            this.scene.onBeforeRenderObservable.remove(sub)
                         }
-                    })
-                    this.animatable = BABYLON.Animation.CreateAndStartAnimation("", this.transform, "position", framesPerSecond, totalFrames, this.transform.position, position, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, null, () => {
-                        this.scene.onBeforeRenderObservable.remove(sub)
                         this.locked = false
                         this.animatable = null
                         resolve(true)
