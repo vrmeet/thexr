@@ -24,8 +24,10 @@ export class Agent {
     public locked: boolean
     public animatable: BABYLON.Animatable
     public ray: BABYLON.Ray
+    public rayHelper: BABYLON.RayHelper
     public bus: Subject<any>
     public degreeSamples: number[]
+    public interval
 
     public speed: number // meters per second
     constructor(public name: string, public position: number[], public scene: BABYLON.Scene) {
@@ -35,18 +37,31 @@ export class Agent {
         this.createBody()
         this.degreeSamples = this.degrees()
 
-        setInterval(() => {
+        this.resume()
+
+        this.receiveMovementEvent()
+
+        this.startEventLoop()
+
+
+    }
+
+    resume() {
+        this.interval = setInterval(() => {
             console.log("periodic interval update msg")
             if (mode.leader) {
                 this.bus.next("update")
             }
         }, 1000) // check if you become the leader
-
-        this.receiveMovementEvent()
-        this.startEventLoop()
-
-
     }
+
+    pause() {
+        if (this.interval) {
+            clearInterval(this.interval)
+        }
+    }
+
+
 
     getRandomDegree() {
         return this.degreeSamples[Math.floor(Math.random() * this.degreeSamples.length)]
@@ -299,7 +314,7 @@ export class Agent {
             this.animatable = null
         }
         this.locked = false
-        this.bus.next("update")
+        // this.bus.next("update")
     }
 
     // return a boolean promise, of true if moved, false if didn't move at all
@@ -320,12 +335,13 @@ export class Agent {
             console.log("current rotation", this.transform.rotation.y, BABYLON.Angle.FromRadians(this.transform.rotation.y).degrees())
             console.log("desired rotation", desiredRotationY, BABYLON.Angle.FromRadians(desiredRotationY).degrees())
 
+            // if there is a sign change, subtract a full 360 degress from original so we keep the same sign
             if (desiredRotationY < 0 && originalRotationY > 0) {
                 originalRotationY = originalRotationY - 2 * Math.PI
             } else if (desiredRotationY > 0 && originalRotationY < 0) {
                 originalRotationY = originalRotationY + 2 * Math.PI
             }
-
+            // if after adjusting, our new originalRotationY is still 180 degrees away, undo the replacement
             if (Math.abs(originalRotationY - desiredRotationY) > Math.PI) {
                 originalRotationY = this.transform.rotation.y
             }
@@ -381,12 +397,14 @@ export class Agent {
     createBody() {
         this.ray = new BABYLON.Ray(BABYLON.Vector3.Zero(), BABYLON.Vector3.Forward(), 2)
 
-        const helper = new BABYLON.RayHelper(this.ray)
-        helper.show(this.scene, BABYLON.Color3.Red())
+        this.rayHelper = new BABYLON.RayHelper(this.ray)
+        this.rayHelper.show(this.scene, BABYLON.Color3.Red())
+
 
         let head = BABYLON.MeshBuilder.CreateCylinder(`head_${this.name}`, { diameterBottom: 0, diameterTop: 0.5, height: 0.8 }, this.scene)
         head.rotation.x = BABYLON.Angle.FromDegrees(90).radians()
         head.position.y = 1.5
+        head.metadata = { agentName: this.name }
 
         this.coneOfSight = BABYLON.MeshBuilder.CreateCylinder(`sight_${this.name}`, { diameterBottom: 0.2, diameterTop: 8, height: 15 }, this.scene)
         this.coneOfSight.rotation.x = BABYLON.Angle.FromDegrees(92).radians()
@@ -398,7 +416,8 @@ export class Agent {
         this.coneOfSight.isPickable = false
 
         let body = BABYLON.MeshBuilder.CreateBox(`body_${this.name}`, { width: 1, depth: 1, height: 2 }, this.scene)
-        this.body = BABYLON.Mesh.MergeMeshes([head, body], true);
+        this.body = BABYLON.Mesh.MergeMeshes([head, body], true)
+        this.body.metadata = { agentName: this.name }
         BABYLON.Tags.AddTagsTo(this.body, "targetable")
         this.body.id = this.name
         this.body.name = this.name
@@ -428,9 +447,12 @@ export class Agent {
     }
 
     dispose() {
+        this.pause()
+        this.cancelGoTo()
         this.coneOfSight.dispose()
         this.body.dispose()
         this.transform.dispose()
+        this.rayHelper.dispose()
     }
 
 

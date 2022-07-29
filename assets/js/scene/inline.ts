@@ -16,8 +16,7 @@ export class Inline {
 
     public subscriptions: Subscription[]
     constructor(public member_id: string, public scene: BABYLON.Scene, public camera: BABYLON.FreeCamera) {
-        // this.heldMesh = null
-        this.rightHandMesh = null
+
         this.flying = false
         this.subscriptions = []
 
@@ -86,7 +85,7 @@ export class Inline {
         // })
         // this.subscriptions.push(a)
 
-
+        // when space bar pressed
         let b = signalHub.local.on("keyboard_info").pipe(
             filter(info => (info.type === BABYLON.KeyboardEventTypes.KEYDOWN && info.event.keyCode === 32))
         ).subscribe(() => {
@@ -95,6 +94,8 @@ export class Inline {
         this.subscriptions.push(b)
 
         let c = signalHub.local.on("trigger_substitute").subscribe(() => {
+            console.log("right hand mesh", this.rightHandMesh)
+
             if (this.heldMesh()) {
                 this.emitTriggerSqueezed()
             }
@@ -140,6 +141,8 @@ export class Inline {
         right.position.copyFromFloats(0.2, 0, 0.2)
         right.visibility = 0.2
 
+        this.rightHandMesh = right
+
     }
 
     bindFKeyForFlight() {
@@ -161,9 +164,9 @@ export class Inline {
     }
 
     emitTriggerSqueezed() {
-        if (!this.rightHandMesh) {
-            this.rightHandMesh = Avatar.findAvatarHand(this.member_id, "right", this.scene)
-        }
+        // if (!this.rightHandMesh) {
+        //     this.rightHandMesh = Avatar.findAvatarHand(this.member_id, "right", this.scene)
+        // }
         const direction = this.rightHandMesh.getDirection(BABYLON.Vector3.Forward())
         signalHub.local.emit("trigger_squeezed_with_entity", {
             entity_id: this.heldMesh().id,
@@ -185,9 +188,9 @@ export class Inline {
     }
 
     emitReleased(mesh: BABYLON.AbstractMesh) {
-        if (!this.rightHandMesh) {
-            this.rightHandMesh = Avatar.findAvatarHand(this.member_id, "right", this.scene)
-        }
+        // if (!this.rightHandMesh) {
+        //     this.rightHandMesh = Avatar.findAvatarHand(this.member_id, "right", this.scene)
+        // }
         let payload = {
             member_id: this.member_id,
             entity_id: mesh.id,
@@ -208,9 +211,9 @@ export class Inline {
     }
 
     emitGrabbed(mesh: BABYLON.AbstractMesh) {
-        if (!this.rightHandMesh) {
-            this.rightHandMesh = Avatar.findAvatarHand(this.member_id, "right", this.scene)
-        }
+        // if (!this.rightHandMesh) {
+        //     this.rightHandMesh = Avatar.findAvatarHand(this.member_id, "right", this.scene)
+        // }
         let payload = {
             member_id: this.member_id,
             entity_id: mesh.id,

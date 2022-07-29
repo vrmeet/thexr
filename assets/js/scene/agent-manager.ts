@@ -21,11 +21,24 @@ export class AgentManager {
         // subscribe to agentSpawnerCreated event and create agent spawner
 
         this.subscribeToAgentCreatedEvent()
+        this.subscribeToAgentHitEvent()
         this.createExistingAgents()
 
         setInterval(() => {
             this.update()
         }, 1000)
+
+    }
+
+    subscribeToAgentHitEvent() {
+
+        signalHub.incoming.on("event").pipe(
+            filter(evt => evt.m === EventName.agent_hit),
+
+        ).subscribe(evt => {
+            console.log("enemy destroyed")
+            this.removeAgent(evt.p["name"])
+        })
 
     }
 
@@ -72,6 +85,14 @@ export class AgentManager {
         ).subscribe((evt: any) => {
             this.addAgent(evt.p.name, evt.p.position)
         })
+    }
+
+    removeAgent(name: string) {
+        let agent = this.agents[name]
+        if (agent) {
+            agent.dispose()
+        }
+        delete this.agents[name]
     }
 
 
