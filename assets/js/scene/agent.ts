@@ -3,22 +3,16 @@ can represent an enemy or npc
 */
 import * as BABYLON from "babylonjs"
 import { EventName } from "../event-names"
-import type { Avatar } from "./avatar"
+
 import { filter } from "rxjs"
 import { signalHub } from "../signalHub"
-import type { event, member_state } from "../types"
-import { random_id, arrayReduceSigFigs, reduceSigFigs } from "../utils"
-
-import { v4 as uuidv4 } from "uuid";
+import type { event } from "../types"
 import { mode } from "../mode"
-import { member_states } from "../member-states"
 import { Subject } from "rxjs"
-import { ElasticEase } from "babylonjs"
 
 
 
 export class Agent {
-    public coneOfSight: BABYLON.AbstractMesh
     public body: BABYLON.AbstractMesh
     public transform: BABYLON.TransformNode
     public locked: boolean
@@ -26,7 +20,6 @@ export class Agent {
     public ray: BABYLON.Ray
     public rayHelper: BABYLON.RayHelper
     public bus: Subject<any>
-    public degreeSamples: number[]
     public interval
 
     public speed: number // meters per second
@@ -35,7 +28,6 @@ export class Agent {
         this.bus = new Subject()
         this.speed = 1.5
         this.createBody()
-        this.degreeSamples = this.degrees()
 
         this.resume()
 
@@ -62,11 +54,6 @@ export class Agent {
     }
 
 
-
-    getRandomDegree() {
-        return this.degreeSamples[Math.floor(Math.random() * this.degreeSamples.length)]
-    }
-
     forwardRay(length: number = 1.5) {
         this.ray.origin.copyFrom(this.transform.position)
         this.ray.origin.y += 1
@@ -84,23 +71,6 @@ export class Agent {
     }
 
 
-    degrees() {
-        let mostFreqDegress = [5, 10, 15, 20, 30]
-        let lessFreqDegress = [45, 60, 90]
-        let samples = []
-        mostFreqDegress.forEach(fd => {
-            samples.push(fd)
-            samples.push(-fd)
-            samples.push(fd)
-            samples.push(-fd)
-        })
-        lessFreqDegress.forEach(ld => {
-            samples.push(ld)
-            samples.push(-ld)
-        })
-        return samples
-    }
-
     startEventLoop() {
         this.bus.subscribe(async evt => {
             if (evt === "update") {
@@ -110,7 +80,9 @@ export class Agent {
 
                 this.locked = true
                 // go someplace new if we can, or just sit here
-                let randomPoint = this.randomPointOrNull()
+
+                let randomPoint = this.eligibleAvatarLocation() || this.randomPointOrNull()
+
                 if (randomPoint) {
                     this.createMovementEvent(randomPoint)
                 } else {
@@ -150,30 +122,6 @@ export class Agent {
         let evt: event = { m: EventName.agent_directed, p: { name: this.name, position: this.transform.position.asArray(), next_position: nextPosition.asArray() } }
         signalHub.outgoing.emit("event", evt)
     }
-
-    // async update() {
-    //     if (this.locked) {
-    //         console.log("update locked so returning")
-    //         return
-    //     }
-    //     if (mode.leader) {
-    //         this.locked = true
-    //         // if we are the leader than animate us somewhere, and at the end of the animation check where to go next
-    //         let randomPoint = this.randomPointOrNull()
-    //         if (randomPoint) {
-    //             console.log("create new movement", randomPoint)
-    //             this.createMovementEvent(randomPoint)
-    //         } else {
-    //             this.locked = false
-    //         }
-    //     } else {
-    //         this.locked = false
-    //     }
-    // }
-
-
-
-
 
     checkIfPointOnMyGround(testX: number, testZ: number) {
         const headPosition = new BABYLON.Vector3(testX, this.transform.position.y + 2, testZ)
@@ -291,27 +239,6 @@ export class Agent {
             return this.scanFromLeft(-90)
         }
 
-
-        // const farDistance = 5
-        // const maxTries = 10
-        // // start 
-        // for (let bufferDistance = farDistance; bufferDistance >= 2; bufferDistance--) {
-        //     for (let tries = 0; tries < maxTries; tries++) {
-        //         let xRandom = (Math.random() * 5 + bufferDistance) * this.randomSign()
-        //         let yRandom = (Math.random() * 5 + bufferDistance) * this.randomSign()
-
-        //         let testX = this.transform.position.x + xRandom
-        //         let testZ = this.transform.position.z + yRandom
-        //         console.log("testing", testX, testZ)
-        //         let groundHeight = this.checkIfPointOnMyGround(testX, testZ)
-        //         if (groundHeight) {
-        //             if (!this.checkIfDestinationHasObstacles(testX, testZ)) {
-        //                 return new BABYLON.Vector3(testX, groundHeight, testZ)
-        //             }
-        //         }
-        //     }
-        //     return null
-        // }
     }
 
     cancelGoTo() {
@@ -380,6 +307,33 @@ export class Agent {
         }
     }
 
+    eligibleAvatarLocation() {
+        let eligiblePositions = []
+        // check leader (if not editing)
+        if (!mode.editing) {
+            let myFloorPoint = this.checkPointEligible(this.scene.activeCamera.position)
+            if (myFloorPoint) {
+                eligiblePositions.push(myFloorPoint)
+            }
+        }
+
+        let avatarMeshes = this.scene.getMeshesByTags("avatar")
+        for (let i = 0; i < avatarMeshes.length; i++) {
+            let avatarMeshPosition = avatarMeshes[i].position;
+            let groundPoint = this.checkPointEligible(avatarMeshPosition)
+            if (groundPoint) {
+                eligiblePositions.push(groundPoint)
+            }
+        }
+        if (eligiblePositions.length === 1) {
+            return eligiblePositions[0];
+        }
+        if (eligiblePositions.length > 1) {
+            return eligiblePositions[Math.floor(Math.random() * eligiblePositions.length)]
+        }
+        return null
+    }
+
     ranOutOfFloor(): boolean {
         let ray = this.floorDetectionRay()
         let pickInfo = this.scene.pickWithRay(ray)
@@ -408,14 +362,14 @@ export class Agent {
         head.position.y = 1.5
         head.metadata = { agentName: this.name }
 
-        this.coneOfSight = BABYLON.MeshBuilder.CreateCylinder(`sight_${this.name}`, { diameterBottom: 0.2, diameterTop: 8, height: 15 }, this.scene)
-        this.coneOfSight.rotation.x = BABYLON.Angle.FromDegrees(92).radians()
-        this.coneOfSight.position.y = 1.3
-        this.coneOfSight.scaling.x = 2
-        this.coneOfSight.scaling.z = 0.5
-        this.coneOfSight.position.z = 7
-        this.coneOfSight.visibility = 0.5
-        this.coneOfSight.isPickable = false
+        // this.coneOfSight = BABYLON.MeshBuilder.CreateCylinder(`sight_${this.name}`, { diameterBottom: 0.2, diameterTop: 8, height: 15 }, this.scene)
+        // this.coneOfSight.rotation.x = BABYLON.Angle.FromDegrees(92).radians()
+        // this.coneOfSight.position.y = 1.3
+        // this.coneOfSight.scaling.x = 2
+        // this.coneOfSight.scaling.z = 0.5
+        // this.coneOfSight.position.z = 7
+        // this.coneOfSight.visibility = 0.5
+        // this.coneOfSight.isPickable = false
 
         let body = BABYLON.MeshBuilder.CreateBox(`body_${this.name}`, { width: 1, depth: 1, height: 2 }, this.scene)
         this.body = BABYLON.Mesh.MergeMeshes([head, body], true)
@@ -426,33 +380,16 @@ export class Agent {
         this.body.name = this.name
         this.transform = new BABYLON.TransformNode(`transform_${this.name}`, this.scene);
         this.body.parent = this.transform
-        this.coneOfSight.parent = this.body
+        // this.coneOfSight.parent = this.body
 
 
 
-    }
-
-    canSeePosition(position: BABYLON.Vector3) {
-        if (this.coneOfSight.intersectsPoint(position)) {
-            return position
-        }
-        return null
-    }
-
-    // loops through all avatars and returns first one found that is within the cone of visiblity
-    firstSeenAvatar(avatarMeshes: BABYLON.AbstractMesh[]): BABYLON.Vector3 | null {
-        for (let i = 0; i < avatarMeshes.length; i++) {
-            if (avatarMeshes[i].intersectsMesh(this.coneOfSight)) {
-                return avatarMeshes[i].position
-            }
-        }
-        return this.canSeePosition(this.scene.activeCamera.position)
     }
 
     dispose() {
         this.pause()
         this.cancelGoTo()
-        this.coneOfSight.dispose()
+        // this.coneOfSight.dispose()
         this.body.dispose()
         this.transform.dispose()
         this.rayHelper.dispose()

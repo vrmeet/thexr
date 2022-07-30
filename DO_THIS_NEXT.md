@@ -1,7 +1,5 @@
 TODO:
 
-Agent is still walking through walls, are they getting too close ?
-
 Add back that an agent should follow a member unless they are in edit mode
 
 Fix keys that open doors
