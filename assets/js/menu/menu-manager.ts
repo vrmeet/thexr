@@ -339,7 +339,7 @@ export class MenuManager {
         let fsc = new GUI.Container("adapted-menu")
         fsc.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM
         fsc.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
-        fsc.width = "100px"
+        fsc.width = "120px"
         fsc.height = "100px"
         fsc.addControl(menuCtrl)
         fsc.zIndex = 20;
@@ -369,7 +369,7 @@ export class MenuManager {
             //signalHub.observables.mic_muted_pref.next(newValue)
         }
 
-        const menuLabel = this.menu_opened ? "close" : "menu"
+        const menuLabel = this.menu_opened ? "Close Menu" : "Menu"
         const micLabel = this.myState.mic_muted ? "Unmute" : "Mute"
         return div({ name: 'menu-div' },
             a({ name: 'menu-btn', callback: menuCallback }, menuLabel),
