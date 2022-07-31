@@ -9,6 +9,7 @@ import { signalHub } from "../signalHub"
 import type { event } from "../types"
 import { mode } from "../mode"
 import { Subject } from "rxjs"
+import { member_states } from "../member-states"
 
 
 
@@ -81,33 +82,32 @@ export class Agent {
     */
     startLeaderEventLoop() {
         this.bus.subscribe(async evt => {
-            if (evt === "update") {
-                if (this.locked || !mode.leader) {
-                    return
-                }
-
-                this.locked = true
-                // attack if there is an avatar right in front of us
-                let member_id = this.anAvatarIsInfront()
-                if (member_id) {
-
-                    this.createAttackEvent(member_id)
-                    this.createDamageEvent(member_id)
-
-                    return
-                }
-
-
-                // otherwise go someplace new if we can, or just sit here
-                let randomPoint = this.eligibleAvatarLocation() || this.randomPointOrNull()
-
-                if (randomPoint) {
-                    this.createMovementEvent(randomPoint)
-                } else {
-                    this.locked = false
-                    // wait until next event loop
-                }
+            //  if (evt === "update") {
+            if (this.locked || !mode.leader) {
+                return
             }
+
+            this.locked = true
+            // attack if there is an avatar right in front of us
+            let member_id = this.anAvatarIsInfront()
+            if (member_id) {
+
+                this.createAttackEvent(member_id)
+
+                return
+            }
+
+
+            // otherwise go someplace new if we can, or just sit here
+            let randomPoint = this.eligibleAvatarLocation() || this.randomPointOrNull()
+
+            if (randomPoint) {
+                this.createMovementEvent(randomPoint)
+            } else {
+                this.locked = false
+                // wait until next event loop
+            }
+            //    }
 
         })
     }
@@ -280,7 +280,6 @@ export class Agent {
             }
         }
         return null
-
     }
 
     randomPointOrNull() {
@@ -375,16 +374,31 @@ export class Agent {
     }
 
     getAllAvatarHeadPositions(): { [member_id: string]: BABYLON.Vector3 } {
+        let blackList = new Set<string>()
         let positions = {}
+        // ignore inactive members
+        for (const [member_id, member_state] of Object.entries(member_states.members)) {
+            if (member_state.status === "inactive") {
+                blackList.add(member_id)
+            }
+        }
+
         // check leader (if not editing)
         if (!mode.editing) {
-            positions[this.scene.metadata.member_id] = this.scene.activeCamera.position
+            const my_member_id = this.scene.metadata.member_id
+            if (!blackList.has(my_member_id)) {
+                positions[my_member_id] = this.scene.activeCamera.position
+            }
         }
         let avatarMeshes = this.scene.getMeshesByTags("avatar")
         for (let i = 0; i < avatarMeshes.length; i++) {
             let avatarMesh = avatarMeshes[i]
-            positions[avatarMesh.metadata.member_id] = avatarMesh.position
+            let avatarMemberId = avatarMesh.metadata.member_id
+            if (!blackList.has(avatarMemberId)) {
+                positions[avatarMemberId] = avatarMesh.position
+            }
         }
+
         return positions
     }
 

@@ -125,7 +125,17 @@ export class Avatar {
         }
 
         this.stopPreviousAnimations()
-        this.poseMeshUsingPosRot(this.head, headPose)
+        if (this.head) {
+            this.poseMeshUsingPosRot(this.head, headPose)
+        } else {
+            // for use in resetting the position after respawn
+
+            // TODO, if in XR, maybe just teleport to this point
+            let cam = this.scene.activeCamera as BABYLON.FreeCamera
+            cam.position.copyFromFloats(headPose.pos[0], headPose.pos[1], headPose.pos[2])
+            cam.rotationQuaternion = BABYLON.Quaternion.FromArray(headPose.rot)
+
+        }
         if (leftPose) {
             this.poseMeshUsingPosRot(this.leftHand, leftPose)
         } else {

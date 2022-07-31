@@ -22,6 +22,7 @@ export interface member_state {
     mic_muted?: boolean
     nickname?: string
     health: number
+    status: "active" | "inactive"
 }
 
 export type PosRot = {

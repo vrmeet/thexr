@@ -94,17 +94,15 @@ export class SceneManager {
         signalHub.incoming.on("event").pipe(
             filter(evt => evt.m === EventName.member_died && evt.p["member_id"] === this.member_id)
         ).subscribe(() => {
-
+            signalHub.local.emit("hud_msg", "Respawning in 15 seconds")
             setTimeout(() => {
                 let spawnPosRot = this.findSpawnPoint()
-                // TODO, if in XR, maybe just teleport to this point
 
-                let cam = this.scene.activeCamera as BABYLON.FreeCamera
-                cam.position.copyFromFloats(spawnPosRot.pos[0], spawnPosRot.pos[1] + mode.height, spawnPosRot.pos[2])
-                cam.rotationQuaternion = BABYLON.Quaternion.FromArray(spawnPosRot.rot)
+                // add some height for the head
+                let pos = [spawnPosRot.pos[0], spawnPosRot.pos[1] + mode.height, spawnPosRot.pos[2]]
 
-                signalHub.outgoing.emit("event", { m: EventName.member_respawned, p: { member_id: this.member_id, pos_rot: spawnPosRot } })
-            }, 5000)
+                signalHub.outgoing.emit("event", { m: EventName.member_respawned, p: { member_id: this.member_id, pos_rot: { ...spawnPosRot, pos } } })
+            }, 15000)
 
         })
 

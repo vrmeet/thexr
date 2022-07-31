@@ -31,18 +31,26 @@ defmodule ThexrWeb.SpaceChannel do
 
   def cache_members(:member_damaged, %{member_id: member_id}, socket) do
     prev_state = get_state(member_id, socket.assigns.member_states)
+    IO.inspect(prev_state, label: "previous state")
     prev_health = prev_state.health
 
     if prev_health > 0 do
       new_health = prev_health - 10
 
       if new_health <= 0 do
-        ThexrWeb.Endpoint.broadcast("space:#{socket.assigns.space_id}", "event", %{
+        event_payload = %{
           m: EventName.atom_to_int(:member_died),
           p: %{member_id: member_id}
-        })
+        }
 
-        merge_state(member_id, %{prev_state | health: 0}, socket)
+        SpaceServer.process_event(socket.assigns.space_id, :member_died, event_payload, nil)
+
+        # ThexrWeb.Endpoint.broadcast("space:#{socket.assigns.space_id}", "event", %{
+        #   m: EventName.atom_to_int(:member_died),
+        #   p: %{member_id: member_id}
+        # })
+
+        merge_state(member_id, %{prev_state | health: 0, status: "inactive"}, socket)
       else
         merge_state(member_id, %{prev_state | health: new_health}, socket)
       end
@@ -55,7 +63,7 @@ defmodule ThexrWeb.SpaceChannel do
         socket
       ) do
     update_pos_rot(member_id, pos_rot, socket)
-    merge_state(member_id, %{health: 100}, socket)
+    merge_state(member_id, %{health: 100, status: "active"}, socket)
   end
 
   def cache_members(

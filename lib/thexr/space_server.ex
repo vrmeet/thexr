@@ -208,6 +208,10 @@ defmodule Thexr.SpaceServer do
     handle_event_and_broadcast_others(state, tuple)
   end
 
+  def handle_cast({:event, :member_respawned, _, _} = tuple, state) do
+    handle_event_and_broadcast_all(state, tuple)
+  end
+
   def handle_cast({:event, :agent_spawned, evt, _pid} = tuple, state) do
     # save agents
     state = %{
