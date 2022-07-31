@@ -153,7 +153,7 @@ export class Avatar {
         }
         let box = BABYLON.MeshBuilder.CreateBox(headName, { size: 0.3 }, scene)
         box.rotationQuaternion = new BABYLON.Quaternion()
-        //  box.isPickable = false
+        box.isPickable = false
         box.metadata ||= {}
         box.metadata['member_id'] = member_id
         BABYLON.Tags.AddTagsTo(box, "avatar")

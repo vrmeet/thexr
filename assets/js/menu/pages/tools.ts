@@ -35,7 +35,6 @@ export class MenuTools extends GUI.Container {
 
         const editToggle = toggle({ value: (mode.editing) ? 1 : 0 }) as GUI.Slider
         editToggle.onValueChangedObservable.add(data => {
-            console.log(data)
             if (data > 0.5) {
                 mode.editing = true
             } else {
@@ -74,7 +73,6 @@ export class MenuTools extends GUI.Container {
     }
 
     setTool(toolName: EditMode) {
-        console.log('settool', toolName)
         if (this.selectedTool) {
             if (this.selectedTool === toolName) {
                 return

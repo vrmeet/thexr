@@ -55,7 +55,6 @@ export class WallMaker extends GUI.Container {
             let indicator = this.getPointIndicator(point)
             this.pointIndicators.push(indicator)
             this.wallPoints.push(point)
-            console.log("point pushed", indicator)
             if (this.wallPoints.length > 1) {
                 if (this.lines) {
                     this.lines.dispose()

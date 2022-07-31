@@ -159,7 +159,6 @@ export class XRGripManager {
             // another player stole our object
             signalHub.incoming.on("event").pipe(
                 filter(msg => (msg.m === EventName.entity_grabbed && msg.p.entity_id === this.intersectedMesh.id && msg.p.member_id != this.member_id)),
-                tap(() => { console.log("other player steal") })
             ),
 
             // or the first hand released the mesh

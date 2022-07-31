@@ -39,11 +39,8 @@ export class DoorManager {
             filter(pickedMesh => pickedMesh && pickedMesh.metadata && pickedMesh.metadata.door)
         ).subscribe(mesh => {
             if (mesh.getDistanceToCamera(this.scene.activeCamera) <= 3 && this.haveKeyForDoor(mesh)) {
-                console.log("can open door")
                 signalHub.outgoing.emit("event", { m: EventName.entity_animated_offset, p: { entity_id: mesh.id, pos: [0, 3, 0], duration: 3000 } })
                 signalHub.incoming.emit("event", { m: EventName.entity_animated_offset, p: { entity_id: mesh.id, pos: [0, 3, 0], duration: 3000 } })
-            } else {
-                console.log("too far, or don't have key")
             }
         })
     }

@@ -45,7 +45,7 @@ export class Agent {
 
     resume() {
         this.interval = setInterval(() => {
-            if (this.locked || !mode.leader) {
+            if (!mode.leader || this.locked) {
                 return
             }
             this.bus.next("update")
@@ -90,7 +90,6 @@ export class Agent {
                 // attack if there is an avatar right in front of us
                 let member_id = this.anAvatarIsInfront()
                 if (member_id) {
-                    console.log("avatar", member_id, "is in front in the update")
 
                     this.createAttackEvent(member_id)
                     this.createDamageEvent(member_id)
@@ -128,11 +127,8 @@ export class Agent {
             filter(evt => evt.m === EventName.agent_attacked_member),
             filter(evt => evt.p["name"] === this.name)
         ).subscribe(evt => {
-            console.log("receive attack event and unlocking!")
-            if (mode.leader) {
-                this.locked = false
-                this.createDamageEvent(evt.p["member_id"])
-            }
+            this.locked = false
+            this.createDamageEvent(evt.p["member_id"])
         })
     }
 
@@ -167,22 +163,20 @@ export class Agent {
         signalHub.outgoing.emit("event", evt)
     }
 
+
     checkIfPointOnMyGround(testX: number, testZ: number) {
         const headPosition = new BABYLON.Vector3(testX, this.transform.position.y + 1, testZ)
-        console.log("checking from headPosition of", headPosition)
         const ray = new BABYLON.Ray(headPosition, BABYLON.Vector3.Down(), 1.5)
         this.ray.origin.copyFrom(ray.origin)
         this.ray.direction.copyFrom(ray.direction)
         this.ray.length = ray.length
-        // const rayHelper = new BABYLON.RayHelper(ray)
-        // rayHelper.show(this.scene, BABYLON.Color3.Red())
+
         const pickInfo = this.scene.pickWithRay(ray)
 
         // if the point picked by ray is near the floor we're currently standing on (say within 30 cm height)
         if (pickInfo.hit) {
 
             let dis = Math.abs(pickInfo.pickedPoint.y - this.transform.position.y)
-            console.log("distance with current floor", dis)
             if (dis < 0.3) {
                 return pickInfo.pickedPoint.y
             } else {

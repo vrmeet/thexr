@@ -36,7 +36,6 @@ export class AgentManager {
             filter(evt => evt.m === EventName.agent_hit),
 
         ).subscribe(evt => {
-            console.log("enemy destroyed")
             this.removeAgent(evt.p["name"])
         })
 
@@ -54,7 +53,6 @@ export class AgentManager {
                     newAgent.teleportTo(BABYLON.Vector3.FromArray(agent.next_position))
                 }
             })
-            // console.log("about_space", JSON.stringify(event))
         })
     }
 
