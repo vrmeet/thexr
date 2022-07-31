@@ -97,8 +97,10 @@ export class SceneManager {
 
             setTimeout(() => {
                 let spawnPosRot = this.findSpawnPoint()
+                // TODO, if in XR, maybe just teleport to this point
+
                 let cam = this.scene.activeCamera as BABYLON.FreeCamera
-                cam.position.copyFromFloats(spawnPosRot.pos[0], spawnPosRot.pos[1], spawnPosRot.pos[2])
+                cam.position.copyFromFloats(spawnPosRot.pos[0], spawnPosRot.pos[1] + mode.height, spawnPosRot.pos[2])
                 cam.rotationQuaternion = BABYLON.Quaternion.FromArray(spawnPosRot.rot)
 
                 signalHub.outgoing.emit("event", { m: EventName.member_respawned, p: { member_id: this.member_id, pos_rot: spawnPosRot } })
@@ -236,13 +238,15 @@ export class SceneManager {
 
 
     findSpawnPoint() {
+
+        // TODO, might be more efficient to use Tags but the meshes aren't built yet
         const result = this.entities.filter(entity => entity.type === "spawn_point")
         if (result.length > 0) {
             let pos = result[0].components.filter(c => c.type === "position")[0].data.value
             let rot = BABYLON.Vector3.FromArray(result[0].components.filter(c => c.type === "rotation")[0].data.value).toQuaternion().asArray()
             return { pos: pos, rot: rot }
         } else {
-            return { pos: [0, 1.7, -8], rot: [0, 0, 0, 1] }
+            return { pos: [0, 0.01, -8], rot: [0, 0, 0, 1] }
         }
 
     }
@@ -251,11 +255,13 @@ export class SceneManager {
 
     getLastPosRot() {
         const camPosRot = sessionPersistance.getCameraPosRot()
-
         if (!camPosRot) {
             let spawnPoint = this.findSpawnPoint()
-            sessionPersistance.saveCameraPosRot(spawnPoint)
-            return spawnPoint
+            // since a spawn point is usually on the floor, raise it up to the camera head height
+            let camPoint = { pos: [...spawnPoint.pos], rot: [...spawnPoint.rot] }
+            camPoint.pos[1] += mode.height
+            sessionPersistance.saveCameraPosRot(camPoint)
+            return camPoint
         } else {
             return camPosRot
         }
@@ -263,21 +269,11 @@ export class SceneManager {
 
 
 
-    /*
-     this.camera.attachControl(this.engine._workingCanvas, false)
-        this.camera.angularSensibility = 250
-        console.log("default camera angular sensibility", this.camera.angularSensibility)
-     
-        this.camera.inputs.removeByType("FreeCameraKeyboardMoveInput");
-        this.camera.inputs.add(new FreeCameraKeyboardWalkInput())
-     
-    */
-
-
     createCamera() {
         let posRot = this.getLastPosRot()
         this.freeCamera = new BABYLON.FreeCamera("freeCam", BABYLON.Vector3.FromArray(posRot.pos), this.scene);
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.FromArray(posRot.rot)
+        this.freeCamera.ellipsoid = new BABYLON.Vector3(0.25, 0.10, 0.25)
         this.freeCamera.checkCollisions = true;
         // setup tools for 2D grabbing and avatar
         new Inline(this.member_id, this.scene, this.freeCamera)
@@ -391,7 +387,7 @@ export class SceneManager {
                 mesh = this.createBox(entity.name, entity.components)
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable targetable")
             } else if (entity.type === "spawn_point") {
-                mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 1, depth: 1, height: 0.3 }, this.scene)
+                mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 1, depth: 1, height: 0.05 }, this.scene)
             } else if (entity.type === "wall" || entity.type === "door") {
                 const height: number = (entity.components.filter(comp => comp.type === "height")[0]?.data?.value || 2) as number
                 const points: number[] = entity.components.filter(comp => comp.type === "points")[0].data.value as number[]

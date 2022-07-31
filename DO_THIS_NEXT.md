@@ -4,12 +4,7 @@ When player is announced dead: member_died event, should prevent agent from cont
   - freeze teleportation to prevent moving?
   - drop all weapons and release ammo?  etc.
 
-Respawn:
-BUG: the spawn point for rebirth places avatar head on the floor instead of at head height
 
-
-since the head is below the floor, the agents can't find him... actually that's not
-the reason
 
 agent
   
