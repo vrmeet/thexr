@@ -40,6 +40,7 @@ export enum EventName {
     agent_directed = 7100,
     agent_hit = 7200,
     agent_stopped = 7300,
+    agent_attacked_member = 7400,
 
     target_hit = 8000
 

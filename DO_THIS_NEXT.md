@@ -1,6 +1,33 @@
 TODO:
 
-Add back that an agent should follow a member unless they are in edit mode
+agent
+  
+  - moving forward observable
+      - if an avatar is < 2,
+      - emit attacking event (if leader)
+         - keep lock on
+         - create an interval 1000ms
+             - if avatar is within 2m in front
+               - emit member_damaged
+             - else cancel interval
+                  - release lock
+
+
+
+  - receive attacking event locally
+     - cancelGoTo
+     - 
+
+
+
+Avatar needs to stop moving and attack agent when finally upon them, dishing out damage
+  if isSomethingInfront detects an avatar in local (not leader) only 
+  the agent needs to stop 1.5 meters short of avatar otherwise we can't see them (too close)
+  the agent needs to emit message
+    the avatar being damaged will emit the damage message 
+    agent_attacking, play maylay animation
+    agent_stopped, freezes update momentarily
+    "update" on leader needs to 
 
 Fix keys that open doors
 

@@ -30,6 +30,7 @@ defmodule EventName do
   def int_to_atom(7100), do: :agent_directed
   def int_to_atom(7200), do: :agent_hit
   def int_to_atom(7300), do: :agent_stopped
+  def int_to_atom(7400), do: :agent_attacked_member
   def int_to_atom(8000), do: :target_hit
 
   def atom_to_int(:member_entered), do: 1000
@@ -58,6 +59,7 @@ defmodule EventName do
   def atom_to_int(:agent_directed), do: 7100
   def atom_to_int(:agent_hit), do: 7200
   def atom_to_int(:agent_stopped), do: 7300
+  def atom_to_int(:agent_attacked_member), do: 7400
   def atom_to_int(:target_hit), do: 8000
 
 end

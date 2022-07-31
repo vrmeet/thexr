@@ -80,6 +80,7 @@ export type event =
     { m: EventName.agent_spawned, p: { name: string, position: number[] } } |
     { m: EventName.agent_directed, p: { name: string, position: number[], next_position: number[] } } |
     { m: EventName.agent_stopped, p: { name: string, position: number[] } } |
+    { m: EventName.agent_attacked_member, p: { name: string, member_id: string } } |
     { m: EventName.agent_hit, p: { name: string, pos: number[], direction: number[] } } |
     { m: EventName.target_hit, p: { entity_id: string, pos: number[], direction: number[] } }
 

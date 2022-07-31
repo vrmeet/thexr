@@ -49,7 +49,9 @@ export class Avatar {
     }
 
     poseMeshUsingPosRot(mesh: BABYLON.AbstractMesh, pose: PosRot) {
-
+        if (!mesh) {
+            return
+        }
         // if we're getting a hand position, then free the hand from the face
         if (mesh.parent) {
             mesh.setParent(null)

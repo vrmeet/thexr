@@ -127,7 +127,7 @@ defmodule Thexr.SpaceServer do
      }, @timeout}
   end
 
-  def handle_event({:event, msg, evt, pid}, state) do
+  def forward_to_ledger(state, event_atom_name, evt) do
     state = %{state | sequence: state.sequence + 1}
 
     event_stream_attrs = %{
@@ -136,35 +136,59 @@ defmodule Thexr.SpaceServer do
       event: evt
     }
 
-    Thexr.QueueBroadcaster.async_notify({msg, event_stream_attrs})
-    # TODO: every msg is broadcast to every client?
-    # we can consolidate that to on 'need to know' basis
-    broadcast_event(state.space, msg, evt, pid)
+    Thexr.QueueBroadcaster.async_notify({event_atom_name, event_stream_attrs})
+    state
+  end
+
+  # def handle_event(event_name_atom, atomized_event, nil, state) do
+  #   forward_to_ledger(event_name_atom, atomized_event, state)
+  #   broadcast_event(state.space, event_name_atom, atomized_event, nil)
+  #   {:noreply, state}
+  # end
+
+  # def handle_event(event_name_atom, atomized_event, pid, state) when is_pid(pid) do
+  #   forward_to_ledger(event_name_atom, atomized_event, state)
+  #   broadcast_event(state.space, event_name_atom, atomized_event, pid)
+  #   {:noreply, state}
+  # end
+
+  def handle_event_and_broadcast_others(state, {:event, event_name_atom, atomized_event, pid}) do
+    state = forward_to_ledger(state, event_name_atom, atomized_event)
+    broadcast_event_to_others(state.space.id, atomized_event, pid)
+    IO.inspect(state, label: "new state")
+    {:noreply, state}
+  end
+
+  def handle_event_and_broadcast_all(state, {:event, event_name_atom, atomized_event, _pid}) do
+    state = forward_to_ledger(state, event_name_atom, atomized_event)
+    broadcast_event_to_all(state.space.id, atomized_event)
 
     {:noreply, state}
   end
 
-  def save_last_event_for_entity(evt, tuple, state) do
-    entity_id = evt.p.entity_id
-    new_entities = Map.put(state.entities, entity_id, evt)
-    state = Map.put(state, :entities, new_entities)
-    handle_event(tuple, state)
+  def save_last_event_for_entity(state, {:event, _event_name_atom, atomized_event, _pid} = tuple) do
+    entity_id = atomized_event.p.entity_id
+    new_entities = Map.put(state.entities, entity_id, atomized_event)
+
+    state
+    |> Map.put(:entities, new_entities)
+    |> handle_event_and_broadcast_others(tuple)
   end
 
-  def handle_cast({:event, :entity_grabbed, evt, _pid} = tuple, state) do
-    save_last_event_for_entity(evt, tuple, state)
+  def handle_cast({:event, :entity_grabbed, _evt, _pid} = tuple, state) do
+    save_last_event_for_entity(state, tuple)
   end
 
-  def handle_cast({:event, :entity_released, evt, _pid} = tuple, state) do
-    save_last_event_for_entity(evt, tuple, state)
+  def handle_cast({:event, :entity_released, _evt, _pid} = tuple, state) do
+    save_last_event_for_entity(state, tuple)
   end
 
-  def handle_cast({:event, :entity_collected, evt, _pid} = tuple, state) do
-    save_last_event_for_entity(evt, tuple, state)
+  def handle_cast({:event, :entity_collected, _evt, _pid} = tuple, state) do
+    save_last_event_for_entity(state, tuple)
   end
 
-  def handle_cast({:event, :entity_animated_offset, evt, _pid} = tuple, state) do
-    save_last_event_for_entity(evt, tuple, state)
+  def handle_cast({:event, :entity_animated_offset, _evt, _pid} = tuple, state) do
+    save_last_event_for_entity(state, tuple)
   end
 
   def handle_cast({:event, :member_entered, evt, _pid} = tuple, state) do
@@ -181,7 +205,7 @@ defmodule Thexr.SpaceServer do
         state
       end
 
-    handle_event(tuple, state)
+    handle_event_and_broadcast_others(state, tuple)
   end
 
   def handle_cast({:event, :agent_spawned, evt, _pid} = tuple, state) do
@@ -191,12 +215,12 @@ defmodule Thexr.SpaceServer do
       | agents: Map.put(state.agents, evt.p.name, %{position: evt.p.position})
     }
 
-    handle_event(put_elem(tuple, 3, nil), state)
+    handle_event_and_broadcast_all(state, tuple)
   end
 
   def handle_cast({:event, :agent_hit, evt, _pid} = tuple, state) do
     state = %{state | agents: Map.delete(state.agents, evt.p.name)}
-    handle_event(tuple, state)
+    handle_event_and_broadcast_others(state, tuple)
   end
 
   def handle_cast({:event, :agent_directed, %{p: payload}, _pid} = tuple, state) do
@@ -204,7 +228,7 @@ defmodule Thexr.SpaceServer do
 
     state = %{state | agents: updated_agents}
     # putting nil into last element of tuple forces handle event to broadcast back to self
-    handle_event(put_elem(tuple, 3, nil), state)
+    handle_event_and_broadcast_all(state, tuple)
   end
 
   def handle_cast({:event, :agent_stopped, %{p: payload}, _pid} = tuple, state) do
@@ -212,7 +236,11 @@ defmodule Thexr.SpaceServer do
 
     state = %{state | agents: updated_agents}
     # putting nil into last element of tuple forces handle event to broadcast back to self
-    handle_event(put_elem(tuple, 3, nil), state)
+    handle_event_and_broadcast_all(state, tuple)
+  end
+
+  def handle_cast({:event, :agent_attacked_member, _, _} = tuple, state) do
+    handle_event_and_broadcast_all(state, tuple)
   end
 
   def handle_cast({:event, :member_left, evt, _pid} = tuple, state) do
@@ -237,11 +265,11 @@ defmodule Thexr.SpaceServer do
         %{state | leader: nil, agents: %{}}
       end
 
-    handle_event(tuple, state)
+    handle_event_and_broadcast_all(state, tuple)
   end
 
   def handle_cast({:event, _, _, _} = tuple, state) do
-    handle_event(tuple, state)
+    handle_event_and_broadcast_others(state, tuple)
   end
 
   def handle_cast({:member_connected, member_id}, state) do
@@ -305,12 +333,17 @@ defmodule Thexr.SpaceServer do
     :ok
   end
 
-  def broadcast_event(space, _msg, evt, nil) do
-    ThexrWeb.Endpoint.broadcast("space:#{space.id}", "event", evt)
+  def broadcast_event_to_all(space_id, evt) do
+    ThexrWeb.Endpoint.broadcast("space:#{space_id}", "event", evt)
   end
 
-  def broadcast_event(space, _msg, evt, from) do
-    ThexrWeb.Endpoint.broadcast_from(from, "space:#{space.id}", "event", evt)
+  def broadcast_event_to_others(space_id, evt, from) do
+    if from == nil do
+      # fall back to broadcast all
+      broadcast_event_to_all(space_id, evt)
+    else
+      ThexrWeb.Endpoint.broadcast_from(from, "space:#{space_id}", "event", evt)
+    end
   end
 
   # def choose_leader(:member_entered, evt, state) do

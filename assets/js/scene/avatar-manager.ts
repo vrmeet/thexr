@@ -42,8 +42,6 @@ export class AvatarManager {
                 avatar.pose(payload.pos_rot, payload.left, payload.right)
             } else if (mpts.m === EventName.member_left) {
                 this.deleteAvatar(mpts.p.member_id)
-            } else if (mpts.m === EventName.member_died) {
-                // do something
             } else if (mpts.m === EventName.member_respawned) {
                 const payload = mpts.p
                 const avatar = this.createAvatar(payload.member_id)

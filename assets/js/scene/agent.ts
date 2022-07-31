@@ -21,6 +21,7 @@ export class Agent {
     public rayHelper: BABYLON.RayHelper
     public bus: Subject<any>
     public interval
+    public coneOfSight: BABYLON.AbstractMesh
 
     public speed: number // meters per second
     constructor(public name: string, public position: number[], public scene: BABYLON.Scene) {
@@ -33,17 +34,22 @@ export class Agent {
 
         this.receiveMovementEvent()
         this.receiveStoppedEvent()
+        this.receiveAttackedMemberEvent()
 
-        this.startEventLoop()
+        this.startLeaderEventLoop()
         this.teleportTo(BABYLON.Vector3.FromArray(position))
 
     }
 
+
+
     resume() {
         this.interval = setInterval(() => {
-            if (mode.leader) {
-                this.bus.next("update")
+            if (this.locked || !mode.leader) {
+                return
             }
+            this.bus.next("update")
+
         }, 1000) // check if you become the leader
     }
 
@@ -70,8 +76,10 @@ export class Agent {
         return this.ray
     }
 
-
-    startEventLoop() {
+    /*
+    on the leader client, motion will be broadcast to all clients about this agent
+    */
+    startLeaderEventLoop() {
         this.bus.subscribe(async evt => {
             if (evt === "update") {
                 if (this.locked || !mode.leader) {
@@ -79,14 +87,26 @@ export class Agent {
                 }
 
                 this.locked = true
-                // go someplace new if we can, or just sit here
+                // attack if there is an avatar right in front of us
+                let member_id = this.anAvatarIsInfront()
+                if (member_id) {
+                    console.log("avatar", member_id, "is in front in the update")
 
+                    this.createAttackEvent(member_id)
+                    this.createDamageEvent(member_id)
+
+                    return
+                }
+
+
+                // otherwise go someplace new if we can, or just sit here
                 let randomPoint = this.eligibleAvatarLocation() || this.randomPointOrNull()
 
                 if (randomPoint) {
                     this.createMovementEvent(randomPoint)
                 } else {
                     this.locked = false
+                    // wait until next event loop
                 }
             }
 
@@ -100,6 +120,19 @@ export class Agent {
             filter(evt => evt.p["name"] === this.name)
         ).subscribe(evt => {
             this.goTo(BABYLON.Vector3.FromArray(evt.p["next_position"]))
+        })
+    }
+
+    receiveAttackedMemberEvent() {
+        signalHub.incoming.on("event").pipe(
+            filter(evt => evt.m === EventName.agent_attacked_member),
+            filter(evt => evt.p["name"] === this.name)
+        ).subscribe(evt => {
+            console.log("receive attack event and unlocking!")
+            if (mode.leader) {
+                this.locked = false
+                this.createDamageEvent(evt.p["member_id"])
+            }
         })
     }
 
@@ -118,22 +151,43 @@ export class Agent {
         signalHub.outgoing.emit("event", evt)
     }
 
+    createAttackEvent(member_id: string) {
+        let evt: event = { m: EventName.agent_attacked_member, p: { name: this.name, member_id: member_id } }
+        signalHub.outgoing.emit("event", evt)
+    }
+
+    createDamageEvent(member_id: string) {
+        signalHub.incoming.emit("event", { m: EventName.member_damaged, p: { member_id: member_id } })
+        signalHub.outgoing.emit("event", { m: EventName.member_damaged, p: { member_id: member_id } })
+
+    }
+
     createMovementEvent(nextPosition: BABYLON.Vector3) {
         let evt: event = { m: EventName.agent_directed, p: { name: this.name, position: this.transform.position.asArray(), next_position: nextPosition.asArray() } }
         signalHub.outgoing.emit("event", evt)
     }
 
     checkIfPointOnMyGround(testX: number, testZ: number) {
-        const headPosition = new BABYLON.Vector3(testX, this.transform.position.y + 2, testZ)
-        const ray = new BABYLON.Ray(headPosition, BABYLON.Vector3.Down(), 3)
+        const headPosition = new BABYLON.Vector3(testX, this.transform.position.y + 1, testZ)
+        console.log("checking from headPosition of", headPosition)
+        const ray = new BABYLON.Ray(headPosition, BABYLON.Vector3.Down(), 1.5)
+        this.ray.origin.copyFrom(ray.origin)
+        this.ray.direction.copyFrom(ray.direction)
+        this.ray.length = ray.length
         // const rayHelper = new BABYLON.RayHelper(ray)
         // rayHelper.show(this.scene, BABYLON.Color3.Red())
         const pickInfo = this.scene.pickWithRay(ray)
+
         // if the point picked by ray is near the floor we're currently standing on (say within 30 cm height)
-        if (pickInfo.hit && Math.abs(pickInfo.pickedPoint.y - this.transform.position.y) < 0.3) {
-            return pickInfo.pickedPoint.y
-        } else {
-            return null
+        if (pickInfo.hit) {
+
+            let dis = Math.abs(pickInfo.pickedPoint.y - this.transform.position.y)
+            console.log("distance with current floor", dis)
+            if (dis < 0.3) {
+                return pickInfo.pickedPoint.y
+            } else {
+                return null
+            }
         }
     }
 
@@ -224,6 +278,17 @@ export class Agent {
         return null
     }
 
+    anAvatarIsInfront() {
+        let avatarPositions = this.getAllAvatarHeadPositions()
+        for (const [member_id, avatarPosition] of Object.entries(avatarPositions)) {
+            if (this.coneOfSight.intersectsPoint(avatarPosition)) {
+                return member_id
+            }
+        }
+        return null
+
+    }
+
     randomPointOrNull() {
         let rand = Math.random()
         if (rand > 0.5) {
@@ -241,13 +306,16 @@ export class Agent {
 
     }
 
-    cancelGoTo() {
+    stopAnimation() {
         if (this.animatable) {
             this.animatable.stop()
             this.animatable = null
         }
+    }
+
+    cancelGoTo() {
+        this.stopAnimation()
         this.locked = false
-        // this.bus.next("update")
     }
 
     // return a boolean promise, of true if moved, false if didn't move at all
@@ -279,10 +347,15 @@ export class Agent {
             return new Promise((resolve) => {
                 this.animatable = BABYLON.Animation.CreateAndStartAnimation("", this.transform, "rotation.y", 60, 30, originalRotationY, desiredRotationY, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, ease, () => {
                     let sub;
+                    // if you are the leader, you dictate all motion including stopping for obstacles or attacking of avatars
+
                     if (mode.leader) {
                         sub = this.scene.onBeforeRenderObservable.add(() => {
-                            if (this.somethingIsInfront() || this.ranOutOfFloor()) {
-                                // this.bus.next("cancel")
+                            let member_id = this.anAvatarIsInfront()
+                            if (member_id) {
+                                this.createAttackEvent(member_id)
+                            }
+                            if (member_id || this.somethingIsInfront() || this.ranOutOfFloor()) {
                                 this.createStoppedEvent()
                                 this.scene.onBeforeRenderObservable.remove(sub)
                                 sub = null
@@ -307,24 +380,28 @@ export class Agent {
         }
     }
 
-    eligibleAvatarLocation() {
-        let eligiblePositions = []
+    getAllAvatarHeadPositions(): { [member_id: string]: BABYLON.Vector3 } {
+        let positions = {}
         // check leader (if not editing)
         if (!mode.editing) {
-            let myFloorPoint = this.checkPointEligible(this.scene.activeCamera.position)
-            if (myFloorPoint) {
-                eligiblePositions.push(myFloorPoint)
-            }
+            positions[this.scene.metadata.member_id] = this.scene.activeCamera.position
         }
-
         let avatarMeshes = this.scene.getMeshesByTags("avatar")
         for (let i = 0; i < avatarMeshes.length; i++) {
-            let avatarMeshPosition = avatarMeshes[i].position;
-            let groundPoint = this.checkPointEligible(avatarMeshPosition)
-            if (groundPoint) {
-                eligiblePositions.push(groundPoint)
-            }
+            let avatarMesh = avatarMeshes[i]
+            positions[avatarMesh.metadata.member_id] = avatarMesh.position
         }
+        return positions
+    }
+
+    eligibleAvatarLocation() {
+        let eligiblePositions = []
+        Object.values(this.getAllAvatarHeadPositions()).forEach(position => {
+            let groundPosition = this.checkPointEligible(position)
+            if (groundPosition) {
+                eligiblePositions.push(groundPosition)
+            }
+        })
         if (eligiblePositions.length === 1) {
             return eligiblePositions[0];
         }
@@ -362,14 +439,16 @@ export class Agent {
         head.position.y = 1.5
         head.metadata = { agentName: this.name }
 
-        // this.coneOfSight = BABYLON.MeshBuilder.CreateCylinder(`sight_${this.name}`, { diameterBottom: 0.2, diameterTop: 8, height: 15 }, this.scene)
-        // this.coneOfSight.rotation.x = BABYLON.Angle.FromDegrees(92).radians()
-        // this.coneOfSight.position.y = 1.3
-        // this.coneOfSight.scaling.x = 2
-        // this.coneOfSight.scaling.z = 0.5
-        // this.coneOfSight.position.z = 7
-        // this.coneOfSight.visibility = 0.5
-        // this.coneOfSight.isPickable = false
+        this.coneOfSight = BABYLON.MeshBuilder.CreateCylinder(`sight_${this.name}`, { diameterBottom: 0.2, diameterTop: 1, height: 2 }, this.scene)
+        this.coneOfSight.rotation.x = BABYLON.Angle.FromDegrees(92).radians()
+        this.coneOfSight.position.y = 1.3
+
+        this.coneOfSight.scaling.x = 1.5
+        this.coneOfSight.scaling.z = 1.5
+
+        this.coneOfSight.position.z = 1.5
+        this.coneOfSight.visibility = 0.5
+        this.coneOfSight.isPickable = false
 
         let body = BABYLON.MeshBuilder.CreateBox(`body_${this.name}`, { width: 1, depth: 1, height: 2 }, this.scene)
         this.body = BABYLON.Mesh.MergeMeshes([head, body], true)
@@ -380,7 +459,7 @@ export class Agent {
         this.body.name = this.name
         this.transform = new BABYLON.TransformNode(`transform_${this.name}`, this.scene);
         this.body.parent = this.transform
-        // this.coneOfSight.parent = this.body
+        this.coneOfSight.parent = this.body
 
 
 
@@ -389,7 +468,7 @@ export class Agent {
     dispose() {
         this.pause()
         this.cancelGoTo()
-        // this.coneOfSight.dispose()
+        this.coneOfSight.dispose()
         this.body.dispose()
         this.transform.dispose()
         this.rayHelper.dispose()
