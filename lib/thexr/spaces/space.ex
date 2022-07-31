@@ -26,7 +26,7 @@ defmodule Thexr.Spaces.Space do
   def edit_changeset(space, attrs) do
     space
     |> cast(attrs, [:name, :description])
-    |> validate_required([:name, :description])
+    |> validate_required([:name])
     |> cast_embed(:settings)
   end
 

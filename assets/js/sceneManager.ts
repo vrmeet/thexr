@@ -240,9 +240,12 @@ export class SceneManager {
         // TODO, might be more efficient to use Tags but the meshes aren't built yet
         const result = this.entities.filter(entity => entity.type === "spawn_point")
         if (result.length > 0) {
-            let pos = result[0].components.filter(c => c.type === "position")[0].data.value
-            let rot = BABYLON.Vector3.FromArray(result[0].components.filter(c => c.type === "rotation")[0].data.value).toQuaternion().asArray()
-            return { pos: pos, rot: rot }
+            const firstSpawnPoint = result[0]
+            const positionData = firstSpawnPoint.components.filter(c => c.type === "position")[0].data.value
+            // we'll only take the y rotation into consideration
+            const rotationData = firstSpawnPoint.components.filter(c => c.type === "rotation")[0].data.value
+            let rot = BABYLON.Vector3.FromArray([0, rotationData[1], 0]).toQuaternion().asArray()
+            return { pos: positionData, rot: rot }
         } else {
             return { pos: [0, 0.01, -8], rot: [0, 0, 0, 1] }
         }
