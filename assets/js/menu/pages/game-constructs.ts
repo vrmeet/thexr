@@ -50,7 +50,7 @@ export class GameConstructs extends GUI.Container {
     }
 
     dropOptions() {
-        const options = ["spawn_point", "gun", "key", "enemy_spawner"];
+        const options = ["spawn_point", "gun", "red_key", "blue_key", "enemy_spawner"];
 
         return options.map(prim => {
             const callback = () => {
@@ -62,6 +62,12 @@ export class GameConstructs extends GUI.Container {
                 if (prim === "enemy_spawner" || prim === "spawn_point") {
                     components.position = [0, 0.01, 0]
                 }
+                if (prim === "red_key") {
+                    components["color"] = "#FF0000"
+                } else if (prim === "blue_key") {
+                    components["color"] = "#0000FF"
+                }
+
 
                 const componentList = this.componentObjToList(components)
 

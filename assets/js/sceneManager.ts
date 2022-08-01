@@ -410,7 +410,7 @@ export class SceneManager {
                 entity.components.push({ type: "color", data: { value: "#A0A0A0" } })
                 // mesh = BABYLON.MeshBuilder.CreateTorus("gun", {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "interactable shootable")
-            } else if (entity.type === "key") {
+            } else if (entity.type === "red_key" || entity.type === "blue_key") {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.15, depth: 0.01, height: 0.2 }, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "collectable")
 
