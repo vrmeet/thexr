@@ -22,7 +22,7 @@ import type { XRManager } from '../xr/xr-manager';
 import type { member_state } from "../types";
 import { Observable } from 'rxjs';
 import type { Vector2WithInfo } from 'babylonjs-gui';
-import { WallMaker } from './pages/wall-maker';
+import { BarrierMaker } from './pages/barrier-maker';
 import { GameConstructs } from './pages/game-constructs';
 
 /*
@@ -404,8 +404,8 @@ export class MenuManager {
         return new MenuPagePrimitives(this.scene)
     }
 
-    wallmaker() {
-        return new WallMaker(this.scene)
+    barriermaker() {
+        return new BarrierMaker(this.scene)
     }
 
     gameconstructs() {

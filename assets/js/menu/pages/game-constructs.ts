@@ -77,7 +77,7 @@ export class GameConstructs extends GUI.Container {
     }
 
     scrollableConstructOptions() {
-        const gotoWallMaker = () => { signalHub.menu.emit("menu_topic", "wallmaker") }
+        const gotoBarrierMaker = () => { signalHub.menu.emit("menu_topic", "barriermaker") }
         const dropAmmoBox = () => {
             let components = {
                 color: "#F002A3",
@@ -91,7 +91,7 @@ export class GameConstructs extends GUI.Container {
 
         }
         return pre({ name: "scrollable-prim-options" },
-            a({ name: "goto-wall-maker", callback: gotoWallMaker }, "wallmaker"),
+            a({ name: "goto-wall-maker", callback: gotoBarrierMaker }, "Barrier Maker"),
             a({ name: "ammo-box", callback: dropAmmoBox }, "ammo_box"),
             ...this.dropOptions()
 

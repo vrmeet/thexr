@@ -389,7 +389,7 @@ export class SceneManager {
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable targetable")
             } else if (entity.type === "spawn_point") {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 1, depth: 1, height: 0.05 }, this.scene)
-            } else if (entity.type === "wall" || entity.type === "door") {
+            } else if (entity.type === "wall" || entity.type === "door" || entity.type === "red_door" || entity.type === "blue_door") {
                 const height: number = (entity.components.filter(comp => comp.type === "height")[0]?.data?.value || 2) as number
                 const points: number[] = entity.components.filter(comp => comp.type === "points")[0].data.value as number[]
                 mesh = createWall(entity.name, height, points, this.scene)
