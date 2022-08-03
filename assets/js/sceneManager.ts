@@ -9,7 +9,7 @@ import { reduceSigFigs, unsetPosRot } from "./utils";
 import { XRManager } from "./xr/xr-manager";
 
 import { signalHub } from "./signalHub";
-import { DamageOverlay } from "./damage-overlay";
+import { TintOverlay } from "./tint-overlay";
 import { isMobileVR } from "./utils";
 import { HudMessager } from "./hud-message";
 import { BulletManager } from "./scene/bullet-manager";
@@ -45,6 +45,7 @@ export class SceneManager {
     public canvasId: string
     public bulletManager: BulletManager
     public avatarManager: AvatarManager
+    public tintOverlay: TintOverlay
 
     public collectManager: CollectManager
     public doorManager: DoorManager
@@ -219,7 +220,7 @@ export class SceneManager {
         this.xrManager = new XRManager(this.member_id, this.scene)
         this.menuManager = new MenuManager(this.scene, this.xrManager)
 
-        new DamageOverlay(this.member_id, this.scene)
+        this.tintOverlay = new TintOverlay(this.member_id, this.scene)
         new HudMessager(this.scene)
         this.bulletManager = new BulletManager(this.member_id, this.scene)
 
