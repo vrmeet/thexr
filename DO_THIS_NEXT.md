@@ -56,6 +56,10 @@ entity_animated_offset needs a lock, otherwise double click, or multiclient clic
   - can use genserver and a timer to unlock?
   - or just client side lock
 
+better yet, make a door have a switch to press, then while animating door, disable the switch
+re-enable the switch when door is done animating
+
+
 combine prims into a combined mesh
 
 - fix jest - write some js tests

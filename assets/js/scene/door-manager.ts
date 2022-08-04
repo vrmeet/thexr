@@ -8,9 +8,10 @@ const DURATION = 2000
 
 export class DoorManager {
     public keys: Set<string> // set of key colors I have collected
+    public entitiesLocked: Set<string> // set of entities that are currently in motion, so don't allow new events on them
     constructor(public member_id: string, public scene: BABYLON.Scene) {
         this.keys = new Set<string>()
-
+        this.entitiesLocked = new Set<string>()
 
         /// listen to about_space to see which keys I already have
         signalHub.incoming.on("about_space").subscribe(about_space => {
@@ -42,11 +43,26 @@ export class DoorManager {
             }
         })
 
+        // lock animation so moving door can't be opened or closed while already moving
+        signalHub.incoming.on("event").pipe(
+            filter(mpts => mpts.m === EventName.entity_animated_offset)
+        ).subscribe(mpts => {
+            let mesh = this.scene.getMeshById(mpts.p["entity_id"])
+            if (mesh && this.entityIsDoor(mesh)) {
+                this.setTimedLockForAnimationOnEntity(mesh.id)
+            }
+        })
+
+
         // if clicking on a door, move it, if I have the key
         signalHub.local.on("pointer_info").pipe(
             filter(info => info.type === BABYLON.PointerEventTypes.POINTERPICK),
             map((info: BABYLON.PointerInfo) => info.pickInfo.pickedMesh),
         ).subscribe(mesh => {
+            if (this.entitiesLocked.has(mesh.id)) {
+                // entity is locked, so can't touch this right now
+                return
+            }
             let doorType = this.entityIsDoor(mesh)
             if (doorType) {
                 if (!this.closeToDoor(mesh)) {
@@ -65,6 +81,13 @@ export class DoorManager {
             }
 
         })
+    }
+
+    setTimedLockForAnimationOnEntity(entity_id) {
+        this.entitiesLocked.add(entity_id)
+        setTimeout(() => {
+            this.entitiesLocked.delete(entity_id)
+        }, DURATION)
     }
 
     closeToDoor(mesh) {
