@@ -1,5 +1,15 @@
 TODO:
 
+waveNumber will increase with total amound of leader time spent in space without a disconnect
+  wave increase every 60 seconds.  
+
+  let a set number of enemies be produced within the first 10 seconds of a wave, and then none until
+  the next wave.
+
+  agent manager can have a state of "spawning time" 10 seconds, "battle time" 30 seconds 
+  "gift delivery" 1 second, "rest time" 30 seconds  "reset doors", increment wave
+
+
 drawing new avatar head
 
 sculpting anything in VR
@@ -51,13 +61,6 @@ avatar designer
 triggerable designer
 sword designer
 
-for door animation, need a server side lock
-entity_animated_offset needs a lock, otherwise double click, or multiclient click will send it twice as far
-  - can use genserver and a timer to unlock?
-  - or just client side lock
-
-better yet, make a door have a switch to press, then while animating door, disable the switch
-re-enable the switch when door is done animating
 
 
 combine prims into a combined mesh

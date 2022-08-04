@@ -383,8 +383,8 @@ export class Agent {
             }
         }
 
-        // check leader (if not editing)
-        if (!mode.editing) {
+
+        if (!mode.menu_open) {
             const my_member_id = this.scene.metadata.member_id
             if (!blackList.has(my_member_id)) {
                 positions[my_member_id] = this.scene.activeCamera.position
@@ -455,7 +455,7 @@ export class Agent {
         this.coneOfSight.scaling.z = 1.5
 
         this.coneOfSight.position.z = 1.5
-        this.coneOfSight.visibility = 0.5
+        this.coneOfSight.visibility = 0
         this.coneOfSight.isPickable = false
 
         let body = BABYLON.MeshBuilder.CreateBox(`body_${this.name}`, { width: 1, depth: 1, height: 2 }, this.scene)

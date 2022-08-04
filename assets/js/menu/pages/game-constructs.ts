@@ -1,4 +1,4 @@
-import type * as BABYLON from "babylonjs"
+import * as BABYLON from "babylonjs"
 import * as GUI from "babylonjs-gui"
 
 import type { Orchestrator } from "../../orchestrator";
@@ -36,11 +36,16 @@ export class GameConstructs extends GUI.Container {
     }
 
     defaultComponents() {
-        return {
+        let data = {
             position: [0, 0.86, 0],
             rotation: [0, 0, 0],
-            scaling: [1, 1, 1],
+            scaling: [1, 1, 1]
         }
+
+        let forwardVec = this.scene.activeCamera.getDirection(BABYLON.Vector3.Forward()).normalize().scaleInPlace(2.5)
+        let assetPosition = this.scene.activeCamera.position.add(forwardVec)
+        data.position = assetPosition.asArray().map(num => Math.round(num))
+        return data
     }
 
     componentObjToList(components: any) {
@@ -58,9 +63,11 @@ export class GameConstructs extends GUI.Container {
                 // let dest = ray.origin.add(ray.direction)
                 const name = `${prim}_${random_id(6)}`
                 const uuid = uuidv4()
+
                 let components = { ...this.defaultComponents() }
+
                 if (prim === "enemy_spawner" || prim === "spawn_point") {
-                    components.position = [0, 0.01, 0]
+                    components.position[1] = 0.01
                 }
                 if (prim === "red_key") {
                     components["color"] = "#FF0000"

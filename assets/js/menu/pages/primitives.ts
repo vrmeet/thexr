@@ -1,4 +1,4 @@
-import type * as BABYLON from "babylonjs"
+import * as BABYLON from "babylonjs"
 import * as GUI from "babylonjs-gui"
 
 import type { Orchestrator } from "../../orchestrator";
@@ -31,6 +31,18 @@ export class MenuPagePrimitives extends GUI.Container {
         return pre({ name: "scrollable-prim-options" }, ...this.primOptions())
     }
 
+    defaultComponents() {
+        let data = {
+            position: [0, 0.86, 0],
+            rotation: [0, 0, 0],
+            scaling: [1, 1, 1]
+        }
+
+        let forwardVec = this.scene.activeCamera.getDirection(BABYLON.Vector3.Forward()).normalize().scaleInPlace(2.5)
+        let assetPosition = this.scene.activeCamera.position.add(forwardVec)
+        data.position = assetPosition.asArray().map(num => Math.round(num))
+        return data
+    }
 
 
 
@@ -43,11 +55,7 @@ export class MenuPagePrimitives extends GUI.Container {
                 // let dest = ray.origin.add(ray.direction)
                 const name = `${prim}_${random_id(6)}`
                 const uuid = uuidv4()
-                let components = {
-                    position: [0, 0.86, 0],
-                    rotation: [0, 0, 0],
-                    scaling: [1, 1, 1],
-                }
+                let components = { ... this.defaultComponents() }
                 if (prim === "grid") {
                     components.position = [0, -0.01, 0]
                     components.rotation = [1.5708, 0, 0]
