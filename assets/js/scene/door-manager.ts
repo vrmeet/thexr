@@ -2,6 +2,7 @@ import { filter, map } from "rxjs/operators";
 import { signalHub } from "../signalHub";
 import * as BABYLON from "babylonjs"
 import { EventName } from "../event-names";
+import { mode } from "../mode";
 
 const SLIDE_AMOUNT = 2.3
 const DURATION = 2000
@@ -59,6 +60,9 @@ export class DoorManager {
             filter(info => info.type === BABYLON.PointerEventTypes.POINTERPICK),
             map((info: BABYLON.PointerInfo) => info.pickInfo.pickedMesh),
         ).subscribe(mesh => {
+            if (mode.menu_open) {
+                return
+            }
             if (this.entitiesLocked.has(mesh.id)) {
                 // entity is locked, so can't touch this right now
                 return
