@@ -51,7 +51,10 @@ avatar designer
 triggerable designer
 sword designer
 
-
+for door animation, need a server side lock
+entity_animated_offset needs a lock, otherwise double click, or multiclient click will send it twice as far
+  - can use genserver and a timer to unlock?
+  - or just client side lock
 
 combine prims into a combined mesh
 

@@ -31,6 +31,9 @@ export class Inline {
             signalHub.movement.emit("camera_moved", { pos: cam.position.asArray(), rot: cam.absoluteRotation.asArray() })
         })
 
+        this.bindFKeyForFlight()
+
+
 
 
         this.createInlineHands()
@@ -52,6 +55,14 @@ export class Inline {
 
             this.bindInlineEvents()
 
+        })
+
+        signalHub.menu.on("menu_opened").subscribe(value => {
+            if (value) {
+                this.unbindInlineEvents()
+            } else {
+                this.bindInlineEvents()
+            }
         })
     }
 
@@ -75,7 +86,7 @@ export class Inline {
     }
 
     bindInlineEvents() {
-        this.subscriptions.push(this.bindFKeyForFlight())
+
 
         // // another player stole our object
         // let a = signalHub.incoming.on("event").pipe(

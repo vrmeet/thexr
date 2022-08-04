@@ -24,6 +24,7 @@ import { Observable } from 'rxjs';
 import type { Vector2WithInfo } from 'babylonjs-gui';
 import { BarrierMaker } from './pages/barrier-maker';
 import { GameConstructs } from './pages/game-constructs';
+import { mode } from '../mode';
 
 /*
 inline -mode
@@ -53,7 +54,6 @@ export class MenuManager {
     public browsePlane: BABYLON.AbstractMesh
     public wristGui: GUI.AdvancedDynamicTexture
     public browseGui: GUI.AdvancedDynamicTexture
-    public menu_opened: boolean
     public menu_topic: string
     public collabEditManager: CollaborativeEditTransformManager
     public collabDeleteManager: CollabEditDeleteManager
@@ -62,7 +62,7 @@ export class MenuManager {
     constructor(public scene: BABYLON.Scene, public xrManager: XRManager) {
         this.collabEditManager = new CollaborativeEditTransformManager(this.scene)
         this.collabDeleteManager = new CollabEditDeleteManager(this.scene)
-        this.menu_opened = false
+
         this.menu_topic = "main"
 
         signalHub.local.on("my_state").subscribe(state => {
@@ -110,25 +110,13 @@ export class MenuManager {
             }
         })
 
-        // listen to menu states
 
-        const menu_opened = signalHub.menu.on("menu_opened").subscribe(value => {
-            this.menu_opened = value
-            if (this.browsePlane) {
-
-                this.browsePlane.setEnabled(value)
-            }
-            this.render()
-        })
 
         const menu_topic = signalHub.menu.on("menu_topic").subscribe(topic => {
             this.menu_topic = topic
             this.render()
         })
 
-        // combineLatest([menu_opened, menu_topic]).subscribe(value => {
-        //     this.render()
-        // })
     }
 
 
@@ -304,7 +292,7 @@ export class MenuManager {
             }
 
             this.fsGui.addControl(this.adaptMenuCtrlForFsGUI(content.menuCtrl))
-            if (this.menu_opened) {
+            if (mode.menu_open) {
                 this.fsGui.addControl(this.adaptBrowserCtrlForFsGUI(content.browserCtrl))
             }
         }
@@ -315,7 +303,7 @@ export class MenuManager {
             }
             if (this.browseGui) {
                 this.browseGui.rootContainer.dispose()
-                if (this.menu_opened) {
+                if (mode.menu_open) {
                     this.browseGui.addControl(content.browserCtrl)
                 }
             }
@@ -348,7 +336,7 @@ export class MenuManager {
 
     stateToCtrls() {
 
-        const browserCtrl = (this.menu_opened) ? this[this.menu_topic]() : null
+        const browserCtrl = (mode.menu_open) ? this[this.menu_topic]() : null
 
         return {
             menuCtrl: this.stateToMenuCtrl(),
@@ -358,8 +346,13 @@ export class MenuManager {
 
     stateToMenuCtrl() {
         const menuCallback = () => {
-            const newValue = !this.menu_opened
-            signalHub.menu.emit("menu_opened", newValue)
+            mode.menu_open = !mode.menu_open
+            signalHub.menu.emit("menu_opened", mode.menu_open)
+
+            if (this.browsePlane) {
+                this.browsePlane.setEnabled(mode.menu_open)
+            }
+            this.render()
         }
 
         const micCallback = () => {
@@ -369,7 +362,7 @@ export class MenuManager {
             //signalHub.observables.mic_muted_pref.next(newValue)
         }
 
-        const menuLabel = this.menu_opened ? "Close Menu" : "Menu"
+        const menuLabel = mode.menu_open ? "Close Menu" : "Menu"
         const micLabel = this.myState.mic_muted ? "Unmute" : "Mute"
         return div({ name: 'menu-div' },
             a({ name: 'menu-btn', callback: menuCallback }, menuLabel),
