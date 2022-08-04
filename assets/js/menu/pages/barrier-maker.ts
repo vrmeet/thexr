@@ -68,6 +68,7 @@ export class BarrierMaker extends GUI.Container {
             this.referenceIndicator.dispose()
             sub.unsubscribe()
         })
+
     }
 
     getPointIndicator(position: BABYLON.Vector3) {
@@ -156,7 +157,7 @@ export class BarrierMaker extends GUI.Container {
         }
         return pre({ name: "scrollable-prim-options" },
             "Point on the floor to create wall corners",
-            a({ callback: this.reset }, "Reset"),
+            a({ callback: () => this.reset() }, "Reset"),
             a({ callback: create("wall") }, "Create Wall"),
             a({ callback: create("door") }, "Create Door"),
             a({ callback: create("red_door") }, "Create Red Door"),
