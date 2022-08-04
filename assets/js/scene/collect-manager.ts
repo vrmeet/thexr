@@ -2,6 +2,7 @@ import { filter, map } from "rxjs/operators";
 import { signalHub } from "../signalHub";
 import * as BABYLON from "babylonjs"
 import { EventName } from "../event-names";
+import { mode } from "../mode";
 
 export class CollectManager {
     constructor(public member_id: string, public scene: BABYLON.Scene) {
@@ -10,6 +11,9 @@ export class CollectManager {
             map((info: BABYLON.PointerInfo) => info.pickInfo.pickedMesh),
             filter(pickedMesh => pickedMesh && BABYLON.Tags.MatchesQuery(pickedMesh, "collectable"))
         ).subscribe(mesh => {
+            if (mode.menu_open) {
+                return
+            }
             if (mesh.getDistanceToCamera(this.scene.activeCamera) <= 2) {
                 signalHub.outgoing.emit("event", { m: EventName.entity_collected, p: { member_id: this.member_id, entity_id: mesh.id } })
                 signalHub.incoming.emit("event", { m: EventName.entity_collected, p: { member_id: this.member_id, entity_id: mesh.id } })
