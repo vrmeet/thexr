@@ -156,14 +156,14 @@ defmodule Thexr.SpaceServer do
     state = forward_to_ledger(state, event_name_atom, atomized_event)
     broadcast_event_to_others(state.space.id, atomized_event, pid)
     IO.inspect(state, label: "new state")
-    {:noreply, state}
+    {:noreply, state, @timeout}
   end
 
   def handle_event_and_broadcast_all(state, {:event, event_name_atom, atomized_event, _pid}) do
     state = forward_to_ledger(state, event_name_atom, atomized_event)
     broadcast_event_to_all(state.space.id, atomized_event)
 
-    {:noreply, state}
+    {:noreply, state, @timeout}
   end
 
   def save_last_event_for_entity(state, {:event, _event_name_atom, atomized_event, _pid} = tuple) do
@@ -279,14 +279,14 @@ defmodule Thexr.SpaceServer do
   def handle_cast({:member_connected, member_id}, state) do
     new_disconnected = MapSet.delete(state.disconnected, member_id)
     state = %{state | disconnected: new_disconnected}
-    {:noreply, state}
+    {:noreply, state, @timeout}
   end
 
   def handle_cast({:member_disconnected, member_id}, state) do
     new_disconnected = MapSet.put(state.disconnected, member_id)
     state = %{state | disconnected: new_disconnected}
     Process.send_after(self(), :kick_check, @kick_check_timeout)
-    {:noreply, state}
+    {:noreply, state, @timeout}
   end
 
   def handle_call(:state, _from, state) do
@@ -307,6 +307,7 @@ defmodule Thexr.SpaceServer do
   end
 
   def handle_info(:timeout, state) do
+    IO.inspect("space server timed out after no activity")
     {:noreply, state}
   end
 
@@ -324,7 +325,7 @@ defmodule Thexr.SpaceServer do
     end)
 
     state = %{state | disconnected: MapSet.new()}
-    {:noreply, state}
+    {:noreply, state, @timeout}
   end
 
   def terminate({:shutdown, :timeout}, _game) do

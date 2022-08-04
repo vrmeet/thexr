@@ -3,6 +3,9 @@ import { signalHub } from "../signalHub";
 import * as BABYLON from "babylonjs"
 import { EventName } from "../event-names";
 
+const SLIDE_AMOUNT = 2.3
+const DURATION = 2000
+
 export class DoorManager {
     public keys: Set<string> // set of key colors I have collected
     constructor(public member_id: string, public scene: BABYLON.Scene) {
@@ -46,15 +49,30 @@ export class DoorManager {
         ).subscribe(mesh => {
             let doorType = this.entityIsDoor(mesh)
             if (doorType) {
-                if (this.canOpenDoorType(doorType)) {
-                    if (mesh.getDistanceToCamera(this.scene.activeCamera) <= 3) {
-                        signalHub.outgoing.emit("event", { m: EventName.entity_animated_offset, p: { entity_id: mesh.id, pos: [0, 3, 0], duration: 3000 } })
-                        signalHub.incoming.emit("event", { m: EventName.entity_animated_offset, p: { entity_id: mesh.id, pos: [0, 3, 0], duration: 3000 } })
-                    }
+                if (!this.closeToDoor(mesh)) {
+                    return
+                }
+                if (this.doorIsOpen(mesh)) {
+                    signalHub.outgoing.emit("event", { m: EventName.entity_animated_offset, p: { entity_id: mesh.id, pos: [0, -SLIDE_AMOUNT, 0], duration: DURATION } })
+                    signalHub.incoming.emit("event", { m: EventName.entity_animated_offset, p: { entity_id: mesh.id, pos: [0, -SLIDE_AMOUNT, 0], duration: DURATION } })
+
+                } else if (this.canOpenDoorType(doorType)) {
+
+                    signalHub.outgoing.emit("event", { m: EventName.entity_animated_offset, p: { entity_id: mesh.id, pos: [0, SLIDE_AMOUNT, 0], duration: DURATION } })
+                    signalHub.incoming.emit("event", { m: EventName.entity_animated_offset, p: { entity_id: mesh.id, pos: [0, SLIDE_AMOUNT, 0], duration: DURATION } })
+
                 }
             }
 
         })
+    }
+
+    closeToDoor(mesh) {
+        return mesh.getDistanceToCamera(this.scene.activeCamera) <= 3
+    }
+
+    doorIsOpen(mesh: BABYLON.AbstractMesh) {
+        return mesh.position.y > this.scene.activeCamera.position.y
     }
 
     canOpenDoorType(doorType) {

@@ -1,169 +1,31 @@
 TODO:
 
-When player is announced dead: member_died event, should prevent agent from continuing to attack your corpse.
-  - freeze teleportation to prevent moving?
-  - drop all weapons and release ammo?  etc.
+drawing new avatar head
 
+sculpting anything in VR
 
-
-agent
-  
-  - moving forward observable
-      - if an avatar is < 2,
-      - emit attacking event (if leader)
-         - keep lock on
-         - create an interval 1000ms
-             - if avatar is within 2m in front
-               - emit member_damaged
-             - else cancel interval
-                  - release lock
-
-
-
-  - receive attacking event locally
-     - cancelGoTo
-     - 
-
-
-
-Avatar needs to stop moving and attack agent when finally upon them, dishing out damage
-  if isSomethingInfront detects an avatar in local (not leader) only 
-  the agent needs to stop 1.5 meters short of avatar otherwise we can't see them (too close)
-  the agent needs to emit message
-    the avatar being damaged will emit the damage message 
-    agent_attacking, play maylay animation
-    agent_stopped, freezes update momentarily
-    "update" on leader needs to 
-
-Fix keys that open doors
-
+  - freeze teleportation after death and resume teleporation after respawn to prevent moving?
+  - after death drop all weapons and release ammo?  etc.
 allow enemy agent to take a few hits before going down
 
 play a kill animation before disappearing immediately
 
 record head and hand animations into a BABYLON compatible animation format and give enemies head and arms
 
+When in browser inline mode, don't allow picking up things or fire bullets when menu is open?
 
-
-
-fix ammo box,was based on meta data for num of bullets and how door key worked, use  components to store that info, and then maybe populate that info with metadata or tags
-
-The inline and door, maybe even bullet manager should be paused if the menu is open
-
-BUG: In Vr when try to transform red key, it floats up, as if it's acting like a door
-   - it's because key has meta data of door, so if you collect on key then
-   click on another key, it will act like a door
-
-   - door manager should be shut off during mode.edit === true
-
+  - door manager should be shut off during mode.edit === true
 
 - handle entity animated offset for rotations
 
-- handle assigning constantly spinning meshes.  Assign with graphQL a spinning component
-
-- create red door, red key
+- handle assigning continuously spinning meshes.  Assign with graphQL a spinning component
 
 Enhancement: Load up initial ammo quota from session storage?
 
-- rewrite monster movement/agent without using navmesh
-  - remove navmesh DB model
-  - remove controller 
-  - remove router
-  - remove NavManager
-  - modify AgentManager
-     - need replacement for plugin.getClosestPoint and getRandomPoint
-     - replacement for crowd.add agent, removeAgent, agentGoto, callback after agent reaches target
-
 pick up health, pick up
 
-
-Transient items - items that are temporarily moved, the state is stored for this session
-but when the session is over, the state returns to the original setting
-
-x items that are picked up/grabbed
-x items that are released
-- ammo left in a gun
-- ammo that is collected and assigned to a gun
-- health that is collected
-- keys that are picked up
-- doors that are opened
-- switches that are opened/closed
-- enemies
-
-if in genserver, automatically cleans up when session terminates
-
-
-
-Create utility for placing a shootable in any avatar's hand
-Probably need more member_state info for a held entity to know it's pos and rot, if not a shootable
-
-
-
-- if someone grabs a gun and is holding it,
-  but then someone joins, they will not receive the grab event, so don't have updated
-  info about who is holding what
-
-  - extend member state to include left_holding, right_holding entity_id 
-  - about_members then when you join you can parent the entity to the member's hand
-
-
-- on release, it permanently changes the future position of the gun
-
-  - add a state column to components
-  - entity_transformed event -> state => 'base'
-  - entity_released save new components position/rotation state => 'session'
-
-= when gen_server terminates => delete all components with state == 'session'
-
-
-entities
-   components (rotation, position)
-      id, type, entity_id, state/session: "base" | "session" 
-
-
-
-The way we are moving the enemies, looking around based randomly, and intersecting vision code with an avatar, we might not actually need the navigation mesh
-
-We just need to send out rays in each direction, once it hits a mesh, you know where the limits of exploration are.  (you still have to raise them up over steps and small obstacles).  soo... agents might need a rewrite.  But it might simplify things if we can do without a navigation mesh.  We'll see...
-
-
-teleporting a member when in XR leads to an error:
-
-TypeError: Failed to construct 'PointerEvent': Failed to read the 'screenX' property from 'MouseEventInit': The provided double value is non-finite.
-
-but it worked when there were no attacking agents
-
-there seems to be a huge number of agent movement messages, despite me not moving out of the way
-
-
-
-guns should have limited number of bullets
-
-drawing new avatar head
-
-sculpting anything in VR
-
-
-doors, ammo, guns have some state (how many bullets left).  and ammo is collected or not and transfers bullets to the member.  health is connected or not and gives health back to the member.  it is session state.  temporary.
-
-
-
-when designing a space, set it's initial state as position, open/closed, energy etc.
-
-when playing, update those components temporarily.  After the session is over, clear those variables.
-
-- create an edit mode toggle
-    - when in edit mode, your events don't include session
-    - when not in edit mode, your events include session: true
-
-- snapshot of events without session go into entity and components
-     components have type, state for unique constraint, then data
-    event with state of session go into components as well
-
-- when genserver terminates (or just when all members leave), all component with state of session is deleted
-   
-- create events for temporarily moving something, as opposed to permanently editing the scene
-  
+a released gun does not contain ammo, ammo is picked up by the user.  So if you have no ammo, and someone with ammo was shooting a gun
+then give you the gun, it should have some ammo in it
 
 create box, cone, cylinder, ribbon (has a good graphql api for individual mutations)
 create a light
@@ -193,44 +55,7 @@ sword designer
 
 combine prims into a combined mesh
 
-serialized scene ->
-   lights
-   meshes
-      - optimized for performance
-
-- create prim
-    menu -> prim -> event
-    graphQL -> create entity command handler
-
-  ==> 
-
-  create box, create cone, 
-
-- frontend gets spawner through serialization or
-  event broadcast
-
-- if leader, 
-    navigation of enemies
-   -- creation, make one.
-
-
-- verify functionality still works with refactor
-
-- added jest
-
-- write some js tests
-
-- functions should take simple primitives as arguments
-
-
-Create a story of doom game creation.  
-  - create the events
-  - playback the events
-  - backend check that the correct snapshot is created
-  - frontend check that babylon infrastructure is created
-
-
-
+- fix jest - write some js tests
 
 1. create a set of events to design the 'map' of a game
     - DOOM (first person shooter)

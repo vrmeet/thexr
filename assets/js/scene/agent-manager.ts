@@ -68,13 +68,16 @@ export class AgentManager {
     update() {
         if (mode.leader) {
             // modify this logic to have a 'break', rest between waves
-            if (this.agentsCount() < member_states.membersCount() * this.waveNumber) {
-                // use some logic to figure out when to create new agents from existing spawn points
-                let spawnPoint = this.getRandomEnemySpawnPoint()
-                if (spawnPoint) {
-                    this.createAgentEvent(spawnPoint.position)
+            let enemySpawnPoints = this.getAllEnemySpawnPoints()
+            enemySpawnPoints.forEach(enemySpawnPoint => {
+                if (this.agentsCount() < member_states.membersCount() * enemySpawnPoints.length * this.waveNumber) {
+                    // use some logic to figure out when to create new agents from existing spawn points
+
+                    this.createAgentEvent(enemySpawnPoint.position)
+
                 }
-            }
+            })
+
         }
     }
 

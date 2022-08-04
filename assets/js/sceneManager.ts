@@ -123,7 +123,7 @@ export class SceneManager {
 
 
         signalHub.incoming.on("about_space").subscribe(about_space => {
-            // move grabbed entities into the hands of avatars
+            // temp reposition of entities, like opened doors
             for (const [entity_id, event] of Object.entries(about_space.entities)) {
                 if (event.m === EventName.entity_animated_offset) {
                     let entity = this.scene.getMeshById(event.p.entity_id)
