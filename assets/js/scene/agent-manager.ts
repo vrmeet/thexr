@@ -89,14 +89,17 @@ export class AgentManager {
                 }
             } else if (this.state === "waiting_for_wave_end") {
                 if (this.agentsCount() === 0) {
+                    signalHub.outgoing.emit("hud_broadcast", { msg: `Wave ${this.waveNumber} Passed` })
                     this.state = "wave_ended"
                 }
             } else if (this.state === "wave_ended") {
-                // this state only runs for one cycle, and queues up a new wave
-                this.state = "no-op"
-                setTimeout(() => {
-                    this.beginNewWave()
-                }, 5000)
+                if (this.getAllEnemySpawnPoints().length > 0) {
+                    // this state only runs for one cycle, and queues up a new wave
+                    this.state = "no-op"
+                    setTimeout(() => {
+                        this.beginNewWave()
+                    }, 5000)
+                }
             }
 
         }
@@ -104,7 +107,7 @@ export class AgentManager {
 
     beginNewWave() {
         this.waveNumber++
-        signalHub.local.emit("hud_msg", `Starting Wave ${this.waveNumber}`)
+        signalHub.outgoing.emit("hud_broadcast", { msg: `Starting Wave ${this.waveNumber}` })
         this.state = "spawning"
     }
 

@@ -12,7 +12,6 @@ type LocalEvents = {
     new_log: any,
     mesh_built: { name: string, type: string } // required to add new meshes to teleport manager
     member_states_changed: { [member_id: string]: types.member_state }
-    hud_msg: string
     pulse: { hand: "left" | "right", intensity: number, duration: number }
     my_state: types.member_state
     agent_damaged: { agent_name: string }
@@ -25,6 +24,7 @@ type LocalEvents = {
 
 export type IncomingEvents = {
     event: types.event
+    hud_broadcast: { message: string }
     presence_diff: types.PresenceDiff
     presence_state: types.PresenceState
     space_settings_changed: types.scene_settings
@@ -36,12 +36,14 @@ export type IncomingEvents = {
         agents: { [name: string]: { position: number[], next_position: number[] } },
         entities: { [entity_id: string]: types.event },
     }
+    hud_msg: { msg: string } | string
 
 
 }
 
 export type OutgoingEvents = {
     event: types.event
+    hud_broadcast: { msg: string }
 }
 
 export type MenuEvents = {

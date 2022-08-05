@@ -37,7 +37,8 @@ export class HudMessager {
         this.texture.addControl(this.guiText);
 
         // single messages come in, let's accumulate them if they come in too frequently
-        signalHub.local.on("hud_msg").pipe(
+        signalHub.incoming.on("hud_msg").pipe(
+            map(value => (typeof value === 'string') ? value : value.msg),
             scan((acc, payload) => {
                 let modifiedPayload = { ts: Date.now(), p: payload }
                 acc.push(modifiedPayload)
@@ -66,7 +67,7 @@ export class HudMessager {
         signalHub.incoming.on("event").pipe(
             filter(msg => (msg.m === EventName.hud_message_broadcasted))
         ).subscribe(event => {
-            signalHub.local.emit("hud_msg", event.p['msg'])
+            signalHub.incoming.emit("hud_msg", event.p['msg'])
         })
 
 

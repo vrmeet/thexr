@@ -84,6 +84,12 @@ export class SpaceBroker {
             }
         })
 
+        signalHub.outgoing.on("hud_broadcast").subscribe(value => {
+            if (this.spaceChannelJoined) {
+                this.spaceChannel.push('hud_broadcast', value)
+            }
+        })
+
         signalHub.incoming.on("server_lost").subscribe(() => {
             window.location.href = '/';
         })

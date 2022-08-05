@@ -41,7 +41,7 @@ export class MemberStates {
         ).subscribe((evt: any) => {
             this.merge_state(evt.p.member_id, { status: "inactive" })
             const nickname = this.members[evt.p["member_id"]].nickname
-            signalHub.local.emit("hud_msg", `${nickname} died`)
+            signalHub.incoming.emit("hud_msg", `${nickname} died`)
         })
 
 
@@ -50,20 +50,20 @@ export class MemberStates {
         ).subscribe((evt: any) => {
             this.merge_state(evt.p.member_id, { status: "active" })
             const nickname = this.members[evt.p["member_id"]].nickname
-            signalHub.local.emit("hud_msg", `${nickname} respawned`)
+            signalHub.incoming.emit("hud_msg", `${nickname} respawned`)
         })
 
         signalHub.incoming.on("event").pipe(
             filter(msg => msg.m === EventName.member_entered)
         ).subscribe((evt: any) => {
             this.merge_state(evt.p.member_id, evt.p.state)
-            signalHub.local.emit("hud_msg", `${this.members[evt.p.member_id].nickname} has entered`)
+            signalHub.incoming.emit("hud_msg", `${this.members[evt.p.member_id].nickname} has entered`)
         })
 
         signalHub.incoming.on("event").pipe(
             filter(msg => msg.m === EventName.member_left)
         ).subscribe((evt) => {
-            signalHub.local.emit("hud_msg", `${this.members[evt.p["member_id"]].nickname} has left`)
+            signalHub.incoming.emit("hud_msg", `${this.members[evt.p["member_id"]].nickname} has left`)
 
             this.merge_state(evt.p["member_id"], null)
         })

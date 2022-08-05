@@ -21,6 +21,12 @@ defmodule ThexrWeb.SpaceChannel do
     {:noreply, socket}
   end
 
+  def handle_in("hud_broadcast", message, socket) do
+    IO.inspect(message, label: "hud broadcast")
+    ThexrWeb.Endpoint.broadcast("space:#{socket.assigns.space_id}", "hud_msg", message)
+    {:noreply, socket}
+  end
+
   def cache_members(
         :member_moved,
         %{member_id: member_id, pos_rot: pos_rot},

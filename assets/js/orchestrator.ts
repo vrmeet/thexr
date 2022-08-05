@@ -81,7 +81,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 chunks[i] = line.substr(o, size)
             }
             chunks.forEach(chunk => {
-                signalHub.local.emit("hud_msg", chunk);
+                signalHub.incoming.emit("hud_msg", chunk);
             })
 
         } catch (e) {

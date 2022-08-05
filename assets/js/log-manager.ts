@@ -62,7 +62,7 @@ export class LogManager {
     }
 
     flashError(...args) {
-        signalHub.local.emit("hud_msg", this.rowToString(args))
+        signalHub.incoming.emit("hud_msg", this.rowToString(args))
     }
 
     getTimestamp() {

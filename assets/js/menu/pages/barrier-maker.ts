@@ -106,10 +106,10 @@ export class BarrierMaker extends GUI.Container {
         const create = (entity_type: string) => {
             return () => {
                 if (this.wallPoints.length < 2) {
-                    signalHub.local.emit("hud_msg", "You need at least 2 points to build a wall")
+                    signalHub.incoming.emit("hud_msg", "You need at least 2 points to build a wall")
                     return
                 }
-                signalHub.local.emit("hud_msg", `Created ${entity_type}`)
+                signalHub.incoming.emit("hud_msg", `Created ${entity_type}`)
 
                 const xzPoints = this.wallPoints.reduce((acc, wallPoint) => {
                     acc.push(reduceSigFigs(wallPoint.x))

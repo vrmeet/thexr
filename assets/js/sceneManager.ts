@@ -98,7 +98,7 @@ export class SceneManager {
         signalHub.incoming.on("event").pipe(
             filter(evt => evt.m === EventName.member_died && evt.p["member_id"] === this.member_id)
         ).subscribe(() => {
-            signalHub.local.emit("hud_msg", "Respawning in 15 seconds")
+            signalHub.incoming.emit("hud_msg", "Respawning in 15 seconds")
             setTimeout(() => {
                 let spawnPosRot = this.findSpawnPoint()
 
