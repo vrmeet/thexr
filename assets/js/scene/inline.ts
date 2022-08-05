@@ -117,18 +117,24 @@ export class Inline {
             filter(info => info.type === BABYLON.PointerEventTypes.POINTERPICK)
         ).subscribe(info => {
             // don't pick anything up in inline if you're editing
-            if (mode.editing) {
+            if (mode.menu_open) {
                 return
             }
             let mesh = info.pickInfo.pickedMesh
-            if (mesh && BABYLON.Tags.MatchesQuery(mesh, "shootable || interactable")) {
-                if (this.heldMesh() === null) {
-                    this.emitGrabbed(mesh)
-                    // this.heldMesh = mesh
-                } else {
-                    // let go,
-                    this.emitReleased(mesh)
-                    //  this.heldMesh = null
+            if (mesh) {
+                if (BABYLON.Tags.MatchesQuery(mesh, "collectable")) {
+                    if (mesh.getDistanceToCamera(this.scene.activeCamera) <= 2) {
+                        signalHub.local.emit("collect_substitute", { entity_id: mesh.id })
+                    }
+                } else if (BABYLON.Tags.MatchesQuery(mesh, "shootable || interactable")) {
+                    if (this.heldMesh() === null) {
+                        this.emitGrabbed(mesh)
+                        // this.heldMesh = mesh
+                    } else {
+                        // let go,
+                        this.emitReleased(mesh)
+                        //  this.heldMesh = null
+                    }
                 }
             }
 

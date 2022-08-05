@@ -1,5 +1,15 @@
 TODO:
 
+clicking on a door or a collectable should be an inline feature.  In Vr you should have to grab the 
+collectable and press a button to toggle the door
+
+   - vr emit : collect_substitue, entity_id
+   in inline: emit collect_substitue, entity_id
+
+   in collect manager, make it dissapear
+
+   
+
 waveNumber will increase with total amound of leader time spent in space without a disconnect
   wave increase every 60 seconds.  
 

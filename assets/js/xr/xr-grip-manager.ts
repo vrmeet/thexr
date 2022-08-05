@@ -103,6 +103,8 @@ export class XRGripManager {
 
                     if (this.intersectedMeshTags.includes("shootable")) {
                         this.shootable().subscribe()
+                    } else if (this.intersectedMeshTags.includes("collectable")) {
+                        signalHub.local.emit("collect_substitute", { entity_id: mesh.id })
                     } else {
                         this.basicInteractable().subscribe()
                     }

@@ -1,4 +1,3 @@
-import { BehaviorSubject, bufferCount, filter, map, Observable, scan, Subject, tap } from 'rxjs'
 import { Emitter } from 'typed-rx-emitter'
 import type * as types from './types'
 import type * as BABYLON from 'babylonjs'
@@ -20,6 +19,7 @@ type LocalEvents = {
     pointer_info: BABYLON.PointerInfo
     keyboard_info: BABYLON.KeyboardInfo
     trigger_substitute: any
+    collect_substitute: { entity_id: string }
     trigger_squeezed_with_entity: { entity_id: string, pos: number[], direction: number[] }
 }
 
