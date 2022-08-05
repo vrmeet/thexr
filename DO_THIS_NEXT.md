@@ -1,14 +1,13 @@
 TODO:
 
-clicking on a door or a collectable should be an inline feature.  In Vr you should have to grab the 
-collectable and press a button to toggle the door
 
-   - vr emit : collect_substitue, entity_id
-   in inline: emit collect_substitue, entity_id
+Improve strategy for launching enemy agents with wav:
 
-   in collect manager, make it dissapear
+BUG: entity_animated_offset is relative, so in play if you open the door it is +
+  then when you close the door is is -, so net zero effect.
+  But in the initial state, if you expose the last message, then
+  relative to starting position of zero it is negative door in the floor
 
-   
 
 waveNumber will increase with total amound of leader time spent in space without a disconnect
   wave increase every 60 seconds.  

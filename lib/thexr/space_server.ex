@@ -6,7 +6,7 @@ defmodule Thexr.SpaceServer do
   use GenServer, restart: :transient
   require Logger
 
-  @timeout :timer.minutes(25)
+  @timeout :timer.minutes(5)
   @kick_check_timeout :timer.seconds(5)
 
   # Client (Public) Interface
