@@ -51,11 +51,11 @@ export class Inline {
             this.unbindInlineEvents()
         })
 
-        signalHub.local.on("client_ready").subscribe(() => {
+        // signalHub.local.on("client_ready").subscribe(() => {
 
-            this.bindInlineEvents()
+        //     this.bindInlineEvents()
 
-        })
+        // })
 
         signalHub.menu.on("menu_opened").subscribe(value => {
             if (value) {

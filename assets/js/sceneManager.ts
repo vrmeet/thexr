@@ -46,6 +46,7 @@ export class SceneManager {
     public bulletManager: BulletManager
     public avatarManager: AvatarManager
     public tintOverlay: TintOverlay
+    public inline: Inline
 
     public collectManager: CollectManager
     public doorManager: DoorManager
@@ -67,6 +68,8 @@ export class SceneManager {
 
             if (isMobileVR()) {
                 this.xrManager.enterXR()
+            } else {
+                this.inline.bindInlineEvents()
             }
 
             // falling objects should not fall for ever
@@ -278,7 +281,7 @@ export class SceneManager {
         this.freeCamera.ellipsoid = new BABYLON.Vector3(0.25, 0.10, 0.25)
         this.freeCamera.checkCollisions = true;
         // setup tools for 2D grabbing and avatar
-        new Inline(this.member_id, this.scene, this.freeCamera)
+        this.inline = new Inline(this.member_id, this.scene, this.freeCamera)
         signalHub.local.emit("camera_ready", posRot)
 
         addEventListener("beforeunload", () => {
