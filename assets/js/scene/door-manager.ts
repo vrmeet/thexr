@@ -46,7 +46,7 @@ export class DoorManager {
 
         // lock animation so moving door can't be opened or closed while already moving
         signalHub.incoming.on("event").pipe(
-            filter(mpts => mpts.m === EventName.entity_animated_offset)
+            filter(mpts => mpts.m === EventName.entity_animated_to)
         ).subscribe(mpts => {
             let mesh = this.scene.getMeshById(mpts.p["entity_id"])
             if (mesh && this.entityIsDoor(mesh)) {
@@ -73,13 +73,13 @@ export class DoorManager {
                     return
                 }
                 if (this.doorIsOpen(mesh)) {
-                    signalHub.outgoing.emit("event", { m: EventName.entity_animated_offset, p: { entity_id: mesh.id, pos: [0, -SLIDE_AMOUNT, 0], duration: DURATION } })
-                    signalHub.incoming.emit("event", { m: EventName.entity_animated_offset, p: { entity_id: mesh.id, pos: [0, -SLIDE_AMOUNT, 0], duration: DURATION } })
+                    signalHub.outgoing.emit("event", { m: EventName.entity_animated_to, p: { entity_id: mesh.id, pos: [mesh.position.x, 0, mesh.position.z], duration: DURATION } })
+                    signalHub.incoming.emit("event", { m: EventName.entity_animated_to, p: { entity_id: mesh.id, pos: [mesh.position.x, 0, mesh.position.z], duration: DURATION } })
 
                 } else if (this.canOpenDoorType(doorType)) {
 
-                    signalHub.outgoing.emit("event", { m: EventName.entity_animated_offset, p: { entity_id: mesh.id, pos: [0, SLIDE_AMOUNT, 0], duration: DURATION } })
-                    signalHub.incoming.emit("event", { m: EventName.entity_animated_offset, p: { entity_id: mesh.id, pos: [0, SLIDE_AMOUNT, 0], duration: DURATION } })
+                    signalHub.outgoing.emit("event", { m: EventName.entity_animated_to, p: { entity_id: mesh.id, pos: [mesh.position.x, SLIDE_AMOUNT, mesh.position.z], duration: DURATION } })
+                    signalHub.incoming.emit("event", { m: EventName.entity_animated_to, p: { entity_id: mesh.id, pos: [mesh.position.x, SLIDE_AMOUNT, mesh.position.z], duration: DURATION } })
 
                 }
             }

@@ -187,7 +187,7 @@ defmodule Thexr.SpaceServer do
     save_last_event_for_entity(state, tuple)
   end
 
-  def handle_cast({:event, :entity_animated_offset, _evt, _pid} = tuple, state) do
+  def handle_cast({:event, :entity_animated_to, _evt, _pid} = tuple, state) do
     save_last_event_for_entity(state, tuple)
   end
 

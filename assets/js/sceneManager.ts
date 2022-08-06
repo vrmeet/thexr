@@ -128,11 +128,11 @@ export class SceneManager {
         signalHub.incoming.on("about_space").subscribe(about_space => {
             // temp reposition of entities, like opened doors
             for (const [entity_id, event] of Object.entries(about_space.entities)) {
-                if (event.m === EventName.entity_animated_offset) {
+                if (event.m === EventName.entity_animated_to) {
                     let entity = this.scene.getMeshById(event.p.entity_id)
                     if (entity) {
                         if (event.p.pos) {
-                            entity.position.addInPlace(BABYLON.Vector3.FromArray(event.p.pos))
+                            entity.position.fromArray(event.p.pos)
                         }
                     }
                 }
@@ -155,12 +155,12 @@ export class SceneManager {
                     })
                     // this.setComponent(mesh, { type: mpts.p.type, data: params.data })
                 })
-            } else if (mpts.m === EventName.entity_animated_offset) {
+            } else if (mpts.m === EventName.entity_animated_to) {
                 let mesh = this.scene.getMeshById(mpts.p.entity_id)
                 if (mesh) {
                     if (mpts.p.pos) {
                         BABYLON.Animation.CreateAndStartAnimation("translate", mesh,
-                            "position", ANIMATION_FRAME_PER_SECOND, Math.ceil(mpts.p.duration * 60 / 1000), mesh.position, mesh.position.add(BABYLON.Vector3.FromArray(mpts.p.pos)), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                            "position", ANIMATION_FRAME_PER_SECOND, Math.ceil(mpts.p.duration * 60 / 1000), mesh.position, BABYLON.Vector3.FromArray(mpts.p.pos), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
                     }
                 }
             } else if (mpts.m === EventName.entity_colored) {

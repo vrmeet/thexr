@@ -1,12 +1,8 @@
 TODO:
 
 
-Improve strategy for launching enemy agents with wav:
 
-BUG: entity_animated_offset is relative, so in play if you open the door it is +
-  then when you close the door is is -, so net zero effect.
-  But in the initial state, if you expose the last message, then
-  relative to starting position of zero it is negative door in the floor
+mobile joystick is not smooth
 
 
 waveNumber will increase with total amound of leader time spent in space without a disconnect
