@@ -53,7 +53,7 @@ export class FreeCameraKeyboardWalkInput implements BABYLON.ICameraInput<BABYLON
   public keysRotateLeft = [37, 81];
   public keysRotateRight = [39, 69];
 
-  public rotationSpeed = 1;
+  public rotationSpeed = 2;
 
   private _keys = new Array<number>();
   private _onCanvasBlurObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Engine>>;

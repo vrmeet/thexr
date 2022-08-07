@@ -31,11 +31,12 @@ defmodule Thexr.EventWriter do
       Thexr.Spaces.create_event(event_stream_attr)
 
       if rem(event_stream_attr.sequence, @archive_chunck_size) == 0 do
-        Thexr.Spaces.batch_archive_eventstream_to_s3(
-          event_stream_attr.space_id,
-          event_stream_attr.sequence,
-          state.aws_client
-        )
+        # TODO: uncomment this later, it's just a waste for now
+        # Thexr.Spaces.batch_archive_eventstream_to_s3(
+        #   event_stream_attr.space_id,
+        #   event_stream_attr.sequence,
+        #   state.aws_client
+        # )
       end
 
       # side-effect of processing each event into a snapshot

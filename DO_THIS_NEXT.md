@@ -1,8 +1,84 @@
 TODO:
 
+Architecture:
+
+load serialized data of the scene: json definition: entities -> components
+
+For each entity:
+   We're creating meshes with names, ids, some meta data, some tags .... components lost in translation
+
+For each entity json data:
+  Create the Sphere < Primitive < Entity
+     can maintain properties of a sphere
+       - can have a mesh
+    can retain original components
+      - modify the components (re-render the mesh, material, position, rotation, etc)
+    can provide accessor methods for updating an object
+    can easily duplicate
+      - knows the color and all the other components
+      - interactable,
+      - shootable etc.
 
 
-mobile joystick is not smooth
+
+Algorithm for creating a cavern of rooms:
+
+1. place the start zone, mesh box, with a door at one end
+2. place the end zone, which a door on one end and switch on the other.  (start and end must not intersect)
+3. place N random sized rooms which can be made of different shapes like cylinder
+4. once all the rooms are placed, join them with tubes of straight meshes
+
+create a large box mesh from which you will carve out other rooms
+
+What doom editor has we don't have:
+  - birds eye view of map
+  - 
+
+
+What doom has that we don't have:
+  - large map to explore (discover the layout)
+  - different kind of terrains: multi-level, stairs, overhanging, windows
+  - elevator mechanics
+  - switches
+  - there is a goal to reach
+  - monsters make sound
+  - monsters have graphics and look like they are walking
+  - monsters have a die cycle
+  - monsters take a few hits to die
+  - monster can throw things at you
+  - you can see your ammo levels and health and armor
+
+
+it has to be much easier to design more sophisticated levels
+
+sculpting tool
+
+animation recording tool
+
+- Lack a property inspector to change value of components on entities
+
+
+better looking avatars: 
+  to do that we need different looking faces
+    1. to do that we can either make them in blender and allow people to choose
+    and/or:
+    1. allow people to sculpt organic meshes in the space
+    2. save that mesh to a library
+    3. allow users to choose that mesh as their head and hands
+
+the doom came had a level "end", create a construct that you need to click on to "finish"
+the game.  If there is no level-end button then defaults to endless wave of enemies.
+
+Change health, ammo, guns, keys to be spawners.
+
+level-end with collection requirement green-crystal-level-end, purple-crystal-level-end
+must collect the crystal in order to end the level
+
+
+
+
+
+mobile joystick is not smooth 
 
 
 waveNumber will increase with total amound of leader time spent in space without a disconnect

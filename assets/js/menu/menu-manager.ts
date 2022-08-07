@@ -25,6 +25,7 @@ import type { Vector2WithInfo } from 'babylonjs-gui';
 import { BarrierMaker } from './pages/barrier-maker';
 import { GameConstructs } from './pages/game-constructs';
 import { mode } from '../mode';
+import { CollabEditDupManager } from '../collab-edit/dup';
 
 /*
 inline -mode
@@ -56,13 +57,14 @@ export class MenuManager {
     public browseGui: GUI.AdvancedDynamicTexture
     public menu_topic: string
     public collabEditManager: CollaborativeEditTransformManager
+    public collabDupManager: CollabEditDupManager
     public collabDeleteManager: CollabEditDeleteManager
     public myState: member_state
 
     constructor(public scene: BABYLON.Scene, public xrManager: XRManager) {
         this.collabEditManager = new CollaborativeEditTransformManager(this.scene)
         this.collabDeleteManager = new CollabEditDeleteManager(this.scene)
-
+        this.collabDupManager = new CollabEditDupManager(this.scene)
         this.menu_topic = "main"
 
         signalHub.local.on("my_state").subscribe(state => {

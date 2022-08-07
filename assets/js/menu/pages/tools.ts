@@ -57,6 +57,7 @@ export class MenuTools extends GUI.Container {
                         makeTool('transform'),
                         makeTool('delete'),
                         a({ name: "goto-color", callback: gotoColorCallback }, "color"),
+                        makeTool('dup'),
                     ),
                     a({ name: "goto-primitives", callback: gotoPrimitiveCallback }, "primitives"),
                     a({ name: "goto-game-constructs", callback: gotoGameConstructs }, "game constructs"),

@@ -39,7 +39,7 @@ export type PresenceDiff = {
     leaves: PresenceState
 }
 
-export type EditMode = "transform" | "delete" | null
+export type EditMode = "transform" | "delete" | "dup" | null
 
 export type Component =
     { type: "position", data: { value: number[] } } |

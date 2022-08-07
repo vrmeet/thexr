@@ -390,6 +390,7 @@ export class SceneManager {
             if (entity.type === "box") {
                 // mesh = BABYLON.MeshBuilder.CreateBox(entity.name, {}, this.scene)
                 mesh = this.createBox(entity.name, entity.components)
+                mesh.checkCollisions = true;
                 BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable targetable")
             } else if (entity.type === "spawn_point") {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 1, depth: 1, height: 0.05 }, this.scene)
