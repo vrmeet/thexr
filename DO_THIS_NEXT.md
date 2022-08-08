@@ -1,5 +1,7 @@
 TODO:
 
+consolidate hud_msg vs hud_broadcast in incoming
+
 Architecture:
 
 load serialized data of the scene: json definition: entities -> components

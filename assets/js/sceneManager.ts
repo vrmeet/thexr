@@ -27,6 +27,9 @@ import { DoorManager } from "./scene/door-manager";
 import { AgentManager } from "./scene/agent-manager";
 
 import { mode } from "./mode";
+import { BoxEntity } from "./scene/entities/box-entity";
+import type { EntityBase } from "./scene/entity-base";
+import { GridEntity } from "./scene/entities/grid-entity";
 
 const ANIMATION_FRAME_PER_SECOND = 60
 const TOTAL_ANIMATION_FRAMES = 5
@@ -376,11 +379,6 @@ export class SceneManager {
         }, {})
     }
 
-    createBox(name, components) {
-
-        return BABYLON.MeshBuilder.CreateBox(name, this.argifyComponents(components), this.scene)
-    }
-
     findOrCreateMesh(entity: { type: string, name: string, id: string, components: Component[], parent?: string }): BABYLON.AbstractMesh {
 
         let mesh: BABYLON.AbstractMesh
@@ -388,10 +386,11 @@ export class SceneManager {
         if (!mesh) {
 
             if (entity.type === "box") {
+                mesh = new BoxEntity(this.scene).buildMeshFromEvent(entity.id, entity.name, entity.components)
                 // mesh = BABYLON.MeshBuilder.CreateBox(entity.name, {}, this.scene)
-                mesh = this.createBox(entity.name, entity.components)
-                mesh.checkCollisions = true;
-                BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable targetable")
+                // mesh = this.createBox(entity.name, entity.components)
+                // mesh.checkCollisions = true;
+                // BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable targetable")
             } else if (entity.type === "spawn_point") {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 1, depth: 1, height: 0.05 }, this.scene)
             } else if (entity.type === "wall" || entity.type === "door" || entity.type === "red_door" || entity.type === "blue_door") {
@@ -429,14 +428,16 @@ export class SceneManager {
                 mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
                 mesh.checkCollisions = true
             } else if (entity.type === "grid") {
-                mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { size: 25, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
-                mesh.checkCollisions = true
-                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, this.scene);
+                mesh = new GridEntity(this.scene).buildMeshFromEvent(entity.id, entity.name, entity.components)
 
-                const gridMat = this.findOrCreateMaterial({ type: "grid" })
-                mesh.material = gridMat;
+                // mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { size: 25, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
+                // mesh.checkCollisions = true
+                // mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, this.scene);
 
-                BABYLON.Tags.AddTagsTo(mesh, "teleportable")
+                // const gridMat = this.findOrCreateMaterial({ type: "grid" })
+                // mesh.material = gridMat;
+
+                // BABYLON.Tags.AddTagsTo(mesh, "teleportable")
 
             } else if (entity.type === "sphere") {
                 mesh = BABYLON.MeshBuilder.CreateSphere(entity.name, {}, this.scene)
@@ -450,22 +451,19 @@ export class SceneManager {
             }
 
 
-            if (mesh) {
-                mesh.id = entity.id
-                mesh.metadata = { type: entity.type }
-                BABYLON.Tags.AddTagsTo(mesh, "editable")
-                // signal to teleportation manager
-                signalHub.local.emit("mesh_built", { name: mesh.name, type: entity.type })
-            }
+            // if (mesh) {
+            //     mesh.id = entity.id
+            //     mesh.metadata = { type: entity.type }
+            //     BABYLON.Tags.AddTagsTo(mesh, "editable")
+            //     // signal to teleportation manager
+            //     signalHub.local.emit("mesh_built", { name: mesh.name, type: entity.type })
+            // }
         }
-        if (mesh) {
-            entity.components.forEach(component => {
-                this.setComponent(mesh, component)
-            })
-            BABYLON.Animation.CreateAndStartAnimation("appear", mesh, "position", ANIMATION_FRAME_PER_SECOND, TOTAL_ANIMATION_FRAMES, new BABYLON.Vector3(mesh.position.x, mesh.position.y + 10, mesh.position.z), mesh.position.clone(), BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-
+        if (mesh["mesh"]) {
+            return mesh["mesh"]
+        } else {
+            return mesh as BABYLON.AbstractMesh
         }
-        return mesh
     }
 
     animateComponent(mesh: BABYLON.AbstractMesh, component: Component) {

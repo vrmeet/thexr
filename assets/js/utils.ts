@@ -1,9 +1,27 @@
 import { filter, map, pipe, scan } from "rxjs";
-import type * as BABYLON from "babylonjs"
 import type { PosRot } from "./types";
+import * as BABYLON from "babylonjs"
+import * as MAT from "babylonjs-materials"
 
 export const randomDiceRoll = (diceSides: number) => {
     return Math.random() * Math.floor(diceSides)
+}
+
+
+export const findOrCreateMaterial = (opts: { type: "color" | "grid", colorString?: string }, scene: BABYLON.Scene) => {
+    if (opts.type === "color" && opts.colorString) {
+        let mat = scene.getMaterialByName(`mat_${opts.colorString}`)
+        if (mat) {
+            return mat
+        } else {
+            let myMaterial = new BABYLON.StandardMaterial(`mat_${opts.colorString}`, scene);
+            let color = BABYLON.Color3.FromHexString(opts.colorString)
+            myMaterial.diffuseColor = color;
+            return myMaterial
+        }
+    } else {
+        return scene.getMaterialByName("mat_grid") || (new MAT.GridMaterial("mat_grid", scene))
+    }
 }
 
 export const reduceSigFigs = (value: number) => {

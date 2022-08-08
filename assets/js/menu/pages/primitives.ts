@@ -9,6 +9,7 @@ import { a, div, pre } from "../helpers";
 import { random_id } from "../../utils";
 import type { Component, event } from "../../types"
 import { EventName } from "../../event-names";
+import { BoxEntity } from "../../scene/entities/box-entity";
 
 export class MenuPagePrimitives extends GUI.Container {
 
@@ -51,6 +52,13 @@ export class MenuPagePrimitives extends GUI.Container {
 
         return options.map(prim => {
             const callback = () => {
+
+                if (prim === "box") {
+                    let box = new BoxEntity(this.scene)
+                    box.emitCreateEntityEvent()
+                    return
+                }
+
                 // let ray = this.scene.activeCamera.getForwardRay(1)
                 // let dest = ray.origin.add(ray.direction)
                 const name = `${prim}_${random_id(6)}`

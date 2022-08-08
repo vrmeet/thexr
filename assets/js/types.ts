@@ -49,7 +49,8 @@ export type Component =
     { type: "height", data: { value: number } } |
     { type: "width", data: { value: number } } |
     { type: "depth", data: { value: number } } |
-    { type: "points", data: { value: number[] } }
+    { type: "points", data: { value: number[] } } |
+    { type: string, data: { value: any } }
 
 
 

@@ -1,4 +1,4 @@
-import { filter } from "rxjs/operators";
+import { filter, single } from "rxjs/operators";
 import { EventName } from "../event-names";
 import { signalHub } from "../signalHub";
 import { arrayReduceSigFigs, unsetPosRot } from "../utils";
@@ -166,12 +166,17 @@ export class Inline {
         return signalHub.local.on("keyboard_info").pipe(
             filter(data => (data.event.keyCode === 70 && data.type === BABYLON.KeyboardEventTypes.KEYUP))
         ).subscribe(data => {
+            console.log("got here")
             if (this.flying === false) {
                 this.camera.inputs.removeByType("FreeCameraKeyboardWalkInput")
                 this.camera.inputs.add(new FreeCameraKeyboardFlyingInput())
+                console.log("fly mode on")
+                signalHub.incoming.emit("hud_msg", "Flying mode ON")
             } else {
                 this.camera.inputs.removeByType("FreeCameraKeyboardFlyingInput");
                 this.camera.inputs.add(new FreeCameraKeyboardWalkInput())
+                signalHub.incoming.emit("hud_msg", "fly mode off")
+                console.log("fly mode off")
             }
             this.flying = !this.flying
         })
