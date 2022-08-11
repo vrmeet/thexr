@@ -19,7 +19,7 @@ export const findOrCreateMaterial = (opts: { type: "color" | "grid", colorString
             myMaterial.diffuseColor = color;
             return myMaterial
         }
-    } else {
+    } else if (opts.type === "grid") {
         return scene.getMaterialByName("mat_grid") || (new MAT.GridMaterial("mat_grid", scene))
     }
 }

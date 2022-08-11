@@ -1,5 +1,7 @@
 TODO:
 
+working on making a class for wall
+
 consolidate hud_msg vs hud_broadcast in incoming
 
 Architecture:

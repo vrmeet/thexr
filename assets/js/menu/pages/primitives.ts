@@ -10,6 +10,7 @@ import { random_id } from "../../utils";
 import type { Component, event } from "../../types"
 import { EventName } from "../../event-names";
 import { BoxEntity } from "../../scene/entities/box-entity";
+import { GridEntity } from "../../scene/entities/grid-entity";
 
 export class MenuPagePrimitives extends GUI.Container {
 
@@ -48,16 +49,15 @@ export class MenuPagePrimitives extends GUI.Container {
 
 
     primOptions() {
-        const options = ["capsule", "box", "cone", "sphere", "grid", "cylinder", "plane"];
+        const options = { "box": BoxEntity, "grid": GridEntity }
+        // const options = ["capsule", "box", "cone", "sphere", "grid", "cylinder", "plane"];
 
-        return options.map(prim => {
+        return Object.entries(options).map(([prim, klass]) => {
             const callback = () => {
 
-                if (prim === "box") {
-                    let box = new BoxEntity(this.scene)
-                    box.emitCreateEntityEvent()
-                    return
-                }
+                let entity = new klass(this.scene)
+                entity.emitCreateEntityEvent()
+                /*
 
                 // let ray = this.scene.activeCamera.getForwardRay(1)
                 // let dest = ray.origin.add(ray.direction)
@@ -78,7 +78,7 @@ export class MenuPagePrimitives extends GUI.Container {
 
                 signalHub.outgoing.emit('event', entity_event)
                 signalHub.incoming.emit('event', entity_event)
-
+*/
 
             }
             return a({ callback }, prim)

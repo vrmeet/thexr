@@ -10,19 +10,27 @@ export class GridEntity extends EntityBase {
 
     }
 
+    defaultMaterial() {
+        return "grid"
+    }
 
+    defaultPosition(): number[] {
+        return [0, -0.01, 0]
+    }
+
+    defaultRotation() {
+        return [1.5708, 0, 0]
+    }
+
+    defaultCanTeleportTo(): boolean {
+        return true
+    }
+
+    additionalComponentsAsObj() {
+        return { size: 25 }
+    }
 
     createMesh() {
-        let mesh = BABYLON.MeshBuilder.CreatePlane(this.name, { size: 25, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
-        // mesh.checkCollisions = true
-        // mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, this.scene);
-
-        const gridMat = findOrCreateMaterial({ type: "grid" }, this.scene)
-        mesh.material = gridMat;
-
-        // BABYLON.Tags.AddTagsTo(mesh, "teleportable")
-
-        return mesh
-        // return BABYLON.MeshBuilder.CreateBox(this.name, this.argifyComponents(this.components), this.scene)
+        return BABYLON.MeshBuilder.CreatePlane(this.name, { ...this.argifyComponents(this.components, ["size"]), sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
     }
 }

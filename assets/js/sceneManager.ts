@@ -30,6 +30,8 @@ import { mode } from "./mode";
 import { BoxEntity } from "./scene/entities/box-entity";
 import type { EntityBase } from "./scene/entity-base";
 import { GridEntity } from "./scene/entities/grid-entity";
+import { WallEntity } from "./scene/entities/wall-entity";
+import { SpawnPointEntity } from "./scene/entities/spawn-point-entity";
 
 const ANIMATION_FRAME_PER_SECOND = 60
 const TOTAL_ANIMATION_FRAMES = 5
@@ -387,13 +389,13 @@ export class SceneManager {
 
             if (entity.type === "box") {
                 mesh = new BoxEntity(this.scene).buildMeshFromEvent(entity.id, entity.name, entity.components)
-                // mesh = BABYLON.MeshBuilder.CreateBox(entity.name, {}, this.scene)
-                // mesh = this.createBox(entity.name, entity.components)
-                // mesh.checkCollisions = true;
-                // BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable targetable")
+
             } else if (entity.type === "spawn_point") {
-                mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 1, depth: 1, height: 0.05 }, this.scene)
-            } else if (entity.type === "wall" || entity.type === "door" || entity.type === "red_door" || entity.type === "blue_door") {
+                mesh = new SpawnPointEntity(this.scene).buildMeshFromEvent(entity.id, entity.name, entity.components)
+                // mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 1, depth: 1, height: 0.05 }, this.scene)
+            } else if (entity.type === "wall") {
+                mesh = new WallEntity(this.scene).buildMeshFromEvent(entity.id, entity.name, entity.components)
+            } else if (entity.type === "door" || entity.type === "red_door" || entity.type === "blue_door") {
                 const height: number = (entity.components.filter(comp => comp.type === "height")[0]?.data?.value || 2) as number
                 const points: number[] = entity.components.filter(comp => comp.type === "points")[0].data.value as number[]
                 mesh = createWall(entity.name, height, points, this.scene)

@@ -10,6 +10,7 @@ import { random_id, reduceSigFigs } from "../../utils";
 import type { Component, event } from "../../types"
 import { EventName } from "../../event-names";
 import { filter, map } from "rxjs/operators";
+import { SpawnPointEntity } from "../../scene/entities/spawn-point-entity";
 
 export class GameConstructs extends GUI.Container {
     public wallPoints: BABYLON.Vector3[]
@@ -55,34 +56,38 @@ export class GameConstructs extends GUI.Container {
     }
 
     dropOptions() {
-        const options = ["spawn_point", "gun", "red_key", "blue_key", "enemy_spawner"];
 
-        return options.map(prim => {
+        const options = { "spawn_point": SpawnPointEntity }
+        // const options = ["spawn_point", "gun", "red_key", "blue_key", "enemy_spawner"];
+
+        return Object.entries(options).map(([prim, klass]) => {
             const callback = () => {
-                // let ray = this.scene.activeCamera.getForwardRay(1)
-                // let dest = ray.origin.add(ray.direction)
-                const name = `${prim}_${random_id(6)}`
-                const uuid = uuidv4()
-
-                let components = { ...this.defaultComponents() }
-
-                if (prim === "enemy_spawner" || prim === "spawn_point") {
-                    components.position[1] = 0.01
-                }
-                if (prim === "red_key") {
-                    components["color"] = "#FF0000"
-                } else if (prim === "blue_key") {
-                    components["color"] = "#0000FF"
-                }
-
-
-                const componentList = this.componentObjToList(components)
-
-                const entity_event: event = { m: EventName.entity_created, p: { type: prim, id: uuid, name, components: componentList } }
-
-                signalHub.outgoing.emit('event', entity_event)
-                signalHub.incoming.emit('event', entity_event)
-
+                new klass(this.scene).emitCreateEntityEvent()
+                /* 
+                  // let ray = this.scene.activeCamera.getForwardRay(1)
+                  // let dest = ray.origin.add(ray.direction)
+                  const name = `${prim}_${random_id(6)}`
+                  const uuid = uuidv4()
+  
+                  let components = { ...this.defaultComponents() }
+  
+                  if (prim === "enemy_spawner" || prim === "spawn_point") {
+                      components.position[1] = 0.01
+                  }
+                  if (prim === "red_key") {
+                      components["color"] = "#FF0000"
+                  } else if (prim === "blue_key") {
+                      components["color"] = "#0000FF"
+                  }
+  
+  
+                  const componentList = this.componentObjToList(components)
+  
+                  const entity_event: event = { m: EventName.entity_created, p: { type: prim, id: uuid, name, components: componentList } }
+  
+                  signalHub.outgoing.emit('event', entity_event)
+                  signalHub.incoming.emit('event', entity_event)
+  */
 
             }
             return a({ callback }, prim)

@@ -9,17 +9,17 @@ export class BoxEntity extends EntityBase {
 
     }
 
-    defaultComponents(): Component[] {
-        let compObj = this.defaultComponentAsObject()
-        compObj["collide"] = true
-        compObj["editable"] = true
-        compObj["targetable"] = true
-        compObj["floor"] = true
-        compObj["interactable"] = true
-        return this.componentObjectToList(compObj)
-    }
+    // defaultComponents(): Component[] {
+    //     let compObj = this.defaultComponentAsObject()
+    //     compObj["collide"] = true
+    //     compObj["editable"] = true
+    //     compObj["targetable"] = true
+    //     compObj["floor"] = true
+    //     compObj["interactable"] = true
+    //     return this.componentObjectToList(compObj)
+    // }
 
     createMesh() {
-        return BABYLON.MeshBuilder.CreateBox(this.name, this.argifyComponents(this.components), this.scene)
+        return BABYLON.MeshBuilder.CreateBox(this.name, this.argifyComponents(this.components, ["depth", "length", "width"]), this.scene)
     }
 }
