@@ -11,6 +11,11 @@ import type { Component, event } from "../../types"
 import { EventName } from "../../event-names";
 import { BoxEntity } from "../../scene/entities/box-entity";
 import { GridEntity } from "../../scene/entities/grid-entity";
+import { SphereEntity } from "../../scene/entities/sphere-entity";
+import { ConeEntity } from "../../scene/entities/cone-entity";
+import { PlaneEntity } from "../../scene/entities/plane-entity";
+import { CapsuleEntity } from "../../scene/entities/capsule-entity";
+import { CylinderEntity } from "../../scene/entities/cylinder-entity";
 
 export class MenuPagePrimitives extends GUI.Container {
 
@@ -49,7 +54,15 @@ export class MenuPagePrimitives extends GUI.Container {
 
 
     primOptions() {
-        const options = { "box": BoxEntity, "grid": GridEntity }
+        const options = {
+            box: BoxEntity,
+            cylinder: CylinderEntity,
+            grid: GridEntity,
+            sphere: SphereEntity,
+            cone: ConeEntity,
+            plane: PlaneEntity,
+            capsule: CapsuleEntity,
+        }
         // const options = ["capsule", "box", "cone", "sphere", "grid", "cylinder", "plane"];
 
         return Object.entries(options).map(([prim, klass]) => {

@@ -3,6 +3,8 @@ import * as BABYLON from 'babylonjs'
 import type { event } from '../types'
 import { filter } from "rxjs/operators";
 import { EventName } from "../event-names";
+import { random_id } from "../utils";
+import { v4 as uuidv4 } from "uuid";
 
 export class CollabEditDupManager {
     public pointerObs: BABYLON.Observer<BABYLON.PointerInfo>
@@ -29,17 +31,24 @@ export class CollabEditDupManager {
 
 
                 if (mesh && BABYLON.Tags.MatchesQuery(mesh, "editable")) {
-                    console.log("dup")
+                    this.duplicateMesh(mesh)
                 }
             }
 
         })
     }
 
-    deleteMesh(mesh: BABYLON.AbstractMesh) {
-        const event: event = { m: EventName.entity_deleted, p: { id: mesh.id } }
-        signalHub.outgoing.emit("event", event)
-        signalHub.incoming.emit("event", event)
+    duplicateMesh(mesh: BABYLON.AbstractMesh) {
+        const entity = mesh.metadata.ref
+
+        const name = `${entity.type}_${random_id(6)}`
+        const uuid = uuidv4()
+
+        const entity_event: event = { m: EventName.entity_created, p: { type: entity.type, id: uuid, name, components: entity.components } }
+
+        signalHub.outgoing.emit('event', entity_event)
+        signalHub.incoming.emit('event', entity_event)
+
 
         // console.log('attempting to delete', mesh)
         // signalHub.outgoing.emit('spaces_api', {

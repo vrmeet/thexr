@@ -129,6 +129,11 @@ export class CollaborativeEditTransformManager {
         }
         signalHub.outgoing.emit('event', event)
 
+        let entity = this.selectedMesh.metadata.ref
+        let comp = entity.getComponentByType("position")
+        if (comp) {
+            comp = components[0]
+        }
         // signalHub.outgoing.emit('spaces_api', {
         //     func: "modify_component_with_broadcast",
         //     args: [this.selectedMesh.id, "position", { x: pos.x, y: pos.y, z: pos.z }],

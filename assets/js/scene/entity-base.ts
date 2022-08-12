@@ -20,6 +20,12 @@ export abstract class EntityBase {
     }
 
     buildMeshFromEvent(id: string, name: string, components: Component[]) {
+        // don't create the same mesh twice
+        let mesh = this.scene.getMeshById(id)
+        if (mesh) {
+            return mesh
+        }
+
         this.id = id
         this.name = name
         this.components = components
@@ -34,6 +40,10 @@ export abstract class EntityBase {
 
     abstract createMesh(): BABYLON.AbstractMesh
 
+
+    createEntityEvent(opts: any = {}) {
+
+    }
 
     emitCreateEntityEvent(opts: any = {}) {
         // let dest = ray.origin.add(ray.direction)
@@ -75,6 +85,8 @@ export abstract class EntityBase {
         this.setMaterialFromComponent()
         this.setEditableFromComponent()
         this.setTeleportableFromComponent()
+        this.setCollectableFromComponent()
+        this.setInteractableFromComponent()
 
     }
 

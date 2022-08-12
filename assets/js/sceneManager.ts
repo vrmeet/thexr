@@ -34,6 +34,12 @@ import { WallEntity } from "./scene/entities/wall-entity";
 import { SpawnPointEntity } from "./scene/entities/spawn-point-entity";
 import { EnemySpawnerEntity } from "./scene/entities/enemy-spawner-entity";
 import { AmmoBoxEntity } from "./scene/entities/ammo-box-entity";
+import { CylinderEntity } from "./scene/entities/cylinder-entity";
+import { GunEntity } from "./scene/entities/gun-entity";
+import { PlaneEntity } from "./scene/entities/plane-entity";
+import { SphereEntity } from "./scene/entities/sphere-entity";
+import { ConeEntity } from "./scene/entities/cone-entity";
+import { CapsuleEntity } from "./scene/entities/capsule-entity";
 
 const ANIMATION_FRAME_PER_SECOND = 60
 const TOTAL_ANIMATION_FRAMES = 5
@@ -404,20 +410,20 @@ export class SceneManager {
                 mesh.checkCollisions = true;
                 BABYLON.Tags.AddTagsTo(mesh, "blocker")
             } else if (entity.type === "cylinder") {
-                mesh = BABYLON.MeshBuilder.CreateCylinder(entity.name, {}, this.scene)
-                BABYLON.Tags.AddTagsTo(mesh, "teleportable interactable targetable")
-                // mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.CylinderImpostor, { mass: 1, friction: 0.2, restitution: 0.7 }, this.scene);
+                mesh = new CylinderEntity(this.scene).buildMeshFromEvent(entity.id, entity.name, entity.components)
 
             } else if (entity.type === "gun") {
-                let barrel = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.05, depth: 0.25, height: 0.05 }, this.scene)
-                barrel.position.z = 0.07
-                barrel.position.y = 0.05
-                let handle = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.05, depth: 0.07, height: 0.15 }, this.scene)
-                handle.rotation.x = BABYLON.Angle.FromDegrees(45).radians()
-                mesh = BABYLON.Mesh.MergeMeshes([barrel, handle], true);
-                entity.components.push({ type: "color", data: { value: "#A0A0A0" } })
-                // mesh = BABYLON.MeshBuilder.CreateTorus("gun", {}, this.scene)
-                BABYLON.Tags.AddTagsTo(mesh, "interactable shootable")
+                mesh = new GunEntity(this.scene).buildMeshFromEvent(entity.id, entity.name, entity.components)
+
+                // let barrel = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.05, depth: 0.25, height: 0.05 }, this.scene)
+                // barrel.position.z = 0.07
+                // barrel.position.y = 0.05
+                // let handle = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.05, depth: 0.07, height: 0.15 }, this.scene)
+                // handle.rotation.x = BABYLON.Angle.FromDegrees(45).radians()
+                // mesh = BABYLON.Mesh.MergeMeshes([barrel, handle], true);
+                // entity.components.push({ type: "color", data: { value: "#A0A0A0" } })
+                // // mesh = BABYLON.MeshBuilder.CreateTorus("gun", {}, this.scene)
+                // BABYLON.Tags.AddTagsTo(mesh, "interactable shootable")
             } else if (entity.type === "red_key" || entity.type === "blue_key") {
                 mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.15, depth: 0.01, height: 0.2 }, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "interactable collectable")
@@ -428,11 +434,15 @@ export class SceneManager {
                 // mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.5, depth: 0.3, height: 0.5 }, this.scene)
                 // BABYLON.Tags.AddTagsTo(mesh, "interactable collectable")
             } else if (entity.type === "capsule") {
-                mesh = BABYLON.MeshBuilder.CreateCapsule(entity.name, {}, this.scene)
-                BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
+                mesh = new CapsuleEntity(this.scene).buildMeshFromEvent(entity.id, entity.name, entity.components)
+
+                // mesh = BABYLON.MeshBuilder.CreateCapsule(entity.name, {}, this.scene)
+                // BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
             } else if (entity.type === "plane") {
-                mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
-                mesh.checkCollisions = true
+                mesh = new PlaneEntity(this.scene).buildMeshFromEvent(entity.id, entity.name, entity.components)
+
+                // mesh = BABYLON.MeshBuilder.CreatePlane(entity.name, { sideOrientation: BABYLON.Mesh.DOUBLESIDE }, this.scene)
+                // mesh.checkCollisions = true
             } else if (entity.type === "grid") {
                 mesh = new GridEntity(this.scene).buildMeshFromEvent(entity.id, entity.name, entity.components)
 
@@ -446,11 +456,15 @@ export class SceneManager {
                 // BABYLON.Tags.AddTagsTo(mesh, "teleportable")
 
             } else if (entity.type === "sphere") {
-                mesh = BABYLON.MeshBuilder.CreateSphere(entity.name, {}, this.scene)
-                BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
+                mesh = new SphereEntity(this.scene).buildMeshFromEvent(entity.id, entity.name, entity.components)
+
+                // mesh = BABYLON.MeshBuilder.CreateSphere(entity.name, {}, this.scene)
+                // BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
             } else if (entity.type === "cone") {
-                mesh = BABYLON.MeshBuilder.CreateCylinder(entity.name, { diameterTop: 0 }, this.scene)
-                BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
+                mesh = new ConeEntity(this.scene).buildMeshFromEvent(entity.id, entity.name, entity.components)
+
+                // mesh = BABYLON.MeshBuilder.CreateCylinder(entity.name, { diameterTop: 0 }, this.scene)
+                // BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
             } else if (entity.type === "enemy_spawner") {
                 mesh = new EnemySpawnerEntity(this.scene).buildMeshFromEvent(entity.id, entity.name, entity.components)
 
