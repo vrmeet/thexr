@@ -23,7 +23,7 @@ export abstract class EntityBase {
         this.id = id
         this.name = name
         this.components = components
-        BABYLON.Tags.EnableFor(this)
+        // BABYLON.Tags.EnableFor(this)
         this.mesh = this.createMesh()
         this.setMeshAttrs()
         signalHub.local.emit("mesh_built", { name: this.mesh.name, type: this.type })
@@ -66,7 +66,7 @@ export abstract class EntityBase {
     setMeshAttrs() {
         this.mesh.id = this.id
         this.mesh.metadata = { type: this.type, ref: this }
-        // BABYLON.Tags.AddTagsTo(this.mesh, "editable")
+        BABYLON.Tags.AddTagsTo(this.mesh, this.type)
         // signal to teleportation manager
         this.setPositionFromComponent()
         this.setRotationFromComponent()
@@ -75,6 +75,7 @@ export abstract class EntityBase {
         this.setMaterialFromComponent()
         this.setEditableFromComponent()
         this.setTeleportableFromComponent()
+
     }
 
     animateOnCreate() {
@@ -94,6 +95,20 @@ export abstract class EntityBase {
         let comp = this.getComponentByType("editable")
         if (comp) {
             BABYLON.Tags.AddTagsTo(this.mesh, "editable")
+        }
+    }
+
+    setInteractableFromComponent() {
+        let comp = this.getComponentByType("interactable")
+        if (comp) {
+            BABYLON.Tags.AddTagsTo(this.mesh, "interactable")
+        }
+    }
+
+    setCollectableFromComponent() {
+        let comp = this.getComponentByType("collectable")
+        if (comp) {
+            BABYLON.Tags.AddTagsTo(this.mesh, "collectable")
         }
     }
 
@@ -190,83 +205,15 @@ export abstract class EntityBase {
         }
     }
 
-    defaultPosition() {
-        return this.cameraFrontPosition()
-    }
-
-    defaultRotation() {
-        return null // no need, if no rotation
-    }
-
-    defaultScaling() {
-        return null // no need, if no scaling
-    }
-
-    defaultColor() {
-        return null
-    }
-
-    defaultMaterial() {
-        return null
-    }
-
     /**
-     * can rotate scale re-position this object
+     * Subclass should override this to provide it's own components
+     * eg { position: this.cameraFrontFloorPosition() }
      * @returns 
      */
-    defaultIsEditable() {
-        return true
-    }
-
-    /**
-     * Can teleport on top of this object
-     * @returns 
-     */
-    defaultCanTeleportTo() {
-        return false
-    }
-
-    defaultComponentAsObject() {
-        let data = { position: this.defaultPosition() }
-        let rotation = this.defaultRotation()
-        if (rotation) {
-            data["rotation"] = rotation
-        }
-        let scaling = this.defaultScaling()
-        if (scaling) {
-            data["scaling"] = scaling
-        }
-
-        // only choose one of color or material
-        let color = this.defaultColor()
-        let material = this.defaultMaterial()
-        if (color) {
-            data["color"] = this.defaultColor()
-        } else if (material) {
-            data["material"] = material
-        }
+    abstract defaultComponentAsObject(): Record<string, any>
 
 
-        if (this.defaultIsEditable()) {
-            data["editable"] = true
-        }
-        if (this.defaultCanTeleportTo()) {
-            data["teleportable"] = true
-        }
-
-        let additional = this.additionalComponentsAsObj()
-        if (additional) {
-            return { ...data, ...additional }
-        }
-
-        return data
-    }
-
-    additionalComponentsAsObj() {
-        return null
-    }
-
-    componentObjectToList(componentObject: any) {
+    componentObjectToList(componentObject: Record<string, any>) {
         return Object.entries(componentObject).map(([key, value]) => {
             return { type: key, data: { value } }
         }) as Component[]

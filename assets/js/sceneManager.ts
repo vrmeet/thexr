@@ -32,6 +32,8 @@ import type { EntityBase } from "./scene/entity-base";
 import { GridEntity } from "./scene/entities/grid-entity";
 import { WallEntity } from "./scene/entities/wall-entity";
 import { SpawnPointEntity } from "./scene/entities/spawn-point-entity";
+import { EnemySpawnerEntity } from "./scene/entities/enemy-spawner-entity";
+import { AmmoBoxEntity } from "./scene/entities/ammo-box-entity";
 
 const ANIMATION_FRAME_PER_SECOND = 60
 const TOTAL_ANIMATION_FRAMES = 5
@@ -421,8 +423,10 @@ export class SceneManager {
                 BABYLON.Tags.AddTagsTo(mesh, "interactable collectable")
 
             } else if (entity.type === "ammo_box") {
-                mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.5, depth: 0.3, height: 0.5 }, this.scene)
-                BABYLON.Tags.AddTagsTo(mesh, "interactable collectable")
+                mesh = new AmmoBoxEntity(this.scene).buildMeshFromEvent(entity.id, entity.name, entity.components)
+
+                // mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 0.5, depth: 0.3, height: 0.5 }, this.scene)
+                // BABYLON.Tags.AddTagsTo(mesh, "interactable collectable")
             } else if (entity.type === "capsule") {
                 mesh = BABYLON.MeshBuilder.CreateCapsule(entity.name, {}, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
@@ -448,8 +452,10 @@ export class SceneManager {
                 mesh = BABYLON.MeshBuilder.CreateCylinder(entity.name, { diameterTop: 0 }, this.scene)
                 BABYLON.Tags.AddTagsTo(mesh, "interactable targetable physics")
             } else if (entity.type === "enemy_spawner") {
-                mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 1, depth: 1, height: 0.1 }, this.scene)
-                BABYLON.Tags.AddTagsTo(mesh, "enemy_spawner")
+                mesh = new EnemySpawnerEntity(this.scene).buildMeshFromEvent(entity.id, entity.name, entity.components)
+
+                // mesh = BABYLON.MeshBuilder.CreateBox(entity.name, { width: 1, depth: 1, height: 0.1 }, this.scene)
+                // BABYLON.Tags.AddTagsTo(mesh, "enemy_spawner")
             }
 
 

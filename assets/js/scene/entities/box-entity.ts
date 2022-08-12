@@ -9,15 +9,14 @@ export class BoxEntity extends EntityBase {
 
     }
 
-    // defaultComponents(): Component[] {
-    //     let compObj = this.defaultComponentAsObject()
-    //     compObj["collide"] = true
-    //     compObj["editable"] = true
-    //     compObj["targetable"] = true
-    //     compObj["floor"] = true
-    //     compObj["interactable"] = true
-    //     return this.componentObjectToList(compObj)
-    // }
+    defaultComponentAsObject(): Record<string, any> {
+        return {
+            position: this.cameraFrontPosition(),
+            editable: true,
+            teleportable: true
+        }
+    }
+
 
     createMesh() {
         return BABYLON.MeshBuilder.CreateBox(this.name, this.argifyComponents(this.components, ["depth", "length", "width"]), this.scene)

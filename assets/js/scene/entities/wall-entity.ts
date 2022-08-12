@@ -5,81 +5,25 @@ import { scan, pairwise, bufferCount } from "rxjs/operators"
 import { reduceSigFigs } from "../../utils";
 
 export class WallEntity extends EntityBase {
-
     public baseEmitFunction
-
+    public runtimeComponentsAsObj: Record<string, any>
     constructor(public scene: BABYLON.Scene) {
 
         super("wall", scene)
+        this.runtimeComponentsAsObj = {}
         this.baseEmitFunction = super.emitCreateEntityEvent
 
     }
 
-    defaultPosition(): number[] {
-        return this.cameraFrontFloorPosition()
+    defaultComponentAsObject(): Record<string, any> {
+        return {
+            position: this.cameraFrontFloorPosition(),
+            color: "#DEB887",
+            editable: true,
+            ...this.runtimeComponentsAsObj
+        }
     }
 
-    defaultColor() {
-        return "#DEB887"
-    }
-
-    defaultIsEditable(): boolean {
-        return true
-    }
-    /*
-            const create = (entity_type: string) => {
-                return () => {
-                    if (this.wallPoints.length < 2) {
-                        signalHub.incoming.emit("hud_msg", "You need at least 2 points to build a wall")
-                        return
-                    }
-                    signalHub.incoming.emit("hud_msg", `Created ${entity_type}`)
-    
-                    const xzPoints = this.wallPoints.reduce((acc, wallPoint) => {
-                        acc.push(reduceSigFigs(wallPoint.x))
-                        acc.push(reduceSigFigs(wallPoint.z))
-                        return acc
-                    }, [])
-                    const wallId = uuidv4()
-                    const wallName = `${entity_type}_${random_id(5)}`
-                    const tempWallMesh = createWall(wallName, 2, xzPoints, this.scene)
-                    const tempCenter = tempWallMesh.getBoundingInfo().boundingBox.center
-                    const worldOffset = new BABYLON.TransformNode("", this.scene)
-                    worldOffset.position = tempCenter
-                    this.pointIndicators.forEach(indicator => indicator.setParent(worldOffset))
-                    worldOffset.position = BABYLON.Vector3.Zero()
-                    const adjustedXZPoints = this.pointIndicators.reduce((acc, indicator) => {
-                        acc.push(reduceSigFigs(indicator.position.x))
-                        acc.push(reduceSigFigs(indicator.position.z))
-                        return acc
-                    }, [])
-    
-                    // for now wall only draws at y = 0
-                    tempCenter.y = 0;
-    
-                    let payload = {
-                        type: entity_type,
-                        id: wallId,
-                        name: wallName,
-                        components: [
-                            { type: "position", data: { value: arrayReduceSigFigs(tempCenter.asArray()) } },
-                            { type: "color", data: { value: this.barrierColor(entity_type) } },
-                            { type: "height", data: { value: 2 } },
-                            { type: "points", data: { value: adjustedXZPoints } }
-                        ]
-                    }
-    
-                    let event: any = { m: EventName.entity_created, p: payload }
-    
-                    tempWallMesh.dispose()
-    
-                    signalHub.outgoing.emit("event", event)
-                    signalHub.incoming.emit("event", event)
-    
-                    this.reset()
-                }
-            }
-    */
 
     getWallMiddle(globalPoints: BABYLON.Vector3[]): { middleX: number, middleZ: number } {
         const minsAndMaxes = globalPoints.reduce((acc, point) => {
@@ -121,12 +65,11 @@ export class WallEntity extends EntityBase {
             return acc
         }, [])
 
-        this.additionalComponentsAsObj = () => {
-            return {
-                points: xzPoints,
-                height: 2,
-                position: offsetPosition.asArray()
-            }
+        this.runtimeComponentsAsObj = {
+            points: xzPoints,
+            height: 2,
+            position: offsetPosition.asArray()
+
         }
 
         this.baseEmitFunction()

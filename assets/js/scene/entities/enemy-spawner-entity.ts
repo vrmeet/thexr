@@ -3,23 +3,23 @@ import * as BABYLON from "babylonjs"
 import { findOrCreateMaterial } from "../../utils";
 import type { Component } from "../../types";
 
-export class SpawnPointEntity extends EntityBase {
+export class EnemySpawnerEntity extends EntityBase {
     constructor(public scene: BABYLON.Scene) {
 
-        super("spawn_point", scene)
+        super("enemy_spawner", scene)
 
     }
 
     defaultComponentAsObject(): Record<string, any> {
         return {
             position: this.cameraFrontFloorPosition(),
-            color: "#00FF00",
+            color: "#F01100",
             editable: true
         }
     }
 
 
     createMesh() {
-        return BABYLON.MeshBuilder.CreateBox(this.name, { width: 1, depth: 1, height: 0.05 }, this.scene)
+        return BABYLON.MeshBuilder.CreateBox(this.name, { width: 1.2, depth: 1.2, height: 0.03 }, this.scene)
     }
 }

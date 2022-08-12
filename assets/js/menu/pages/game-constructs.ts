@@ -11,6 +11,8 @@ import type { Component, event } from "../../types"
 import { EventName } from "../../event-names";
 import { filter, map } from "rxjs/operators";
 import { SpawnPointEntity } from "../../scene/entities/spawn-point-entity";
+import { EnemySpawnerEntity } from "../../scene/entities/enemy-spawner-entity";
+import { AmmoBoxEntity } from "../../scene/entities/ammo-box-entity";
 
 export class GameConstructs extends GUI.Container {
     public wallPoints: BABYLON.Vector3[]
@@ -57,7 +59,7 @@ export class GameConstructs extends GUI.Container {
 
     dropOptions() {
 
-        const options = { "spawn_point": SpawnPointEntity }
+        const options = { "spawn_point": SpawnPointEntity, "enemy_spawner": EnemySpawnerEntity, "ammo_box": AmmoBoxEntity }
         // const options = ["spawn_point", "gun", "red_key", "blue_key", "enemy_spawner"];
 
         return Object.entries(options).map(([prim, klass]) => {
@@ -110,7 +112,6 @@ export class GameConstructs extends GUI.Container {
         }
         return pre({ name: "scrollable-prim-options" },
             a({ name: "goto-wall-maker", callback: gotoBarrierMaker }, "Barrier Maker"),
-            a({ name: "ammo-box", callback: dropAmmoBox }, "ammo_box"),
             ...this.dropOptions()
 
         )
