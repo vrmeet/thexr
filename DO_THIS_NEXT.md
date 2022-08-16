@@ -1,6 +1,59 @@
 TODO:
 
-working on making a class for wall
+Make the components into first class citizens 
+
+A different entity class per type of object is heading toward object hell.
+How about An entity is just a subclass of an Abstract Mesh, so we always render it, even if it can be
+hidden sometimes.  Then it has a list of components, including a primitive component:
+
+{ type: "shape", data: {primitive: "cone", primitive_params: {...} }} // sphere, plane
+or
+glb: "path"
+
+function:
+
+add component to entity
+remove component from entity
+
+
+teleportable: true | "name of mesh that is teleportable in the glb"
+
+perhaps entities should have event handlers like
+  - on grab
+  - on release
+  - on trigger
+
+-- that makes sense for a gun, spray can, a tool, can have different parenting behaviors
+   different, sounds, different things that happen when pull trigger
+
+  - on collide -> push buttons
+
+That might deserve a subclass just for those kinds of interactables
+
+but what about boxes and primitives, that you might want to add interaction with?
+
+
+- "smart" entities will reveal the missing design:
+   
+   - switches that cause other behavior
+   - buttons
+   - lights
+   - play a sound
+   - reusable parts
+
+- first work on:
+
+a spray can that can graphitti on plane's with textures
+a spray can that can create 3d blobs
+
+- need health display
+
+
+
+
+- tags are poor way to manage entity abilities, now that we have a class
+- the class can manage the abilities and don't really need a way to allow
+
 
 consolidate hud_msg vs hud_broadcast in incoming
 

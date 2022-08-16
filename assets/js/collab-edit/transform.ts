@@ -3,6 +3,7 @@ import * as BABYLON from 'babylonjs'
 import * as GUI from 'babylonjs-gui'
 import { filter } from 'rxjs/operators'
 import { EventName } from '../event-names'
+import type { EntityBase } from '../scene/entity-base'
 import { signalHub } from '../signalHub'
 import type { Component, event } from '../types'
 import { arrayReduceSigFigs } from '../utils'
@@ -129,11 +130,9 @@ export class CollaborativeEditTransformManager {
         }
         signalHub.outgoing.emit('event', event)
 
-        let entity = this.selectedMesh.metadata.ref
-        let comp = entity.getComponentByType("position")
-        if (comp) {
-            comp = components[0]
-        }
+        let entity: EntityBase = this.selectedMesh.metadata.ref
+        entity.setComponentByType("position", components[0].data.value)
+
         // signalHub.outgoing.emit('spaces_api', {
         //     func: "modify_component_with_broadcast",
         //     args: [this.selectedMesh.id, "position", { x: pos.x, y: pos.y, z: pos.z }],

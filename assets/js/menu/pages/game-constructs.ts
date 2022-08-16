@@ -13,6 +13,7 @@ import { filter, map } from "rxjs/operators";
 import { SpawnPointEntity } from "../../scene/entities/spawn-point-entity";
 import { EnemySpawnerEntity } from "../../scene/entities/enemy-spawner-entity";
 import { AmmoBoxEntity } from "../../scene/entities/ammo-box-entity";
+import { GunEntity } from "../../scene/entities/gun-entity";
 
 export class GameConstructs extends GUI.Container {
     public wallPoints: BABYLON.Vector3[]
@@ -59,7 +60,11 @@ export class GameConstructs extends GUI.Container {
 
     dropOptions() {
 
-        const options = { "spawn_point": SpawnPointEntity, "enemy_spawner": EnemySpawnerEntity, "ammo_box": AmmoBoxEntity }
+        const options = {
+            "spawn_point": SpawnPointEntity,
+            "enemy_spawner": EnemySpawnerEntity, "ammo_box": AmmoBoxEntity,
+            "gun": GunEntity
+        }
         // const options = ["spawn_point", "gun", "red_key", "blue_key", "enemy_spawner"];
 
         return Object.entries(options).map(([prim, klass]) => {

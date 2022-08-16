@@ -87,6 +87,7 @@ export abstract class EntityBase {
         this.setTeleportableFromComponent()
         this.setCollectableFromComponent()
         this.setInteractableFromComponent()
+        this.setShootableFromComponent()
 
     }
 
@@ -116,6 +117,14 @@ export abstract class EntityBase {
             BABYLON.Tags.AddTagsTo(this.mesh, "interactable")
         }
     }
+
+    setShootableFromComponent() {
+        let comp = this.getComponentByType("shootable")
+        if (comp) {
+            BABYLON.Tags.AddTagsTo(this.mesh, "shootable")
+        }
+    }
+
 
     setCollectableFromComponent() {
         let comp = this.getComponentByType("collectable")
@@ -158,22 +167,22 @@ export abstract class EntityBase {
     }
 
     setRotationFromComponent() {
-        let comp = this.getComponentByType("rotation")
-        if (comp) {
-            const rawValue = comp.data.value
-            let newQuaternion;
-            if (rawValue.length === 3) {
-                // change euler to quaternions
-                newQuaternion = BABYLON.Vector3.FromArray(rawValue).toQuaternion()
-            } else {
-                newQuaternion = BABYLON.Quaternion.FromArray(rawValue)
-            }
-            if (this.mesh.rotationQuaternion === null) {
-                this.mesh.rotationQuaternion = newQuaternion
-            } else {
-                this.mesh.rotationQuaternion.copyFrom(newQuaternion)
-            }
+        let comp = this.getComponentByType("rotation") || { type: "rotation", data: { value: [0, 0, 0] } }
+
+        const rawValue = comp.data.value
+        let newQuaternion;
+        if (rawValue.length === 3) {
+            // change euler to quaternions
+            newQuaternion = BABYLON.Vector3.FromArray(rawValue).toQuaternion()
+        } else {
+            newQuaternion = BABYLON.Quaternion.FromArray(rawValue)
         }
+        if (this.mesh.rotationQuaternion === null) {
+            this.mesh.rotationQuaternion = newQuaternion
+        } else {
+            this.mesh.rotationQuaternion.copyFrom(newQuaternion)
+        }
+
     }
 
     setScaleFromComponent() {
@@ -182,6 +191,17 @@ export abstract class EntityBase {
             let array = comp.data.value
             this.mesh.scaling.fromArray(array)
         }
+    }
+
+    setComponentByType(type: string, value: any) {
+        this.components = this.components.reduce((acc, component) => {
+            if (component.type === type) {
+
+                component.data.value = value
+            }
+            acc.push(component)
+            return acc
+        }, [])
     }
 
     getComponentByType(type: string) {
