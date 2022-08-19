@@ -9,12 +9,18 @@ export type DescribeResult = {
   testResults: TestResult[];
 };
 
-export var describeResults = [];
+export let describeResults = [];
 
 export function describe(message: string, testFunc: () => void) {
   this.testResults = [] as TestResult[];
   testFunc.call(this);
   describeResults.push({ message, testResults: this.testResults });
+}
+
+export function beforeEach(func: () => void) {
+  console.log("in before each");
+  func.call(this);
+  console.log("after bfore each");
 }
 
 export function test(message: string, testfunc: () => void) {
