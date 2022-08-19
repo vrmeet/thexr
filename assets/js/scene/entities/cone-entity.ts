@@ -1,28 +1,26 @@
 import { EntityBase } from "../entity-base";
-import * as BABYLON from "babylonjs"
-import type { Component } from "../../types";
+import * as BABYLON from "babylonjs";
 
 export class ConeEntity extends EntityBase {
-    constructor(public scene: BABYLON.Scene) {
+  constructor(public scene: BABYLON.Scene) {
+    super("cone", scene);
+  }
 
-        super("cone", scene)
+  defaultComponentAsObject(): Record<string, any> {
+    return {
+      position: this.cameraFrontPosition(),
+      editable: true,
+      interactable: true,
+      targetable: true,
+      physics: true,
+    };
+  }
 
-    }
-
-    defaultComponentAsObject(): Record<string, any> {
-        return {
-            position: this.cameraFrontPosition(),
-            editable: true,
-            interactable: true,
-            targetable: true,
-            physics: true
-
-        }
-    }
-
-
-    createMesh() {
-
-        return BABYLON.MeshBuilder.CreateCylinder(this.name, { diameterTop: 0 }, this.scene)
-    }
+  createMesh() {
+    return BABYLON.MeshBuilder.CreateCylinder(
+      this.name,
+      { diameterTop: 0 },
+      this.scene
+    );
+  }
 }

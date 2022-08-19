@@ -88,6 +88,11 @@ defmodule ThexrWeb.Router do
       pipe_through :browser
       live_dashboard "/dashboard", metrics: ThexrWeb.Telemetry
     end
+
+    scope "/test", ThexrWeb do
+      pipe_through :browser
+      get "/", TestController, :index
+    end
   end
 
   # Enables the Swoosh mailbox preview in development.

@@ -5,8 +5,8 @@
     import AvatarAndNickName from "./components/AvatarAndNickname.svelte";
     import { signalHub } from "./signalHub";
     import { sessionPersistance } from "./sessionPersistance";
-    import { initClient, operationStore, query } from "@urql/svelte";
-    import { isMobileVR } from "./utils";
+    import { initClient } from "@urql/svelte";
+    import { isMobileVR } from "./utils/utils-browser";
 
     initClient({
         url: "/api",

@@ -1,7 +1,8 @@
 import { filter, map, pipe, scan } from "rxjs";
-import type { PosRot } from "./types";
+
 import * as BABYLON from "babylonjs";
 import * as MAT from "babylonjs-materials";
+import type { PosRot } from "../types";
 
 export const randomDiceRoll = (diceSides: number) => {
   return Math.random() * Math.floor(diceSides);

@@ -1,27 +1,22 @@
 import { EntityBase } from "../entity-base";
-import * as BABYLON from "babylonjs"
-import type { Component } from "../../types";
+import * as BABYLON from "babylonjs";
 
 export class CapsuleEntity extends EntityBase {
-    constructor(public scene: BABYLON.Scene) {
+  constructor(public scene: BABYLON.Scene) {
+    super("capsule", scene);
+  }
 
-        super("capsule", scene)
+  defaultComponentAsObject(): Record<string, any> {
+    return {
+      position: this.cameraFrontPosition(),
+      editable: true,
+      targetable: true,
+      interactable: true,
+      physics: true,
+    };
+  }
 
-    }
-
-    defaultComponentAsObject(): Record<string, any> {
-        return {
-            position: this.cameraFrontPosition(),
-            editable: true,
-            targetable: true,
-            interactable: true,
-            physics: true
-
-        }
-    }
-
-
-    createMesh() {
-        return BABYLON.MeshBuilder.CreateCapsule(this.name, {}, this.scene)
-    }
+  createMesh() {
+    return BABYLON.MeshBuilder.CreateCapsule(this.name, {}, this.scene);
+  }
 }

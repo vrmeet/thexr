@@ -1,25 +1,21 @@
 import { EntityBase } from "../entity-base";
-import * as BABYLON from "babylonjs"
-import type { Component } from "../../types";
+import * as BABYLON from "babylonjs";
 
 export class CylinderEntity extends EntityBase {
-    constructor(public scene: BABYLON.Scene) {
+  constructor(public scene: BABYLON.Scene) {
+    super("cylinder", scene);
+  }
 
-        super("cylinder", scene)
+  defaultComponentAsObject(): Record<string, any> {
+    return {
+      position: this.cameraFrontPosition(),
+      editable: true,
+      teleportable: true,
+      targetable: true,
+    };
+  }
 
-    }
-
-    defaultComponentAsObject(): Record<string, any> {
-        return {
-            position: this.cameraFrontPosition(),
-            editable: true,
-            teleportable: true,
-            targetable: true
-        }
-    }
-
-
-    createMesh() {
-        return BABYLON.MeshBuilder.CreateCylinder(this.name, {}, this.scene)
-    }
+  createMesh() {
+    return BABYLON.MeshBuilder.CreateCylinder(this.name, {}, this.scene);
+  }
 }

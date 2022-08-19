@@ -1,11 +1,11 @@
 import * as BABYLON from "babylonjs";
-import { parse } from "graphql";
 import type { ComponentObj } from "../components/component-obj";
+// import { SystemDoor } from "../systems/system-door";
 
-// import type { System, ISystemAware } from "../systems/system";
-
-export class Entity {
-  // public systems: Record<string, System<Entity>>;
+export class Entity
+  implements BABYLON.IBehaviorAware<Entity>, BABYLON.IDisposable
+{
+  public behaviors: Record<string, BABYLON.Behavior<Entity>>;
 
   public mesh: BABYLON.AbstractMesh;
 
@@ -14,7 +14,11 @@ export class Entity {
     public componentObj: ComponentObj,
     public scene: BABYLON.Scene
   ) {
+    this.behaviors = {};
     this.parse(this);
+    // let ds = new SystemDoor();
+    // ds.parseEntity(this);
+
     // this.systems = {};
     // if (componentObj.shape) {
     //   // attach shape component to this entity
@@ -48,26 +52,33 @@ export class Entity {
     }
   }
 
-  // addComponent(component: Component<Entity>): Entity {
-  //   if (this.components[component.name]) {
-  //     return;
-  //   }
-  //   this.components[component.name] = component;
-  //   component.init();
-  //   component.attach(this);
-  //   return this;
-  // }
+  addBehavior(behavior: BABYLON.Behavior<Entity>): Entity {
+    if (this.behaviors[behavior.name]) {
+      return;
+    }
+    this.behaviors[behavior.name] = behavior;
+    behavior.init();
+    behavior.attach(this);
+    return this;
+  }
 
-  // getComponentByName(name: string): Component<Entity> {
-  //   return this.components[name];
-  // }
+  getBehaviorByName(name: string): BABYLON.Behavior<Entity> {
+    return this.behaviors[name];
+  }
 
-  // removeComponent(name: string): Entity {
-  //   if (!this.components[name]) {
-  //     return;
-  //   }
-  //   this.components[name].detach();
-  //   delete this.components[name];
-  //   return this;
-  // }
+  removeBehavior(behavior: BABYLON.Behavior<Entity>): Entity {
+    if (!this.behaviors[behavior.name]) {
+      return;
+    }
+    this.behaviors[behavior.name].detach();
+    delete this.behaviors[behavior.name];
+    return this;
+  }
+
+  dispose() {
+    Object.values(this.behaviors).forEach(behavior => behavior.detach());
+    if (this.mesh) {
+      this.mesh.dispose();
+    }
+  }
 }

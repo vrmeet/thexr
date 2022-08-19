@@ -1,25 +1,24 @@
 import { EntityBase } from "../entity-base";
-import * as BABYLON from "babylonjs"
-import { findOrCreateMaterial } from "../../utils";
-import type { Component } from "../../types";
+import * as BABYLON from "babylonjs";
 
 export class SpawnPointEntity extends EntityBase {
-    constructor(public scene: BABYLON.Scene) {
+  constructor(public scene: BABYLON.Scene) {
+    super("spawn_point", scene);
+  }
 
-        super("spawn_point", scene)
+  defaultComponentAsObject(): Record<string, any> {
+    return {
+      position: this.cameraFrontFloorPosition(),
+      color: "#00FF00",
+      editable: true,
+    };
+  }
 
-    }
-
-    defaultComponentAsObject(): Record<string, any> {
-        return {
-            position: this.cameraFrontFloorPosition(),
-            color: "#00FF00",
-            editable: true
-        }
-    }
-
-
-    createMesh() {
-        return BABYLON.MeshBuilder.CreateBox(this.name, { width: 1, depth: 1, height: 0.05 }, this.scene)
-    }
+  createMesh() {
+    return BABYLON.MeshBuilder.CreateBox(
+      this.name,
+      { width: 1, depth: 1, height: 0.05 },
+      this.scene
+    );
+  }
 }

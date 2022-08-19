@@ -1,47 +1,47 @@
 import type * as BABYLON from "babylonjs";
 
 /**
- * Interface used to define a component
+ * Interface used to define a system
  */
-export interface Component<T> {
-  /** gets or sets component's name */
+export interface System<T> {
+  /** gets or sets system's name */
   name: string;
 
   /**
-   * Function called when the component needs to be initialized (after attaching it to a target)
+   * Function called when the system needs to be initialized (after attaching it to a target)
    */
   init(): void;
   /**
-   * Called when the component is attached to a target
-   * @param target defines the target where the component is attached to
+   * Called when the system is attached to a target
+   * @param target defines the target where the system is attached to
    */
   attach(target: T): void;
   /**
-   * Called when the component is detached from its target
+   * Called when the system is detached from its target
    */
   detach(): void;
 }
 
 /**
- * Interface implemented by classes supporting components
+ * Interface implemented by classes supporting systems
  */
-export interface IComponentAware<T> {
+export interface ISystemAware<T> {
   /**
-   * Attach a component
-   * @param component defines the component to attach
+   * Attach a system
+   * @param system defines the system to attach
    * @returns the current host
    */
-  addComponent(component: Component<T>): T;
+  addSystem(system: System<T>): T;
   /**
-   * Remove a component from the current object
-   * @param name defines the component to detach
+   * Remove a system from the current object
+   * @param name defines the system to detach
    * @returns the current host
    */
-  removeComponent(name: string): T;
+  removeSystem(name: string): T;
   /**
-   * Gets a component using its name to search
+   * Gets a system using its name to search
    * @param name defines the name to search
-   * @returns the component or null if not found
+   * @returns the system or null if not found
    */
-  getComponentByName(name: string): BABYLON.Nullable<Component<T>>;
+  getSystemByName(name: string): BABYLON.Nullable<System<T>>;
 }
