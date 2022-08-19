@@ -3,36 +3,28 @@ export type TestResult = {
   status: "ok" | "failed";
   error?: any;
 };
-export type TestToRun = {
+
+export type DescribeResult = {
   message: string;
-  testFunc: () => void;
-};
-export let results: TestResult[] = [];
-export let testsToRun: TestToRun[] = [];
-
-export const runTests = () => {
-  testsToRun.forEach(testToRun => {
-    try {
-      testToRun.testFunc();
-      results.push({ message: testToRun.message, status: "ok" });
-    } catch (err) {
-      console.log(err.stack);
-      results.push({
-        message: testToRun.message,
-        status: "failed",
-        error: err,
-      });
-      //  console.error("Failure", err);
-    }
-  });
-  return results;
+  testResults: TestResult[];
 };
 
-export const describe = (message: string, testFunc: () => void) => {};
+export var describeResults = [];
 
-export const it = (message: string, testFunc: () => void) => {
-  testsToRun.push({ message, testFunc });
-};
+export function describe(message: string, testFunc: () => void) {
+  this.testResults = [] as TestResult[];
+  testFunc.call(this);
+  describeResults.push({ message, testResults: this.testResults });
+}
+
+export function test(message: string, testfunc: () => void) {
+  try {
+    testfunc.call(this);
+    this.testResults.push({ message, status: "ok" });
+  } catch (e) {
+    this.testResults.push({ message, status: "failed", error: e });
+  }
+}
 
 export const assert = (actual: any, expected: any) => {
   if (actual != expected) {

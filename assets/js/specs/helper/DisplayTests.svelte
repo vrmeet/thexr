@@ -1,7 +1,7 @@
 <script lang="ts">
-import type { TestResult } from "./runner"
+import type { DescribeResult } from "./runner"
 let text = "hi"
-export let results: TestResult[] ;
+export let describeResults: DescribeResult[] ;
 
 </script>
 
@@ -9,13 +9,23 @@ export let results: TestResult[] ;
 
 
 <ul>
-{#each results as result, i}
-	<li class="{result.status === "ok" ? 'green' : 'red'}">
-	  {result.message}
-      {#if (result.status === 'failed')}
-        <strong>{JSON.stringify(result.error)}</strong>
-      {/if}
-    </li>
+{#each describeResults as describe}
+    <li>
+        {describe.message}
+        <ul>
+            {#each describe.testResults as result}
+            <li class="{result.status === "ok" ? 'green' : 'red'}">
+                {result.message}
+                {#if (result.status === 'failed')}
+                  <strong>{JSON.stringify(result.error)}</strong>
+                {/if}
+            </li>
+            {/each}
+        </ul>
+    </li>  
+
+
+	
 {/each}
 </ul>
 

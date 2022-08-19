@@ -1,6 +1,8 @@
 import { mode } from "../../mode";
-import { assert, it } from "../helper/runner";
+import { describe, test, assert } from "../helper/runner";
 
-it("has a mode", () => {
-  assert(mode.editing, false);
+describe("mode", () => {
+  test("has a mode", () => {
+    assert(mode.editing, false);
+  });
 });
