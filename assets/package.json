@@ -30,8 +30,10 @@
   "devDependencies": {
     "@rollup/plugin-typescript": "^8.3.2",
     "@tsconfig/svelte": "^3.0.0",
+    "@types/chai": "^4.3.3",
     "@types/phoenix": "^1.5.4",
     "@types/uuid": "^8.3.4",
+    "chai": "^4.3.6",
     "esbuild": "^0.14.8",
     "esbuild-svelte": "^0.6.2",
     "fs": "^0.0.1-security",

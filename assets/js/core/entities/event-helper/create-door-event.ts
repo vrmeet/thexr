@@ -10,8 +10,8 @@ export const createDoorEvent = (opts: {
     p: {
       entity_id: `door_${random_id(3)}`,
       components: {
-        shape: { prim: "barrier", prim_params: opts },
-        door: { token: "red", state: "closed" },
+        shape: { prim: "box", prim_params: {} },
+        // door: { token: "red", state: "closed" },
       },
     },
   };

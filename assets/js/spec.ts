@@ -1,8 +1,10 @@
 /// <reference types="svelte" />
 
 import { describeResults } from "./specs/helper/runner";
-import "./specs/specs/util-spec";
-import "./specs/specs/some-other-spec.ts";
+
+/* specs */
+import "./specs/specs/systems/shape.test";
+
 import DisplayTests from "./specs/helper/DisplayTests.svelte";
 
 let target = document.getElementById("test-results");

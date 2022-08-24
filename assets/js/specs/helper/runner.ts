@@ -13,21 +13,25 @@ export let describeResults = [];
 
 export function describe(message: string, testFunc: () => void) {
   this.testResults = [] as TestResult[];
+  this.beforeEaches = [];
   testFunc.call(this);
   describeResults.push({ message, testResults: this.testResults });
 }
 
 export function beforeEach(func: () => void) {
-  console.log("in before each");
-  func.call(this);
-  console.log("after bfore each");
+  // console.log("in before each");
+  this.beforeEaches.push(func);
+  // func.call(this);
+  // console.log("after bfore each");
 }
 
 export function test(message: string, testfunc: () => void) {
   try {
+    this.beforeEaches.forEach(fn => fn.call(this));
     testfunc.call(this);
     this.testResults.push({ message, status: "ok" });
   } catch (e) {
+    console.error(e);
     this.testResults.push({ message, status: "failed", error: e });
   }
 }

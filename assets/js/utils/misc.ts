@@ -56,6 +56,10 @@ export function random_id(length: number) {
   return result;
 }
 
+export function cap(string: string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 export function throttleByMovement(movementDelta: number) {
   return pipe(
     scan(

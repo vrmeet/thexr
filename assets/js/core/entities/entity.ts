@@ -1,12 +1,19 @@
-import * as BABYLON from "babylonjs";
+import type * as BABYLON from "babylonjs";
 import type { ComponentObj } from "../components/component-obj";
-// import { SystemDoor } from "../systems/system-door";
+import { SystemDoor } from "../systems/system-door";
+import { SystemPrim } from "../systems/system-prim";
 
-export class Entity
-  implements BABYLON.IBehaviorAware<Entity>, BABYLON.IDisposable
-{
-  public behaviors: Record<string, BABYLON.Behavior<Entity>>;
+/**
+ * An Entity is a reference to some item in the scene, be it a door, a wall,
+ * a key or an enemy.  Anything the user might need to interact with, or cause
+ * an effect in the scene is an entity.
+ *
+ * Usually an Entity will have a direct relation to a mesh so that it can be
+ * drawn in the scene.  The mesh may be hidden in (non-edit) mode so that gizmos such
+ * as sound emitters do not need to be visible all the time.
+ */
 
+export class Entity implements BABYLON.IDisposable {
   public mesh: BABYLON.AbstractMesh;
 
   constructor(
@@ -14,11 +21,8 @@ export class Entity
     public componentObj: ComponentObj,
     public scene: BABYLON.Scene
   ) {
-    this.behaviors = {};
-    this.parse(this);
     // let ds = new SystemDoor();
     // ds.parseEntity(this);
-
     // this.systems = {};
     // if (componentObj.shape) {
     //   // attach shape component to this entity
@@ -32,51 +36,7 @@ export class Entity
     // }
   }
 
-  // imagine this is shape parse
-  parse(entity: Entity) {
-    if (entity.componentObj.shape) {
-      switch (entity.componentObj.shape.prim) {
-        case "box":
-          entity.mesh = BABYLON.MeshBuilder.CreateBox(
-            entity.name,
-            entity.componentObj.shape.prim_params,
-            this.scene
-          );
-      }
-    } else {
-      entity.mesh = BABYLON.MeshBuilder.CreateBox(
-        entity.name,
-        { size: 0.2 },
-        this.scene
-      );
-    }
-  }
-
-  addBehavior(behavior: BABYLON.Behavior<Entity>): Entity {
-    if (this.behaviors[behavior.name]) {
-      return;
-    }
-    this.behaviors[behavior.name] = behavior;
-    behavior.init();
-    behavior.attach(this);
-    return this;
-  }
-
-  getBehaviorByName(name: string): BABYLON.Behavior<Entity> {
-    return this.behaviors[name];
-  }
-
-  removeBehavior(behavior: BABYLON.Behavior<Entity>): Entity {
-    if (!this.behaviors[behavior.name]) {
-      return;
-    }
-    this.behaviors[behavior.name].detach();
-    delete this.behaviors[behavior.name];
-    return this;
-  }
-
   dispose() {
-    Object.values(this.behaviors).forEach(behavior => behavior.detach());
     if (this.mesh) {
       this.mesh.dispose();
     }

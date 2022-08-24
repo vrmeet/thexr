@@ -1,8 +1,29 @@
 TODO:
 
-Make the components into first Class citizens, class names with attributes
+Build it from the ground up,
+
+1. The events - do we have all the events necessary to play doom? To play bridge crew?
+2. Can we produce the events from real time activity? Moving head, hands, travelings.
+   a. picking up objects, throwing them, shooting a gun.
+   b. local events, vs outgoing: A entity for a bullet can be local, {m: "entity_created", p: {entity_id: ..., components: {shape: capsule, animate_from_to: ..., disappear_on_contact: true, cause_damage: true}}} but the outgoing equivalent might be higher level like {m: "system_event", p: {system: "bullet", name: "bullet_fired", pos_rot: ....}}
+3. Can other players receive these events and make changes in their scene accordingly?
+4. The persistence, - do we have the right snapshot built from the events to capture
+   a. Can we take the persisted data and reconstruct the scene? deserialize
+   e.g. The scene for people entering the game for the 1st time (scene deserialization)
+   b. Modified scene for people enter the game late, where doors are already open, objects collected, things moved or destroyed (transient changes, genserver)
+   c. Prescence of enemies and other players (genserver)
+
+Make the components into first Class citizens, class names with attributes, can add
+more components to entities using graphQL, but more often than not we use the
+prefabicated entity builders which have all the components we need
 
 Make entities, have NO type
+
+Entity serializable into entity_id, list of components, that's it
+
+When deserializing entity, systems will register the entity if it has the right components
+
+systems will communicate over the life of the entity through messages, e.g. entity_destroyed
 
 EntityFactory.unmarshal(event) => Entity
 

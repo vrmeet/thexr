@@ -1,13 +1,13 @@
-export type ShapeComponent = BoxShape | SphereShape | Barrier;
-export type DoorComponent = { token: string; state: "open" | "closed" };
+export type ShapeComponent = BoxShape | SphereShape; //| Barrier;
+// export type DoorComponent = { token: string; state: "open" | "closed" };
 
-export interface Barrier {
-  prim: "barrier";
-  prim_params: {
-    points: number[];
-    height?: number;
-  };
-}
+// export interface Barrier {
+//   prim: "barrier";
+//   prim_params: {
+//     points: number[];
+//     height?: number;
+//   };
+// }
 
 export interface BoxShape {
   prim: "box";
