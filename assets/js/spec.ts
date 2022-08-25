@@ -4,6 +4,7 @@ import { describeResults } from "./specs/helper/runner";
 
 /* specs */
 import "./specs/specs/systems/shape.test";
+import "./specs/specs/systems/lift.test";
 
 import DisplayTests from "./specs/helper/DisplayTests.svelte";
 

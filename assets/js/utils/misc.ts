@@ -4,6 +4,42 @@ import * as BABYLON from "babylonjs";
 import * as MAT from "babylonjs-materials";
 import type { PosRot } from "../types";
 
+export const cameraFrontPosition = (
+  scene: BABYLON.Scene,
+  distance: number = 2.5
+) => {
+  let forwardVec = scene.activeCamera
+    .getDirection(BABYLON.Vector3.Forward())
+    .normalize()
+    .scaleInPlace(distance);
+  let assetPosition = scene.activeCamera.position.add(forwardVec);
+  return arrayReduceSigFigs(assetPosition.asArray());
+};
+
+export const cameraFrontFloorPosition = (
+  scene: BABYLON.Scene,
+  distance: number = 2.5
+) => {
+  let forwardVec = scene.activeCamera
+    .getDirection(BABYLON.Vector3.Forward())
+    .normalize()
+    .scaleInPlace(distance);
+  console.log("forwardVec", forwardVec);
+  let assetPosition = scene.activeCamera.position.add(forwardVec);
+  console.log("assetPosition", assetPosition);
+  let ray = new BABYLON.Ray(assetPosition, BABYLON.Vector3.Down());
+  ray.length = 20;
+  console.log("ray", ray);
+  let pickInfo = scene.pickWithRay(ray);
+
+  console.log("pickInfo", pickInfo);
+  if (pickInfo.hit) {
+    return arrayReduceSigFigs(pickInfo.pickedPoint.asArray());
+  } else {
+    return assetPosition.asArray();
+  }
+};
+
 export const randomDiceRoll = (diceSides: number) => {
   return Math.random() * Math.floor(diceSides);
 };

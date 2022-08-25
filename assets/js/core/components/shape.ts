@@ -21,6 +21,46 @@ export interface BoxShape {
 export interface SphereShape {
   prim: "sphere";
   prim_params: {
-    diameter: number;
+    segments?: number;
+    diameter?: number;
+    diameterX?: number;
+    diameterY?: number;
+    diameterZ?: number;
+    arc?: number;
+    slice?: number;
+  };
+}
+
+export interface CylinderShape {
+  prim: "cylinder";
+  prim_params: {
+    height?: number;
+    diameterTop?: number;
+    diameterBottom?: number;
+    diameter?: number;
+    tessellation?: number;
+    subdivisions?: number;
+    arc?: number;
+  };
+}
+
+export interface PlaneShape {
+  prim: "plane";
+  prim_params: {
+    size?: number;
+    width?: number;
+    height?: number;
+    sideOrientation?: number;
+  };
+}
+
+export interface CapsuleShape {
+  prim: "capsule";
+  prim_params: {
+    subdivisions?: number;
+    tessellation?: number;
+    height?: number;
+    radius?: number;
+    capSubdivisions?: number;
   };
 }

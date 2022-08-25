@@ -243,6 +243,13 @@ export class SceneManager {
 
     this.scene.onPointerObservable.add(pointerInfo => {
       signalHub.local.emit("pointer_info", pointerInfo);
+      if (
+        pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK &&
+        pointerInfo.pickInfo.hit &&
+        pointerInfo.pickInfo.pickedMesh
+      ) {
+        signalHub.local.emit("mesh_picked", pointerInfo.pickInfo.pickedMesh);
+      }
     });
 
     this.scene.onKeyboardObservable.add(keyboardInfo => {

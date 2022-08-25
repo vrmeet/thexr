@@ -1,3 +1,4 @@
+import type { ActsLikeLiftComponent } from "./acts-like-lift";
 import type { ShapeComponent } from "./shape";
 
 /**
@@ -16,5 +17,5 @@ export interface ComponentObj {
   rotation?: number[];
   scaling?: number[];
   shape?: ShapeComponent;
-  // door?: DoorComponent;
+  acts_like_lift?: ActsLikeLiftComponent;
 }
