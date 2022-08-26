@@ -55,13 +55,16 @@ export class SystemLift extends SystemBase {
     animateTranslation(liftState.entity, liftState.entity.mesh.position.subtractFromFloats(0, -liftState.height, 0), 1000, () => {
       liftState.state = "down";
       console.log('down')
-    })
+    }, this.scene)
   }
 
   goUp(liftState: LiftState) {
     liftState.state = "going-up"
+    liftState.entity.mesh.position.y += 20
     animateTranslation(liftState.entity, liftState.entity.mesh.position.subtractFromFloats(0, liftState.height, 0), 1000, () => {
+      console.log("animation endeds")
       liftState.state = "up";
-    })
+
+    }, this.scene)
   }
 }

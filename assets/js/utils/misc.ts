@@ -8,7 +8,7 @@ import type { Entity } from "../core/entities/entity";
 
 const ANIMATION_FRAME_PER_SECOND = 60
 
-export const animateTranslation = (entity: Entity, endPos: BABYLON.Vector3, duration: number, callback: () => void) => {
+export const animateTranslation = (entity: Entity, endPos: BABYLON.Vector3, duration: number, callback: () => void, scene: BABYLON.Scene) => {
   BABYLON.Animation.CreateAndStartAnimation(
     "translate",
     entity.mesh,
@@ -18,7 +18,9 @@ export const animateTranslation = (entity: Entity, endPos: BABYLON.Vector3, dura
     entity.mesh.position,
     endPos,
     BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
-    null, callback
+    null, 
+    callback, 
+    scene
   );
 }
 
