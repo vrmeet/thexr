@@ -30,7 +30,9 @@ export class SystemLift extends SystemBase {
 
   afterInit(): void {
     this.lifts = {};
+    console.log("creating subscription")
     signalHub.local.on("mesh_picked").subscribe(mesh => {
+      console.log("inside mesh_picked")
       let liftState = this.meshIsALift(mesh);
       if (liftState) {
         this.toggleLift(liftState);

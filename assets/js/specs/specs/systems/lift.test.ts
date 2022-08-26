@@ -3,6 +3,7 @@ import { describe, beforeEach, test } from "../../helper/runner";
 import { systems } from "../../../core/systems/systems";
 import * as BABYLON from "babylonjs";
 import { expect } from "chai";
+import { bindSceneObservablesToSignalHub } from "../../../utils/misc";
 
 describe("lift system", () => {
   let engine: BABYLON.Engine = new BABYLON.NullEngine();
@@ -13,12 +14,18 @@ describe("lift system", () => {
       scene.dispose();
     }
     scene = new BABYLON.Scene(engine);
+    bindSceneObservablesToSignalHub(scene)
     systems.initAll("me", scene);
   });
 
   test("door goes up when clicked", () => {
     let entity = new Entity("door1", { acts_like_lift: {} }, scene);
     expect(systems.lift.lifts["door1"].state).to.eql("down");
-    // scene.simulatePointerDown(...)
+
+    let pickInfo = scene.pick(0, 0);
+    pickInfo.hit = true;
+    pickInfo.pickedMesh = entity.mesh;
+    scene.simulatePointerDown(pickInfo, { pointerId: 8 });
+    expect(systems.lift.lifts["door1"].state).to.eql("up")
   });
 });

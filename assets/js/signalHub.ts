@@ -128,6 +128,8 @@ export const signalHub: SignalHub = {
   outgoing: new Emitter<OutgoingEvents>(),
   menu: new Emitter<MenuEvents>(),
   movement: new Emitter<MovementEvents>(),
-};
+}
+
+// set signalHub message routings
 
 window["signalHub"] = signalHub;

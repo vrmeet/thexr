@@ -243,6 +243,7 @@ export class SceneManager {
 
     this.scene.onPointerObservable.add(pointerInfo => {
       signalHub.local.emit("pointer_info", pointerInfo);
+      console.log("pointerInfo", pointerInfo)
       if (
         pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK &&
         pointerInfo.pickInfo.hit &&
@@ -253,7 +254,7 @@ export class SceneManager {
     });
 
     this.scene.onKeyboardObservable.add(keyboardInfo => {
-      signalHub.local.emit("keyboard_info", keyboardInfo);
+      signalHub.local.emit("keyboard_info", keyboardInfo)
     });
 
     this.scene.metadata = { member_id: this.member_id }; // this is so often needed along with the scene, I can make this available inside the scene
