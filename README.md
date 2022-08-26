@@ -5,17 +5,28 @@
 The easiest way to get a local running instance is to use vscode developer container.
 Simply open this root folder using vscode and when it prompts you to open as dev container, do it.
 
+However, I had some problems getting `observer.start` to work.  Here is the list you'll need doing it manually:
+
+# Dependencies
+
+Install elixir (brew install elixir)
+
+Install nvm (node version manager), run `nvm use`
+
+`cd` to `/assets` folder and `npm i`
+
 Copy .env.sample to .env (ignored by git) to add secrets
 
-Install your AWS creds at .aws using aws cli configure command.  (Required to run cdk)
+Start a postgres DB by running `docker-compose up -d`
+
+
+<!-- Install your AWS creds at .aws using aws cli configure command.  (Required to run cdk)
 
 Run node install inside the infra/ directory to install dependencies to run cdk for AWS resources.
 
-npx cdk deploy will create an eventbus, sqs, dynamoDB table used for logging.
+npx cdk deploy will create an eventbus, sqs, dynamoDB table used for logging. -->
 
 To start your server at the vscode terminal panel use: ./server.sh this will load the .env variables and make them available to the server.
-
-
 
 ====
 
