@@ -4,6 +4,24 @@ import * as BABYLON from "babylonjs";
 import * as MAT from "babylonjs-materials";
 import type { PosRot } from "../types";
 import { signalHub } from "../signalHub";
+import type { Entity } from "../core/entities/entity";
+
+const ANIMATION_FRAME_PER_SECOND = 60
+
+export const animateTranslation = (entity: Entity, endPos: BABYLON.Vector3, duration: number, callback: () => void) => {
+  BABYLON.Animation.CreateAndStartAnimation(
+    "translate",
+    entity.mesh,
+    "position",
+    ANIMATION_FRAME_PER_SECOND,
+    Math.ceil((duration * 60) / 1000),
+    entity.mesh.position,
+    endPos,
+    BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
+    null, callback
+  );
+}
+
 
 export const bindSceneObservablesToSignalHub = (scene: BABYLON.Scene) => {
   scene.onPointerObservable.add(pointerInfo => {

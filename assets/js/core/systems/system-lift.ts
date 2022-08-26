@@ -2,6 +2,7 @@ import type { Entity } from "../entities/entity";
 import type * as BABYLON from "babylonjs";
 import { SystemBase } from "./system-base";
 import { signalHub } from "../../signalHub";
+import { animateTranslation } from "../../utils/misc";
 
 type LiftState = {
   entity: Entity;
@@ -49,10 +50,18 @@ export class SystemLift extends SystemBase {
   }
 
   goDown(liftState: LiftState) {
-    liftState.state = "down";
+    liftState.state = "going-down"
+    console.log("going down")
+    animateTranslation(liftState.entity, liftState.entity.mesh.position.subtractFromFloats(0, -liftState.height, 0), 1000, () => {
+      liftState.state = "down";
+      console.log('down')
+    })
   }
 
   goUp(liftState: LiftState) {
-    liftState.state = "up";
+    liftState.state = "going-up"
+    animateTranslation(liftState.entity, liftState.entity.mesh.position.subtractFromFloats(0, liftState.height, 0), 1000, () => {
+      liftState.state = "up";
+    })
   }
 }

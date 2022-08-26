@@ -18,7 +18,7 @@ describe("lift system", () => {
     systems.initAll("me", scene);
   });
 
-  test("door goes up when clicked", () => {
+  test("door goes up when clicked", async () => {
     let entity = new Entity("door1", { acts_like_lift: {} }, scene);
     expect(systems.lift.lifts["door1"].state).to.eql("down");
 
@@ -26,6 +26,7 @@ describe("lift system", () => {
     pickInfo.hit = true;
     pickInfo.pickedMesh = entity.mesh;
     scene.simulatePointerDown(pickInfo, { pointerId: 8 });
+    await new Promise((r) => setTimeout(r, 1200));
     expect(systems.lift.lifts["door1"].state).to.eql("up")
   });
 });
