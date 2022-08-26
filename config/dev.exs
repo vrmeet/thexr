@@ -5,7 +5,7 @@ config :thexr, Thexr.Repo,
   username: "postgres",
   password: "postgres",
   database: "thexr_dev",
-  hostname: "db",
+  hostname: "0.0.0.0",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
