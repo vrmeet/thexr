@@ -47,7 +47,7 @@ describe("lift system", () => {
     pickInfo.pickedMesh = entity.mesh;
     scene.simulatePointerDown(pickInfo, { pointerId: 8 });
     await new Promise((r) => setTimeout(r, 1100));
-    console.log(entity.mesh.position, "positoin")
+    console.log(entity.mesh.position, "posit oin" )     
     expect(systems.lift.lifts["door1"].state).to.eql("up")
   });
 });

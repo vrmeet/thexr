@@ -69,7 +69,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
         chunks[i] = line.substr(o, size);
       }
-      chunks.forEach(chunk => {
+      chunks.forEach((chunk) => {
         signalHub.incoming.emit("hud_msg", chunk);
       });
     } catch (e) {}

@@ -4,12 +4,12 @@ import { SystemBase } from "./system-base";
 import { signalHub } from "../../signalHub";
 import { animateTranslation } from "../../utils/misc";
 
-type LiftState = {
+interface LiftState {
   entity: Entity;
   height: number;
   speed: number;
   state: "up" | "down" | "going-up" | "going-down";
-};
+}
 
 export class SystemLift extends SystemBase {
   public lifts: { [entity_name: string]: LiftState };
@@ -20,7 +20,7 @@ export class SystemLift extends SystemBase {
         entity,
         height: entity.componentObj.acts_like_lift.height || 2,
         speed: entity.componentObj.acts_like_lift.speed || 10,
-        state: entity.componentObj.acts_like_lift.initial_state || "down",
+        state: entity.componentObj.acts_like_lift.initial_state || "down"
       };
     }
   }
@@ -31,10 +31,10 @@ export class SystemLift extends SystemBase {
 
   afterInit(): void {
     this.lifts = {};
-    console.log("creating subscription")
-    signalHub.local.on("mesh_picked").subscribe(mesh => {
-      console.log("inside mesh_picked")
-      let liftState = this.meshIsALift(mesh);
+    console.log("creating subscription");
+    signalHub.local.on("mesh_picked").subscribe((mesh) => {
+      console.log("inside mesh_picked");
+      const liftState = this.meshIsALift(mesh);
       if (liftState) {
         this.toggleLift(liftState);
       }
@@ -50,21 +50,36 @@ export class SystemLift extends SystemBase {
   }
 
   goDown(liftState: LiftState) {
-    liftState.state = "going-down"
-    console.log("going down")
-    animateTranslation(liftState.entity, liftState.entity.mesh.position.subtractFromFloats(0, -liftState.height, 0), 1000, () => {
-      liftState.state = "down";
-      console.log('down')
-    }, this.scene)
+    liftState.state = "going-down";
+    console.log("going down");
+    animateTranslation(
+      liftState.entity,
+      liftState.entity.mesh.position.subtractFromFloats(
+        0,
+        -liftState.height,
+        0
+      ),
+      1000,
+      () => {
+        liftState.state = "down";
+        console.log("down");
+      },
+      this.scene
+    );
   }
 
   goUp(liftState: LiftState) {
-    liftState.state = "going-up"
-    liftState.entity.mesh.position.y += 20
-    animateTranslation(liftState.entity, liftState.entity.mesh.position.subtractFromFloats(0, liftState.height, 0), 1000, () => {
-      console.log("animation endeds")
-      liftState.state = "up";
+    liftState.state = "going-up";
 
-    }, this.scene)
+    animateTranslation(
+      liftState.entity,
+      liftState.entity.mesh.position.subtractFromFloats(0, liftState.height, 0),
+      1000,
+      () => {
+        console.log("animation endeds");
+        liftState.state = "up";
+      },
+      this.scene
+    );
   }
 }

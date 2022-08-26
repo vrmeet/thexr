@@ -2,13 +2,7 @@ import * as BABYLON from "babylonjs";
 import Ammo from "ammojs-typed";
 
 import * as MAT from "babylonjs-materials";
-import type {
-  Component,
-  event,
-  PosRot,
-  scene_settings,
-  serialized_space,
-} from "./types";
+import type { Component, scene_settings, serialized_space } from "./types";
 import { sessionPersistance } from "./sessionPersistance";
 import { MenuManager } from "./menu/menu-manager";
 
@@ -124,7 +118,7 @@ export class SceneManager {
       .on("event")
       .pipe(
         filter(
-          evt =>
+          (evt) =>
             evt.m === EventName.member_died &&
             evt.p["member_id"] === this.member_id
         )
@@ -132,10 +126,10 @@ export class SceneManager {
       .subscribe(() => {
         signalHub.incoming.emit("hud_msg", "Respawning in 15 seconds");
         setTimeout(() => {
-          let spawnPosRot = this.findSpawnPoint();
+          const spawnPosRot = this.findSpawnPoint();
 
           // add some height for the head
-          let pos = [
+          const pos = [
             spawnPosRot.pos[0],
             spawnPosRot.pos[1] + mode.height,
             spawnPosRot.pos[2],
@@ -160,11 +154,11 @@ export class SceneManager {
       }
     });
 
-    signalHub.incoming.on("about_space").subscribe(about_space => {
+    signalHub.incoming.on("about_space").subscribe((about_space) => {
       // temp reposition of entities, like opened doors
       for (const [entity_id, event] of Object.entries(about_space.entities)) {
         if (event.m === EventName.entity_animated_to) {
-          let entity = this.scene.getMeshById(event.p.entity_id);
+          const entity = this.scene.getMeshById(event.p.entity_id);
           if (entity) {
             if (event.p.pos) {
               entity.position.fromArray(event.p.pos);
@@ -174,19 +168,19 @@ export class SceneManager {
       }
     });
 
-    signalHub.incoming.on("event").subscribe(mpts => {
+    signalHub.incoming.on("event").subscribe((mpts) => {
       if (mpts.m === EventName.entity_created) {
         this.findOrCreateMesh(mpts.p);
       } else if (mpts.m === EventName.entity_transformed) {
-        let meshes = this.scene.getMeshesById(mpts.p.id);
-        meshes.forEach(mesh => {
-          mpts.p.components.forEach(payload => {
+        const meshes = this.scene.getMeshesById(mpts.p.id);
+        meshes.forEach((mesh) => {
+          mpts.p.components.forEach((payload) => {
             this.animateComponent(mesh, payload);
           });
           // this.setComponent(mesh, { type: mpts.p.type, data: params.data })
         });
       } else if (mpts.m === EventName.entity_animated_to) {
-        let mesh = this.scene.getMeshById(mpts.p.entity_id);
+        const mesh = this.scene.getMeshById(mpts.p.entity_id);
         if (mesh) {
           if (mpts.p.pos) {
             BABYLON.Animation.CreateAndStartAnimation(
@@ -202,8 +196,8 @@ export class SceneManager {
           }
         }
       } else if (mpts.m === EventName.entity_colored) {
-        let meshes = this.scene.getMeshesById(mpts.p.id);
-        meshes.forEach(mesh => {
+        const meshes = this.scene.getMeshesById(mpts.p.id);
+        meshes.forEach((mesh) => {
           this.setComponent(mesh, {
             type: "color",
             data: { value: mpts.p.color },
@@ -212,8 +206,8 @@ export class SceneManager {
           // this.setComponent(mesh, { type: mpts.p.type, data: params.data })
         });
       } else if (mpts.m === EventName.entity_deleted) {
-        let meshes = this.scene.getMeshesById(mpts.p.id);
-        meshes.forEach(mesh => {
+        const meshes = this.scene.getMeshesById(mpts.p.id);
+        meshes.forEach((mesh) => {
           BABYLON.Animation.CreateAndStartAnimation(
             "delete",
             mesh,
@@ -232,7 +226,7 @@ export class SceneManager {
       }
     });
 
-    signalHub.incoming.on("space_settings_changed").subscribe(params => {
+    signalHub.incoming.on("space_settings_changed").subscribe((params) => {
       this.processscene_settings(params as scene_settings);
     });
   }
@@ -241,9 +235,9 @@ export class SceneManager {
     this.scene = new BABYLON.Scene(this.engine);
     this.scene.collisionsEnabled = true;
 
-    this.scene.onPointerObservable.add(pointerInfo => {
+    this.scene.onPointerObservable.add((pointerInfo) => {
       signalHub.local.emit("pointer_info", pointerInfo);
-      console.log("pointerInfo", pointerInfo)
+      console.log("pointerInfo", pointerInfo);
       if (
         pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK &&
         pointerInfo.pickInfo.hit &&
@@ -253,16 +247,16 @@ export class SceneManager {
       }
     });
 
-    this.scene.onKeyboardObservable.add(keyboardInfo => {
-      signalHub.local.emit("keyboard_info", keyboardInfo)
+    this.scene.onKeyboardObservable.add((keyboardInfo) => {
+      signalHub.local.emit("keyboard_info", keyboardInfo);
     });
 
     this.scene.metadata = { member_id: this.member_id }; // this is so often needed along with the scene, I can make this available inside the scene
 
-    var gravityVector = new BABYLON.Vector3(0, -9.81, 0);
+    const gravityVector = new BABYLON.Vector3(0, -9.81, 0);
     const ammo = await Ammo();
 
-    var physicsPlugin = new BABYLON.AmmoJSPlugin(true, ammo);
+    const physicsPlugin = new BABYLON.AmmoJSPlugin(true, ammo);
     this.scene.enablePhysics(gravityVector, physicsPlugin);
 
     this.processscene_settings(this.settings as scene_settings);
@@ -270,7 +264,7 @@ export class SceneManager {
     this.createCamera();
 
     // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
-    var light = new BABYLON.HemisphericLight(
+    const light = new BABYLON.HemisphericLight(
       "light1",
       new BABYLON.Vector3(0, 1, 0),
       this.scene
@@ -298,18 +292,18 @@ export class SceneManager {
   findSpawnPoint() {
     // TODO, might be more efficient to use Tags but the meshes aren't built yet
     const result = this.entities.filter(
-      entity => entity.type === "spawn_point"
+      (entity) => entity.type === "spawn_point"
     );
     if (result.length > 0) {
       const firstSpawnPoint = result[0];
       const positionData = firstSpawnPoint.components.filter(
-        c => c.type === "position"
+        (c) => c.type === "position"
       )[0].data.value;
       // we'll only take the y rotation into consideration
       const rotationData = firstSpawnPoint.components.filter(
-        c => c.type === "rotation"
+        (c) => c.type === "rotation"
       )[0].data.value;
-      let rot = BABYLON.Vector3.FromArray([0, rotationData[1], 0])
+      const rot = BABYLON.Vector3.FromArray([0, rotationData[1], 0])
         .toQuaternion()
         .asArray();
       return { pos: positionData, rot: rot };
@@ -321,9 +315,9 @@ export class SceneManager {
   getLastPosRot() {
     const camPosRot = sessionPersistance.getCameraPosRot();
     if (!camPosRot) {
-      let spawnPoint = this.findSpawnPoint();
+      const spawnPoint = this.findSpawnPoint();
       // since a spawn point is usually on the floor, raise it up to the camera head height
-      let camPoint = { pos: [...spawnPoint.pos], rot: [...spawnPoint.rot] };
+      const camPoint = { pos: [...spawnPoint.pos], rot: [...spawnPoint.rot] };
       camPoint.pos[1] += mode.height;
       sessionPersistance.saveCameraPosRot(camPoint);
       return camPoint;
@@ -333,7 +327,7 @@ export class SceneManager {
   }
 
   createCamera() {
-    let posRot = this.getLastPosRot();
+    const posRot = this.getLastPosRot();
     this.freeCamera = new BABYLON.FreeCamera(
       "freeCam",
       BABYLON.Vector3.FromArray(posRot.pos),
@@ -351,9 +345,9 @@ export class SceneManager {
     addEventListener(
       "beforeunload",
       () => {
-        let cam = this.scene.activeCamera;
-        let pos = cam.position.asArray().map(reduceSigFigs);
-        let rot = cam.absoluteRotation.asArray().map(reduceSigFigs);
+        const cam = this.scene.activeCamera;
+        const pos = cam.position.asArray().map(reduceSigFigs);
+        const rot = cam.absoluteRotation.asArray().map(reduceSigFigs);
         sessionPersistance.saveCameraPosRot({ pos, rot });
       },
       { capture: true }
@@ -368,7 +362,7 @@ export class SceneManager {
         size: 50,
       });
       this.skyBox.infiniteDistance = true;
-      let skyboxMaterial = new MAT.SkyMaterial("skyMaterial", this.scene);
+      const skyboxMaterial = new MAT.SkyMaterial("skyMaterial", this.scene);
       skyboxMaterial.backFaceCulling = false;
       this.skyBox.material = skyboxMaterial;
     }
@@ -377,7 +371,7 @@ export class SceneManager {
   processSkybox(useSkybox: boolean, inclination: number) {
     if (useSkybox) {
       this.findOrCreateSkyBox();
-      let skyboxMaterial = this.skyBox.material as MAT.SkyMaterial;
+      const skyboxMaterial = this.skyBox.material as MAT.SkyMaterial;
       skyboxMaterial.inclination = inclination;
     } else {
       if (this.skyBox) {
@@ -418,15 +412,15 @@ export class SceneManager {
 
   findOrCreateMaterial(opts: { type: "color" | "grid"; colorString?: string }) {
     if (opts.type === "color" && opts.colorString) {
-      let mat = this.scene.getMaterialByName(`mat_${opts.colorString}`);
+      const mat = this.scene.getMaterialByName(`mat_${opts.colorString}`);
       if (mat) {
         return mat;
       } else {
-        let myMaterial = new BABYLON.StandardMaterial(
+        const myMaterial = new BABYLON.StandardMaterial(
           `mat_${opts.colorString}`,
           this.scene
         );
-        let color = BABYLON.Color3.FromHexString(opts.colorString);
+        const color = BABYLON.Color3.FromHexString(opts.colorString);
         myMaterial.diffuseColor = color;
         return myMaterial;
       }
@@ -483,10 +477,10 @@ export class SceneManager {
         entity.type === "blue_door"
       ) {
         const height: number = (entity.components.filter(
-          comp => comp.type === "height"
+          (comp) => comp.type === "height"
         )[0]?.data?.value || 2) as number;
         const points: number[] = entity.components.filter(
-          comp => comp.type === "points"
+          (comp) => comp.type === "points"
         )[0].data.value as number[];
         mesh = createWall(entity.name, height, points, this.scene);
         mesh.checkCollisions = true;

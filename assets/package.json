@@ -33,14 +33,22 @@
     "@types/chai": "^4.3.3",
     "@types/phoenix": "^1.5.4",
     "@types/uuid": "^8.3.4",
+    "@typescript-eslint/eslint-plugin": "^5.35.1",
+    "@typescript-eslint/parser": "^5.35.1",
     "chai": "^4.3.6",
     "cypress": "^10.6.0",
     "esbuild": "^0.14.8",
     "esbuild-svelte": "^0.6.2",
+    "eslint": "^8.22.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.2.5",
+    "eslint-plugin-promise": "^6.0.1",
     "fs": "^0.0.1-security",
+    "prettier": "^2.7.1",
     "svelte-check": "^2.3.0",
     "svelte-preprocess": "^4.10.2",
     "tslib": "^2.0.0",
-    "typescript": "^4.6.2"
+    "typescript": "^4.8.2"
   }
 }
