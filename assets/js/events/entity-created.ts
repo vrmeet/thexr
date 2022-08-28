@@ -1,4 +1,4 @@
-import type { ComponentObj } from "../components/component-obj";
+import type { ComponentObj } from "../ecs/components/component-obj";
 import type { IEvent } from "./event-base";
 
 // export type EventEntityCreated = {

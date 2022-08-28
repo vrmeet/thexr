@@ -1,5 +1,5 @@
 import type * as BABYLON from "babylonjs";
-import type { Entity } from "../core/entities/entity";
+import type { Entity } from "../ecs/entities/entity";
 
 export class ShapeBehavior implements BABYLON.Behavior<Entity> {
   public name = "shape_behavior";

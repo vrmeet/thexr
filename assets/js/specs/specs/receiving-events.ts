@@ -1,9 +1,9 @@
 import { describe, test, beforeEach } from "../helper/runner";
 
 import * as BABYLON from "babylonjs";
-import { Entity } from "../../core/entities/entity";
-import type { EventEntityCreated } from "../../core/events/entity-created";
-import * as CreateEventHelper from "../../core/entities/event-helper";
+import { Entity } from "../../ecs/entities/entity";
+import type { EventEntityCreated } from "../../events/entity-created";
+import * as CreateEventHelper from "../../ecs/entities/event-helper";
 import { assert, expect } from "chai";
 
 describe("consuming events to create entities", () => {

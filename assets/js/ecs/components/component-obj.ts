@@ -18,4 +18,5 @@ export interface ComponentObj {
   scaling?: number[];
   shape?: ShapeComponent;
   acts_like_lift?: ActsLikeLiftComponent;
+  acts_like_gun?: any;
 }

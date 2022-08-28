@@ -1,6 +1,6 @@
-import { Entity } from "../../../core/entities/entity";
+import { Entity } from "../../../ecs/entities/entity";
 import { describe, beforeEach, test } from "../../helper/runner";
-import { systems } from "../../../core/systems/systems";
+import { systems } from "../../../ecs/systems/systems";
 import * as BABYLON from "babylonjs";
 import { expect } from "chai";
 

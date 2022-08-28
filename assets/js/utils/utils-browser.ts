@@ -1,11 +1,11 @@
+/* eslint-disable no-useless-escape */
 export const xrSupported = () => {
   return !window["debug"] && navigator["xr"] !== undefined;
 };
 
 export const isMobile = (function () {
-  var _isMobile = false;
+  let _isMobile = false;
   (function (a) {
-    // eslint-disable-next-line no-useless-escape
     if (
       /(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(
         a
@@ -30,7 +30,7 @@ export const isMobile = (function () {
 })();
 
 export function isTablet(mockUserAgent) {
-  var userAgent = mockUserAgent || window.navigator.userAgent;
+  const userAgent = mockUserAgent || window.navigator.userAgent;
   return /ipad|Nexus (7|9)|xoom|sch-i800|playbook|tablet|kindle/i.test(
     userAgent
   );
@@ -74,7 +74,7 @@ export function isR7() {
  * @return {Boolean} True if landscape orientation.
  */
 export const isLandscape = function () {
-  var orientation = window.orientation;
+  let orientation = window.orientation;
   if (isR7()) {
     orientation += 90;
   }

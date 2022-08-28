@@ -34,3 +34,5 @@ npm-debug.log
 .env
 
 postgres-data
+
+.DS_Store

@@ -4,13 +4,14 @@ import type * as BABYLON from "babylonjs";
 export abstract class SystemBase {
   public scene: BABYLON.Scene;
   public my_member_id: string;
-  public was_initialized = false
+  public was_initialized = false;
+  public abstract name: string;
 
   init(my_member_id: string, scene: BABYLON.Scene) {
     if (this.was_initialized) {
-      return
+      return;
     }
-    this.was_initialized = true
+    this.was_initialized = true;
     this.scene = scene;
     this.my_member_id = my_member_id;
     this.afterInit();

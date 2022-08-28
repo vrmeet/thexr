@@ -1,6 +1,6 @@
-import { Entity } from "../../../core/entities/entity";
+import { Entity } from "../../../ecs/entities/entity";
 import { describe, beforeEach, test } from "../../helper/runner";
-import { systems } from "../../../core/systems/systems";
+import { systems } from "../../../ecs/systems/systems";
 import * as BABYLON from "babylonjs";
 import { expect } from "chai";
 import { bindSceneObservablesToSignalHub } from "../../../utils/misc";
@@ -14,7 +14,7 @@ describe("lift system", () => {
       scene.dispose();
     }
     scene = new BABYLON.Scene(engine);
-    bindSceneObservablesToSignalHub(scene)
+    bindSceneObservablesToSignalHub(scene);
     systems.initAll("me", scene);
   });
 
@@ -27,6 +27,6 @@ describe("lift system", () => {
     pickInfo.pickedMesh = entity.mesh;
     scene.simulatePointerDown(pickInfo, { pointerId: 8 });
     await new Promise((r) => setTimeout(r, 1200));
-    expect(systems.lift.lifts["door1"].state).to.eql("up")
+    expect(systems.lift.lifts["door1"].state).to.eql("up");
   });
 });

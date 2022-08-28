@@ -17,6 +17,7 @@
     "project": ["./tsconfig.json"]
   },
   "rules": {
-    "no-case-declarations": "off"
+    "no-case-declarations": "off",
+    "@typescript-eslint/no-explicit-any": "off"
   }
 }

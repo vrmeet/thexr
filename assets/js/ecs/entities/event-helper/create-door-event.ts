@@ -1,4 +1,4 @@
-import type { EventEntityCreated } from "../../events/entity-created";
+import type { EventEntityCreated } from "../../../events/entity-created";
 import { random_id } from "../../../utils/misc";
 
 export const createDoorEvent = (opts: {

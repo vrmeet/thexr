@@ -1,5 +1,4 @@
 import type { Entity } from "../entities/entity";
-import type * as BABYLON from "babylonjs";
 import { SystemBase } from "./system-base";
 import { signalHub } from "../../signalHub";
 import { animateTranslation } from "../../utils/misc";
@@ -13,6 +12,7 @@ interface LiftState {
 
 export class SystemLift extends SystemBase {
   public lifts: { [entity_name: string]: LiftState };
+  public name = "lift";
 
   initEntity(entity: Entity): void {
     if (entity.componentObj.acts_like_lift) {
@@ -20,7 +20,7 @@ export class SystemLift extends SystemBase {
         entity,
         height: entity.componentObj.acts_like_lift.height || 2,
         speed: entity.componentObj.acts_like_lift.speed || 10,
-        state: entity.componentObj.acts_like_lift.initial_state || "down"
+        state: entity.componentObj.acts_like_lift.initial_state || "down",
       };
     }
   }

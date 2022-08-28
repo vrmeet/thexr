@@ -20,7 +20,7 @@ import { Avatar } from "../scene/avatar";
 
 const exitingXR$ = signalHub.local
   .on("xr_state_changed")
-  .pipe(filter(msg => msg === BABYLON.WebXRState.EXITING_XR));
+  .pipe(filter((msg) => msg === BABYLON.WebXRState.EXITING_XR));
 
 export class XRGripManager {
   public hand: "left" | "right";
@@ -39,7 +39,7 @@ export class XRGripManager {
     this.hand = motionController.handedness as "left" | "right";
     this.other_hand = this.hand === "left" ? "right" : "left";
 
-    motionController.onModelLoadedObservable.add(model => {
+    motionController.onModelLoadedObservable.add(() => {
       this.palmMesh = Avatar.findAvatarHand(
         this.member_id,
         this.hand,
@@ -79,10 +79,10 @@ export class XRGripManager {
         .on(`${this.hand}_squeeze`)
         .pipe(
           takeUntil(exitingXR$),
-          map(val => val.pressed),
+          map((val) => val.pressed),
           distinctUntilChanged()
         )
-        .subscribe(squeezed => {
+        .subscribe((squeezed) => {
           if (squeezed) {
             signalHub.movement.emit(`${this.hand}_grip_squeezed`, true);
           } else {
@@ -94,10 +94,10 @@ export class XRGripManager {
         .on(`${this.hand}_trigger`)
         .pipe(
           takeUntil(exitingXR$),
-          map(val => val.pressed),
+          map((val) => val.pressed),
           distinctUntilChanged()
         )
-        .subscribe(squeezed => {
+        .subscribe((squeezed) => {
           if (squeezed) {
             signalHub.movement.emit(`${this.hand}_trigger_squeezed`, true);
           } else {
@@ -110,9 +110,9 @@ export class XRGripManager {
         .pipe(
           takeUntil(exitingXR$),
           map(() => this.findIntersectingMesh()),
-          filter(mesh => mesh !== null)
+          filter((mesh) => mesh !== null)
         )
-        .subscribe(mesh => {
+        .subscribe((mesh) => {
           signalHub.movement.emit(`${this.hand}_grip_mesh`, mesh);
         });
 
@@ -124,8 +124,8 @@ export class XRGripManager {
             this.intersectedMesh = mesh;
             this.intersectedMeshTags = BABYLON.Tags.GetTags(mesh);
           }),
-          tap(mesh => {
-            let event: event = {
+          tap((mesh) => {
+            const event: event = {
               m: EventName.entity_grabbed,
               p: this.createEventPayload(),
             };
@@ -186,13 +186,13 @@ export class XRGripManager {
       // if other hand grabbed the same mesh away from the first hand
       signalHub.movement
         .on(`${this.other_hand}_grip_mesh`)
-        .pipe(filter(mesh => mesh.id === this.intersectedMesh.id)),
+        .pipe(filter((mesh) => mesh.id === this.intersectedMesh.id)),
       // another player stole our object
       signalHub.incoming
         .on("event")
         .pipe(
           filter(
-            msg =>
+            (msg) =>
               msg.m === EventName.entity_grabbed &&
               msg.p.entity_id === this.intersectedMesh.id &&
               msg.p.member_id != this.member_id
@@ -202,7 +202,7 @@ export class XRGripManager {
       // or the first hand released the mesh
       signalHub.movement.on(`${this.hand}_grip_released`).pipe(
         tap(() => {
-          let event: event = {
+          const event: event = {
             m: EventName.entity_released,
             p: this.createEventPayload(),
           };
@@ -228,7 +228,7 @@ export class XRGripManager {
   }
 
   createEventPayload() {
-    let payload = {
+    const payload = {
       member_id: this.member_id,
       entity_id: this.intersectedMesh.id,
       hand_pos_rot: {

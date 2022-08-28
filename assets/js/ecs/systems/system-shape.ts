@@ -5,6 +5,7 @@ import { SystemBase } from "./system-base";
 
 export class SystemShape extends SystemBase {
   public entities: { [entity_name: string]: Entity };
+  public name = "shape";
   afterInit(): void {
     this.entities = {};
   }
@@ -29,8 +30,8 @@ export class SystemShape extends SystemBase {
         entity.componentObj.shape.prim
       )
     ) {
-      let builderFunction = `Create${cap(entity.componentObj.shape.prim)}`;
-      let builderOptions = entity.componentObj.shape.prim_params;
+      const builderFunction = `Create${cap(entity.componentObj.shape.prim)}`;
+      const builderOptions = entity.componentObj.shape.prim_params;
       entity.mesh = BABYLON.MeshBuilder[builderFunction](
         entity.name,
         builderOptions,
