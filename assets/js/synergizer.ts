@@ -1,5 +1,6 @@
 import * as BABYLON from "babylonjs";
 import type { ISystem } from "./ecs/systems/system";
+import { context } from "./context";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -20,6 +21,9 @@ export class Synergize {
   createScene(engine: BABYLON.Engine) {
     this.engine = engine;
     this.scene = new BABYLON.Scene(engine);
+    context.scene = this.scene;
+    this.scene.clearColor = BABYLON.Color4.FromHexString("#201111");
+    BABYLON.MeshBuilder.CreateBox("", {}, this.scene);
     this.scene.collisionsEnabled = true;
     this.createDefaultCamera();
   }
@@ -30,6 +34,7 @@ export class Synergize {
       new BABYLON.Vector3(),
       this.scene
     );
+    this.freeCamera.attachControl(this.scene.getEngine()._workingCanvas, false);
     this.freeCamera.rotationQuaternion = new BABYLON.Quaternion();
     this.freeCamera.ellipsoid = new BABYLON.Vector3(0.25, 0.1, 0.25);
     this.freeCamera.checkCollisions = true;
@@ -45,6 +50,11 @@ export class Synergize {
       this.engine.resize();
     });
   }
+
+  debug() {
+    this.scene.debugLayer.show({ embedMode: true });
+  }
+
   dispose() {
     if (this.scene) {
       this.scene.dispose();

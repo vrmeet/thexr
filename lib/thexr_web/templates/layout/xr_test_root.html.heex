@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" id="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,initial-scale=1.0" />
+    <%= csrf_meta_tag() %>
+    <%= live_title_tag assigns[:page_title] || "thexr.space", suffix: "" %>
+    <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/assets/app.css")}/>
+    <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/assets/spec.css")}/>
+    <script>
+      var environment_name = "<%= Application.get_env(:thexr, :environment_name) %>";
+    </script>
+    <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/app.js")}></script>
+    <script src="https://cdn.babylonjs.com/ammo.js"></script>
+    <script src="https://preview.babylonjs.com/babylon.js"></script>
+    <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+    <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
+    <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.11.1.js"></script>
+    <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/spec.js")}></script>
+    
+    <%= if Application.get_env(:thexr, :environment_name) == :prod do %>
+
+      <script src="//js.honeybadger.io/v3.2/honeybadger.min.js" type="text/javascript"></script>
+  
+      <script type="text/javascript">
+        Honeybadger.configure({
+          apiKey: 'd839a21f',
+          environment: 'production'
+        });
+      </script>
+
+    <% end %>
+  </head>
+  <body>
+    <%= @inner_content %>
+  </body>
+</html>

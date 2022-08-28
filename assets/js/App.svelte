@@ -1,8 +1,8 @@
 <script lang="ts">
     import { setContext } from "svelte";
-    import Welcome from "./components/Welcome.svelte";
-    import MicAndOutput from "./components/MicAndOutput.svelte";
-    import AvatarAndNickName from "./components/AvatarAndNickname.svelte";
+    import Welcome from "./svelte-components/Welcome.svelte";
+    import MicAndOutput from "./svelte-components/MicAndOutput.svelte";
+    import AvatarAndNickName from "./svelte-components/AvatarAndNickname.svelte";
     import { signalHub } from "./signalHub";
     import { sessionPersistance } from "./sessionPersistance";
     import { initClient } from "@urql/svelte";

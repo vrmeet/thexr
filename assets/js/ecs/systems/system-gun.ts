@@ -1,10 +1,7 @@
 import type { Entity } from "../entities/entity";
-import * as BABYLON from "babylonjs";
-import { cap } from "../../utils/misc";
-import { SystemBase } from "./system-base";
 import { signalHub } from "../../signalHub";
 
-export class SystemGun extends SystemBase {
+export class SystemGun {
   public entities: { [entity_name: string]: Entity };
   afterInit(): void {
     this.entities = {};

@@ -1,6 +1,5 @@
 import type * as BABYLON from "babylonjs";
 import type { ComponentObj } from "../components/component-obj";
-import { systems } from "../systems/systems";
 /**
  * An Entity is a reference to some item in the scene, be it a door, a wall,
  * a key or an enemy.  Anything the user might need to interact with, or cause
@@ -19,7 +18,7 @@ export class Entity implements BABYLON.IDisposable {
     public componentObj: ComponentObj,
     public scene: BABYLON.Scene
   ) {
-    systems.initEntityAll(this);
+    // systems.initEntityAll(this);
   }
 
   dispose() {

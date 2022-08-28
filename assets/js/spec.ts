@@ -1,13 +1,17 @@
 /// <reference types="svelte" />
 
-import { describeResults } from "./specs/helper/runner";
+import { Synergize } from "./synergizer";
+import * as BABYLON from "babylonjs";
 
-/* specs */
-import "./specs/specs/systems/shape.test";
-import "./specs/specs/systems/lift.test";
-
-import DisplayTests from "./specs/helper/DisplayTests.svelte";
-
-let target = document.getElementById("test-results");
-
-new DisplayTests({ target: target, props: { describeResults } });
+window.addEventListener("DOMContentLoaded", async () => {
+  const member_id = window["member_id"];
+  if (!member_id) {
+    return;
+  }
+  const canvas = document.getElementById("dummy") as HTMLCanvasElement;
+  const engine = new BABYLON.Engine(canvas, true, {
+    preserveDrawingBuffer: true,
+    stencil: true,
+  });
+  window["synergizer"] = new Synergize(engine, []);
+});
