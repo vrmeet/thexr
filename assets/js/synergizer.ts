@@ -1,7 +1,6 @@
 import * as BABYLON from "babylonjs";
 import type { ISystem } from "./ecs/systems/system";
-import { context } from "./context";
-import { signalHub } from "./signalHub";
+import { createContext, type Context } from "./context";
 import { EventName } from "./event-names";
 import { filter } from "rxjs/operators";
 import { Entity } from "./ecs/entities/entity";
@@ -10,15 +9,37 @@ import { Entity } from "./ecs/entities/entity";
  * and initialize the given systems
  */
 export class Synergize {
+  public context: Context;
   public scene: BABYLON.Scene;
   public freeCamera: BABYLON.FreeCamera;
   public systemsForEntities: ISystem[] = [];
-  constructor(public engine: BABYLON.Engine, public systems: ISystem[]) {
-    this.createScene(engine);
+  constructor(
+    my_member_id: string,
+    public engine: BABYLON.Engine,
+    public systems: ISystem[]
+  ) {
+    this.context = createContext();
+    window["context"] = this.context;
+    this.context.my_member_id = my_member_id;
+    this.context.scene = this.createScene(engine);
     this.initSystems();
+    this.setupListeners();
     this.run();
-    console.log("syn setting up listener");
-    signalHub.incoming
+    window["synergizer"] = this;
+  }
+  addSystem(system: ISystem) {
+    system.init(this.context);
+    if (system.initEntity) {
+      this.systemsForEntities.push(system);
+    }
+  }
+  initSystems() {
+    this.systems.forEach((system) => {
+      this.addSystem(system);
+    });
+  }
+  setupListeners() {
+    this.context.signalHub.incoming
       .on("event")
       .pipe(filter((evt) => evt.m === EventName.entity_created2))
       .subscribe((evt) => {
@@ -32,25 +53,16 @@ export class Synergize {
           system.initEntity(entity);
         });
       });
-    console.log("syn end setting up listener");
-  }
-  initSystems() {
-    this.systems.forEach((system) => {
-      system.init();
-      if (system.initEntity) {
-        this.systemsForEntities.push(system);
-      }
-    });
   }
   createScene(engine: BABYLON.Engine) {
     this.engine = engine;
     this.scene = new BABYLON.Scene(engine);
-    context.scene = this.scene;
     this.scene.clearColor = BABYLON.Color4.FromHexString("#201111");
     // this.scene.onKeyboardObservable.add((event) => {
     //   console.log("someting was pressed", event.event.keyCode);
     // });
     this.createDefaultCamera();
+    return this.scene;
   }
 
   createDefaultCamera() {

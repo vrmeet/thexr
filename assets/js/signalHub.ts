@@ -1,8 +1,8 @@
-import { Emitter } from "typed-rx-emitter";
+import type { Emitter } from "typed-rx-emitter";
 import type * as types from "./types";
 import type * as BABYLON from "babylonjs";
 
-type LocalEvents = {
+export type LocalEvents = {
   client_ready: "enter" | "observe";
   space_channel_connected: { agora_app_id: string };
   camera_ready: { pos: number[]; rot: number[] };
@@ -122,18 +122,18 @@ export interface SignalHub {
   movement: Emitter<MovementEvents>;
 }
 
-export const signalHub: SignalHub = {
-  local: new Emitter<LocalEvents>(),
-  incoming: new Emitter<IncomingEvents>(),
-  outgoing: new Emitter<OutgoingEvents>(),
-  menu: new Emitter<MenuEvents>(),
-  movement: new Emitter<MovementEvents>(),
-};
+// export const signalHub: SignalHub = {
+//   local: new Emitter<LocalEvents>(),
+//   incoming: new Emitter<IncomingEvents>(),
+//   outgoing: new Emitter<OutgoingEvents>(),
+//   menu: new Emitter<MenuEvents>(),
+//   movement: new Emitter<MovementEvents>(),
+// };
 
 // set signalHub message routings
 
-window["signalHub"] = signalHub;
-console.log(
-  "signal hub initialized and assigned to window",
-  window["signalHub"]
-);
+// window["signalHub"] = signalHub;
+// console.log(
+//   "signal hub initialized and assigned to window",
+//   window["signalHub"]
+// );

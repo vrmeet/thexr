@@ -5,7 +5,7 @@ const falWorks = require("@fal-works/esbuild-plugin-global-externals");
 
 // Decide which mode to proceed with
 let mode = "build";
-process.argv.slice(2).forEach(arg => {
+process.argv.slice(2).forEach((arg) => {
   if (arg === "--watch") {
     mode = "watch";
   } else if (arg === "--deploy") {
@@ -48,7 +48,7 @@ const globals = {
 
 // Define esbuild options + extras for watch and deploy
 let opts = {
-  entryPoints: ["js/app.js", "js/orchestrator.ts", "js/spec.ts"],
+  entryPoints: ["js/app.js", "js/spec.ts"],
   bundle: true,
   external: ["/fonts/*", "/images/*"],
   logLevel: "info",
@@ -79,7 +79,7 @@ if (mode === "deploy") {
 // Stop the watcher when STDIN gets closed (no zombies please!)
 esbuild
   .build(opts)
-  .then(result => {
+  .then((result) => {
     if (mode === "watch") {
       process.stdin.pipe(process.stdout);
       process.stdin.on("end", () => {
@@ -87,6 +87,6 @@ esbuild
       });
     }
   })
-  .catch(error => {
+  .catch((error) => {
     process.exit(1);
   });

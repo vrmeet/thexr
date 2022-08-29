@@ -1,6 +1,5 @@
 import type { Entity } from "../entities/entity";
 import { SystemBase } from "./system-base";
-import { signalHub } from "../../signalHub";
 import { animateTranslation } from "../../utils/misc";
 
 interface LiftState {
@@ -32,13 +31,13 @@ export class SystemLift extends SystemBase {
   afterInit(): void {
     this.lifts = {};
     console.log("creating subscription");
-    signalHub.local.on("mesh_picked").subscribe((mesh) => {
-      console.log("inside mesh_picked");
-      const liftState = this.meshIsALift(mesh);
-      if (liftState) {
-        this.toggleLift(liftState);
-      }
-    });
+    // signalHub.local.on("mesh_picked").subscribe((mesh) => {
+    //   console.log("inside mesh_picked");
+    //   const liftState = this.meshIsALift(mesh);
+    //   if (liftState) {
+    //     this.toggleLift(liftState);
+    //   }
+    // });
   }
 
   toggleLift(liftState: LiftState) {

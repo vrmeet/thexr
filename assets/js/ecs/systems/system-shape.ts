@@ -3,13 +3,13 @@ import * as BABYLON from "babylonjs";
 import { cap } from "../../utils/misc";
 
 import type { ISystem } from "./system";
-import { context } from "../../context";
+import type { Context } from "../../context";
 
 export class SystemShape implements ISystem {
   public entities: { [entity_name: string]: Entity } = {};
   public name = "shape";
   public scene: BABYLON.Scene;
-  init() {
+  init(context: Context) {
     console.log("sysem shap init");
     this.scene = context.scene;
   }

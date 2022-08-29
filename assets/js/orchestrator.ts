@@ -7,7 +7,6 @@ import { SpaceBroker } from "./space-broker";
 import type { scene_settings, serialized_space } from "./types";
 import { WebRTCManager } from "./web-rtc-manager";
 import { member_states } from "./member-states";
-import { signalHub } from "./signalHub";
 
 export class Orchestrator {
   public space_id: string;
@@ -70,8 +69,9 @@ window.addEventListener("DOMContentLoaded", async () => {
         chunks[i] = line.substr(o, size);
       }
       chunks.forEach((chunk) => {
-        signalHub.incoming.emit("hud_msg", chunk);
+        // signalHub.incoming.emit("hud_msg", chunk);
       });
+      // eslint-disable-next-line no-empty
     } catch (e) {}
     if (window["Honeybadger"]) {
       window["Honeybadger"].notify(error);
