@@ -1,13 +1,17 @@
 import type { Entity } from "../entities/entity";
 import * as BABYLON from "babylonjs";
 import { cap } from "../../utils/misc";
-import { SystemBase } from "./system-base";
 
-export class SystemShape extends SystemBase {
-  public entities: { [entity_name: string]: Entity };
+import type { ISystem } from "./system";
+import { context } from "../../context";
+
+export class SystemShape implements ISystem {
+  public entities: { [entity_name: string]: Entity } = {};
   public name = "shape";
-  afterInit(): void {
-    this.entities = {};
+  public scene: BABYLON.Scene;
+  init() {
+    console.log("sysem shap init");
+    this.scene = context.scene;
   }
 
   initEntity(entity: Entity) {
@@ -57,4 +61,5 @@ export class SystemShape extends SystemBase {
       entity.mesh.scaling.fromArray(entity.componentObj.scaling);
     }
   }
+  dispose() {}
 }

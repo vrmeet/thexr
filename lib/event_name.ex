@@ -14,6 +14,7 @@ defmodule EventName do
   def int_to_atom(1070), do: :member_died
   def int_to_atom(1080), do: :member_respawned
   def int_to_atom(2200), do: :entity_created
+  def int_to_atom(2201), do: :entity_created
   def int_to_atom(4000), do: :entity_transformed
   def int_to_atom(4010), do: :entity_translated
   def int_to_atom(4020), do: :entity_rotated
@@ -43,6 +44,7 @@ defmodule EventName do
   def atom_to_int(:member_died), do: 1070
   def atom_to_int(:member_respawned), do: 1080
   def atom_to_int(:entity_created), do: 2200
+  def atom_to_int(:entity_created), do: 2201
   def atom_to_int(:entity_transformed), do: 4000
   def atom_to_int(:entity_translated), do: 4010
   def atom_to_int(:entity_rotated), do: 4020

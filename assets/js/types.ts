@@ -1,3 +1,4 @@
+import type { ComponentObj } from "./ecs/components/component-obj";
 import type { EventName } from "./event-names";
 
 export type scene_settings = {
@@ -88,6 +89,11 @@ export type event =
   | {
       m: EventName.entity_created;
       p: { type: string; id: string; name: string; components: Component[] };
+      ts?: number;
+    }
+  | {
+      m: EventName.entity_created2;
+      p: { entity_id: string; components: ComponentObj };
       ts?: number;
     }
   | {

@@ -1,6 +1,10 @@
 import * as BABYLON from "babylonjs";
 import type { ISystem } from "./ecs/systems/system";
 import { context } from "./context";
+import { signalHub } from "./signalHub";
+import { EventName } from "./event-names";
+import { filter } from "rxjs/operators";
+import { Entity } from "./ecs/entities/entity";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -8,14 +12,34 @@ import { context } from "./context";
 export class Synergize {
   public scene: BABYLON.Scene;
   public freeCamera: BABYLON.FreeCamera;
+  public systemsForEntities: ISystem[] = [];
   constructor(public engine: BABYLON.Engine, public systems: ISystem[]) {
     this.createScene(engine);
     this.initSystems();
     this.run();
+    console.log("syn setting up listener");
+    signalHub.incoming
+      .on("event")
+      .pipe(filter((evt) => evt.m === EventName.entity_created2))
+      .subscribe((evt) => {
+        console.log("we got an event");
+        this.systemsForEntities.forEach((system) => {
+          const entity = new Entity(
+            evt.p["entity_id"],
+            evt.p["components"],
+            this.scene
+          );
+          system.initEntity(entity);
+        });
+      });
+    console.log("syn end setting up listener");
   }
   initSystems() {
     this.systems.forEach((system) => {
       system.init();
+      if (system.initEntity) {
+        this.systemsForEntities.push(system);
+      }
     });
   }
   createScene(engine: BABYLON.Engine) {
@@ -23,11 +47,9 @@ export class Synergize {
     this.scene = new BABYLON.Scene(engine);
     context.scene = this.scene;
     this.scene.clearColor = BABYLON.Color4.FromHexString("#201111");
-    this.scene.onKeyboardObservable.add((event) => {
-      console.log("someting was pressed", event.event.keyCode);
-    });
-    BABYLON.MeshBuilder.CreateBox("", {}, this.scene);
-    this.scene.collisionsEnabled = true;
+    // this.scene.onKeyboardObservable.add((event) => {
+    //   console.log("someting was pressed", event.event.keyCode);
+    // });
     this.createDefaultCamera();
   }
 

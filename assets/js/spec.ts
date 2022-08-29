@@ -3,6 +3,7 @@
 import { Synergize } from "./synergizer";
 import * as BABYLON from "babylonjs";
 import { SystemInline } from "./ecs/systems/system-inline";
+import { SystemShape } from "./ecs/systems/system-shape";
 
 window.addEventListener("DOMContentLoaded", async () => {
   const member_id = window["member_id"];
@@ -14,5 +15,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     preserveDrawingBuffer: true,
     stencil: true,
   });
-  window["synergizer"] = new Synergize(engine, [new SystemInline()]);
+  window["synergizer"] = new Synergize(engine, [
+    new SystemShape(),
+    new SystemInline(),
+  ]);
 });

@@ -114,7 +114,7 @@ export type MovementEvents = {
   // right_grab_end: { entity_id: string }
 };
 
-interface SignalHub {
+export interface SignalHub {
   local: Emitter<LocalEvents>;
   incoming: Emitter<IncomingEvents>;
   outgoing: Emitter<OutgoingEvents>;
@@ -128,8 +128,12 @@ export const signalHub: SignalHub = {
   outgoing: new Emitter<OutgoingEvents>(),
   menu: new Emitter<MenuEvents>(),
   movement: new Emitter<MovementEvents>(),
-}
+};
 
 // set signalHub message routings
 
 window["signalHub"] = signalHub;
+console.log(
+  "signal hub initialized and assigned to window",
+  window["signalHub"]
+);
