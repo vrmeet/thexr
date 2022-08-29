@@ -1,14 +1,16 @@
 /// <reference types="cypress" />
 
 import * as BABYLON from "babylonjs";
+import { context } from "../../../js/context";
 
 import { Synergize } from "../../../js/synergizer";
 
 describe("synergizer", () => {
-  it("creates a scene", () => {
+  it("creates a scene and adds it to the context", () => {
     const engine = new BABYLON.NullEngine();
     const synergizer = new Synergize(engine, []);
     expect(synergizer.scene).to.be.ok;
+    expect(context.scene).to.eq(synergizer.scene);
   });
   it("creates a default camera", () => {
     const engine = new BABYLON.NullEngine();

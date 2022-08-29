@@ -23,6 +23,9 @@ export class Synergize {
     this.scene = new BABYLON.Scene(engine);
     context.scene = this.scene;
     this.scene.clearColor = BABYLON.Color4.FromHexString("#201111");
+    this.scene.onKeyboardObservable.add((event) => {
+      console.log("someting was pressed", event.event.keyCode);
+    });
     BABYLON.MeshBuilder.CreateBox("", {}, this.scene);
     this.scene.collisionsEnabled = true;
     this.createDefaultCamera();
