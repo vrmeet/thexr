@@ -2,10 +2,10 @@
 
 ## developers
 
-The easiest way to get a local running instance is to use vscode developer container.
-Simply open this root folder using vscode and when it prompts you to open as dev container, do it.
+[OLD] ~~The easiest way to get a local running instance is to use vscode developer container.
+Simply open this root folder using vscode and when it prompts you to open as dev container, do it.~~
 
-However, I had some problems getting `observer.start` to work.  Here is the list you'll need doing it manually:
+However, I had some problems getting `observer.start` and `cypress` to work from within a container.  Here is the list you'll need doing it manually:
 
 # Dependencies
 
@@ -18,6 +18,10 @@ Install nvm (node version manager), run `nvm use`
 Copy .env.sample to .env (ignored by git) to add secrets
 
 Start a postgres DB by running `docker-compose up -d`
+
+Start the server locally using `./server`
+
+Start e2e tests using `npx cypress open` from the `assets` folder
 
 
 <!-- Install your AWS creds at .aws using aws cli configure command.  (Required to run cdk)

@@ -19,7 +19,6 @@ export class Synergize {
     public systems: ISystem[]
   ) {
     this.context = createContext();
-    window["context"] = this.context;
     this.context.my_member_id = my_member_id;
     this.context.scene = this.createScene(engine);
     this.initSystems();
@@ -27,11 +26,20 @@ export class Synergize {
     this.run();
     window["synergizer"] = this;
   }
+
+  getSystemByName(name: string) {
+    const results = this.systems.filter((system) => system.name === name);
+    if (results.length > 0) {
+      return results[0];
+    }
+    return null;
+  }
   addSystem(system: ISystem) {
     system.init(this.context);
     if (system.initEntity) {
       this.systemsForEntities.push(system);
     }
+    this.systems.push(system);
   }
   initSystems() {
     this.systems.forEach((system) => {
@@ -43,16 +51,29 @@ export class Synergize {
       .on("event")
       .pipe(filter((evt) => evt.m === EventName.entity_created2))
       .subscribe((evt) => {
-        console.log("we got an event");
+        const entity = new Entity(
+          evt.p["entity_id"],
+          evt.p["components"],
+          this.scene
+        );
         this.systemsForEntities.forEach((system) => {
-          const entity = new Entity(
-            evt.p["entity_id"],
-            evt.p["components"],
-            this.scene
-          );
           system.initEntity(entity);
         });
       });
+    // route clicks to mesh picked event
+    this.scene.onPointerObservable.add((pointerInfo) => {
+      this.context.signalHub.local.emit("pointer_info", pointerInfo);
+      if (
+        pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN &&
+        pointerInfo.pickInfo.hit &&
+        pointerInfo.pickInfo.pickedMesh
+      ) {
+        this.context.signalHub.local.emit(
+          "mesh_picked",
+          pointerInfo.pickInfo.pickedMesh
+        );
+      }
+    });
   }
   createScene(engine: BABYLON.Engine) {
     this.engine = engine;

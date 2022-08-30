@@ -1,6 +1,6 @@
 {
   "extends": "@tsconfig/svelte/tsconfig.json",
-  "include": ["js/**/*", "node_modules"],
+  "include": ["js/**/*", "node_modules", "cypress/**/*"],
   "compilerOptions": {
     "noEmit": true,
     "target": "ES2015",

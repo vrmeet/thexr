@@ -1,11 +1,8 @@
 /// <reference types="cypress" />
 
-import { filter } from "rxjs/operators";
 import { EventName } from "../../../js/event-names";
-import type { SignalHub } from "../../../js/signalHub";
-import { Synergize } from "../../../js/synergizer";
+import type { Synergize } from "../../../js/synergizer";
 import { random_id } from "../../../js/utils/misc";
-import * as BABYLON from "babylonjs";
 import { SystemShape } from "../../../js/ecs/systems/system-shape";
 
 describe("shape system", () => {

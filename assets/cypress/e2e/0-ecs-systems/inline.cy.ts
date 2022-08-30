@@ -1,8 +1,6 @@
 /// <reference types="cypress" />
 
-import type { SignalHub } from "../../../js/signalHub";
-import { Synergize } from "../../../js/synergizer";
-import * as BABYLON from "babylonjs";
+import type { Synergize } from "../../../js/synergizer";
 import { SystemInline } from "../../../js/ecs/systems/system-inline";
 describe("inline system", () => {
   let synergizer: Synergize;

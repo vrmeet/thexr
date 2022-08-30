@@ -44,6 +44,7 @@ export class SystemShape implements ISystem {
     } else {
       throw new Error("unsupported shape");
     }
+    console.log("created mesh on entity", entity);
   }
 
   setPosition(entity) {

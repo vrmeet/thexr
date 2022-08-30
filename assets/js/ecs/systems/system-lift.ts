@@ -1,6 +1,9 @@
 import type { Entity } from "../entities/entity";
-import { SystemBase } from "./system-base";
 import { animateTranslation } from "../../utils/misc";
+import type { ISystem } from "./system";
+import type { Context } from "../../context";
+import type * as BABYLON from "babylonjs";
+import type { Subscription } from "rxjs";
 
 interface LiftState {
   entity: Entity;
@@ -9,9 +12,24 @@ interface LiftState {
   state: "up" | "down" | "going-up" | "going-down";
 }
 
-export class SystemLift extends SystemBase {
-  public lifts: { [entity_name: string]: LiftState };
+export class SystemLift implements ISystem {
+  public lifts: { [entity_name: string]: LiftState } = {};
   public name = "lift";
+  public scene: BABYLON.Scene;
+  public meshPickedSubscription: Subscription;
+
+  init(context: Context) {
+    this.scene = context.scene;
+    this.meshPickedSubscription = context.signalHub.local
+      .on("mesh_picked")
+      .subscribe((mesh) => {
+        console.log("inside mesh_picked", mesh);
+        const liftState = this.meshIsALift(mesh);
+        if (liftState) {
+          this.toggleLift(liftState);
+        }
+      });
+  }
 
   initEntity(entity: Entity): void {
     if (entity.componentObj.acts_like_lift) {
@@ -26,18 +44,6 @@ export class SystemLift extends SystemBase {
 
   meshIsALift(mesh): LiftState | undefined {
     return this.lifts[mesh.name];
-  }
-
-  afterInit(): void {
-    this.lifts = {};
-    console.log("creating subscription");
-    // signalHub.local.on("mesh_picked").subscribe((mesh) => {
-    //   console.log("inside mesh_picked");
-    //   const liftState = this.meshIsALift(mesh);
-    //   if (liftState) {
-    //     this.toggleLift(liftState);
-    //   }
-    // });
   }
 
   toggleLift(liftState: LiftState) {
@@ -69,7 +75,7 @@ export class SystemLift extends SystemBase {
 
   goUp(liftState: LiftState) {
     liftState.state = "going-up";
-
+    console.log("going up", liftState);
     animateTranslation(
       liftState.entity,
       liftState.entity.mesh.position.subtractFromFloats(0, liftState.height, 0),
@@ -80,5 +86,10 @@ export class SystemLift extends SystemBase {
       },
       this.scene
     );
+  }
+
+  dispose() {
+    this.lifts = {};
+    this.meshPickedSubscription.unsubscribe();
   }
 }
