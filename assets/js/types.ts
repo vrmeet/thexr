@@ -58,8 +58,28 @@ export type Component =
   | { type: string; data: { value: any } };
 
 /**
- * events
+ * new events
  */
+
+export interface IEvent {
+  m: number;
+  p: any;
+  ts?: number;
+}
+
+export interface IEntityCreatedEvent extends IEvent {
+  m: EventName.entity_created2;
+  p: { entity_id: string; components: ComponentObj };
+}
+
+export interface IMemberMovedEvent extends IEvent {
+  m: EventName.member_moved;
+  p: { member_id: string; pos_rot: PosRot; left?: PosRot; right?: PosRot };
+}
+
+export type Event = IEntityCreatedEvent | IMemberMovedEvent;
+
+/** classic events */
 
 export type event =
   | {

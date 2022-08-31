@@ -6,6 +6,7 @@ import { SystemLift } from "../../../js/ecs/systems/system-lift";
 import { EventName } from "../../../js/event-names";
 import type * as BABYLON from "babylonjs";
 import type { ComponentObj } from "../../../js/ecs/components/component-obj";
+import type { IEntityCreatedEvent } from "../../../js/types";
 
 describe("lift system", () => {
   let synergizer: Synergize;
@@ -25,7 +26,7 @@ describe("lift system", () => {
 
   it("door goes up", () => {
     const entity_id = "door1";
-    const event = {
+    const event: IEntityCreatedEvent = {
       m: EventName.entity_created2,
       p: {
         entity_id: entity_id,

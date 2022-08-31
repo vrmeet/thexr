@@ -4,6 +4,7 @@ import { EventName } from "../../../js/event-names";
 import type { Synergize } from "../../../js/synergizer";
 import { random_id } from "../../../js/utils/misc";
 import { SystemShape } from "../../../js/ecs/systems/system-shape";
+import type { IEntityCreatedEvent, IMemberMovedEvent } from "../../../js/types";
 
 describe("shape system", () => {
   let synergizer: Synergize;
@@ -20,7 +21,7 @@ describe("shape system", () => {
     });
   });
   it("creates a box", () => {
-    const event = {
+    const event: IEntityCreatedEvent = {
       m: EventName.entity_created2,
       p: {
         entity_id: `box_${random_id(3)}`,
