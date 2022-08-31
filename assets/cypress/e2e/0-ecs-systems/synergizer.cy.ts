@@ -28,6 +28,6 @@ describe("synergizer", () => {
       dispose: () => {},
     };
     const synergizer = new Synergize("myid", engine, [system]);
-    expect(synergizer.systems.length).to.eql(1);
+    expect(Object.keys(synergizer.systems).length).to.eql(1);
   });
 });

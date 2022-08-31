@@ -2,7 +2,7 @@ import type { Entity } from "../entities/entity";
 import { animateTranslation } from "../../utils/misc";
 import type { ISystem } from "./system";
 import type { Context } from "../../context";
-import type * as BABYLON from "babylonjs";
+import * as BABYLON from "babylonjs";
 import type { Subscription } from "rxjs";
 
 interface LiftState {
@@ -59,9 +59,9 @@ export class SystemLift implements ISystem {
     console.log("going down");
     animateTranslation(
       liftState.entity,
-      liftState.entity.mesh.position.subtractFromFloats(
+      liftState.entity.transformNode.position.subtractFromFloats(
         0,
-        -liftState.height,
+        liftState.height,
         0
       ),
       1000,
@@ -78,7 +78,9 @@ export class SystemLift implements ISystem {
     console.log("going up", liftState);
     animateTranslation(
       liftState.entity,
-      liftState.entity.mesh.position.subtractFromFloats(0, liftState.height, 0),
+      liftState.entity.transformNode.position.add(
+        new BABYLON.Vector3(0, liftState.height, 0)
+      ),
       1000,
       () => {
         console.log("animation endeds");

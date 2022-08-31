@@ -11,7 +11,7 @@ import type { ComponentObj } from "../components/component-obj";
  */
 
 export class Entity implements BABYLON.IDisposable {
-  public mesh: BABYLON.AbstractMesh;
+  public transformNode: BABYLON.TransformNode;
 
   constructor(
     public name: string,
@@ -22,8 +22,8 @@ export class Entity implements BABYLON.IDisposable {
   }
 
   dispose() {
-    if (this.mesh) {
-      this.mesh.dispose();
+    if (this.transformNode) {
+      this.transformNode.dispose();
     }
   }
 }

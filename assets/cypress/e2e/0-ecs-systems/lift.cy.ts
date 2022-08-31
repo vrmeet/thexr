@@ -7,6 +7,7 @@ import { EventName } from "../../../js/event-names";
 import type * as BABYLON from "babylonjs";
 import type { ComponentObj } from "../../../js/ecs/components/component-obj";
 import type { IEntityCreatedEvent } from "../../../js/types";
+import { SystemTransform } from "../../../js/ecs/systems/system-transform";
 
 describe("lift system", () => {
   let synergizer: Synergize;
@@ -20,6 +21,7 @@ describe("lift system", () => {
     cy.window().then((win) => {
       synergizer = win["synergizer"] as Synergize;
       synergizer.addSystem(new SystemShape());
+      synergizer.addSystem(new SystemTransform());
       synergizer.addSystem(new SystemLift());
     });
   });
@@ -32,22 +34,28 @@ describe("lift system", () => {
         entity_id: entity_id,
         components: <ComponentObj>{
           shape: { prim: "box", prim_params: {} },
+          position: [0, 0.5, 0],
           acts_like_lift: {},
         },
       },
     };
     synergizer.context.signalHub.incoming.emit("event", event as any);
-    console.log("systtem", synergizer.systems);
+    console.log("synergizer", synergizer);
     const liftSystem = synergizer.getSystemByName("lift") as SystemLift;
-    console.log("liftSystem", liftSystem);
+    console.log("lfit system", liftSystem);
     expect(liftSystem.lifts[entity_id].state).to.eql("down");
-
+    expect(liftSystem.lifts[entity_id].entity.transformNode.position.y).to.eql(
+      0.5
+    );
     const pickInfo = synergizer.scene.pick(0, 0) as BABYLON.PickingInfo;
     pickInfo.hit = true;
     pickInfo.pickedMesh = synergizer.scene.getMeshByName(entity_id);
     synergizer.scene.simulatePointerDown(pickInfo, { pointerId: 8 });
     cy.wait(1100).then(() => {
       expect(liftSystem.lifts["door1"].state).to.eql("up");
+      expect(
+        liftSystem.lifts[entity_id].entity.transformNode.position.y
+      ).to.greaterThan(0.5);
     });
     // await new Promise((r) => setTimeout(r, 1100));
   });

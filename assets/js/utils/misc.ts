@@ -3,7 +3,6 @@ import { filter, map, pipe, scan } from "rxjs";
 import * as BABYLON from "babylonjs";
 import * as MAT from "babylonjs-materials";
 import type { PosRot } from "../types";
-import { signalHub } from "../signalHub";
 import type { Entity } from "../ecs/entities/entity";
 
 const ANIMATION_FRAME_PER_SECOND = 60;
@@ -17,11 +16,11 @@ export const animateTranslation = (
 ) => {
   BABYLON.Animation.CreateAndStartAnimation(
     "translate",
-    entity.mesh,
+    entity.transformNode,
     "position",
     ANIMATION_FRAME_PER_SECOND,
     Math.ceil((duration * 60) / 1000),
-    entity.mesh.position,
+    entity.transformNode.position,
     endPos,
     BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
     null,
@@ -30,25 +29,25 @@ export const animateTranslation = (
   );
 };
 
-export const bindSceneObservablesToSignalHub = (scene: BABYLON.Scene) => {
-  scene.onPointerObservable.add((pointerInfo) => {
-    signalHub.local.emit("pointer_info", pointerInfo);
-    console.log("pointerInfo", pointerInfo);
-    if (
-      pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN &&
-      pointerInfo.pickInfo.hit &&
-      pointerInfo.pickInfo.pickedMesh
-    ) {
-      console.log("a mesh was picked");
-      signalHub.local.emit("mesh_picked", pointerInfo.pickInfo.pickedMesh);
-    } else {
-      console.log("no mesh was picked");
-    }
-  });
-  scene.onKeyboardObservable.add((keyboardInfo) => {
-    signalHub.local.emit("keyboard_info", keyboardInfo);
-  });
-};
+// export const bindSceneObservablesToSignalHub = (scene: BABYLON.Scene) => {
+//   scene.onPointerObservable.add((pointerInfo) => {
+//     signalHub.local.emit("pointer_info", pointerInfo);
+//     console.log("pointerInfo", pointerInfo);
+//     if (
+//       pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN &&
+//       pointerInfo.pickInfo.hit &&
+//       pointerInfo.pickInfo.pickedMesh
+//     ) {
+//       console.log("a mesh was picked");
+//       signalHub.local.emit("mesh_picked", pointerInfo.pickInfo.pickedMesh);
+//     } else {
+//       console.log("no mesh was picked");
+//     }
+//   });
+//   scene.onKeyboardObservable.add((keyboardInfo) => {
+//     signalHub.local.emit("keyboard_info", keyboardInfo);
+//   });
+// };
 
 export const cameraFrontPosition = (scene: BABYLON.Scene, distance = 2.5) => {
   const forwardVec = scene.activeCamera

@@ -13,39 +13,36 @@ export class Synergize {
   public scene: BABYLON.Scene;
   public freeCamera: BABYLON.FreeCamera;
   public systemsForEntities: ISystem[] = [];
+  public systems: Record<string, ISystem> = {};
   constructor(
     my_member_id: string,
     public engine: BABYLON.Engine,
-    public systems: ISystem[]
+    _systems: ISystem[]
   ) {
     this.context = createContext();
     this.context.my_member_id = my_member_id;
     this.context.scene = this.createScene(engine);
-    this.initSystems();
+    _systems.forEach((system) => {
+      this.addSystem(system);
+    });
     this.setupListeners();
     this.run();
     window["synergizer"] = this;
   }
 
   getSystemByName(name: string) {
-    const results = this.systems.filter((system) => system.name === name);
-    if (results.length > 0) {
-      return results[0];
-    }
-    return null;
+    return this.systems[name];
   }
   addSystem(system: ISystem) {
-    system.init(this.context);
-    if (system.initEntity) {
-      this.systemsForEntities.push(system);
+    if (!this.systems[system.name]) {
+      system.init(this.context);
+      if (system.initEntity) {
+        this.systemsForEntities.push(system);
+      }
+      this.systems[system.name] = system;
     }
-    this.systems.push(system);
   }
-  initSystems() {
-    this.systems.forEach((system) => {
-      this.addSystem(system);
-    });
-  }
+
   setupListeners() {
     this.context.signalHub.incoming
       .on("event")
