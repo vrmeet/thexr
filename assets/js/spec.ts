@@ -8,6 +8,9 @@ import { SystemAvatar } from "./ecs/systems/system-avatar";
 import type { IEntityCreatedEvent } from "./types";
 import type { ComponentObj } from "./ecs/components/component-obj";
 import { EventName } from "./event-names";
+import { SystemShape } from "./ecs/systems/system-shape";
+import { SystemLift } from "./ecs/systems/system-lift";
+import { SystemTransform } from "./ecs/systems/system-transform";
 
 window.addEventListener("DOMContentLoaded", async () => {
   const member_id = window["member_id"];
@@ -19,32 +22,34 @@ window.addEventListener("DOMContentLoaded", async () => {
     preserveDrawingBuffer: true,
     stencil: true,
   });
-  window["synergizer"] = new Synergize(member_id, engine, []);
-  const synergizer = window["synergizer"];
-  window["SystemLighting"] = SystemLighting;
-  window["SystemInline"] = SystemInline;
-  window["SystemAvatar"] = SystemAvatar;
-  window["synergizer"].addSystem(new SystemLighting());
-  window["synergizer"].addSystem(new SystemInline());
-  window["synergizer"].addSystem(new SystemAvatar());
-  const avatarCreated: IEntityCreatedEvent = {
-    m: EventName.entity_created2,
-    p: {
-      entity_id: "avatar1",
-      components: <ComponentObj>{
-        avatar: true,
-      },
-    },
-  };
-  const lightCreated: IEntityCreatedEvent = {
-    m: EventName.entity_created2,
-    p: {
-      entity_id: "light1",
-      components: <ComponentObj>{
-        lighting: true,
-      },
-    },
-  };
-  synergizer.context.signalHub.incoming.emit("event", lightCreated);
-  synergizer.context.signalHub.incoming.emit("event", avatarCreated);
+  const synergizer = new Synergize(member_id, engine, [
+    new SystemAvatar(),
+    new SystemInline(),
+    new SystemLift(),
+    new SystemLighting(),
+    new SystemShape(),
+    new SystemTransform(),
+  ]);
+
+  // const avatarCreated: IEntityCreatedEvent = {
+  //   m: EventName.entity_created2,
+  //   p: {
+  //     entity_id: "avatar1",
+  //     components: <ComponentObj>{
+  //       avatar: true,
+  //     },
+  //   },
+  // };
+  // const lightCreated: IEntityCreatedEvent = {
+  //   m: EventName.entity_created2,
+  //   p: {
+  //     entity_id: "light1",
+  //     components: <ComponentObj>{
+  //       lighting: true,
+  //     },
+  //   },
+  // };
+  // synergizer.context.signalHub.incoming.emit("event", lightCreated);
+  // synergizer.context.signalHub.incoming.emit("event", avatarCreated);
+  window["synergizer"] = synergizer;
 });

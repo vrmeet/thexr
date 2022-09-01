@@ -17,7 +17,7 @@ describe("shape system", () => {
     cy.get("canvas").click();
     cy.window().then((win) => {
       synergizer = win["synergizer"] as Synergize;
-      synergizer.addSystem(new SystemShape());
+      // synergizer.addSystem(new SystemShape());
     });
   });
   it("creates a box", () => {

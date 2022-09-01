@@ -11,7 +11,7 @@ import type { ComponentObj } from "../components/component-obj";
  */
 
 export class Entity implements BABYLON.IDisposable {
-  public transformNode: BABYLON.TransformNode;
+  public transformNode: BABYLON.TransformNode | BABYLON.AbstractMesh;
 
   constructor(
     public name: string,

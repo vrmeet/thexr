@@ -18,9 +18,9 @@ describe("inline system", () => {
     cy.get("canvas").click();
     cy.window().then((win) => {
       synergizer = win["synergizer"] as Synergize;
-      synergizer.addSystem(new SystemInline());
-      synergizer.addSystem(new SystemLighting());
-      synergizer.addSystem(new SystemAvatar());
+      // synergizer.addSystem(new SystemInline());
+      // synergizer.addSystem(new SystemLighting());
+      // synergizer.addSystem(new SystemAvatar());
     });
   });
 

@@ -1,4 +1,5 @@
 import type { ActsLikeLiftComponent } from "./acts-like-lift";
+import type { MaterialComponent } from "./material";
 import type { ShapeComponent } from "./shape";
 
 /**
@@ -20,4 +21,5 @@ export interface ComponentObj {
   acts_like_lift?: ActsLikeLiftComponent;
   avatar?: any;
   lighting?: any;
+  material?: MaterialComponent;
 }

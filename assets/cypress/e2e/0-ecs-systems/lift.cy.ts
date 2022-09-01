@@ -20,9 +20,9 @@ describe("lift system", () => {
     cy.get("canvas").click();
     cy.window().then((win) => {
       synergizer = win["synergizer"] as Synergize;
-      synergizer.addSystem(new SystemShape());
-      synergizer.addSystem(new SystemTransform());
-      synergizer.addSystem(new SystemLift());
+      // synergizer.addSystem(new SystemShape());
+      // synergizer.addSystem(new SystemTransform());
+      // synergizer.addSystem(new SystemLift());
     });
   });
 
