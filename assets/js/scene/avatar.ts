@@ -22,7 +22,7 @@ export class Avatar {
   constructor(
     public member_id: string,
     public scene: BABYLON.Scene,
-    createhead: boolean = true
+    createhead = true
   ) {
     this.mode = "STANDING";
     this.animatables = [];
@@ -142,7 +142,7 @@ export class Avatar {
   }
 
   stopPreviousAnimations() {
-    this.animatables.forEach(a => {
+    this.animatables.forEach((a) => {
       a.stop();
     });
     this.animatables = [];
@@ -166,7 +166,7 @@ export class Avatar {
       // for use in resetting the position after respawn
 
       // TODO, if in XR, maybe just teleport to this point
-      let cam = this.scene.activeCamera as BABYLON.FreeCamera;
+      const cam = this.scene.activeCamera as BABYLON.FreeCamera;
       cam.position.copyFromFloats(
         headPose.pos[0],
         headPose.pos[1],
@@ -193,17 +193,17 @@ export class Avatar {
 
   static findOrCreateAvatarHead(member_id: string, scene: BABYLON.Scene) {
     const headName = `avatar_${member_id}_head`;
-    let head = this.findAvatarHead(member_id, scene);
+    const head = this.findAvatarHead(member_id, scene);
     if (head) {
       return head;
     }
-    let box = BABYLON.MeshBuilder.CreateBox(headName, { size: 0.3 }, scene);
-    box.rotationQuaternion = new BABYLON.Quaternion();
-    box.isPickable = false;
-    box.metadata ||= {};
-    box.metadata["member_id"] = member_id;
-    BABYLON.Tags.AddTagsTo(box, "avatar");
-    box.visibility = 0.5;
+    const box = BABYLON.MeshBuilder.CreateBox(headName, { size: 0.3 }, scene);
+    // box.rotationQuaternion = new BABYLON.Quaternion();
+    // box.isPickable = false;
+    // box.metadata ||= {};
+    // box.metadata["member_id"] = member_id;
+    // BABYLON.Tags.AddTagsTo(box, "avatar");
+    // box.visibility = 0.5;
     return box;
   }
 
@@ -238,7 +238,7 @@ export class Avatar {
     entity_pos_rot: PosRot | null,
     hand_pos_rot: PosRot | null
   ) {
-    let entity = this.scene.getMeshById(entity_id);
+    const entity = this.scene.getMeshById(entity_id);
     if (!entity) {
       return;
     }
@@ -279,7 +279,7 @@ export class Avatar {
     linear_velocity?: number[],
     angular_velocity?: number[]
   ) {
-    let entity = this.scene.getMeshById(entity_id);
+    const entity = this.scene.getMeshById(entity_id);
     if (entity) {
       entity.parent = null;
       entity.position = BABYLON.Vector3.FromArray(entity_pos_rot.pos);
@@ -306,7 +306,7 @@ export class Avatar {
   }
 
   collectEntity(entity_id: string) {
-    let entity = this.scene.getMeshById(entity_id);
+    const entity = this.scene.getMeshById(entity_id);
     if (entity) {
       entity.parent = null;
       entity.visibility = 0;
