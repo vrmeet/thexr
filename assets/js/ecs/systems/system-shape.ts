@@ -10,7 +10,6 @@ export class SystemShape implements ISystem {
   public name = "shape";
   public scene: BABYLON.Scene;
   init(context: Context) {
-    console.log("sysem shap init");
     this.scene = context.scene;
   }
 
@@ -28,7 +27,10 @@ export class SystemShape implements ISystem {
       )
     ) {
       const builderFunction = `Create${cap(entity.componentObj.shape.prim)}`;
-      const builderOptions = entity.componentObj.shape.prim_params;
+      const builderOptions = { ...entity.componentObj.shape.prim_params };
+      if (entity.componentObj.shape.prim === "plane") {
+        builderOptions["sideOrientation"] = BABYLON.Mesh.DOUBLESIDE;
+      }
       entity.transformNode = BABYLON.MeshBuilder[builderFunction](
         entity.name,
         builderOptions,

@@ -13,7 +13,6 @@ export class SystemMaterial implements ISystem {
   public scene: BABYLON.Scene;
 
   init(context: Context) {
-    console.log("sysem shap init");
     this.scene = context.scene;
   }
 

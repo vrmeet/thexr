@@ -11,6 +11,7 @@ import { EventName } from "./event-names";
 import { SystemShape } from "./ecs/systems/system-shape";
 import { SystemLift } from "./ecs/systems/system-lift";
 import { SystemTransform } from "./ecs/systems/system-transform";
+import { SystemMaterial } from "./ecs/systems/system-material";
 
 window.addEventListener("DOMContentLoaded", async () => {
   const member_id = window["member_id"];
@@ -29,27 +30,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     new SystemLighting(),
     new SystemShape(),
     new SystemTransform(),
+    new SystemMaterial(),
   ]);
-
-  // const avatarCreated: IEntityCreatedEvent = {
-  //   m: EventName.entity_created2,
-  //   p: {
-  //     entity_id: "avatar1",
-  //     components: <ComponentObj>{
-  //       avatar: true,
-  //     },
-  //   },
-  // };
-  // const lightCreated: IEntityCreatedEvent = {
-  //   m: EventName.entity_created2,
-  //   p: {
-  //     entity_id: "light1",
-  //     components: <ComponentObj>{
-  //       lighting: true,
-  //     },
-  //   },
-  // };
-  // synergizer.context.signalHub.incoming.emit("event", lightCreated);
-  // synergizer.context.signalHub.incoming.emit("event", avatarCreated);
   window["synergizer"] = synergizer;
 });

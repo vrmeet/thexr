@@ -20,6 +20,7 @@ export class Synergize {
     _systems: ISystem[]
   ) {
     this.context = createContext();
+    this.context.synergizer = this;
     this.context.my_member_id = my_member_id;
     this.context.scene = this.createScene(engine);
     _systems.forEach((system) => {
@@ -39,8 +40,15 @@ export class Synergize {
       if (system.initEntity) {
         this.systemsForEntities.push(system);
       }
+      console.log("the system name is", system.name);
       this.systems[system.name] = system;
     }
+  }
+
+  initEntity(entity: Entity) {
+    this.systemsForEntities.forEach((system) => {
+      system.initEntity(entity);
+    });
   }
 
   setupListeners() {
@@ -53,9 +61,7 @@ export class Synergize {
           evt.p["components"],
           this.scene
         );
-        this.systemsForEntities.forEach((system) => {
-          system.initEntity(entity);
-        });
+        this.initEntity(entity);
       });
     // route clicks to mesh picked event
     this.scene.onPointerObservable.add((pointerInfo) => {

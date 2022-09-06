@@ -1,14 +1,17 @@
 /// <reference types="cypress" />
-
+import * as BABYLON from "babylonjs";
 import type { Synergize } from "../../../js/synergizer";
-import { SystemInline } from "../../../js/ecs/systems/system-inline";
-import { SystemAvatar } from "../../../js/ecs/systems/system-avatar";
-import type { IEntityCreatedEvent, IMemberMovedEvent } from "../../../js/types";
+import type {
+  IEntityCreatedEvent,
+  IMemberMovedEvent,
+  IMemberEnteredEvent,
+} from "../../../js/types";
 import { EventName } from "../../../js/event-names";
 import type { ComponentObj } from "../../../js/ecs/components/component-obj";
-import { SystemLighting } from "../../../js/ecs/systems/system-lighting";
+import type { SystemAvatar } from "../../../js/ecs/systems/system-avatar";
 describe("inline system", () => {
   let synergizer: Synergize;
+  let avatarSystem;
   before(() => {
     // Cypress starts out with a blank slate for each test
     // so we must tell it to visit our website with the `cy.visit()` command.
@@ -18,45 +21,70 @@ describe("inline system", () => {
     cy.get("canvas").click();
     cy.window().then((win) => {
       synergizer = win["synergizer"] as Synergize;
-      // synergizer.addSystem(new SystemInline());
-      // synergizer.addSystem(new SystemLighting());
-      // synergizer.addSystem(new SystemAvatar());
+
+      const lightCreated: IEntityCreatedEvent = {
+        m: EventName.entity_created2,
+        p: {
+          entity_id: "light1",
+          components: <ComponentObj>{
+            lighting: true,
+          },
+        },
+      };
+      const gridCreated: IEntityCreatedEvent = {
+        m: EventName.entity_created2,
+        p: {
+          entity_id: "floor",
+          components: <ComponentObj>{
+            shape: { prim: "plane", prim_params: { size: 10 } },
+            rotation: [BABYLON.Angle.FromDegrees(90).radians(), 0, 0],
+            material: { name: "grid" },
+          },
+        },
+      };
+      synergizer.context.signalHub.incoming.emit("event", lightCreated);
+      // synergizer.context.signalHub.incoming.emit("event", avatarCreated);
+      synergizer.context.signalHub.incoming.emit("event", gridCreated);
+      console.log("syn", synergizer);
+      avatarSystem = synergizer.getSystemByName("avatar") as SystemAvatar;
     });
   });
 
-  it("creates an avatar", () => {
-    const entity_id = "member123";
-    const avatarCreated: IEntityCreatedEvent = {
-      m: EventName.entity_created2,
+  it("creates an avatar on 'member_entered'", () => {
+    const memberEnteredEvent: IMemberEnteredEvent = {
+      m: EventName.member_entered,
       p: {
-        entity_id: entity_id,
-        components: <ComponentObj>{
-          avatar: true,
+        member_id: "avatar1",
+        pos_rot: { pos: [0, 0, 0], rot: [0, 0, 0, 1] },
+        state: {
+          mic_muted: true,
+          nickname: "bob",
+          health: 100,
+          status: "active",
         },
       },
     };
-    const lightCreated: IEntityCreatedEvent = {
-      m: EventName.entity_created2,
-      p: {
-        entity_id: "light1",
-        components: <ComponentObj>{
-          lighting: true,
-        },
-      },
-    };
-    synergizer.context.signalHub.incoming.emit("event", lightCreated);
-    synergizer.context.signalHub.incoming.emit("event", avatarCreated);
-
+    synergizer.context.signalHub.incoming.emit("event", memberEnteredEvent);
     cy.get("canvas").trigger("keydown", { keyCode: 83, release: false });
-    cy.wait(500);
+    cy.wait(1000);
     cy.get("canvas")
       .trigger("keyup", { keyCode: 83, release: false })
       .then(() => {
-        // expect(synergizer.freeCamera.position.asArray()).to.not.eql([0, 0, 0]);
-        const avatar =
-          synergizer.context.scene.getTransformNodeByName(entity_id);
-        assert(avatar);
-        synergizer.debug();
+        expect(avatarSystem.countAvatars()).to.greaterThan(0);
       });
+  });
+
+  it("moves avatar when 'member_moved'", () => {
+    const movementEvent: IMemberMovedEvent = {
+      m: EventName.member_moved,
+      p: {
+        member_id: "avatar1",
+        pos_rot: { pos: [1, 0, 0], rot: [0, 0, 0, 1] },
+      },
+    };
+    synergizer.context.signalHub.incoming.emit("event", movementEvent);
+    cy.wait(100).then(() => {
+      synergizer.debug();
+    });
   });
 });

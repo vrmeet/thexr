@@ -1,4 +1,5 @@
-import "./synergizer.cy";
+import "./avatar.cy";
 import "./inline.cy";
-import "./shape.cy";
 import "./lift.cy";
+import "./shape.cy";
+import "./synergizer.cy";

@@ -3,6 +3,7 @@
  */
 import type * as BABYLON from "babylonjs";
 import { Emitter } from "typed-rx-emitter";
+import type { Entity } from "./ecs/entities/entity";
 import type {
   SignalHub,
   LocalEvents,
@@ -12,9 +13,14 @@ import type {
   OutgoingEvents,
 } from "./signalHub";
 
+export interface ISynergizer {
+  initEntity(entity: Entity): void;
+}
+
 export interface Context {
   my_member_id: string;
   scene: BABYLON.Scene;
+  synergizer: ISynergizer;
   signalHub: SignalHub;
 }
 
@@ -22,6 +28,7 @@ export const createContext = (): Context => {
   return {
     my_member_id: null,
     scene: null,
+    synergizer: null,
     signalHub: {
       local: new Emitter<LocalEvents>(),
       incoming: new Emitter<IncomingEvents>(),

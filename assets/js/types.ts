@@ -72,6 +72,17 @@ export interface IEntityCreatedEvent extends IEvent {
   p: { entity_id: string; components: ComponentObj };
 }
 
+export interface IMemberEnteredEvent extends IEvent {
+  m: EventName.member_entered;
+  p: {
+    member_id: string;
+    pos_rot: PosRot;
+    left?: PosRot;
+    right?: PosRot;
+    state: member_state;
+  };
+}
+
 export interface IMemberMovedEvent extends IEvent {
   m: EventName.member_moved;
   p: { member_id: string; pos_rot: PosRot; left?: PosRot; right?: PosRot };
