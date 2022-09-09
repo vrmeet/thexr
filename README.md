@@ -5,7 +5,7 @@
 [OLD] ~~The easiest way to get a local running instance is to use vscode developer container.
 Simply open this root folder using vscode and when it prompts you to open as dev container, do it.~~
 
-However, I had some problems getting `observer.start` and `cypress` to work from within a container.  Here is the list you'll need doing it manually:
+However, I had some problems getting `observer.start` and `cypress` to work from within a container.  Here is the list you'll need doing it manually
 
 # Dependencies
 
