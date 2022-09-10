@@ -16,6 +16,7 @@
     "sourceType": "module",
     "project": ["./tsconfig.json"]
   },
+  "ignorePatterns": ["**/*.js"],
   "rules": {
     "no-case-declarations": "off",
     "@typescript-eslint/no-explicit-any": "off",
