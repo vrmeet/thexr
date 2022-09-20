@@ -3,8 +3,8 @@
 import { EventName } from "../../../js/event-names";
 import type { Synergize } from "../../../js/synergizer";
 import { random_id } from "../../../js/utils/misc";
-import { SystemShape } from "../../../js/ecs/systems/system-shape";
-import type { IEntityCreatedEvent, IMemberMovedEvent } from "../../../js/types";
+import type { IEntityCreatedEvent } from "../../../js/types";
+import type { BoxShape, SphereShape } from "../../../js/ecs/components/shape";
 
 describe("shape system", () => {
   let synergizer: Synergize;
@@ -17,20 +17,30 @@ describe("shape system", () => {
     cy.get("canvas").click();
     cy.window().then((win) => {
       synergizer = win["synergizer"] as Synergize;
+      synergizer.debug();
       // synergizer.addSystem(new SystemShape());
     });
   });
   it("creates a box", () => {
-    const event: IEntityCreatedEvent = {
-      m: EventName.entity_created2,
-      p: {
-        entity_id: `box_${random_id(3)}`,
-        components: {
-          shape: { prim: "box", prim_params: {} },
-        },
+    const event = {
+      id: `box_${random_id(3)}`,
+      components: {
+        shape: <BoxShape>{ prim: "box", prim_params: {} },
+        position: [0, 0, 5],
       },
     };
-    synergizer.context.signalHub.incoming.emit("event", event as any);
+    synergizer.context.signalHub.incoming.emit("entity_created", event);
     expect(synergizer.scene.meshes.length).to.eql(1);
+  });
+  it("creates a sphere", () => {
+    const event = {
+      id: `sphere_${random_id(3)}`,
+      components: {
+        shape: <SphereShape>{ prim: "sphere", prim_params: {} },
+        position: [5, 0, 5],
+      },
+    };
+    synergizer.context.signalHub.incoming.emit("entity_created", event);
+    expect(synergizer.scene.meshes.length).to.eql(2);
   });
 });

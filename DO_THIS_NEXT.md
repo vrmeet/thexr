@@ -2,7 +2,7 @@ TODO:
 
 Build it from the ground up,
 
-1. The events - do we have all the events necessary to play doom? To play bridge crew?
+1. The events - do we have all the events necessary to play doom? To play bridge crew?  Made list.
 2. Can we produce the events from real time activity? Moving head, hands, travelings.
    a. picking up objects, throwing them, shooting a gun.
    b. local events, vs outgoing: A entity for a bullet can be local, {m: "entity_created", p: {entity_id: ..., components: {shape: capsule, animate_from_to: ..., disappear_on_contact: true, cause_damage: true}}} but the outgoing equivalent might be higher level like {m: "system_event", p: {system: "bullet", name: "bullet_fired", pos_rot: ....}}

@@ -1,6 +1,7 @@
 import type { Emitter } from "typed-rx-emitter";
 import type * as types from "./types";
 import type * as BABYLON from "babylonjs";
+import type { ComponentObj } from "./ecs/components/component-obj";
 
 export type LocalEvents = {
   client_ready: "enter" | "observe";
@@ -28,7 +29,12 @@ export type LocalEvents = {
 };
 
 export type IncomingEvents = {
-  event: types.event;
+  event: types.event; // deprecate this
+  entity_created: { id: string; components: ComponentObj };
+  entity_deleted: { id: string };
+  component_upserted: { entity_id: string; name: string; data: any };
+  component_removed: { entity_id: string; name: string };
+  custom_msg: any;
   hud_broadcast: { message: string };
   presence_diff: types.PresenceDiff;
   presence_state: types.PresenceState;
@@ -56,7 +62,12 @@ export type IncomingEvents = {
 };
 
 export type OutgoingEvents = {
-  event: types.event;
+  event: types.event; //deprecate this
+  entity_created: { id: string; components: ComponentObj };
+  entity_deleted: { id: string };
+  component_upserted: { entity_id: string; name: string; data: any };
+  component_removed: { entity_id: string; name: string };
+  custom_msg: any;
   hud_broadcast: { msg: string };
 };
 

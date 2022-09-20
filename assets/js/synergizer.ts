@@ -1,8 +1,6 @@
 import * as BABYLON from "babylonjs";
 import type { ISystem } from "./ecs/systems/system";
 import { createContext, type Context } from "./context";
-import { EventName } from "./event-names";
-import { filter } from "rxjs/operators";
 import { Entity } from "./ecs/entities/entity";
 /**
  * The Synergizer's job is to create the scene
@@ -14,6 +12,12 @@ export class Synergize {
   public freeCamera: BABYLON.FreeCamera;
   public systemsForEntities: ISystem[] = [];
   public systems: Record<string, ISystem> = {};
+  /**
+   *
+   * @param my_member_id
+   * @param engine with a canvas
+   * @param _systems any initial systems to initialize
+   */
   constructor(
     my_member_id: string,
     public engine: BABYLON.Engine,
@@ -52,17 +56,10 @@ export class Synergize {
   }
 
   setupListeners() {
-    this.context.signalHub.incoming
-      .on("event")
-      .pipe(filter((evt) => evt.m === EventName.entity_created2))
-      .subscribe((evt) => {
-        const entity = new Entity(
-          evt.p["entity_id"],
-          evt.p["components"],
-          this.scene
-        );
-        this.initEntity(entity);
-      });
+    this.context.signalHub.incoming.on("entity_created").subscribe((evt) => {
+      const entity = new Entity(evt.id, evt.components, this.scene);
+      this.initEntity(entity);
+    });
     // route clicks to mesh picked event
     this.scene.onPointerObservable.add((pointerInfo) => {
       this.context.signalHub.local.emit("pointer_info", pointerInfo);
