@@ -2,6 +2,7 @@ import * as BABYLON from "babylonjs";
 import type { ISystem } from "./ecs/systems/system";
 import { createContext, type Context } from "./context";
 import { Entity } from "./ecs/entities/entity";
+import type { ComponentObj } from "./ecs/components/component-obj";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -49,16 +50,16 @@ export class Synergize {
     }
   }
 
-  initEntity(entity: Entity) {
+  initEntity(entity_id: string, components: ComponentObj) {
     this.systemsForEntities.forEach((system) => {
-      system.initEntity(entity);
+      system.initEntity(entity_id, components);
     });
   }
 
   setupListeners() {
     this.context.signalHub.incoming.on("entity_created").subscribe((evt) => {
-      const entity = new Entity(evt.id, evt.components, this.scene);
-      this.initEntity(entity);
+      this.context.state[evt.id] = evt.components;
+      this.initEntity(evt.id, evt.components);
     });
     // route clicks to mesh picked event
     this.scene.onPointerObservable.add((pointerInfo) => {

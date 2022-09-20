@@ -21,13 +21,13 @@ window.addEventListener("DOMContentLoaded", async () => {
     stencil: true,
   });
   const synergizer = new Synergize(member_id, engine, [
-    new SystemAvatar(),
-    new SystemInline(),
-    new SystemLift(),
-    new SystemLighting(),
+    // new SystemAvatar(),
+    // new SystemInline(),
+    // new SystemLift(),
+    // new SystemLighting(),
     new SystemShape(),
     new SystemTransform(),
-    new SystemMaterial(),
+    // new SystemMaterial(),
   ]);
   window["synergizer"] = synergizer;
 });

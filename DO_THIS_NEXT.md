@@ -1,5 +1,28 @@
 TODO:
 
+Events, build up STATE in the client.
+
+synergizer - 
+  initializes list of systems
+  listens for entity_created, adds it to context, and let's every system look at it
+
+
+system - looks at entity
+  - optionally builds something for it in the space (mesh, transform)
+  - moves it into position
+  transform system - listens for event
+     - reference of each entity_id with a pointer either the mesh or transform
+    finds the mesh or transform by id .... 
+===
+Event object moved to new position
+
+
+  
+
+Events, build up STATE in the server.
+
+
+
 Build it from the ground up,
 
 1. The events - do we have all the events necessary to play doom? To play bridge crew?  Made list.

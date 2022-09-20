@@ -3,6 +3,7 @@
  */
 import type * as BABYLON from "babylonjs";
 import { Emitter } from "typed-rx-emitter";
+import type { ComponentObj } from "./ecs/components/component-obj";
 import type { Entity } from "./ecs/entities/entity";
 import type {
   SignalHub,
@@ -17,11 +18,16 @@ export interface ISynergizer {
   initEntity(entity: Entity): void;
 }
 
+export interface State {
+  [entityId: string]: ComponentObj;
+}
+
 export interface Context {
   my_member_id: string;
   scene: BABYLON.Scene;
   synergizer: ISynergizer;
   signalHub: SignalHub;
+  state: State;
 }
 
 export const createContext = (): Context => {
@@ -36,5 +42,6 @@ export const createContext = (): Context => {
       menu: new Emitter<MenuEvents>(),
       movement: new Emitter<MovementEvents>(),
     },
+    state: {},
   };
 };

@@ -1,9 +1,7 @@
 /// <reference types="cypress" />
 
-import { EventName } from "../../../js/event-names";
 import type { Synergize } from "../../../js/synergizer";
 import { random_id } from "../../../js/utils/misc";
-import type { IEntityCreatedEvent } from "../../../js/types";
 import type { BoxShape, SphereShape } from "../../../js/ecs/components/shape";
 
 describe("shape system", () => {
@@ -38,6 +36,7 @@ describe("shape system", () => {
       components: {
         shape: <SphereShape>{ prim: "sphere", prim_params: {} },
         position: [5, 0, 5],
+        scaling: [2, 5, 2],
       },
     };
     synergizer.context.signalHub.incoming.emit("entity_created", event);
