@@ -1,6 +1,11 @@
 TODO:
 
-Events, build up STATE in the client.
+solve race condition amongst systems:
+  - mesh needs to exist
+  before applying color or position/scale/rotation etc
+
+Load a space from serialized data, start a genserver to store and forward data
+
 
 synergizer - 
   initializes list of systems

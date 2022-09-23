@@ -32,10 +32,6 @@ export class Synergize {
     return this.systems[name];
   }
   async addSystem(systemPath: string, systemName: string) {
-    if (!systemName) {
-      const parts = systemPath.split("/");
-      systemName = parts[parts.length - 1].replace(".js", "");
-    }
     await BABYLON.Tools.LoadScriptAsync(systemPath);
     console.log("adding system", systemPath);
     const system = window[systemName];

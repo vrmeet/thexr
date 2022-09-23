@@ -20,14 +20,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     preserveDrawingBuffer: true,
     stencil: true,
   });
-  const synergizer = new Synergize(member_id, engine, [
-    // new SystemAvatar(),
-    // new SystemInline(),
-    // new SystemLift(),
-    // new SystemLighting(),
-    // new SystemShape(),
-    // new SystemTransform(),
-    // new SystemMaterial(),
-  ]);
+  const synergizer = new Synergize(member_id, engine);
   window["synergizer"] = synergizer;
 });

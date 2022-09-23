@@ -3,6 +3,7 @@
 import type { Synergize } from "../../../js/synergizer";
 import { random_id } from "../../../js/utils/misc";
 import type { BoxShape, SphereShape } from "../../../js/ecs/components/shape";
+import type { MaterialComponent } from "../../../js/ecs/components/material";
 
 describe("shape system", () => {
   let synergizer: Synergize;
@@ -28,6 +29,10 @@ describe("shape system", () => {
         "http://localhost:4000/systems/system-transform.js",
         "system-transform"
       );
+      await synergizer.addSystem(
+        "http://localhost:4000/systems/system-material.js",
+        "system-material"
+      );
       console.log(synergizer.systems);
       //create a light
       const event = {
@@ -49,7 +54,6 @@ describe("shape system", () => {
     };
     synergizer.context.signalHub.incoming.emit("entity_created", event);
     expect(synergizer.scene.meshes.length).to.eql(1);
-    expect(Object.keys(synergizer.context.state)).to.eql([event.id]);
   });
   it("creates a sphere", () => {
     const event = {
@@ -58,6 +62,7 @@ describe("shape system", () => {
         shape: <SphereShape>{ prim: "sphere", prim_params: {} },
         position: [5, 0, 5],
         scaling: [2, 5, 2],
+        material: <MaterialComponent>{ name: "color", color_string: "#FF0000" },
       },
     };
     synergizer.context.signalHub.incoming.emit("entity_created", event);

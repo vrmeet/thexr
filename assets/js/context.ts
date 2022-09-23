@@ -3,6 +3,8 @@
  */
 import * as BABYLON from "babylonjs";
 type BABYLON = typeof BABYLON;
+import * as MAT from "babylonjs-materials";
+type MAT = typeof MAT;
 import { Emitter } from "typed-rx-emitter";
 import type { ComponentObj } from "./ecs/components/component-obj";
 import type { Entity } from "./ecs/entities/entity";
@@ -30,6 +32,7 @@ export interface Context {
   signalHub: SignalHub;
   state: State;
   BABYLON: BABYLON;
+  MAT: MAT;
 }
 
 export const createContext = (): Context => {
@@ -46,5 +49,6 @@ export const createContext = (): Context => {
     },
     state: {},
     BABYLON: BABYLON,
+    MAT: MAT,
   };
 };
