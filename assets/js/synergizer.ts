@@ -1,7 +1,6 @@
 import * as BABYLON from "babylonjs";
 import type { ISystem } from "./ecs/systems/system";
 import { createContext, type Context } from "./context";
-import { Entity } from "./ecs/entities/entity";
 import type { ComponentObj } from "./ecs/components/component-obj";
 /**
  * The Synergizer's job is to create the scene
@@ -19,18 +18,11 @@ export class Synergize {
    * @param engine with a canvas
    * @param _systems any initial systems to initialize
    */
-  constructor(
-    my_member_id: string,
-    public engine: BABYLON.Engine,
-    _systems: ISystem[]
-  ) {
+  constructor(my_member_id: string, public engine: BABYLON.Engine) {
     this.context = createContext();
     this.context.synergizer = this;
     this.context.my_member_id = my_member_id;
     this.context.scene = this.createScene(engine);
-    _systems.forEach((system) => {
-      this.addSystem(system);
-    });
     this.setupListeners();
     this.run();
     window["synergizer"] = this;
@@ -39,13 +31,19 @@ export class Synergize {
   getSystemByName(name: string) {
     return this.systems[name];
   }
-  addSystem(system: ISystem) {
+  async addSystem(systemPath: string, systemName: string) {
+    if (!systemName) {
+      const parts = systemPath.split("/");
+      systemName = parts[parts.length - 1].replace(".js", "");
+    }
+    await BABYLON.Tools.LoadScriptAsync(systemPath);
+    console.log("adding system", systemPath);
+    const system = window[systemName];
     if (!this.systems[system.name]) {
       system.init(this.context);
       if (system.initEntity) {
         this.systemsForEntities.push(system);
       }
-      console.log("the system name is", system.name);
       this.systems[system.name] = system;
     }
   }

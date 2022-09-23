@@ -1,24 +1,12 @@
-import type * as BABYLON from "babylonjs";
-
-import type { ISystem } from "./system";
-import type { Context } from "../../context";
-import type { ComponentObj } from "../components/component-obj";
-
-interface ITransformable {
-  position: BABYLON.Vector3;
-  rotation: BABYLON.Vector3;
-  scaling: BABYLON.Vector3;
-}
-
-class SystemTransform implements ISystem {
-  public transforms: { [entity_id: string]: ITransformable } = {};
-  public name = "system-transform";
-  public scene: BABYLON.Scene;
-  init(context: Context) {
+class SystemTransform {
+  constructor() {
+    this.transforms = {};
+    this.name = "system-transform";
+  }
+  init(context) {
     this.scene = context.scene;
   }
-
-  initEntity(entity_id: string, components: ComponentObj) {
+  initEntity(entity_id, components) {
     const mesh = this.scene.getMeshByName(entity_id);
     if (mesh) {
       this.transforms[entity_id] = mesh;
@@ -31,28 +19,26 @@ class SystemTransform implements ISystem {
     if (!this.transforms[entity_id]) {
       return;
     }
-
     this.setPosition(entity_id, components);
     this.setRotation(entity_id, components);
     this.setScaling(entity_id, components);
   }
-
-  setPosition(entity_id: string, components: ComponentObj) {
+  setPosition(entity_id, components) {
     if (components.position) {
       this.transforms[entity_id].position.fromArray(components.position);
     }
   }
-  setRotation(entity_id: string, components: ComponentObj) {
+  setRotation(entity_id, components) {
     if (components.rotation) {
       this.transforms[entity_id].rotation.fromArray(components.rotation);
     }
   }
-  setScaling(entity_id: string, components: ComponentObj) {
+  setScaling(entity_id, components) {
     if (components.scaling) {
       this.transforms[entity_id].scaling.fromArray(components.scaling);
     }
   }
-  dispose() {}
+  dispose() {
+  }
 }
-
 window["system-transform"] = new SystemTransform();

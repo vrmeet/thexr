@@ -22,4 +22,5 @@ export interface ComponentObj {
   avatar?: any;
   lighting?: any;
   material?: MaterialComponent;
+  [anykey: string]: any;
 }

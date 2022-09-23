@@ -1,7 +1,8 @@
 /**
  * The context is a way of sharing commonly used data globally from any module that imports it
  */
-import type * as BABYLON from "babylonjs";
+import * as BABYLON from "babylonjs";
+type BABYLON = typeof BABYLON;
 import { Emitter } from "typed-rx-emitter";
 import type { ComponentObj } from "./ecs/components/component-obj";
 import type { Entity } from "./ecs/entities/entity";
@@ -15,7 +16,7 @@ import type {
 } from "./signalHub";
 
 export interface ISynergizer {
-  initEntity(entity: Entity): void;
+  initEntity(entity_id: string, components: ComponentObj): void;
 }
 
 export interface State {
@@ -28,6 +29,7 @@ export interface Context {
   synergizer: ISynergizer;
   signalHub: SignalHub;
   state: State;
+  BABYLON: BABYLON;
 }
 
 export const createContext = (): Context => {
@@ -43,5 +45,6 @@ export const createContext = (): Context => {
       movement: new Emitter<MovementEvents>(),
     },
     state: {},
+    BABYLON: BABYLON,
   };
 };

@@ -1,24 +1,23 @@
-import type { Entity } from "../entities/entity";
-import * as BABYLON from "babylonjs";
-import { cap } from "../../utils/misc";
-
 import type { ISystem } from "./system";
 import type { Context } from "../../context";
 import type { ComponentObj } from "../components/component-obj";
 import type { ShapeComponent } from "../components/shape";
 
-export class SystemShape implements ISystem {
+class SystemShape implements ISystem {
   public meshes = {};
-  public name = "shape";
-  public scene: BABYLON.Scene;
+  public name = "system-shape";
+  public context: Context;
   init(context: Context) {
-    this.scene = context.scene;
+    this.context = context;
   }
 
   initEntity(entity_id: string, components: ComponentObj) {
     if (components.shape) {
       this.meshes[entity_id] = this.createMesh(entity_id, components.shape);
     }
+  }
+  capitalize(string: string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
   createMesh(entity_id: string, shapeComponent: ShapeComponent) {
@@ -27,15 +26,16 @@ export class SystemShape implements ISystem {
         shapeComponent.prim
       )
     ) {
-      const builderFunction = `Create${cap(shapeComponent.prim)}`;
+      const builderFunction = `Create${this.capitalize(shapeComponent.prim)}`;
       const builderOptions = { ...shapeComponent.prim_params };
       if (shapeComponent.prim === "plane") {
-        builderOptions["sideOrientation"] = BABYLON.Mesh.DOUBLESIDE;
+        builderOptions["sideOrientation"] =
+          this.context.BABYLON.Mesh.DOUBLESIDE;
       }
-      return BABYLON.MeshBuilder[builderFunction](
+      return this.context.BABYLON.MeshBuilder[builderFunction](
         entity_id,
         builderOptions,
-        this.scene
+        this.context.scene
       );
     } else {
       throw new Error("unsupported shape");
@@ -44,3 +44,4 @@ export class SystemShape implements ISystem {
 
   dispose() {}
 }
+window["system-shape"] = new SystemShape();
