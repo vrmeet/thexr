@@ -1,6 +1,6 @@
 import type { Context } from "../../context";
 import type { Entity } from "../entities/entity";
-import type { ISystem } from "./system";
+import type { ISystem } from "../system";
 import type * as BABYLON from "babylonjs";
 import { Avatar } from "./avatar/avatar";
 import type { SignalHub } from "../../signalHub";

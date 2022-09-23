@@ -1,6 +1,5 @@
 import type * as BABYLON from "babylonjs";
-import type * as MAT from "babylonjs-materials";
-import type { ISystem } from "./system";
+import type { ISystem } from "../system";
 import type { Context } from "../../context";
 import type { MaterialComponent } from "../components/material";
 import type { ComponentObj } from "../components/component-obj";

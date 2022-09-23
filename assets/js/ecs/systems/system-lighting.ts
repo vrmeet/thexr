@@ -1,6 +1,6 @@
 import type * as BABYLON from "babylonjs";
 
-import type { ISystem } from "./system";
+import type { ISystem } from "../system";
 import type { Context } from "../../context";
 import type { ComponentObj } from "../components/component-obj";
 

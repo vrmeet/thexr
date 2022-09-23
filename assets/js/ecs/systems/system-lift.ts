@@ -1,6 +1,6 @@
 import type { Entity } from "../entities/entity";
 import { animateTranslation } from "../../utils/misc";
-import type { ISystem } from "./system";
+import type { ISystem } from "../system";
 import type { Context } from "../../context";
 import * as BABYLON from "babylonjs";
 import type { Subscription } from "rxjs";

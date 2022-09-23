@@ -1,5 +1,5 @@
 import * as BABYLON from "babylonjs";
-import type { ISystem } from "./system";
+import type { ISystem } from "../system";
 import { FreeCameraKeyboardWalkInput } from "../../scene/camera-inputs/free-camera-keyboard-walk-input";
 import type { Context } from "../../context";
 import { filter } from "rxjs";

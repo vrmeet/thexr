@@ -1,4 +1,4 @@
-import type { ISystem } from "./system";
+import type { ISystem } from "../system";
 import type { Context } from "../../context";
 import type { ComponentObj } from "../components/component-obj";
 import type { ShapeComponent } from "../components/shape";

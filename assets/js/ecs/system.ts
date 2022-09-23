@@ -1,5 +1,5 @@
-import type { Context } from "../../context";
-import type { ComponentObj } from "../components/component-obj";
+import type { Context } from "../context";
+import type { ComponentObj } from "./components/component-obj";
 
 export interface ISystem {
   name: string;
