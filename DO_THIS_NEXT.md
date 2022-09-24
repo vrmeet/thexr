@@ -6,6 +6,7 @@ solve race condition amongst systems:
 
 Load a space from serialized data, start a genserver to store and forward data
 
+broadcast data from one client to another client
 
 synergizer - 
   initializes list of systems

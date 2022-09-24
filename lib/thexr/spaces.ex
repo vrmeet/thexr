@@ -42,6 +42,7 @@ defmodule Thexr.Spaces do
   """
   def get_space!(id), do: Repo.get!(Space, id)
 
+  @spec get_space_by_id(any) :: any
   def get_space_by_id(id) do
     Repo.get(Space, id)
   end

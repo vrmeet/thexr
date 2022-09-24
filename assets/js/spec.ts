@@ -19,7 +19,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (!member_id) {
     return;
   }
-  const canvas = document.getElementById("dummy") as HTMLCanvasElement;
+  const canvas = document.getElementById(space_id) as HTMLCanvasElement;
   const engine = new BABYLON.Engine(canvas, true, {
     preserveDrawingBuffer: true,
     stencil: true,

@@ -23,12 +23,12 @@
 
 </style>
 
-<canvas class="spaceCanvas" id="dummy"></canvas>
+<canvas class="spaceCanvas" id={@space_id}></canvas>
 
 <script>
   window['member_id'] = '<%= @member_id %>';
   window['userToken'] = '<%= @user_token %>';
-  window['space_id'] = 'test-space';
-  window['webrtc_channel_id'] = 'test-channel';
+  window['space_id'] = '<%= @space_id %>';
+  window['webrtc_channel_id'] = '<%= @webrtc_channel_id %>';
 </script>
 

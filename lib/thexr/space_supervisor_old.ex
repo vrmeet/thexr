@@ -1,4 +1,4 @@
-defmodule Thexr.SpaceSupervisor do
+defmodule Thexr.SpaceSupervisorOld do
   use DynamicSupervisor
 
   alias Thexr.SpaceServer
@@ -16,10 +16,16 @@ defmodule Thexr.SpaceSupervisor do
   Starts a `GameServer` process and supervises it.
   """
 
-  def start_space(space_id) do
-    DynamicSupervisor.start_child(__MODULE__, {SpaceServer, space_id})
+  def start_space(space = %Thexr.Spaces.Space{}) do
+    DynamicSupervisor.start_child(__MODULE__, {SpaceServer, space})
   end
 
+  def start_space(space_id) do
+    case Thexr.Spaces.get_space_by_id(space_id) do
+      nil -> {:error, :not_found}
+      space -> DynamicSupervisor.start_child(__MODULE__, {SpaceServer, space})
+    end
+  end
 
   @doc """
   Terminates the `GameServer` process normally. It won't be restarted.

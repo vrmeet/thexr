@@ -21,7 +21,6 @@ export class ServiceBroker implements ISystem {
 
   setupListeners() {
     this.context.signalHub.local.on("client_ready").subscribe((choice) => {
-      console.log("recevied client ready, about to connect to channel");
       this.connectToChannel(choice);
 
       if (choice === "enter") {
@@ -43,7 +42,6 @@ export class ServiceBroker implements ISystem {
   }
 
   connectToChannel(choice: "enter" | "observe") {
-    console.log("in connect to channel");
     this.channel = this.socket.channel(`space:${this.context.space_id}`, {
       choice: choice,
     });
@@ -56,7 +54,6 @@ export class ServiceBroker implements ISystem {
       return payload;
     };
     this.socket.connect();
-    console.log("calling join on channel");
     this.channel
       .join()
       .receive("ok", (resp) => {
