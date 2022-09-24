@@ -3,11 +3,15 @@
  */
 import * as BABYLON from "babylonjs";
 type BABYLON = typeof BABYLON;
+
 import * as MAT from "babylonjs-materials";
 type MAT = typeof MAT;
+
+// import * as RXJS from "rxjs";
+// type RXJS = typeof RXJS;
+
 import { Emitter } from "typed-rx-emitter";
 import type { ComponentObj } from "./ecs/components/component-obj";
-import type { Entity } from "./ecs/entities/entity";
 import type {
   SignalHub,
   LocalEvents,
@@ -27,6 +31,9 @@ export interface State {
 
 export interface Context {
   my_member_id: string;
+  space_id: string;
+  webrtc_channel_id: string;
+  userToken: string;
   scene: BABYLON.Scene;
   synergizer: ISynergizer;
   signalHub: SignalHub;
@@ -38,6 +45,9 @@ export interface Context {
 export const createContext = (): Context => {
   return {
     my_member_id: null,
+    space_id: null,
+    webrtc_channel_id: null,
+    userToken: null,
     scene: null,
     synergizer: null,
     signalHub: {

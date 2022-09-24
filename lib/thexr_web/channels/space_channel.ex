@@ -6,12 +6,29 @@ defmodule ThexrWeb.SpaceChannel do
 
   @impl true
   def join("space:" <> space_id, params, socket) do
+    IO.inspect("in join space")
     send(self(), {:after_join, params})
     socket = assign(socket, :space_id, space_id)
     {:ok, %{agora_app_id: System.get_env("AGORA_APP_ID")}, socket}
   end
 
   @impl true
+  def handle_in("component_upserted", %{"entity_id" => entity_id, "name" => name, "data" => data}, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_in("entity_created", %{"entity_id" => entity_id, "components" => components}, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_in("entity_deleted", %{"entity_id" => entity_id}, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_in("component_removed", %{"entity_id" => entity_id, "name" => name}, socket) do
+    {:noreply, socket}
+  end
+
   def handle_in("event", event_payload, socket) do
     {event_atom, atomized_event} =
       SpaceServer.process_event(socket.assigns.space_id, event_payload, self())

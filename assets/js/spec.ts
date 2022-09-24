@@ -12,6 +12,10 @@ import * as BABYLON from "babylonjs";
 
 window.addEventListener("DOMContentLoaded", async () => {
   const member_id = window["member_id"];
+  const space_id = window["space_id"];
+  const webrtc_channel_id = window["webrtc_channel_id"];
+  const userToken = window["userToken"];
+
   if (!member_id) {
     return;
   }
@@ -20,6 +24,14 @@ window.addEventListener("DOMContentLoaded", async () => {
     preserveDrawingBuffer: true,
     stencil: true,
   });
-  const synergizer = new Synergize(member_id, engine);
+
+  const synergizer = new Synergize(
+    member_id,
+    space_id,
+    webrtc_channel_id,
+    userToken,
+    engine
+  );
   window["synergizer"] = synergizer;
+  synergizer.context.signalHub.local.emit("client_ready", "enter");
 });

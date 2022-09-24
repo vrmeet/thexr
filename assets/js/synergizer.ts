@@ -2,6 +2,8 @@ import * as BABYLON from "babylonjs";
 import type { ISystem } from "./ecs/system";
 import { createContext, type Context } from "./context";
 import type { ComponentObj } from "./ecs/components/component-obj";
+import type { IService } from "./services/service";
+import { ServiceBroker } from "./services/services-broker";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -12,20 +14,39 @@ export class Synergize {
   public freeCamera: BABYLON.FreeCamera;
   public systemsForEntities: ISystem[] = [];
   public systems: Record<string, ISystem> = {};
+  public services: Record<string, IService> = {};
   /**
    *
    * @param my_member_id
    * @param engine with a canvas
-   * @param _systems any initial systems to initialize
    */
-  constructor(my_member_id: string, public engine: BABYLON.Engine) {
+  constructor(
+    my_member_id: string,
+    space_id: string,
+    webrtc_channel_id: string,
+    userToken: string,
+    public engine: BABYLON.Engine
+  ) {
     this.context = createContext();
     this.context.synergizer = this;
     this.context.my_member_id = my_member_id;
+    this.context.space_id = space_id;
+    this.context.webrtc_channel_id = webrtc_channel_id;
+    this.context.userToken = userToken;
     this.context.scene = this.createScene(engine);
+    this.setupServices();
     this.setupListeners();
     this.run();
     window["synergizer"] = this;
+  }
+
+  setupServices() {
+    this.addService(new ServiceBroker());
+  }
+
+  addService(service: IService) {
+    this.services[service.name] = service;
+    service.init(this.context);
   }
 
   getSystemByName(name: string) {
@@ -91,6 +112,12 @@ export class Synergize {
     this.freeCamera.rotationQuaternion = new BABYLON.Quaternion();
     this.freeCamera.ellipsoid = new BABYLON.Vector3(0.25, 0.1, 0.25);
     this.freeCamera.checkCollisions = true;
+    this.freeCamera.onViewMatrixChangedObservable.add((cam) => {
+      this.context.signalHub.movement.emit("camera_moved", {
+        pos: cam.position.asArray(),
+        rot: cam.absoluteRotation.asArray(),
+      });
+    });
   }
 
   run() {
