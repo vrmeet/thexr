@@ -6,7 +6,7 @@ import type { IncomingEvents, OutgoingEvents } from "../signalHub";
 import type { PosRot } from "../types";
 
 export class ServiceBroker implements ISystem {
-  public name = "system-broker";
+  public name = "service-broker";
   public context: Context;
   public socket: Socket;
   public channel: Channel;

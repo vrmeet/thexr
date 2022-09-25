@@ -4,6 +4,7 @@ import * as BABYLON from "babylonjs";
 const ANIMATION_FRAME_PER_SECOND = 60;
 
 export class ServiceUtilities {
+  name: "service-utilities";
   public context: Context;
   init(context: Context) {
     this.context = context;
