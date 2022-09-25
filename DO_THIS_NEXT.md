@@ -1,12 +1,13 @@
 TODO:
+broadcast data from one client to another client
 
 solve race condition amongst systems:
   - mesh needs to exist
   before applying color or position/scale/rotation etc
+  (or just assume the loading of systems was shape / mesh first)
 
 Load a space from serialized data, start a genserver to store and forward data
 
-broadcast data from one client to another client
 
 synergizer - 
   initializes list of systems

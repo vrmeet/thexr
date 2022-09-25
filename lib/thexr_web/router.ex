@@ -91,7 +91,8 @@ defmodule ThexrWeb.Router do
 
     scope "/test", ThexrWeb do
       pipe_through :browser
-      get "/", TestController, :index
+      get "/blank", TestController, :blank
+      get "/default", TestController, :default
     end
   end
 

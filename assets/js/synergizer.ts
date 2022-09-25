@@ -57,7 +57,12 @@ export class Synergize {
   getSystemByName(name: string) {
     return this.systems[name];
   }
-  async addSystem(systemPath: string, systemName: string) {
+  async addSystem(systemPath: string, systemName: string = null) {
+    if (!systemName) {
+      const parts = systemPath.split("/");
+      const lastPart = parts[parts.length - 1];
+      systemName = lastPart.replace(".js", "");
+    }
     await BABYLON.Tools.LoadScriptAsync(systemPath);
     console.log("adding system", systemPath);
     const system = window[systemName];
@@ -68,6 +73,7 @@ export class Synergize {
       }
       this.systems[system.name] = system;
     }
+    return system;
   }
 
   initEntity(entity_id: string, components: ComponentObj) {
@@ -78,6 +84,7 @@ export class Synergize {
 
   setupListeners() {
     this.context.signalHub.incoming.on("entity_created").subscribe((evt) => {
+      console.log("syn list rec", "entity_created", evt);
       this.context.state[evt.id] = evt.components;
       this.initEntity(evt.id, evt.components);
     });

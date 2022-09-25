@@ -13,27 +13,31 @@ defmodule ThexrWeb.SpaceChannel do
   end
 
   @impl true
-  def handle_in("component_upserted", %{"entity_id" => entity_id, "name" => name, "data" => data}, socket) do
+  def handle_in("component_upserted" = event, %{"id" => entity_id, "name" => name, "data" => data} = msg, socket) do
     IO.inspect(socket, label: "socket")
     space_id = socket.assigns.space_id
+    broadcast(socket, event, msg)
     Thexr.SpaceServer.patch_state(space_id, entity_id, %{name => data})
     {:noreply, socket}
   end
 
-  def handle_in("entity_created", %{"entity_id" => entity_id, "components" => components}, socket) do
+  def handle_in("entity_created"= event, %{"id" => entity_id, "components" => components} = msg, socket) do
     space_id = socket.assigns.space_id
+    broadcast(socket, event, msg)
     Thexr.SpaceServer.patch_state(space_id, entity_id, components)
     {:noreply, socket}
   end
 
-  def handle_in("entity_deleted", %{"entity_id" => entity_id}, socket) do
+  def handle_in("entity_deleted"= event, %{"id" => entity_id} = msg, socket) do
     space_id = socket.assigns.space_id
+    broadcast(socket, event, msg)
     Thexr.SpaceServer.patch_state(space_id, entity_id, :tombstone)
     {:noreply, socket}
   end
 
-  def handle_in("component_removed", %{"entity_id" => entity_id, "name" => name}, socket) do
+  def handle_in("component_removed"= event, %{"id" => entity_id, "name" => name} = msg, socket) do
     space_id = socket.assigns.space_id
+    broadcast(socket, event, msg)
     Thexr.SpaceServer.patch_state(space_id, entity_id, %{name => :tombstone})
     {:noreply, socket}
   end

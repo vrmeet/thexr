@@ -26,6 +26,8 @@ defmodule Thexr.SpaceSupervisor do
   """
   def stop_space(space_id) do
     child_pid = Thexr.SpaceServer.pid(space_id)
-    DynamicSupervisor.terminate_child(__MODULE__, child_pid)
+    if (child_pid != nil) do
+      DynamicSupervisor.terminate_child(__MODULE__, child_pid)
+    end
   end
 end

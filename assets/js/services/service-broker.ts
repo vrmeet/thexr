@@ -48,7 +48,7 @@ export class ServiceBroker implements ISystem {
     // forward incoming from channel to event bus
     this.channel.onMessage = (event: keyof IncomingEvents, payload) => {
       if (!event.startsWith("phx_") && !event.startsWith("chan_")) {
-        //       console.log('channel incoming', event, payload)
+        console.log("channel incoming", event, payload);
         this.context.signalHub.incoming.emit(event, payload);
       }
       return payload;
@@ -151,7 +151,7 @@ export class ServiceBroker implements ISystem {
         }
 
         signalHub.outgoing.emit("component_upserted", {
-          entity_id: this.context.my_member_id,
+          id: this.context.my_member_id,
           name: "avatar",
           data: payload,
         });

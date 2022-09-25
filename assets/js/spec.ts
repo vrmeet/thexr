@@ -33,5 +33,15 @@ window.addEventListener("DOMContentLoaded", async () => {
     engine
   );
   window["synergizer"] = synergizer;
+  console.log("systems is", window["systems"]);
+  if (typeof window["systems"] === "string" && window["systems"].length > 0) {
+    const promises = [];
+    window["systems"].split(",").forEach(async (sys) => {
+      console.log("attempting to add system", sys);
+      promises.push(synergizer.addSystem(sys));
+    });
+    await Promise.all(promises);
+  }
+  console.log("sending client ready");
   synergizer.context.signalHub.local.emit("client_ready", "enter");
 });
