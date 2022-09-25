@@ -1,97 +1,84 @@
-import type { Entity } from "../entities/entity";
-import { animateTranslation } from "../../utils/misc";
 import type { ISystem } from "../system";
+import type * as BABYLON from "babylonjs";
 import type { Context } from "../../context";
-import * as BABYLON from "babylonjs";
 import type { Subscription } from "rxjs";
+import type { ComponentObj } from "../components/component-obj";
+import type { ActsLikeLiftComponent } from "../components/acts-like-lift";
 
-interface LiftState {
-  entity: Entity;
-  height: number;
-  speed: number;
-  state: "up" | "down" | "going-up" | "going-down";
-}
-
-export class SystemLift implements ISystem {
-  public lifts: { [entity_name: string]: LiftState } = {};
-  public name = "lift";
+class SystemLift implements ISystem {
+  public name = "system-lift";
   public scene: BABYLON.Scene;
   public meshPickedSubscription: Subscription;
-
+  public context: Context;
   init(context: Context) {
-    this.scene = context.scene;
+    this.context = context;
     this.meshPickedSubscription = context.signalHub.local
       .on("mesh_picked")
       .subscribe((mesh) => {
         console.log("inside mesh_picked", mesh);
         const liftState = this.meshIsALift(mesh);
         if (liftState) {
-          this.toggleLift(liftState);
+          this.toggleLift(mesh, liftState);
         }
       });
   }
 
-  initEntity(entity: Entity): void {
-    if (entity.componentObj.acts_like_lift) {
-      this.lifts[entity.name] = {
-        entity,
-        height: entity.componentObj.acts_like_lift.height || 2,
-        speed: entity.componentObj.acts_like_lift.speed || 10,
-        state: entity.componentObj.acts_like_lift.initial_state || "down",
+  initEntity(entity_id: string, components: ComponentObj): void {
+    if (components.acts_like_lift) {
+      this.context.state[entity_id]["acts_like_lift"] = {
+        height: components.acts_like_lift.height || 2,
+        speed: components.acts_like_lift.speed || 1,
+        state: components.acts_like_lift.state || "down",
       };
     }
   }
 
-  meshIsALift(mesh): LiftState | undefined {
-    return this.lifts[mesh.name];
+  meshIsALift(mesh): ActsLikeLiftComponent {
+    return this.context.state[mesh.name]["acts_like_lift"];
   }
 
-  toggleLift(liftState: LiftState) {
+  toggleLift(mesh: BABYLON.AbstractMesh, liftState: ActsLikeLiftComponent) {
     if (liftState.state === "up") {
-      this.goDown(liftState);
+      this.goDown(mesh, liftState);
     } else if (liftState.state === "down") {
-      this.goUp(liftState);
+      this.goUp(mesh, liftState);
     }
   }
 
-  goDown(liftState: LiftState) {
+  goDown(mesh: BABYLON.AbstractMesh, liftState: ActsLikeLiftComponent) {
     liftState.state = "going-down";
     console.log("going down");
-    animateTranslation(
-      liftState.entity,
-      liftState.entity.transformNode.position.subtractFromFloats(
-        0,
-        liftState.height,
-        0
-      ),
-      1000,
-      () => {
+    this.context.signalHub.service.emit("animate_translate", {
+      target: mesh,
+      from: mesh.position,
+      to: mesh.position.subtractFromFloats(0, liftState.height, 0),
+      duration: liftState.height / liftState.speed,
+      callback: () => {
         liftState.state = "down";
         console.log("down");
       },
-      this.scene
-    );
+    });
   }
 
-  goUp(liftState: LiftState) {
+  goUp(mesh: BABYLON.AbstractMesh, liftState: ActsLikeLiftComponent) {
     liftState.state = "going-up";
     console.log("going up", liftState);
-    animateTranslation(
-      liftState.entity,
-      liftState.entity.transformNode.position.add(
-        new BABYLON.Vector3(0, liftState.height, 0)
+    this.context.signalHub.service.emit("animate_translate", {
+      target: mesh,
+      from: mesh.position,
+      to: mesh.position.add(
+        new this.context.BABYLON.Vector3(0, liftState.height, 0)
       ),
-      1000,
-      () => {
-        console.log("animation endeds");
+      duration: liftState.height / liftState.speed,
+      callback: () => {
+        console.log("animation ended");
         liftState.state = "up";
       },
-      this.scene
-    );
+    });
   }
 
   dispose() {
-    this.lifts = {};
     this.meshPickedSubscription.unsubscribe();
   }
 }
+window["system-lift"] = new SystemLift();

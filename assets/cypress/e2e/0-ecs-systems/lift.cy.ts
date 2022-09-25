@@ -1,14 +1,9 @@
 /// <reference types="cypress" />
 
 import type { Synergize } from "../../../js/synergizer";
-import { SystemShape } from "../../../js/ecs/systems/system-shape";
-import { SystemLift } from "../../../js/ecs/systems/system-lift";
-import { EventName } from "../../../js/event-names";
-import type * as BABYLON from "babylonjs";
+import { random_id } from "../../../js/utils/misc";
 import type { ComponentObj } from "../../../js/ecs/components/component-obj";
-import type { IEntityCreatedEvent } from "../../../js/types";
-import { SystemTransform } from "../../../js/ecs/systems/system-transform";
-
+import type * as BABYLON from "babylonjs";
 describe("lift system", () => {
   let synergizer: Synergize;
   before(() => {
@@ -18,45 +13,66 @@ describe("lift system", () => {
     // we include it in our beforeEach function so that it runs before each test
     cy.visit("http://localhost:4000/test");
     cy.get("canvas").click();
-    cy.window().then((win) => {
+    cy.window().then(async (win) => {
       synergizer = win["synergizer"] as Synergize;
-      // synergizer.addSystem(new SystemShape());
-      // synergizer.addSystem(new SystemTransform());
-      // synergizer.addSystem(new SystemLift());
+      synergizer.debug();
+      await synergizer.addSystem(
+        "http://localhost:4000/systems/system-lighting.js",
+        "system-lighting"
+      );
+      await synergizer.addSystem(
+        "http://localhost:4000/systems/system-shape.js",
+        "system-shape"
+      );
+      await synergizer.addSystem(
+        "http://localhost:4000/systems/system-transform.js",
+        "system-transform"
+      );
+      await synergizer.addSystem(
+        "http://localhost:4000/systems/system-material.js",
+        "system-material"
+      );
+      await synergizer.addSystem(
+        "http://localhost:4000/systems/system-lift.js",
+        "system-lift"
+      );
+      console.log("systems", synergizer.systems);
+      //create a light
+      const event = {
+        id: `light_${random_id(3)}`,
+        components: {
+          lighting: true,
+        },
+      };
+      synergizer.context.signalHub.incoming.emit("entity_created", event);
     });
   });
 
   it("door goes up", () => {
     const entity_id = "door1";
-    const event: IEntityCreatedEvent = {
-      m: EventName.entity_created2,
-      p: {
-        entity_id: entity_id,
-        components: <ComponentObj>{
-          shape: { prim: "box", prim_params: {} },
-          position: [0, 0.5, 0],
-          acts_like_lift: {},
-        },
+    const event = {
+      id: entity_id,
+      components: <ComponentObj>{
+        shape: { prim: "box", prim_params: {} },
+        position: [0, 0, 4],
+        acts_like_lift: { height: 2, speed: 0.01, state: "down" },
       },
     };
-    synergizer.context.signalHub.incoming.emit("event", event as any);
-    console.log("synergizer", synergizer);
-    const liftSystem = synergizer.getSystemByName("lift") as SystemLift;
-    console.log("lfit system", liftSystem);
-    expect(liftSystem.lifts[entity_id].state).to.eql("down");
-    expect(liftSystem.lifts[entity_id].entity.transformNode.position.y).to.eql(
-      0.5
-    );
-    const pickInfo = synergizer.scene.pick(0, 0) as BABYLON.PickingInfo;
-    pickInfo.hit = true;
-    pickInfo.pickedMesh = synergizer.scene.getMeshByName(entity_id);
-    synergizer.scene.simulatePointerDown(pickInfo, { pointerId: 8 });
-    cy.wait(1100).then(() => {
-      expect(liftSystem.lifts["door1"].state).to.eql("up");
-      expect(
-        liftSystem.lifts[entity_id].entity.transformNode.position.y
-      ).to.greaterThan(0.5);
+    synergizer.context.signalHub.incoming.emit("entity_created", event);
+    cy.wait(200).then(() => {
+      const pickInfo = synergizer.scene.pick(0, 0) as BABYLON.PickingInfo;
+      pickInfo.hit = true;
+      pickInfo.pickedMesh = synergizer.scene.getMeshByName(entity_id);
+      synergizer.scene.simulatePointerDown(pickInfo, { pointerId: 8 });
+
+      cy.wait(1100).then(() => {
+        console.log(synergizer.context.state);
+        expect(
+          synergizer.context.state[entity_id]["acts_like_lift"].state
+        ).to.eql("up");
+      });
     });
+
     // await new Promise((r) => setTimeout(r, 1100));
   });
 });

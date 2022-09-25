@@ -3,6 +3,20 @@ import type * as types from "./types";
 import type * as BABYLON from "babylonjs";
 import type { ComponentObj } from "./ecs/components/component-obj";
 
+export type ServiceRequests = {
+  animate_translate: {
+    target: string | BABYLON.TransformNode;
+    from: number[] | BABYLON.Vector3;
+    to: number[] | BABYLON.Vector3;
+    duration: number;
+    callback?: () => void;
+  };
+  position_in_front: {
+    subject: BABYLON.TransformNode;
+    height: "eye_line" | "floor";
+  };
+};
+
 export type LocalEvents = {
   client_ready: "enter" | "observe";
   space_channel_connected: { agora_app_id: string };
@@ -131,6 +145,7 @@ export interface SignalHub {
   outgoing: Emitter<OutgoingEvents>;
   menu: Emitter<MenuEvents>;
   movement: Emitter<MovementEvents>;
+  service: Emitter<ServiceRequests>;
 }
 
 // export const signalHub: SignalHub = {

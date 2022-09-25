@@ -4,7 +4,7 @@ import type { Synergize } from "../../../js/synergizer";
 import { random_id } from "../../../js/utils/misc";
 import type { BoxShape, SphereShape } from "../../../js/ecs/components/shape";
 import type { MaterialComponent } from "../../../js/ecs/components/material";
-
+import * as BABYLON from "babylonjs";
 describe("shape system", () => {
   let synergizer: Synergize;
   before(() => {
@@ -54,6 +54,20 @@ describe("shape system", () => {
     };
     synergizer.context.signalHub.incoming.emit("entity_created", event);
     expect(synergizer.scene.meshes.length).to.eql(1);
+    setTimeout(() => {
+      synergizer.context.signalHub.service.emit("animate_translate", {
+        target: synergizer.context.scene.getMeshByName(event.id),
+        from: BABYLON.Vector3.FromArray([0, 0, 0]),
+        to: [3, 3, 3],
+        duration: 3000,
+        callback: () => {
+          console.log("callback called");
+        },
+      });
+    }, 100);
+    cy.wait(400).then(() => {
+      console.log("waited");
+    });
   });
   it("creates a sphere", () => {
     const event = {

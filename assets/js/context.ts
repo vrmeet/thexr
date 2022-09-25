@@ -19,6 +19,7 @@ import type {
   MenuEvents,
   MovementEvents,
   OutgoingEvents,
+  ServiceRequests,
 } from "./signalHub";
 
 export interface ISynergizer {
@@ -56,6 +57,7 @@ export const createContext = (): Context => {
       outgoing: new Emitter<OutgoingEvents>(),
       menu: new Emitter<MenuEvents>(),
       movement: new Emitter<MovementEvents>(),
+      service: new Emitter<ServiceRequests>(),
     },
     state: {},
     BABYLON: BABYLON,

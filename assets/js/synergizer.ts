@@ -4,6 +4,7 @@ import { createContext, type Context } from "./context";
 import type { ComponentObj } from "./ecs/components/component-obj";
 import type { IService } from "./services/service";
 import { ServiceBroker } from "./services/services-broker";
+import { ServiceUtilities } from "./services/services-utilities";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -41,7 +42,9 @@ export class Synergize {
   }
 
   setupServices() {
+    // connects to phoenix channel to send and receive events over websocket
     this.addService(new ServiceBroker());
+    this.addService(new ServiceUtilities());
   }
 
   addService(service: IService) {
