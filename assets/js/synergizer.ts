@@ -6,6 +6,7 @@ import type { IService } from "./services/service";
 import { ServiceBroker } from "./services/service-broker";
 import { ServiceUtilities } from "./services/service-utilities";
 import { ServiceInline } from "./services/service-inline";
+import { arrayReduceSigFigs } from "./utils/misc";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -126,8 +127,8 @@ export class Synergize {
     this.freeCamera.checkCollisions = true;
     this.freeCamera.onViewMatrixChangedObservable.add((cam) => {
       this.context.signalHub.movement.emit("camera_moved", {
-        pos: cam.position.asArray(),
-        rot: cam.absoluteRotation.asArray(),
+        pos: arrayReduceSigFigs(cam.position.asArray()),
+        rot: arrayReduceSigFigs(cam.absoluteRotation.asArray()),
       });
     });
   }

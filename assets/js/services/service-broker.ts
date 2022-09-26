@@ -20,6 +20,10 @@ export class ServiceBroker implements ISystem {
   }
 
   setupListeners() {
+    this.context.signalHub.incoming.on("server_lost").subscribe(() => {
+      window.location.href = "/";
+    });
+
     this.context.signalHub.local.on("client_ready").subscribe((choice) => {
       this.connectToChannel(choice);
 

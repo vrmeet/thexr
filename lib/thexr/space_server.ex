@@ -22,6 +22,7 @@ defmodule Thexr.SpaceServer do
       name: via_tuple(space_id)
     )
   end
+
   @doc """
   Returns a tuple used to register and lookup a game server process by name.
   """
@@ -39,8 +40,25 @@ defmodule Thexr.SpaceServer do
     |> GenServer.whereis()
   end
 
-  def patch_state(space_id, entity_id, components) do
-    GenServer.cast(via_tuple(space_id), {:patch_state, entity_id, components})
+  def space_state(server) when is_pid(server) do
+    GenServer.call(server, :space_state)
+  end
+
+  def space_state(space_id) do
+    GenServer.call(via_tuple(space_id), :space_state)
+  end
+
+  def process_event(server, event, message) when is_pid(server) do
+    GenServer.cast(server, {:process_event, event, message})
+  end
+
+  def process_event(space_id, event, message) do
+    GenServer.cast(via_tuple(space_id), {:process_event, event, message})
+  end
+
+  # legacy match, can remove later
+  def process_event(space_id, _, _, _) do
+    GenServer.cast(via_tuple(space_id), {:process_event, 1, 1})
   end
 
   #################################################################
@@ -48,23 +66,57 @@ defmodule Thexr.SpaceServer do
   #################################################################
 
   def init({:ok, space_id}) do
-
     {:ok,
      %{
        space_id: space_id,
-       state: %{}
+       space_state: %{}
      }, @timeout}
   end
 
-  def handle_cast({:patch_state, entity_id, components}, state) do
-    entity_current_components = Map.get(state.state, entity_id)
-    new_entity_components = case {entity_current_components, components} do
-      {%{}, %{}} -> Map.merge(entity_current_components, components)
-      _ -> components
-    end
-    new_state = Map.put(state.state, entity_id, new_entity_components)
-    state = Map.put(state, :state, new_state)
+  def handle_call(:space_state, _from, state) do
+    {:reply, state.space_state, state}
+  end
+
+  def handle_cast({:process_event, event, message}, state) do
+    # for now, broadcast everything to every body
+    ThexrWeb.Endpoint.broadcast("space:#{state.space_id}", event, message)
+
+    # patch the state
+    new_space_state = make_patch(event, message, state.space_state)
+    state = Map.put(state, :space_state, new_space_state)
     {:noreply, state, @timeout}
+  end
+
+  def make_patch(
+        "component_upserted",
+        %{"id" => entity_id, "name" => name, "data" => data},
+        space_state
+      ) do
+    patch_space_state(entity_id, %{name => data}, space_state)
+  end
+
+  def make_patch("entity_created", %{"id" => entity_id, "components" => components}, space_state) do
+    patch_space_state(entity_id, components, space_state)
+  end
+
+  def make_patch("entity_deleted", %{"id" => entity_id}, space_state) do
+    patch_space_state(entity_id, :tombstone, space_state)
+  end
+
+  def make_patch("component_removed", %{"id" => entity_id, "name" => name}, space_state) do
+    patch_space_state(entity_id, %{name => :tombstone}, space_state)
+  end
+
+  def patch_space_state(entity_id, components, space_state) do
+    entity_current_components = Map.get(space_state, entity_id)
+
+    new_entity_components =
+      case {entity_current_components, components} do
+        {%{}, %{}} -> Map.merge(entity_current_components, components)
+        _ -> components
+      end
+
+    Map.put(space_state, entity_id, new_entity_components)
   end
 
   def terminate({:shutdown, :timeout}, _game) do
@@ -76,5 +128,4 @@ defmodule Thexr.SpaceServer do
     IO.inspect("space terminating some other reason")
     :ok
   end
-
 end

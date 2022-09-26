@@ -1,46 +1,60 @@
 defmodule ThexrWeb.SpaceChannel do
   use ThexrWeb, :channel
-  alias ThexrWeb.Presence
+  # alias ThexrWeb.Presence
 
   alias Thexr.SpaceServer
 
   @impl true
   def join("space:" <> space_id, params, socket) do
-    IO.inspect("in join space")
-    # send(self(), {:after_join, params})
-    socket = assign(socket, :space_id, space_id)
+    send(self(), {:after_join, params})
+    socket = assign(socket, space_id: space_id)
     {:ok, %{agora_app_id: System.get_env("AGORA_APP_ID")}, socket}
   end
 
   @impl true
-  def handle_in("component_upserted" = event, %{"id" => entity_id, "name" => name, "data" => data} = msg, socket) do
-    IO.inspect(socket, label: "socket")
-    space_id = socket.assigns.space_id
-    broadcast(socket, event, msg)
-    Thexr.SpaceServer.patch_state(space_id, entity_id, %{name => data})
+  def handle_in("hud_broadcast", message, socket) do
+    IO.inspect(message, label: "hud broadcast")
+    ThexrWeb.Endpoint.broadcast("space:#{socket.assigns.space_id}", "hud_msg", message)
     {:noreply, socket}
   end
 
-  def handle_in("entity_created"= event, %{"id" => entity_id, "components" => components} = msg, socket) do
-    space_id = socket.assigns.space_id
-    broadcast(socket, event, msg)
-    Thexr.SpaceServer.patch_state(space_id, entity_id, components)
+  def handle_in(event, message, socket) do
+    IO.inspect("handle in called")
+    IO.inspect(event)
+    IO.inspect(message)
+    IO.inspect(socket.assigns)
+    SpaceServer.process_event(socket.assigns.server, event, message)
     {:noreply, socket}
   end
 
-  def handle_in("entity_deleted"= event, %{"id" => entity_id} = msg, socket) do
-    space_id = socket.assigns.space_id
-    broadcast(socket, event, msg)
-    Thexr.SpaceServer.patch_state(space_id, entity_id, :tombstone)
-    {:noreply, socket}
-  end
+  # def handle_in("component_upserted" = event, %{"id" => entity_id, "name" => name, "data" => data} = msg, socket) do
+  # IO.inspect(socket, label: "socket")
+  # space_id = socket.assigns.space_id
+  # broadcast(socket, event, msg)
+  # Thexr.SpaceServer.patch_state(space_id, entity_id, %{name => data})
+  #   {:noreply, socket}
+  # end
 
-  def handle_in("component_removed"= event, %{"id" => entity_id, "name" => name} = msg, socket) do
-    space_id = socket.assigns.space_id
-    broadcast(socket, event, msg)
-    Thexr.SpaceServer.patch_state(space_id, entity_id, %{name => :tombstone})
-    {:noreply, socket}
-  end
+  # def handle_in("entity_created"= event, %{"id" => entity_id, "components" => components} = msg, socket) do
+  #   space_id = socket.assigns.space_id
+  #   broadcast(socket, event, msg)
+  #   Thexr.SpaceServer.patch_state(space_id, entity_id, components)
+  #   {:noreply, socket}
+  # end
+
+  # def handle_in("entity_deleted"= event, %{"id" => entity_id} = msg, socket) do
+  #   space_id = socket.assigns.space_id
+  #   broadcast(socket, event, msg)
+  #   Thexr.SpaceServer.patch_state(space_id, entity_id, :tombstone)
+  #   {:noreply, socket}
+  # end
+
+  # def handle_in("component_removed"= event, %{"id" => entity_id, "name" => name} = msg, socket) do
+  #   space_id = socket.assigns.space_id
+  #   broadcast(socket, event, msg)
+  #   Thexr.SpaceServer.patch_state(space_id, entity_id, %{name => :tombstone})
+  #   {:noreply, socket}
+  # end
 
   # def handle_in("event", event_payload, socket) do
   #   {event_atom, atomized_event} =
@@ -50,12 +64,6 @@ defmodule ThexrWeb.SpaceChannel do
   #   cache_members(event_atom, atomized_event.p, socket)
   #   {:noreply, socket}
   # end
-
-  def handle_in("hud_broadcast", message, socket) do
-    IO.inspect(message, label: "hud broadcast")
-    ThexrWeb.Endpoint.broadcast("space:#{socket.assigns.space_id}", "hud_msg", message)
-    {:noreply, socket}
-  end
 
   # def cache_members(
   #       :member_moved,
@@ -130,52 +138,60 @@ defmodule ThexrWeb.SpaceChannel do
   # def cache_members(_, _, _) do
   # end
 
+  def handle_info({:after_join, _params}, socket) do
+    Thexr.SpaceSupervisor.start_space(socket.assigns.space_id)
+    server = SpaceServer.pid(socket.assigns.space_id)
+
+    socket = assign(socket, :server, server)
+    IO.inspect(socket.assigns, label: "after join assign")
+    # case Thexr.SpaceServer.ets_refs(socket.assigns.space_id) do
+    #   {:error, _} ->
+    #     push(socket, "server_lost", %{})
+    #     {:noreply, socket}
+
+    #   {member_movements, member_states} ->
+    #     socket = assign(socket, member_movements: member_movements, member_states: member_states)
+    #     {:ok, _} = Presence.track(socket, socket.assigns.member_id, params)
+    #     push(socket, "presence_state", Presence.list(socket))
+
+    #     # TODO, move this to after member_entered? received
+    #     push(socket, "about_members", %{
+    #       "states" => Thexr.Utils.member_states_to_map(member_states),
+    #       "movements" => Thexr.Utils.movements_to_map(member_movements)
+    #     })
+
+    #     push(socket, "about_agents", %{agents: SpaceServer.agents(socket.assigns.space_id)})
+
+    push(socket, "space_state", SpaceServer.space_state(server))
+
+    #     SpaceServer.member_connected(socket.assigns.space_id, socket.assigns.member_id)
+    {:noreply, socket}
+    # end
+  end
+
   @impl true
-
-  # def handle_info({:after_join, params}, socket) do
-  #   case Thexr.SpaceServer.ets_refs(socket.assigns.space_id) do
-  #     {:error, _} ->
-  #       push(socket, "server_lost", %{})
-  #       {:noreply, socket}
-
-  #     {member_movements, member_states} ->
-  #       socket = assign(socket, member_movements: member_movements, member_states: member_states)
-  #       {:ok, _} = Presence.track(socket, socket.assigns.member_id, params)
-  #       push(socket, "presence_state", Presence.list(socket))
-
-  #       # TODO, move this to after member_entered? received
-  #       push(socket, "about_members", %{
-  #         "states" => Thexr.Utils.member_states_to_map(member_states),
-  #         "movements" => Thexr.Utils.movements_to_map(member_movements)
-  #       })
-
-  #       push(socket, "about_agents", %{agents: SpaceServer.agents(socket.assigns.space_id)})
-
-  #       push(socket, "about_space", SpaceServer.about(socket.assigns.space_id))
-
-  #       SpaceServer.member_connected(socket.assigns.space_id, socket.assigns.member_id)
-  #       {:noreply, socket}
-  #   end
-  # end
+  def terminate(_reason, socket) do
+    push(socket, "server_lost", %{})
+  end
 
   # def terminate(reason, socket) do
   #   IO.inspect(reason, label: "terminated")
-    # if socket.assigns.member_id && socket.assigns.space_id do
-    #   SpaceServer.member_disconnected(socket.assigns.space_id, socket.assigns.member_id)
-    # end
+  # if socket.assigns.member_id && socket.assigns.space_id do
+  #   SpaceServer.member_disconnected(socket.assigns.space_id, socket.assigns.member_id)
+  # end
 
-    # try do
-    #   if socket.assigns.member_movements do
-    #     :ets.delete(socket.assigns.member_movements, socket.assigns.member_id)
-    #   end
+  # try do
+  #   if socket.assigns.member_movements do
+  #     :ets.delete(socket.assigns.member_movements, socket.assigns.member_id)
+  #   end
 
-    #   if socket.assigns.member_states do
-    #     :ets.delete(socket.assigns.member_states, socket.assigns.member_id)
-    #   end
-    # rescue
-    #   _e ->
-    #     push(socket, "server_lost", %{})
-    # end
+  #   if socket.assigns.member_states do
+  #     :ets.delete(socket.assigns.member_states, socket.assigns.member_id)
+  #   end
+  # rescue
+  #   _e ->
+  #     push(socket, "server_lost", %{})
+  # end
 
   #   {:noreply, socket}
   # end

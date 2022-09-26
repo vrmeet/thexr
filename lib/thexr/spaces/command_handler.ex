@@ -46,8 +46,7 @@ defmodule Thexr.Spaces.CommandHandler do
         m: EventName.atom_to_int(:entity_deleted),
         p: %{id: entity_id},
         ts: :os.system_time(:millisecond)
-      },
-      nil
+      }
     )
   end
 

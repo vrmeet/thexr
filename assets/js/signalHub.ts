@@ -53,6 +53,7 @@ export type IncomingEvents = {
   presence_diff: types.PresenceDiff;
   presence_state: types.PresenceState;
   space_settings_changed: types.scene_settings;
+  space_state: { [entity_id: string]: ComponentObj };
   server_lost: any;
   new_leader: { member_id: string };
   about_members: {

@@ -1,13 +1,9 @@
 TODO:
-broadcast data from one client to another client
 
-solve race condition amongst systems:
-  - mesh needs to exist
-  before applying color or position/scale/rotation etc
-  (or just assume the loading of systems was shape / mesh first)
+2nd client to join a space should get all the previous state
+ -on connect, return current state
 
-Load a space from serialized data, start a genserver to store and forward data
-
+channel presence should effect state of the avatar entity
 
 synergizer - 
   initializes list of systems
