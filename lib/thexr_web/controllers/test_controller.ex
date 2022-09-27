@@ -38,7 +38,7 @@ defmodule ThexrWeb.TestController do
       user_token: user_token(conn),
       space_id: space_id,
       systems:
-        "/systems/system-lighting.js,/systems/system-shape.js,/systems/system-transform.js",
+        "/systems/system-lighting.js,/systems/system-shape.js,/systems/system-avatar.js,/systems/system-transform.js",
       webrtc_channel_id: 2,
       layout: false
     )

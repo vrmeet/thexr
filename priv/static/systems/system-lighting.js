@@ -9,7 +9,9 @@ class SystemLighting {
   }
   initEntity(entity_id, components) {
     if (components.lighting) {
-      this.lights[entity_id] = this.createLight(entity_id, components);
+      if (!this.lights[entity_id]) {
+        this.lights[entity_id] = this.createLight(entity_id, components);
+      }
     }
   }
   createLight(entity_id, components) {

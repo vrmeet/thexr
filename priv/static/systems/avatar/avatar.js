@@ -1,18 +1,15 @@
 import * as BABYLON from "babylonjs";
-import { filter } from "rxjs/operators";
-import { EventName } from "../../../event-names";
 import { unsetPosRot } from "../../../utils/misc";
 const ANIMATION_FRAME_PER_SECOND = 60;
 const TOTAL_ANIMATION_FRAMES = 5;
 export class Avatar {
-  constructor(entity, context, createhead = true) {
-    this.entity = entity;
+  constructor(entity_id, context, createhead = true) {
+    this.entity_id = entity_id;
     this.context = context;
     this.scene = this.context.scene;
     this.signalHub = this.context.signalHub;
-    this.transform = new BABYLON.TransformNode(entity.name, this.scene);
-    this.entity.transformNode = this.transform;
-    this.member_id = entity.name;
+    this.transform = new BABYLON.TransformNode(entity_id, this.scene);
+    this.member_id = entity_id;
     this.mode = "STANDING";
     this.animatables = [];
     this.debug = false;

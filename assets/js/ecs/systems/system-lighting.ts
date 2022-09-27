@@ -16,7 +16,9 @@ class SystemLighting implements ISystem {
 
   initEntity(entity_id: string, components: ComponentObj) {
     if (components.lighting) {
-      this.lights[entity_id] = this.createLight(entity_id, components);
+      if (!this.lights[entity_id]) {
+        this.lights[entity_id] = this.createLight(entity_id, components);
+      }
     }
   }
 

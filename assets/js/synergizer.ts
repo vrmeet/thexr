@@ -78,17 +78,39 @@ export class Synergize {
   }
 
   initEntity(entity_id: string, components: ComponentObj) {
+    this.context.state[entity_id] = components;
     this.systemsForEntities.forEach((system) => {
       system.initEntity(entity_id, components);
     });
   }
 
   setupListeners() {
+    this.context.signalHub.incoming.on("space_state").subscribe((state) => {
+      console.log("getting space_state");
+      for (const [entity_id, components] of Object.entries(state)) {
+        this.initEntity(entity_id, components);
+      }
+    });
+
     this.context.signalHub.incoming.on("entity_created").subscribe((evt) => {
       console.log("syn list rec", "entity_created", evt);
-      this.context.state[evt.id] = evt.components;
       this.initEntity(evt.id, evt.components);
     });
+
+    this.context.signalHub.incoming
+      .on("component_upserted")
+      .subscribe((evt) => {
+        const components = this.context.state[evt.id];
+        if (!components) {
+          return;
+        }
+        const componentData = components[evt.name];
+        if (!componentData) {
+          return;
+        }
+        Object.assign(componentData, evt.data);
+      });
+
     // route clicks to mesh picked event
     this.scene.onPointerObservable.add((pointerInfo) => {
       this.context.signalHub.local.emit("pointer_info", pointerInfo);

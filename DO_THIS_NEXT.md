@@ -1,5 +1,11 @@
 TODO:
 
+- entity created when member 'enters'
+- avatar updates when camera is moved
+
+- finish avatar system, when client joins, should see presence of avatars
+- when camera reloads should maintain previous position (service of camera)
+
 2nd client to join a space should get all the previous state
  -on connect, return current state
 

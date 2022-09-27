@@ -7,8 +7,8 @@ type BABYLON = typeof BABYLON;
 import * as MAT from "babylonjs-materials";
 type MAT = typeof MAT;
 
-// import * as RXJS from "rxjs";
-// type RXJS = typeof RXJS;
+import * as RXJS from "rxjs";
+type RXJS = typeof RXJS;
 
 import { Emitter } from "typed-rx-emitter";
 import type { ComponentObj } from "./ecs/components/component-obj";
@@ -41,6 +41,7 @@ export interface Context {
   state: State;
   BABYLON: BABYLON;
   MAT: MAT;
+  RXJS: RXJS;
 }
 
 export const createContext = (): Context => {
@@ -62,5 +63,6 @@ export const createContext = (): Context => {
     state: {},
     BABYLON: BABYLON,
     MAT: MAT,
+    RXJS: RXJS,
   };
 };

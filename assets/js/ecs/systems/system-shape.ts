@@ -14,7 +14,9 @@ class SystemShape implements ISystem {
   initEntity(entity_id: string, components: ComponentObj) {
     console.log("shape init entity, ", entity_id, components);
     if (components.shape) {
-      this.meshes[entity_id] = this.createMesh(entity_id, components.shape);
+      if (!this.meshes[entity_id]) {
+        this.meshes[entity_id] = this.createMesh(entity_id, components.shape);
+      }
     }
   }
   capitalize(string: string) {

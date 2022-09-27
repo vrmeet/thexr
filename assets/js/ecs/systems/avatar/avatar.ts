@@ -1,17 +1,8 @@
 import * as BABYLON from "babylonjs";
-import { filter } from "rxjs/operators";
 import type { Context } from "../../../context";
-import { EventName } from "../../../event-names";
 import type { SignalHub } from "../../../signalHub";
 import { unsetPosRot } from "../../../utils/misc";
-import type { Entity } from "../../entities/entity";
-import type {
-  IEntityCreatedEvent,
-  IMemberEnteredEvent,
-  IMemberMovedEvent,
-  PosRot,
-} from "../../../types";
-import type { ComponentObj } from "../../components/component-obj";
+import type { PosRot } from "../../../types";
 
 const ANIMATION_FRAME_PER_SECOND = 60;
 const TOTAL_ANIMATION_FRAMES = 5;
@@ -34,15 +25,14 @@ export class Avatar {
   public signalHub: SignalHub;
   public scene: BABYLON.Scene;
   constructor(
-    public entity: Entity,
+    public entity_id: string,
     public context: Context,
     createhead = true
   ) {
     this.scene = this.context.scene;
     this.signalHub = this.context.signalHub;
-    this.transform = new BABYLON.TransformNode(entity.name, this.scene);
-    this.entity.transformNode = this.transform;
-    this.member_id = entity.name;
+    this.transform = new BABYLON.TransformNode(entity_id, this.scene);
+    this.member_id = entity_id;
     this.mode = "STANDING";
     this.animatables = [];
     this.debug = false;
