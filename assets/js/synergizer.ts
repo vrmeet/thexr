@@ -6,7 +6,8 @@ import type { IService } from "./services/service";
 import { ServiceBroker } from "./services/service-broker";
 import { ServiceUtilities } from "./services/service-utilities";
 import { ServiceInline } from "./services/service-inline";
-import { arrayReduceSigFigs } from "./utils/misc";
+import { arrayReduceSigFigs, camPosRot } from "./utils/misc";
+import * as sessionPersistance from "./sessionPersistance";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -93,7 +94,6 @@ export class Synergize {
     });
 
     this.context.signalHub.incoming.on("entity_created").subscribe((evt) => {
-      console.log("syn list rec", "entity_created", evt);
       this.initEntity(evt.id, evt.components);
     });
 
@@ -143,16 +143,30 @@ export class Synergize {
       new BABYLON.Vector3(),
       this.scene
     );
+    const prevPosition = sessionPersistance.getCameraPosRot();
+    if (prevPosition) {
+      this.freeCamera.position.fromArray(prevPosition.pos);
+      this.freeCamera.rotationQuaternion = BABYLON.Quaternion.FromArray(
+        prevPosition.rot
+      );
+    } else {
+      this.freeCamera.position.fromArray([0, 1.5, 0]);
+      this.freeCamera.rotationQuaternion = new BABYLON.Quaternion();
+    }
     this.freeCamera.attachControl(this.scene.getEngine()._workingCanvas, false);
-    this.freeCamera.rotationQuaternion = new BABYLON.Quaternion();
     this.freeCamera.ellipsoid = new BABYLON.Vector3(0.25, 0.1, 0.25);
     this.freeCamera.checkCollisions = true;
     this.freeCamera.onViewMatrixChangedObservable.add((cam) => {
-      this.context.signalHub.movement.emit("camera_moved", {
-        pos: arrayReduceSigFigs(cam.position.asArray()),
-        rot: arrayReduceSigFigs(cam.absoluteRotation.asArray()),
-      });
+      this.context.signalHub.movement.emit("camera_moved", camPosRot(cam));
     });
+    // save position on window unload
+    addEventListener(
+      "beforeunload",
+      () => {
+        sessionPersistance.saveCameraPosRot(camPosRot(this.scene.activeCamera));
+      },
+      { capture: true }
+    );
   }
 
   run() {

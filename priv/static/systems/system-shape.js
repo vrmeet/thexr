@@ -23,7 +23,6 @@ class SystemShape {
     this.context = context;
   }
   initEntity(entity_id, components) {
-    console.log("shape init entity, ", entity_id, components);
     if (components.shape) {
       if (!this.meshes[entity_id]) {
         this.meshes[entity_id] = this.createMesh(entity_id, components.shape);

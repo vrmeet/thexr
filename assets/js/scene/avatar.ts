@@ -203,7 +203,7 @@ export class Avatar {
     // box.metadata ||= {};
     // box.metadata["member_id"] = member_id;
     // BABYLON.Tags.AddTagsTo(box, "avatar");
-    // box.visibility = 0.5;
+    box.visibility = 0.75;
     return box;
   }
 

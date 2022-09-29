@@ -4,6 +4,7 @@ import type { Context } from "../context";
 import type { ISystem } from "../ecs/system";
 import type { IncomingEvents, OutgoingEvents } from "../signalHub";
 import type { PosRot } from "../types";
+import { camPosRot } from "../utils/misc";
 
 export class ServiceBroker implements ISystem {
   public name = "service-broker";
@@ -33,6 +34,13 @@ export class ServiceBroker implements ISystem {
         this.pipeOutgoingToChannel("entity_deleted");
         this.pipeOutgoingToChannel("component_upserted");
         this.pipeOutgoingToChannel("component_removed");
+        // send initial entity for self
+        this.context.signalHub.outgoing.emit("entity_created", {
+          id: this.context.my_member_id,
+          components: {
+            avatar: { head: camPosRot(this.context.scene.activeCamera) },
+          },
+        });
       }
     });
   }

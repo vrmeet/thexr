@@ -123,6 +123,13 @@ export const unsetPosRot = (mesh: BABYLON.AbstractMesh) => {
   mesh.rotationQuaternion.copyFromFloats(0, 0, 0, 1);
 };
 
+export const camPosRot = (cam: BABYLON.Camera) => {
+  return {
+    pos: arrayReduceSigFigs(cam.position.asArray()),
+    rot: arrayReduceSigFigs(cam.absoluteRotation.asArray()),
+  };
+};
+
 export function random_id(length: number) {
   let result = "";
   const characters =

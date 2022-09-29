@@ -28,12 +28,15 @@ window.addEventListener("DOMContentLoaded", async () => {
   window["synergizer"] = synergizer;
   console.log("systems is", window["systems"]);
   if (typeof window["systems"] === "string" && window["systems"].length > 0) {
-    const promises = [];
-    window["systems"].split(",").forEach(async (sys) => {
-      console.log("attempting to add system", sys);
-      promises.push(synergizer.addSystem(sys));
-    });
-    await Promise.all(promises);
+    const systemPaths = window["systems"].split(",");
+    for (let i = 0; i < systemPaths.length; i++) {
+      const path = systemPaths[i];
+      await synergizer.addSystem(path);
+    }
+    // (async (sys) => {
+    //   console.log("attempting to add system", sys);
+    //   await synergizer.addSystem(sys);
+    // });
   }
   console.log("sending client ready");
   synergizer.context.signalHub.local.emit("client_ready", "enter");

@@ -1,3 +1,20 @@
+Idea:
+
+When creating painting, many new entities will be created due to each stroke being
+recorded.  This may create a huge number of records.  In design mode, the records
+need to be separate so you can continue to manipulate them.  Do we need to optimize
+this at some point?
+
+painting and 3d scupting can be made of messages, that in clients, update scene and
+a 2d canvas, but a new client will not see entire thing, unless they actually replay messages, because the server state isn't rolled up in a way that is helpful,
+the state has a list of strokes, but no 2d canvas or merge model.... but maybe that's fine.  If there is a way the client doesn't retain every stroke type of 
+entity, or auto collapses them based on a 'group' id.
+
+Every stroke on a canvas can be collapsed and deleted from client.  Once canvas is
+'cleared', it can send a command like deleteAllEntities with a group id, instead of a tombstone, the genserver can hold onto the command and pass that persistence.
+
+anyway... do optimization later.
+
 TODO:
 
 - entity created when member 'enters'

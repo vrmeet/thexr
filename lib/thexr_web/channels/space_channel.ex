@@ -138,6 +138,7 @@ defmodule ThexrWeb.SpaceChannel do
   # def cache_members(_, _, _) do
   # end
 
+  @impl true
   def handle_info({:after_join, _params}, socket) do
     Thexr.SpaceSupervisor.start_space(socket.assigns.space_id)
     server = SpaceServer.pid(socket.assigns.space_id)
