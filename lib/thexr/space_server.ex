@@ -125,6 +125,11 @@ defmodule Thexr.SpaceServer do
     {:noreply, state, @timeout}
   end
 
+  def handle_info(:timeout, state) do
+    IO.inspect("space server timed out after no activity")
+    {:noreply, state}
+  end
+
   def make_patch(
         "components_upserted",
         %{id: entity_id, components: components},

@@ -91,6 +91,15 @@ export class Synergize {
       for (const [entity_id, components] of Object.entries(state)) {
         this.initEntity(entity_id, components);
       }
+      // send initial entity for self if not already in the state
+      if (!state[this.context.my_member_id]) {
+        this.context.signalHub.outgoing.emit("entity_created", {
+          id: this.context.my_member_id,
+          components: {
+            avatar: { head: camPosRot(this.context.scene.activeCamera) },
+          },
+        });
+      }
     });
 
     this.context.signalHub.incoming.on("entity_created").subscribe((evt) => {

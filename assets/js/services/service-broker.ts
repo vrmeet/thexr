@@ -66,13 +66,6 @@ export class ServiceBroker implements ISystem {
         console.log("joined channel", resp);
         this.context.signalHub.local.emit("space_channel_connected", resp);
         window["channel"] = this.channel;
-        // send initial entity for self
-        this.context.signalHub.outgoing.emit("entity_created", {
-          id: this.context.my_member_id,
-          components: {
-            avatar: { head: camPosRot(this.context.scene.activeCamera) },
-          },
-        });
       })
       .receive("error", (resp) => {
         console.error("Unable to join channel", resp);
