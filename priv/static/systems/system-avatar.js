@@ -15,7 +15,9 @@ class Avatar {
     this.rightHand = this.findOrCreateAvatarHand("right");
     this.setHandRaisedPosition(this.leftHand, "left");
     this.setHandRaisedPosition(this.rightHand, "right");
-    this.pose(components.avatar);
+    if (this.entity_id !== this.context.my_member_id) {
+      this.pose(components.avatar);
+    }
   }
   dispose() {
     this.head.dispose();
@@ -63,7 +65,18 @@ class Avatar {
     this.animatables = [];
   }
   pose(avatarComponent) {
-    this.poseMeshUsingPosRot(this.head, avatarComponent.head);
+    this.signalHub.service.emit("animate_translate", {
+      target: this.head,
+      from: this.head.position,
+      to: avatarComponent.head.pos,
+      duration: 100
+    });
+    this.signalHub.service.emit("animate_rotation", {
+      target: this.head,
+      from: this.head.rotationQuaternion,
+      to: avatarComponent.head.rot,
+      duration: 100
+    });
     if (avatarComponent.left) {
       this.poseMeshUsingPosRot(this.leftHand, avatarComponent.left);
     } else {

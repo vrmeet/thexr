@@ -11,6 +11,13 @@ export type ServiceRequests = {
     duration: number;
     callback?: () => void;
   };
+  animate_rotation: {
+    target: string | BABYLON.TransformNode;
+    from: number[] | BABYLON.Quaternion;
+    to: number[] | BABYLON.Quaternion;
+    duration: number;
+    callback?: () => void;
+  };
   position_in_front: {
     subject: BABYLON.TransformNode;
     height: "eye_line" | "floor";

@@ -5,6 +5,7 @@ const ANIMATION_FRAME_PER_SECOND = 60;
 
 export class ServiceUtilities {
   name: "service-utilities";
+  public animatables: Record<string, BABYLON.Animatable> = {};
   public context: Context;
   init(context: Context) {
     this.context = context;
@@ -23,8 +24,13 @@ export class ServiceUtilities {
       }
       console.log("req", req);
       console.log("received animation request", target, from, to);
+      const animationName = `translate_${target.name}`;
+      if (this.animatables[animationName]) {
+        this.animatables[animationName].stop();
+        delete this.animatables[animationName];
+      }
       const animatable = BABYLON.Animation.CreateAndStartAnimation(
-        `translate_${target.name}`,
+        animationName,
         target,
         "position",
         ANIMATION_FRAME_PER_SECOND,
@@ -35,10 +41,54 @@ export class ServiceUtilities {
         null,
         () => {
           console.log("applying callback");
-          req.callback();
+          if (req.callback) {
+            req.callback();
+          }
         },
         this.context.scene
       );
+      this.animatables[animationName] = animatable;
+      console.log("animateable", animatable);
+    });
+
+    //rotation
+    this.context.signalHub.service.on("animate_rotation").subscribe((req) => {
+      let target = req.target;
+      if (typeof target === "string") {
+        target = this.context.scene.getMeshByName(target);
+      }
+      let from = req.from;
+      let to = req.to;
+      if (Array.isArray(from)) {
+        from = BABYLON.Quaternion.FromArray(from);
+      }
+      if (Array.isArray(to)) {
+        to = BABYLON.Quaternion.FromArray(to);
+      }
+      const animationName = `rotation_${target.name}`;
+      if (this.animatables[animationName]) {
+        this.animatables[animationName].stop();
+        delete this.animatables[animationName];
+      }
+      const animatable = BABYLON.Animation.CreateAndStartAnimation(
+        animationName,
+        target,
+        "rotationQuaternion",
+        ANIMATION_FRAME_PER_SECOND,
+        Math.ceil((req.duration * 60) / 1000),
+        from,
+        to,
+        BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
+        null,
+        () => {
+          console.log("applying callback");
+          if (req.callback) {
+            req.callback();
+          }
+        },
+        this.context.scene
+      );
+      this.animatables[animationName] = animatable;
       console.log("animateable", animatable);
     });
   }
