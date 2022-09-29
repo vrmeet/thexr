@@ -45,9 +45,9 @@ export type LocalEvents = {
 export type IncomingEvents = {
   event: types.event; // deprecate this
   entity_created: { id: string; components: ComponentObj };
-  entity_deleted: { id: string };
-  component_upserted: { id: string; name: string; data: any };
-  component_removed: { id: string; name: string };
+  entities_deleted: { ids: string[] };
+  components_upserted: { id: string; components: ComponentObj };
+  components_removed: { id: string; names: string[] };
   custom_msg: any;
   hud_broadcast: { message: string };
   presence_diff: types.PresenceDiff;
@@ -79,9 +79,9 @@ export type IncomingEvents = {
 export type OutgoingEvents = {
   event: types.event; //deprecate this
   entity_created: { id: string; components: ComponentObj };
-  entity_deleted: { id: string };
-  component_upserted: { id: string; name: string; data: any };
-  component_removed: { id: string; name: string };
+  entities_deleted: { ids: string };
+  components_upserted: { id: string; components: ComponentObj };
+  components_removed: { id: string; names: string[] };
   custom_msg: any;
   hud_broadcast: { msg: string };
 };

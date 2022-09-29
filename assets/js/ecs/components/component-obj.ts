@@ -1,3 +1,4 @@
+import type { PosRot } from "../../types";
 import type { ActsLikeLiftComponent } from "./acts-like-lift";
 import type { MaterialComponent } from "./material";
 import type { ShapeComponent } from "./shape";
@@ -19,7 +20,11 @@ export interface ComponentObj {
   scaling?: number[];
   shape?: ShapeComponent;
   acts_like_lift?: ActsLikeLiftComponent;
-  avatar?: any;
+  avatar?: {
+    head: PosRot;
+    left?: PosRot | null;
+    right?: PosRot | null;
+  };
   lighting?: any;
   material?: MaterialComponent;
   [anykey: string]: any;

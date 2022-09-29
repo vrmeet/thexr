@@ -140,10 +140,12 @@ defmodule ThexrWeb.SpaceChannel do
 
   @impl true
   def handle_info({:after_join, _params}, socket) do
-    Thexr.SpaceSupervisor.start_space(socket.assigns.space_id)
+    # Thexr.SpaceSupervisor.start_space(socket.assigns.space_id)
     server = SpaceServer.pid(socket.assigns.space_id)
 
     socket = assign(socket, :server, server)
+    SpaceServer.member_connected(server, socket.assigns.member_id)
+
     IO.inspect(socket.assigns, label: "after join assign")
     # case Thexr.SpaceServer.ets_refs(socket.assigns.space_id) do
     #   {:error, _} ->
@@ -172,7 +174,16 @@ defmodule ThexrWeb.SpaceChannel do
 
   @impl true
   def terminate(_reason, socket) do
-    push(socket, "server_lost", %{})
+    # tell the server the channel is disconnected
+    try do
+      SpaceServer.member_disconnected(socket.assigns.server, socket.assigns.member_id)
+    rescue
+      _e ->
+        # if the server isn't available redirect the page
+        push(socket, "server_lost", %{})
+    end
+
+    {:noreply, socket}
   end
 
   # def terminate(reason, socket) do

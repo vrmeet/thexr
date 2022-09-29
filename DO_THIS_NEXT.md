@@ -1,3 +1,7 @@
+When channel is disconnected for 5 seconds, remove the user
+
+
+
 Idea:
 
 When creating painting, many new entities will be created due to each stroke being

@@ -6,7 +6,7 @@ import type { IService } from "./services/service";
 import { ServiceBroker } from "./services/service-broker";
 import { ServiceUtilities } from "./services/service-utilities";
 import { ServiceInline } from "./services/service-inline";
-import { arrayReduceSigFigs, camPosRot } from "./utils/misc";
+import { camPosRot } from "./utils/misc";
 import * as sessionPersistance from "./sessionPersistance";
 /**
  * The Synergizer's job is to create the scene
@@ -97,18 +97,20 @@ export class Synergize {
       this.initEntity(evt.id, evt.components);
     });
 
+    this.context.signalHub.incoming.on("entities_deleted").subscribe((evt) => {
+      evt.ids.forEach((id) => {
+        delete this.context.state[id];
+      });
+    });
+
     this.context.signalHub.incoming
-      .on("component_upserted")
+      .on("components_upserted")
       .subscribe((evt) => {
         const components = this.context.state[evt.id];
         if (!components) {
           return;
         }
-        const componentData = components[evt.name];
-        if (!componentData) {
-          return;
-        }
-        Object.assign(componentData, evt.data);
+        Object.assign(components, evt.components);
       });
 
     // route clicks to mesh picked event

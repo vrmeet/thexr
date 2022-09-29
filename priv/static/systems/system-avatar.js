@@ -15,7 +15,7 @@ class Avatar {
     this.rightHand = this.findOrCreateAvatarHand("right");
     this.setHandRaisedPosition(this.leftHand, "left");
     this.setHandRaisedPosition(this.rightHand, "right");
-    this.pose(components.avatar.head, null, null);
+    this.pose(components.avatar);
   }
   dispose() {
     this.head.dispose();
@@ -48,7 +48,11 @@ class Avatar {
     } else {
       offset = [0.2, 0, 0.2];
     }
-    handMesh.parent = this.head;
+    if (this.entity_id != this.context.my_member_id) {
+      handMesh.parent = this.head;
+    } else {
+      handMesh.parent = this.scene.activeCamera;
+    }
     handMesh.rotationQuaternion.copyFromFloats(0, 0, 0, 1);
     handMesh.position.copyFromFloats(offset[0], offset[1], offset[2]);
   }
@@ -58,15 +62,15 @@ class Avatar {
     });
     this.animatables = [];
   }
-  pose(headPose, leftPose, rightPose) {
-    this.poseMeshUsingPosRot(this.head, headPose);
-    if (leftPose) {
-      this.poseMeshUsingPosRot(this.leftHand, leftPose);
+  pose(avatarComponent) {
+    this.poseMeshUsingPosRot(this.head, avatarComponent.head);
+    if (avatarComponent.left) {
+      this.poseMeshUsingPosRot(this.leftHand, avatarComponent.left);
     } else {
       this.setHandRaisedPosition(this.leftHand, "left");
     }
-    if (rightPose) {
-      this.poseMeshUsingPosRot(this.rightHand, rightPose);
+    if (avatarComponent.right) {
+      this.poseMeshUsingPosRot(this.rightHand, avatarComponent.right);
     } else {
       this.setHandRaisedPosition(this.rightHand, "right");
     }
@@ -84,6 +88,10 @@ class Avatar {
     const box = this.context.BABYLON.MeshBuilder.CreateBox(headName, { size: 0.3 }, this.scene);
     box.rotationQuaternion = new this.context.BABYLON.Quaternion();
     box.isPickable = false;
+    box.visibility = 0.5;
+    if (this.entity_id === this.context.my_member_id) {
+      box.setEnabled(false);
+    }
     return box;
   }
   findAvatarHand(hand) {
@@ -99,6 +107,7 @@ class Avatar {
     mesh = this.context.BABYLON.MeshBuilder.CreateBox(meshName, { width: 0.053, height: 0.08, depth: 0.1 }, this.scene);
     mesh.rotationQuaternion = new this.context.BABYLON.Quaternion();
     mesh.isPickable = false;
+    mesh.visibility = 0.5;
     return mesh;
   }
 }
@@ -111,10 +120,20 @@ class SystemAvatar {
     this.context = context;
     this.signalHub = context.signalHub;
     this.scene = context.scene;
-    this.signalHub.incoming.on("component_upserted").subscribe((msg) => {
+    this.context.signalHub.incoming.on("entities_deleted").subscribe((evt) => {
+      evt.ids.forEach((id) => {
+        if (this.avatars[id]) {
+          this.avatars[id].dispose();
+          delete this.avatars[id];
+        }
+      });
+    });
+    this.signalHub.incoming.on("components_upserted").subscribe((msg) => {
       const avatar = this.avatars[msg.id];
       if (avatar) {
-        avatar.pose(msg.data.head, msg.data.left, msg.data.right);
+        if (msg.id !== this.context.my_member_id) {
+          avatar.pose(msg.components.avatar);
+        }
       }
     });
   }

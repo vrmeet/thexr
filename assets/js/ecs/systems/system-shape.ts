@@ -4,11 +4,17 @@ import type { ComponentObj } from "../components/component-obj";
 import type { ShapeComponent } from "../components/shape";
 
 class SystemShape implements ISystem {
-  public meshes = {};
+  public meshes: Record<string, BABYLON.AbstractMesh> = {};
   public name = "system-shape";
   public context: Context;
   init(context: Context) {
     this.context = context;
+    this.context.signalHub.incoming.on("entity_deleted").subscribe((evt) => {
+      if (this.meshes[evt.id]) {
+        this.meshes[evt.id].dispose();
+        delete this.meshes[evt.id];
+      }
+    });
   }
 
   initEntity(entity_id: string, components: ComponentObj) {
@@ -22,7 +28,10 @@ class SystemShape implements ISystem {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
-  createMesh(entity_id: string, shapeComponent: ShapeComponent) {
+  createMesh(
+    entity_id: string,
+    shapeComponent: ShapeComponent
+  ): BABYLON.AbstractMesh {
     if (
       ["box", "sphere", "cylinder", "plane", "capsule"].includes(
         shapeComponent.prim

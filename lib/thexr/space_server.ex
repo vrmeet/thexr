@@ -49,16 +49,26 @@ defmodule Thexr.SpaceServer do
   end
 
   def process_event(server, event, message) when is_pid(server) do
+    message = AtomicMap.convert(message, %{safe: false})
     GenServer.cast(server, {:process_event, event, message})
   end
 
   def process_event(space_id, event, message) do
+    message = AtomicMap.convert(message, %{safe: false})
     GenServer.cast(via_tuple(space_id), {:process_event, event, message})
   end
 
   # legacy match, can remove later
   def process_event(space_id, _, _, _) do
     GenServer.cast(via_tuple(space_id), {:process_event, 1, 1})
+  end
+
+  def member_connected(server, member_id) do
+    GenServer.cast(server, {:member_connected, member_id})
+  end
+
+  def member_disconnected(server, member_id) do
+    GenServer.cast(server, {:member_disconnected, member_id})
   end
 
   #################################################################
@@ -68,8 +78,10 @@ defmodule Thexr.SpaceServer do
   def init({:ok, space_id}) do
     {:ok,
      %{
+       disconnected: MapSet.new(),
        space_id: space_id,
-       space_state: %{}
+       space_state: %{},
+       commands: []
      }, @timeout}
   end
 
@@ -84,27 +96,63 @@ defmodule Thexr.SpaceServer do
     # patch the state
     new_space_state = make_patch(event, message, state.space_state)
     state = Map.put(state, :space_state, new_space_state)
+    # add commands
+
+    {:noreply, state, @timeout}
+  end
+
+  def handle_cast({:member_connected, member_id}, state) do
+    new_disconnected = MapSet.delete(state.disconnected, member_id)
+    state = %{state | disconnected: new_disconnected}
+    {:noreply, state, @timeout}
+  end
+
+  def handle_cast({:member_disconnected, member_id}, state) do
+    new_disconnected = MapSet.put(state.disconnected, member_id)
+    state = %{state | disconnected: new_disconnected}
+    Process.send_after(self(), :kick_check, @kick_check_timeout)
+    {:noreply, state, @timeout}
+  end
+
+  def handle_info(:kick_check, state) do
+    if MapSet.size(state.disconnected) > 0 do
+      __MODULE__.process_event(self(), "entities_deleted", %{
+        ids: MapSet.to_list(state.disconnected)
+      })
+    end
+
+    state = %{state | disconnected: MapSet.new()}
     {:noreply, state, @timeout}
   end
 
   def make_patch(
-        "component_upserted",
-        %{"id" => entity_id, "name" => name, "data" => data},
+        "components_upserted",
+        %{id: entity_id, components: components},
         space_state
       ) do
-    patch_space_state(entity_id, %{name => data}, space_state)
-  end
-
-  def make_patch("entity_created", %{"id" => entity_id, "components" => components}, space_state) do
     patch_space_state(entity_id, components, space_state)
   end
 
-  def make_patch("entity_deleted", %{"id" => entity_id}, space_state) do
-    patch_space_state(entity_id, :tombstone, space_state)
+  def make_patch("entity_created", %{id: entity_id, components: components}, space_state) do
+    patch_space_state(entity_id, components, space_state)
   end
 
-  def make_patch("component_removed", %{"id" => entity_id, "name" => name}, space_state) do
-    patch_space_state(entity_id, %{name => :tombstone}, space_state)
+  def make_patch("entities_deleted", %{ids: entity_ids}, space_state) do
+    # patch_space_state(entity_id, :tombstone, space_state)
+    Enum.reduce(entity_ids, space_state, fn id, acc ->
+      Map.delete(acc, id)
+    end)
+  end
+
+  def make_patch("components_removed", %{id: entity_id, names: names}, space_state) do
+    entity_current_components = Map.get(space_state, entity_id)
+
+    new_entity_components =
+      Enum.reduce(names, entity_current_components, fn name, acc ->
+        Map.delete(acc, name)
+      end)
+
+    Map.put(space_state, entity_id, new_entity_components)
   end
 
   def patch_space_state(entity_id, components, space_state) do

@@ -31,16 +31,9 @@ export class ServiceBroker implements ISystem {
       if (choice === "enter") {
         this.pipeCameraMovementToOutgoing();
         this.pipeOutgoingToChannel("entity_created");
-        this.pipeOutgoingToChannel("entity_deleted");
-        this.pipeOutgoingToChannel("component_upserted");
-        this.pipeOutgoingToChannel("component_removed");
-        // send initial entity for self
-        this.context.signalHub.outgoing.emit("entity_created", {
-          id: this.context.my_member_id,
-          components: {
-            avatar: { head: camPosRot(this.context.scene.activeCamera) },
-          },
-        });
+        this.pipeOutgoingToChannel("entities_deleted");
+        this.pipeOutgoingToChannel("components_upserted");
+        this.pipeOutgoingToChannel("components_removed");
       }
     });
   }
@@ -65,6 +58,7 @@ export class ServiceBroker implements ISystem {
       }
       return payload;
     };
+
     this.socket.connect();
     this.channel
       .join()
@@ -72,6 +66,13 @@ export class ServiceBroker implements ISystem {
         console.log("joined channel", resp);
         this.context.signalHub.local.emit("space_channel_connected", resp);
         window["channel"] = this.channel;
+        // send initial entity for self
+        this.context.signalHub.outgoing.emit("entity_created", {
+          id: this.context.my_member_id,
+          components: {
+            avatar: { head: camPosRot(this.context.scene.activeCamera) },
+          },
+        });
       })
       .receive("error", (resp) => {
         console.error("Unable to join channel", resp);
@@ -162,10 +163,9 @@ export class ServiceBroker implements ISystem {
           return;
         }
 
-        signalHub.outgoing.emit("component_upserted", {
+        signalHub.outgoing.emit("components_upserted", {
           id: this.context.my_member_id,
-          name: "avatar",
-          data: payload,
+          components: { avatar: payload },
         });
       });
   }

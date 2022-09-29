@@ -21,6 +21,12 @@ class SystemShape {
   }
   init(context) {
     this.context = context;
+    this.context.signalHub.incoming.on("entity_deleted").subscribe((evt) => {
+      if (this.meshes[evt.id]) {
+        this.meshes[evt.id].dispose();
+        delete this.meshes[evt.id];
+      }
+    });
   }
   initEntity(entity_id, components) {
     if (components.shape) {
