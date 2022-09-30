@@ -1,27 +1,9 @@
-smooth out avatar movement using local messages
+should sysnergizer manually forward entity deleted to each system as well as
+component upserted and components removed?
 
-- finish avatar system, when client joins, should see presence of avatars
-- when camera reloads should maintain previous position (service of camera)
+handle web XR
 
-2nd client to join a space should get all the previous state
- -on connect, return current state
-
-channel presence should effect state of the avatar entity
-
-synergizer - 
-  initializes list of systems
-  listens for entity_created, adds it to context, and let's every system look at it
-
-
-system - looks at entity
-  - optionally builds something for it in the space (mesh, transform)
-  - moves it into position
-  transform system - listens for event
-     - reference of each entity_id with a pointer either the mesh or transform
-    finds the mesh or transform by id .... 
-===
-Event object moved to new position
-
+handle basic voice
 
   
 

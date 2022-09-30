@@ -1,12 +1,11 @@
 import { Socket, Channel } from "phoenix";
 import { pipe, scan, filter, map, throttleTime, mergeWith } from "rxjs";
 import type { Context } from "../context";
-import type { ISystem } from "../ecs/system";
 import type { IncomingEvents, OutgoingEvents } from "../signalHub";
 import type { PosRot } from "../types";
-import { camPosRot } from "../utils/misc";
+import type { IService } from "./service";
 
-export class ServiceBroker implements ISystem {
+export class ServiceBroker implements IService {
   public name = "service-broker";
   public context: Context;
   public socket: Socket;

@@ -1,9 +1,10 @@
 import type { Context } from "../context";
 import * as BABYLON from "babylonjs";
+import type { IService } from "./service";
 
 const ANIMATION_FRAME_PER_SECOND = 60;
 
-export class ServiceUtilities {
+export class ServiceUtilities implements IService {
   name: "service-utilities";
   public animatables: Record<string, BABYLON.Animatable> = {};
   public context: Context;
@@ -43,6 +44,7 @@ export class ServiceUtilities {
           console.log("applying callback");
           if (req.callback) {
             req.callback();
+            delete this.animatables[animationName];
           }
         },
         this.context.scene
@@ -84,6 +86,7 @@ export class ServiceUtilities {
           console.log("applying callback");
           if (req.callback) {
             req.callback();
+            delete this.animatables[animationName];
           }
         },
         this.context.scene

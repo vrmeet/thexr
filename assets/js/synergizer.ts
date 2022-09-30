@@ -8,6 +8,7 @@ import { ServiceUtilities } from "./services/service-utilities";
 import { ServiceInline } from "./services/service-inline";
 import { camPosRot } from "./utils/misc";
 import * as sessionPersistance from "./sessionPersistance";
+import { ServiceXR } from "./services/service-xr";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -49,6 +50,7 @@ export class Synergize {
     this.addService(new ServiceBroker());
     this.addService(new ServiceUtilities());
     this.addService(new ServiceInline());
+    this.addService(new ServiceXR());
   }
 
   addService(service: IService) {
