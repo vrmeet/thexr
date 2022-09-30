@@ -11,16 +11,16 @@
 
     // onMount(async () => {
 
-    const space = operationStore(`
-query {
-  space(space_id: "${space_id}") {
-    name
-    description
-  }
-}
-`);
+//     const space = operationStore(`
+// query {
+//   space(space_id: "${space_id}") {
+//     name
+//     description
+//   }
+// }
+// `);
 
-    query(space);
+    // query(space);
     // space.subscribe((value) => {
     //     console.log("value", value);
     //     if (value.data) {
@@ -30,24 +30,24 @@ query {
     // });
 </script>
 
-{#if $space.fetching}
+<!-- {#if $space.fetching}
     <p>Loading...</p>
 {:else if $space.error}
     <p>Oh no... {$space.error.message}</p>
-{:else}
+{:else} -->
     <div class="modal">
         <div class="modal-content">
-            <h2>Welcome to {$space.data.space.name}</h2>
-            {#if $space.data.space.description}
+            <!-- <h2>Welcome to {$space.data.space.name}</h2> -->
+            <!-- {#if $space.data.space.description}
                 <p>
                     {$space.data.space.description}
                 </p>
-            {/if}
+            {/if} -->
             <button on:click={enterCallback}>Enter</button>
             <button on:click={observeCallback}>Observe</button>
         </div>
     </div>
-{/if}
+<!-- {/if} -->
 
 <style>
     :global(.modal) {

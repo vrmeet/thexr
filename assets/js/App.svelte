@@ -8,10 +8,10 @@
     import { isMobileVR } from "./utils/utils-browser";
     import type { SignalHub } from "./signalHub";
 
-    initClient({
-        url: "/api",
-        requestPolicy: "cache-and-network",
-    });
+    // initClient({
+    //     url: "/api",
+    //     requestPolicy: "cache-and-network",
+    // });
 
     //props
     export let space_id: string;

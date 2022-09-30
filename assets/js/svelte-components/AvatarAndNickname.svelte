@@ -1,6 +1,6 @@
 <script lang="ts">
     import { getContext } from "svelte";
-    import { sessionPersistance } from "../sessionPersistance";
+    import * as sessionPersistance from "../sessionPersistance";
     export let avatarAndNicknameCallback;
 
     let member_id: string = getContext("member_id");

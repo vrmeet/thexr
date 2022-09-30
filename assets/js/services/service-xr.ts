@@ -5,6 +5,7 @@ import type { SignalHub } from "../signalHub";
 import { camPosRot, getPosRot } from "../utils/misc";
 import { distinctUntilChanged, filter, map, Observable, takeUntil } from "rxjs";
 import type { xr_component } from "../types";
+import { isMobileVR } from "../utils/utils-browser";
 
 /*
 enables the XR experience
@@ -26,8 +27,27 @@ export class ServiceXR implements IService {
     this.exitingXR$ = this.signalHub.local
       .on("xr_state_changed")
       .pipe(filter((msg) => msg === BABYLON.WebXRState.EXITING_XR));
-    this.enableWebXRExperience();
+
+    this.signalHub.local.on("client_ready").subscribe(async () => {
+      await this.enableWebXRExperience();
+
+      if (isMobileVR()) {
+        this.enterXR();
+      }
+    });
   }
+
+  enterXR() {
+    return this.xrHelper.baseExperience.enterXRAsync(
+      "immersive-vr",
+      "local-floor" /*, optionalRenderTarget */
+    );
+  }
+
+  exitXR() {
+    return this.xrHelper.baseExperience.exitXRAsync();
+  }
+
   async enableWebXRExperience() {
     if (!navigator["xr"]) {
       return;

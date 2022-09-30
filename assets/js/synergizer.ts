@@ -10,6 +10,7 @@ import { camPosRot } from "./utils/misc";
 import * as sessionPersistance from "./sessionPersistance";
 import { ServiceXR } from "./services/service-xr";
 import Ammo from "ammojs-typed";
+import { ServiceStartModal } from "./services/service-start-modal";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -55,6 +56,7 @@ export class Synergize {
     this.addService(new ServiceUtilities());
     this.addService(new ServiceInline());
     this.addService(new ServiceXR());
+    this.addService(new ServiceStartModal());
   }
 
   addService(service: IService) {

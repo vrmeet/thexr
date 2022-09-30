@@ -38,6 +38,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     //   await synergizer.addSystem(sys);
     // });
   }
-  console.log("sending client ready");
-  synergizer.context.signalHub.local.emit("client_ready", "enter");
+  // console.log("sending client ready");
+  // synergizer.context.signalHub.local.emit("client_ready", "enter");
 });
