@@ -9,6 +9,7 @@ import { ServiceInline } from "./services/service-inline";
 import { camPosRot } from "./utils/misc";
 import * as sessionPersistance from "./sessionPersistance";
 import { ServiceXR } from "./services/service-xr";
+import Ammo from "ammojs-typed";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -38,10 +39,13 @@ export class Synergize {
     this.context.space_id = space_id;
     this.context.webrtc_channel_id = webrtc_channel_id;
     this.context.userToken = userToken;
-    this.context.scene = this.createScene(engine);
-    this.setupServices();
-    this.setupListeners();
-    this.run();
+    this.createScene(engine).then((scene) => {
+      this.context.scene = scene;
+      this.setupServices();
+      this.setupListeners();
+      this.run();
+    });
+
     window["synergizer"] = this;
   }
 
@@ -139,10 +143,17 @@ export class Synergize {
       }
     });
   }
-  createScene(engine: BABYLON.Engine) {
+  async createScene(engine: BABYLON.Engine) {
     this.engine = engine;
     this.scene = new BABYLON.Scene(engine);
     this.scene.clearColor = BABYLON.Color4.FromHexString("#201111");
+
+    const gravityVector = new BABYLON.Vector3(0, -9.81, 0);
+    const ammo = await Ammo();
+
+    const physicsPlugin = new BABYLON.AmmoJSPlugin(true, ammo);
+    this.scene.enablePhysics(gravityVector, physicsPlugin);
+
     // this.scene.onKeyboardObservable.add((event) => {
     //   console.log("someting was pressed", event.event.keyCode);
     // });

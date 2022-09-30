@@ -1,11 +1,14 @@
 should sysnergizer manually forward entity deleted to each system as well as
 component upserted and components removed?
 
-handle web XR
+add physics system
+
+handle menu
 
 handle basic voice
 
-  
+
+
 
 Events, build up STATE in the server.
 

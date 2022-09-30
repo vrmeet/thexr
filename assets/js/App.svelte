@@ -3,10 +3,10 @@
     import Welcome from "./svelte-components/Welcome.svelte";
     import MicAndOutput from "./svelte-components/MicAndOutput.svelte";
     import AvatarAndNickName from "./svelte-components/AvatarAndNickname.svelte";
-    import { signalHub } from "./signalHub";
-    import { sessionPersistance } from "./sessionPersistance";
+    import * as sessionPersistance from "./sessionPersistance";
     import { initClient } from "@urql/svelte";
     import { isMobileVR } from "./utils/utils-browser";
+    import type { SignalHub } from "./signalHub";
 
     initClient({
         url: "/api",
@@ -16,11 +16,13 @@
     //props
     export let space_id: string;
     export let member_id: string;
+    export let signalHub: SignalHub
 
     let choice: "enter" | "observe";
 
     setContext("space_id", space_id);
     setContext("member_id", member_id);
+    setContext("signalHub", signalHub);
 
     //state
     let didInteract = false;
