@@ -30,6 +30,13 @@ export interface member_state {
   status: "active" | "inactive";
 }
 
+export type PosRotWithVelocities = {
+  pos: number[];
+  rot: number[];
+  lv: number[];
+  av: number[];
+};
+
 export type PosRot = {
   pos: number[];
   rot: number[];

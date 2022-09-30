@@ -108,13 +108,13 @@ export type MenuEvents = {
 export type MovementEvents = {
   // continuous values
   camera_moved: types.PosRot;
-  left_hand_moved: types.PosRot;
+  left_hand_moved: types.PosRotWithVelocities;
   left_trigger: types.xr_component;
   left_squeeze: types.xr_component;
   left_button: types.xr_component;
   left_thumbstick: types.xr_component;
   left_touchpad: types.xr_component;
-  right_hand_moved: types.PosRot;
+  right_hand_moved: types.PosRotWithVelocities;
   right_trigger: types.xr_component;
   right_squeeze: types.xr_component;
   right_button: types.xr_component;

@@ -16,6 +16,7 @@ export class ServiceXR implements IService {
   public scene: BABYLON.Scene;
   public xrHelper: BABYLON.WebXRDefaultExperience;
   public exitingXR$;
+  public controllerPhysicsFeature: BABYLON.WebXRControllerPhysics;
 
   public signalHub: SignalHub;
   init(context: Context) {
@@ -33,21 +34,21 @@ export class ServiceXR implements IService {
     }
     this.xrHelper = await this.scene.createDefaultXRExperienceAsync({});
 
-    // this.controllerPhysicsFeature = <BABYLON.WebXRControllerPhysics>(
-    //   this.xrHelper.baseExperience.featuresManager.enableFeature(
-    //     BABYLON.WebXRFeatureName.PHYSICS_CONTROLLERS,
-    //     "latest",
-    //     {
-    //       xrInput: this.xrHelper.input,
-    //       physicsProperties: {
-    //         restitution: 0.5,
-    //         impostorSize: 0.1,
-    //         impostorType: BABYLON.PhysicsImpostor.BoxImpostor,
-    //       },
-    //       enableHeadsetImpostor: false,
-    //     }
-    //   )
-    // );
+    this.controllerPhysicsFeature = <BABYLON.WebXRControllerPhysics>(
+      this.xrHelper.baseExperience.featuresManager.enableFeature(
+        BABYLON.WebXRFeatureName.PHYSICS_CONTROLLERS,
+        "latest",
+        {
+          xrInput: this.xrHelper.input,
+          physicsProperties: {
+            restitution: 0.5,
+            impostorSize: 0.1,
+            impostorType: BABYLON.PhysicsImpostor.BoxImpostor,
+          },
+          enableHeadsetImpostor: false,
+        }
+      )
+    );
 
     // this.teleportationManager = new TeleportationManager(
     //   this.xrHelper,
@@ -119,10 +120,16 @@ export class ServiceXR implements IService {
     inputSource: BABYLON.WebXRInputSource
   ) {
     motionController.onModelLoadedObservable.add((mc) => {
+      const imposter =
+        this.controllerPhysicsFeature.getImpostorForController(inputSource);
+
       inputSource.grip.onAfterWorldMatrixUpdateObservable.add(() => {
+        const payload: any = getPosRot(inputSource.grip);
+        payload.lv = imposter.getLinearVelocity().asArray();
+        payload.av = imposter.getAngularVelocity().asArray();
         this.signalHub.movement.emit(
           `${mc.handness as "left" | "right"}_hand_moved`,
-          getPosRot(inputSource.grip)
+          payload
         );
       });
     });
