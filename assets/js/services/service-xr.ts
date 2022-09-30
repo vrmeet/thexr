@@ -3,7 +3,7 @@ import type { IService } from "./service";
 import * as BABYLON from "babylonjs";
 import type { SignalHub } from "../signalHub";
 import { camPosRot, getPosRot } from "../utils/misc";
-import { filter, Observable, takeUntil } from "rxjs";
+import { distinctUntilChanged, filter, map, Observable, takeUntil } from "rxjs";
 import type { xr_component } from "../types";
 
 /*
@@ -94,9 +94,12 @@ export class ServiceXR implements IService {
     inputSource: BABYLON.WebXRInputSource,
     motionController: BABYLON.WebXRAbstractMotionController
   ) {
-    this.setupSendComponentData(motionController);
+    this.setupComponentData(motionController);
     this.setupVibration(motionController);
-    this.setupHandMotionData(motionController);
+    this.setupHandMotionData(motionController, inputSource);
+    this.setupCleanPressAndRelease(
+      motionController.handness as "left" | "right"
+    );
     // new XRGripManager(
     //   this.member_id,
     //   this.scene,
@@ -111,16 +114,15 @@ export class ServiceXR implements IService {
     // )
   }
 
-  setupHandMotionData(motionController: BABYLON.WebXRAbstractMotionController) {
+  setupHandMotionData(
+    motionController: BABYLON.WebXRAbstractMotionController,
+    inputSource: BABYLON.WebXRInputSource
+  ) {
     motionController.onModelLoadedObservable.add((mc) => {
-      let mesh: BABYLON.AbstractMesh = mc.rootMesh;
-      while (mesh.parent !== null) {
-        mesh = mesh.parent as BABYLON.AbstractMesh;
-      }
-      mesh.onAfterWorldMatrixUpdateObservable.add(() => {
+      inputSource.grip.onAfterWorldMatrixUpdateObservable.add(() => {
         this.signalHub.movement.emit(
           `${mc.handness as "left" | "right"}_hand_moved`,
-          getPosRot(mesh)
+          getPosRot(inputSource.grip)
         );
       });
     });
@@ -149,9 +151,9 @@ export class ServiceXR implements IService {
       });
   }
 
-  setupSendComponentData(
-    motionController: BABYLON.WebXRAbstractMotionController
-  ) {
+  // produces a noisy stream of every button on the controller
+  // for every value 0-100
+  setupComponentData(motionController: BABYLON.WebXRAbstractMotionController) {
     const componentIds = motionController.getComponentIds();
     componentIds.forEach((componentId) => {
       const webXRComponent = motionController.getComponent(componentId);
@@ -191,6 +193,40 @@ export class ServiceXR implements IService {
           `${hand}_${component.type}`,
           xr_button_change_evt
         );
+      });
+  }
+
+  setupCleanPressAndRelease(hand: "left" | "right") {
+    // listen for clean grip and release
+
+    this.signalHub.movement
+      .on(`${hand}_squeeze`)
+      .pipe(
+        takeUntil(this.exitingXR$),
+        map((val) => val.pressed),
+        distinctUntilChanged()
+      )
+      .subscribe((squeezed) => {
+        if (squeezed) {
+          this.signalHub.movement.emit(`${hand}_grip_squeezed`, true);
+        } else {
+          this.signalHub.movement.emit(`${hand}_grip_released`, true);
+        }
+      });
+
+    this.signalHub.movement
+      .on(`${hand}_trigger`)
+      .pipe(
+        takeUntil(this.exitingXR$),
+        map((val) => val.pressed),
+        distinctUntilChanged()
+      )
+      .subscribe((squeezed) => {
+        if (squeezed) {
+          this.signalHub.movement.emit(`${hand}_trigger_squeezed`, true);
+        } else {
+          this.signalHub.movement.emit(`${hand}_trigger_released`, true);
+        }
       });
   }
 }
