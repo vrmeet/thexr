@@ -17,16 +17,17 @@ defmodule Thexr.SpaceSupervisor do
   """
 
   def start_space(space_id) do
+    IO.puts("nudge space server")
     DynamicSupervisor.start_child(__MODULE__, {SpaceServer, space_id})
   end
-
 
   @doc """
   Terminates the `GameServer` process normally. It won't be restarted.
   """
   def stop_space(space_id) do
     child_pid = Thexr.SpaceServer.pid(space_id)
-    if (child_pid != nil) do
+
+    if child_pid != nil do
       DynamicSupervisor.terminate_child(__MODULE__, child_pid)
     end
   end

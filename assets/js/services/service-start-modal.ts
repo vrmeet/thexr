@@ -11,9 +11,7 @@ export class ServiceStartModal implements IService {
     new App({
       target: document.body,
       props: {
-        space_id: context.space_id,
-        member_id: context.my_member_id,
-        signalHub: context.signalHub,
+        context: context,
       },
     });
   }

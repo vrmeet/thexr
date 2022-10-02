@@ -6,7 +6,7 @@
     import * as sessionPersistance from "../sessionPersistance";
     import { initClient } from "@urql/svelte";
     import { isMobileVR } from "../utils/utils-browser";
-    import type { SignalHub } from "../signalHub";
+    import type { Context } from "../context";
 
     // initClient({
     //     url: "/api",
@@ -14,46 +14,45 @@
     // });
 
     //props
-    export let space_id: string;
-    export let member_id: string;
-    export let signalHub: SignalHub
-
+    export let context: Context;
+   
     let choice: "enter" | "observe";
 
-    setContext("space_id", space_id);
-    setContext("member_id", member_id);
-    setContext("signalHub", signalHub);
-
+    setContext("context", context);
+   
     //state
     let didInteract = false;
     let showAvatarAndNickNameForm = false;
     let showMicAndOutputForm = false;
 
-    const micConfirmed = () => {
+    const micConfirmed = async () => {
         const micChoice = sessionPersistance.getMicAndOutputChoice();
+        console.log('micChoice', micChoice)
         if (micChoice === null) {
             return false;
         } else {
             const constraints = {
                 audio: { deviceId: { exact: micChoice.micDeviceId } },
             };
-            navigator.mediaDevices.getUserMedia(constraints);
+            await navigator.mediaDevices.getUserMedia(constraints);
 
             return true;
         }
     };
 
     //callbacks
-    const avatarAndNicknameCallback = (nickname: string) => {
+    const avatarAndNicknameCallback = async (nickname: string) => {
         sessionPersistance.saveNickname({ nickname });
         // orchestrator.memberStates.update_my_nickname(nickname);
-        signalHub.menu.emit("update_nickname", nickname);
+        context.signalHub.menu.emit("update_nickname", nickname);
         showAvatarAndNickNameForm = false;
         if (isMobileVR()) {
-            // no need to check mic and speaker, there is only one option
+            // no need to check mic and speaker, 
+            // there is only one option on head mounted displays
             return ready();
         }
-        if (!micConfirmed()) {
+        if (! await micConfirmed()) {
+            console.log('we should show mic and out form')
             showMicAndOutputForm = true;
         } else {
             ready();
@@ -79,8 +78,8 @@
     };
 
     const ready = () => {
-        signalHub.local.emit("client_ready", choice);
-        let canvas = document.getElementById(space_id);
+        context.signalHub.local.emit("client_ready", choice);
+        let canvas = document.getElementById(context.space_id);
         canvas.focus();
     };
 

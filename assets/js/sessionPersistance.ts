@@ -24,9 +24,9 @@ export function saveMicAndOutputChoice(data: {
   micDeviceId: string;
   outputDeviceId: string;
 }) {
-  if (data.micDeviceId && data.outputDeviceId) {
-    save(SESS_KEY_MIC_OPTIONS, data);
-  }
+  // if (data.micDeviceId && data.outputDeviceId) {
+  save(SESS_KEY_MIC_OPTIONS, data);
+  // }
 }
 export function getAndParseKey(key: string, storage = "sessionStorage") {
   try {

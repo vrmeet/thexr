@@ -3,7 +3,9 @@ component upserted and components removed?
 
 handle basic voice
 
-
+future:
+  - in microphone picking, display microphone testing levels
+  
 
 
 Events, build up STATE in the server.
