@@ -111,6 +111,19 @@ export const findOrCreateMaterial = (
   }
 };
 
+export const hashCode = function (input: string) {
+  let hash = 0,
+    i: number,
+    chr: number;
+  if (input.length === 0) return hash;
+  for (i = 0; i < input.length; i++) {
+    chr = input.charCodeAt(i);
+    hash = (hash << 5) - hash + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+};
+
 export const reduceSigFigs = (value: number) => {
   return Math.round(value * 100000) / 100000;
 };

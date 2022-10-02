@@ -1,10 +1,6 @@
 should sysnergizer manually forward entity deleted to each system as well as
 component upserted and components removed?
 
-add physics system
-
-handle menu - in progress
-
 handle basic voice
 
 
