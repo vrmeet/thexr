@@ -11,6 +11,7 @@ import * as sessionPersistance from "./sessionPersistance";
 import { ServiceXR } from "./services/service-xr";
 import Ammo from "ammojs-typed";
 import { ServiceStartModal } from "./services/service-start-modal";
+import { ServiceMenu } from "./services/service-menu";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -57,6 +58,7 @@ export class Synergize {
     this.addService(new ServiceInline());
     this.addService(new ServiceXR());
     this.addService(new ServiceStartModal());
+    this.addService(new ServiceMenu());
   }
 
   addService(service: IService) {
@@ -147,6 +149,7 @@ export class Synergize {
   }
   async createScene(engine: BABYLON.Engine) {
     this.engine = engine;
+
     this.scene = new BABYLON.Scene(engine);
     this.scene.clearColor = BABYLON.Color4.FromHexString("#201111");
 

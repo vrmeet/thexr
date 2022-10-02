@@ -152,6 +152,12 @@ export class ServiceXR implements IService {
           payload
         );
       });
+
+      // inform menu service that the controller is ready to bind a menu
+      this.signalHub.local.emit("controller_ready", {
+        hand: motionController.handedness,
+        grip: inputSource.grip,
+      });
     });
   }
 

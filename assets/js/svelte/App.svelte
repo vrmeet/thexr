@@ -1,12 +1,12 @@
 <script lang="ts">
     import { setContext } from "svelte";
-    import Welcome from "./svelte-components/Welcome.svelte";
-    import MicAndOutput from "./svelte-components/MicAndOutput.svelte";
-    import AvatarAndNickName from "./svelte-components/AvatarAndNickname.svelte";
-    import * as sessionPersistance from "./sessionPersistance";
+    import Welcome from "./Welcome.svelte";
+    import MicAndOutput from "./MicAndOutput.svelte";
+    import AvatarAndNickName from "./AvatarAndNickname.svelte";
+    import * as sessionPersistance from "../sessionPersistance";
     import { initClient } from "@urql/svelte";
-    import { isMobileVR } from "./utils/utils-browser";
-    import type { SignalHub } from "./signalHub";
+    import { isMobileVR } from "../utils/utils-browser";
+    import type { SignalHub } from "../signalHub";
 
     // initClient({
     //     url: "/api",

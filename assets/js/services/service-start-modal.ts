@@ -3,7 +3,7 @@
 import type { Context } from "../context";
 import type { IService } from "./service";
 
-import App from "../App.svelte";
+import App from "../svelte/App.svelte";
 
 export class ServiceStartModal implements IService {
   name: "service-start_modal";
