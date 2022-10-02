@@ -12,6 +12,7 @@ import { ServiceXR } from "./services/service-xr";
 import Ammo from "ammojs-typed";
 import { ServiceStartModal } from "./services/service-start-modal";
 import { ServiceMenu } from "./services/service-menu";
+import { ServiceWebRTC } from "./services/service-webrtc";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -54,11 +55,18 @@ export class Synergize {
   setupServices() {
     // connects to phoenix channel to send and receive events over websocket
     this.addService(new ServiceBroker());
+    // some basic animations as event rpc
     this.addService(new ServiceUtilities());
+    // maps functions to keyboard and tablet when one can't be in VR
     this.addService(new ServiceInline());
+    // setups VR
     this.addService(new ServiceXR());
+    // initial modal to get nickname, choose avatar and other options
     this.addService(new ServiceStartModal());
+    // enables a menu to mute mic, access other tools and UI
     this.addService(new ServiceMenu());
+    // enables basic voice and video communication with others over web RTC
+    this.addService(new ServiceWebRTC());
   }
 
   addService(service: IService) {
