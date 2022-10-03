@@ -5,6 +5,16 @@ handle basic voice
   - auto join and leave based on minimum of 2 users with at least 1 person unmuted
   - can get this from the entities list, if the entitites components also indicated mic pref
 
+subscription NOT RECEIVING ON USER PUBLISH EVENT... why is that
+i think the joined logic is good.  but perhaps publish is happening before they
+can join?
+
+The other question , is do we need to save a list of tracks, users in order to play the
+track... but I dont' even think we're getting to that part.
+
+the callback isn't working due to my confusing logic...?
+
+
 - put nickname, and mic pref into the context
 1. tie menu, mic pref into an event.
 

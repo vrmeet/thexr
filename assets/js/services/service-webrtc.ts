@@ -50,6 +50,12 @@ export class ServiceWebRTC implements IService {
       });
     AgoraRTC.setLogLevel(0);
     this.client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+    this.client.on("exception", (event) => {
+      console.warn(event);
+    });
+    this.client.on("user-published", this.handleRemotePublished);
+    this.client.on("user-unpublished", this.handleRemoteUnpublished);
+
     AgoraRTC.enableLogUpload();
 
     // create a single event loop for connecting and disconnecting
@@ -121,18 +127,13 @@ export class ServiceWebRTC implements IService {
   }
 
   async join() {
-    this.client.on("exception", (event) => {
-      console.warn(event);
-    });
-    this.client.on("user-published", this.handleRemotePublished);
-    this.client.on("user-unpublished", this.handleRemoteUnpublished);
-
     this.options.uid = await this.client.join(
       this.options.appid,
       this.options.channel,
       this.options.token,
       this.options.uid
     );
+    console.log("joined agora client");
   }
   async leave() {
     this.localTracks.audioTrack?.stop();
@@ -146,9 +147,11 @@ export class ServiceWebRTC implements IService {
     };
 
     await this.client.leave();
+    console.log("left agora client");
   }
   async publishAudio() {
     this.localTracks.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+    console.log("published my audio");
   }
   async unpublishAudio() {
     if (!this.localTracks.audioTrack) {
@@ -159,11 +162,13 @@ export class ServiceWebRTC implements IService {
     this.localTracks.audioTrack.stop();
     this.localTracks.audioTrack.close();
     this.localTracks.audioTrack = null;
+    console.log("stopped publishing my audio");
   }
   handleRemotePublished(
     user: IAgoraRTCRemoteUser,
     mediaType: "audio" | "video"
   ) {
+    console.log("remote user published", user.uid);
     this.subscribe(user, mediaType);
   }
   handleRemoteUnpublished(
@@ -186,6 +191,7 @@ export class ServiceWebRTC implements IService {
     }
     if (mediaType === "audio") {
       user.audioTrack.play();
+      console.log("subscribing to remote user", user.uid, "and playing audio");
     }
   }
 

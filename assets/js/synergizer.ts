@@ -36,6 +36,7 @@ export class Synergize {
     userToken: string,
     public engine: BABYLON.Engine
   ) {
+    // create an initialize context
     this.context = createContext();
     this.context.synergizer = this;
     this.context.my_member_id = my_member_id;
@@ -45,14 +46,16 @@ export class Synergize {
     this.context.space_id = space_id;
     this.context.webrtc_channel_id = webrtc_channel_id;
     this.context.userToken = userToken;
-    this.createScene(engine).then((scene) => {
-      this.context.scene = scene;
-      this.setupServices();
-      this.setupListeners();
-      this.run();
-    });
 
     window["synergizer"] = this;
+  }
+
+  async init() {
+    const scene = await this.createScene(this.engine);
+
+    this.context.scene = scene;
+    this.setupServices();
+    this.setupListeners();
   }
 
   setupServices() {
@@ -241,6 +244,8 @@ export class Synergize {
     window.addEventListener("resize", () => {
       this.engine.resize();
     });
+
+    this.context.signalHub.local.emit("system_started", true);
   }
 
   debug() {

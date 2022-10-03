@@ -26,6 +26,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     engine
   );
   window["synergizer"] = synergizer;
+  await synergizer.init();
   console.log("systems is", window["systems"]);
   if (typeof window["systems"] === "string" && window["systems"].length > 0) {
     const systemPaths = window["systems"].split(",");
@@ -38,6 +39,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     //   await synergizer.addSystem(sys);
     // });
   }
+  synergizer.run();
   // console.log("sending client ready");
   // synergizer.context.signalHub.local.emit("client_ready", "enter");
 });

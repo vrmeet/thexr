@@ -26,6 +26,7 @@ export type ServiceRequests = {
 
 export type LocalEvents = {
   client_ready: "enter" | "observe";
+  system_started: boolean;
   space_channel_connected: { agora_app_id: string };
   camera_ready: { pos: number[]; rot: number[] };
   controller_ready: { hand: string; grip: BABYLON.AbstractMesh };
