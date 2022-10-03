@@ -39,6 +39,9 @@ export class Synergize {
     this.context = createContext();
     this.context.synergizer = this;
     this.context.my_member_id = my_member_id;
+    this.context.my_nickname =
+      sessionPersistance.getNickname()?.nickname || my_member_id;
+    this.context.my_mic_muted = true;
     this.context.space_id = space_id;
     this.context.webrtc_channel_id = webrtc_channel_id;
     this.context.userToken = userToken;
@@ -103,20 +106,43 @@ export class Synergize {
     });
   }
 
+  enter() {
+    this.context.signalHub.outgoing.emit("entity_created", {
+      id: this.context.my_member_id,
+      components: {
+        avatar: { head: camPosRot(this.context.scene.activeCamera) },
+        nickname: this.context.my_nickname,
+        mic_muted: this.context.my_mic_muted,
+      },
+    });
+  }
+
   setupListeners() {
     this.context.signalHub.incoming.on("space_state").subscribe((state) => {
       console.log("getting space_state");
+      // draw any previously existing entities in genserver memory
       for (const [entity_id, components] of Object.entries(state)) {
-        this.initEntity(entity_id, components);
+        this.context.signalHub.incoming.emit("entity_created", {
+          id: entity_id,
+          components: components,
+        });
+        // this.initEntity(entity_id, components);
       }
       // send initial entity for self if not already in the state
       if (!state[this.context.my_member_id]) {
-        this.context.signalHub.outgoing.emit("entity_created", {
-          id: this.context.my_member_id,
-          components: {
-            avatar: { head: camPosRot(this.context.scene.activeCamera) },
-          },
-        });
+        this.enter();
+      } else {
+        // check if there are differences and send those
+        if (
+          state[this.context.my_member_id].nickname !== this.context.my_nickname
+        ) {
+          this.context.signalHub.outgoing.emit("components_upserted", {
+            id: this.context.my_member_id,
+            components: {
+              nickname: this.context.my_nickname,
+            },
+          });
+        }
       }
     });
 

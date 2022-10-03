@@ -1,13 +1,11 @@
 <script lang="ts">
     import { getContext } from "svelte";
     import type { Context } from "../context";
-    import * as sessionPersistance from "../sessionPersistance";
     export let avatarAndNicknameCallback;
 
     let context: Context = getContext("context");
-    let my_member_id: string = context.my_member_id
-    let nickname: string =
-        sessionPersistance.getNickname()?.nickname || my_member_id;
+    let nickname: string = context.my_nickname
+        
 </script>
 
 <div class="modal">

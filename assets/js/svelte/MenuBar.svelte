@@ -10,11 +10,16 @@
     export let updateCallback: () => void
 
     setContext("context", context)
-
-    let muted = true;
-    let menu_opened = false;
+    $: muted = context.my_mic_muted
+   let menu_opened = false;
     const toggleMic = () => {
-      muted = !muted
+      context.my_mic_muted = !context.my_mic_muted
+      context.signalHub.outgoing.emit("components_upserted", {
+        id: context.my_member_id,
+        components: {
+            mic_muted: context.my_mic_muted
+        }
+      })
     }
     $: micLabel = (muted) ? "Muted" : "Unmuted";
     const toggleMenu = () => {

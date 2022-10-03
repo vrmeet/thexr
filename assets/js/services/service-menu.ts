@@ -120,7 +120,6 @@ export class ServiceMenu implements IService {
 
   htmlToGui(el: HTMLElement) {
     let gui: GUI.Container;
-    console.log("at node", el.innerText);
     switch (el.nodeName) {
       case "DIV":
         gui = this.rectFromEl(el as HTMLDivElement);

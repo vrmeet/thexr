@@ -1,3 +1,4 @@
+/* eslint-disable no-prototype-builtins */
 import type { Context } from "../context";
 import type { IService } from "./service";
 import AgoraRTC from "agora-rtc-sdk-ng";
@@ -10,20 +11,25 @@ import type {
   IRemoteAudioTrack,
   IRemoteVideoTrack,
 } from "agora-rtc-sdk-ng";
-import { take } from "rxjs";
+import { filter, take, Subject, scan } from "rxjs";
 
 export class ServiceWebRTC implements IService {
-  name: "service-webrtc";
+  public name = "service-webrtc";
   public context: Context;
-  client: IAgoraRTCClient;
-  localTracks: {
+  public client: IAgoraRTCClient;
+  public eventLoop = new Subject<"connect" | "disconnect">();
+  public state = { joined: false, published_audio: false };
+  // keep track of how many users in total have
+  // we need at least 2 (so someone can hear)
+  // and at least 1 of them has to be unmuted
+  public micsMuted: Record<string, boolean> = {};
+  public localTracks: {
     videoTrack: ILocalVideoTrack;
     audioTrack: IMicrophoneAudioTrack;
   } = {
     videoTrack: null,
     audioTrack: null,
   };
-  remoteUsers: Record<string, IAgoraRTCRemoteUser> = {};
   // Agora client options
   options = {
     appid: null,
@@ -45,7 +51,75 @@ export class ServiceWebRTC implements IService {
     AgoraRTC.setLogLevel(0);
     this.client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
     AgoraRTC.enableLogUpload();
+
+    // create a single event loop for connecting and disconnecting
+    // so we can be idempotent, and avoid race conditions
+    this.eventLoop.subscribe(async (val) => {
+      console.log(val, this.state);
+      if (val === "connect") {
+        if (this.state.joined === false) {
+          await this.join();
+          this.state.joined = true;
+        }
+        if (
+          this.state.joined === true &&
+          this.state.published_audio === false &&
+          !this.context.my_mic_muted
+        ) {
+          await this.publishAudio();
+          this.state.published_audio = true;
+        }
+      } else if (val === "disconnect") {
+        if (this.state.joined === true) {
+          await this.leave();
+          this.state.published_audio = false;
+          this.state.joined = false;
+        }
+      }
+      console.log("after", this.state);
+    });
+
+    // listen for mic_muted changes on everyone
+    this.context.signalHub.incoming
+      .on("components_upserted")
+      .pipe(filter((evt) => evt.components.hasOwnProperty("mic_muted")))
+      .subscribe((evt) => {
+        this.micsMuted[evt.id] = evt.components.mic_muted;
+        this.updateCountAndJoinOrUnjoin();
+      });
+
+    this.context.signalHub.incoming
+      .on("entity_created")
+      .pipe(filter((evt) => evt.components.hasOwnProperty("mic_muted")))
+      .subscribe((evt) => {
+        this.micsMuted[evt.id] = evt.components.mic_muted;
+        this.updateCountAndJoinOrUnjoin();
+      });
+
+    this.context.signalHub.incoming.on("entities_deleted").subscribe((evt) => {
+      evt.ids.forEach((id) => {
+        delete this.micsMuted[id];
+      });
+      this.updateCountAndJoinOrUnjoin();
+    });
   }
+
+  numConnected() {
+    return Object.keys(this.micsMuted).length;
+  }
+
+  numMicsOn() {
+    return Object.values(this.micsMuted).filter((v) => v === false).length;
+  }
+
+  updateCountAndJoinOrUnjoin() {
+    if (this.numConnected() > 1 && this.numMicsOn() > 0) {
+      this.eventLoop.next("connect");
+    } else {
+      this.eventLoop.next("disconnect");
+    }
+  }
+
   async join() {
     this.client.on("exception", (event) => {
       console.warn(event);

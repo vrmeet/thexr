@@ -142,8 +142,8 @@ class SystemAvatar {
       });
     });
     this.signalHub.incoming.on("components_upserted").subscribe((msg) => {
-      const avatar = this.avatars[msg.id];
-      if (avatar) {
+      if (msg.components.avatar !== void 0 && this.avatars[msg.id] !== void 0) {
+        const avatar = this.avatars[msg.id];
         if (msg.id !== this.context.my_member_id) {
           avatar.pose(msg.components.avatar);
         }

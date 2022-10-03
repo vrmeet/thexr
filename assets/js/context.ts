@@ -32,6 +32,8 @@ export interface State {
 
 export interface Context {
   my_member_id: string;
+  my_nickname: string;
+  my_mic_muted: boolean;
   space_id: string;
   webrtc_channel_id: string;
   userToken: string;
@@ -47,6 +49,8 @@ export interface Context {
 export const createContext = (): Context => {
   return {
     my_member_id: null,
+    my_nickname: null,
+    my_mic_muted: true,
     space_id: null,
     webrtc_channel_id: null,
     userToken: null,

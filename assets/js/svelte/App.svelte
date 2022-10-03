@@ -42,9 +42,9 @@
 
     //callbacks
     const avatarAndNicknameCallback = async (nickname: string) => {
+        context.my_nickname = nickname
         sessionPersistance.saveNickname({ nickname });
-        // orchestrator.memberStates.update_my_nickname(nickname);
-        context.signalHub.menu.emit("update_nickname", nickname);
+        
         showAvatarAndNickNameForm = false;
         if (isMobileVR()) {
             // no need to check mic and speaker, 

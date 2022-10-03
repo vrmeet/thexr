@@ -260,8 +260,11 @@ class SystemAvatar implements ISystem {
     // });
 
     this.signalHub.incoming.on("components_upserted").subscribe((msg) => {
-      const avatar = this.avatars[msg.id];
-      if (avatar) {
+      if (
+        msg.components.avatar !== undefined &&
+        this.avatars[msg.id] !== undefined
+      ) {
+        const avatar = this.avatars[msg.id];
         if (msg.id !== this.context.my_member_id) {
           // we can ignore updates for own avatar since we are the source of messages
           avatar.pose(msg.components.avatar);

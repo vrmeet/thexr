@@ -27,5 +27,7 @@ export interface ComponentObj {
   };
   lighting?: any;
   material?: MaterialComponent;
+  mic_muted?: boolean;
+  nickname?: string;
   [anykey: string]: any;
 }
