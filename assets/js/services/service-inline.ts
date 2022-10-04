@@ -19,7 +19,6 @@ export class ServiceInline implements IService {
   init(context: Context) {
     this.context = context;
     this.scene = this.context.scene;
-    console.log("the context is", context);
     this.scene.collisionsEnabled = true;
     this.camera = <BABYLON.FreeCamera>this.scene.activeCamera;
     this.enhanceCamera();
@@ -49,17 +48,14 @@ export class ServiceInline implements IService {
         )
       )
       .subscribe(() => {
-        console.log("got here");
         if (this.flying === false) {
           this.camera.inputs.removeByType("FreeCameraKeyboardWalkInput");
           this.camera.inputs.add(new FreeCameraKeyboardFlyingInput());
-          console.log("fly mode on");
           this.context.signalHub.incoming.emit("hud_msg", "Flying mode ON");
         } else {
           this.camera.inputs.removeByType("FreeCameraKeyboardFlyingInput");
           this.camera.inputs.add(new FreeCameraKeyboardWalkInput());
           this.context.signalHub.incoming.emit("hud_msg", "fly mode off");
-          console.log("fly mode off");
         }
         this.flying = !this.flying;
       });

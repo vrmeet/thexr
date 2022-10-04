@@ -12,6 +12,8 @@ type RXJS = typeof RXJS;
 
 import { Emitter } from "typed-rx-emitter";
 import type { ComponentObj } from "./ecs/components/component-obj";
+import type { ISystem } from "./ecs/system";
+import type { IService } from "./services/service";
 import type {
   SignalHub,
   LocalEvents,
@@ -21,10 +23,6 @@ import type {
   OutgoingEvents,
   ServiceRequests,
 } from "./signalHub";
-
-export interface ISynergizer {
-  initEntity(entity_id: string, components: ComponentObj): void;
-}
 
 export interface State {
   [entityId: string]: ComponentObj;
@@ -38,8 +36,9 @@ export interface Context {
   webrtc_channel_id: string;
   userToken: string;
   scene: BABYLON.Scene;
-  synergizer: ISynergizer;
   signalHub: SignalHub;
+  services: Record<string, IService>;
+  systems: Record<string, ISystem>;
   state: State;
   BABYLON: BABYLON;
   MAT: MAT;
@@ -55,7 +54,6 @@ export const createContext = (): Context => {
     webrtc_channel_id: null,
     userToken: null,
     scene: null,
-    synergizer: null,
     signalHub: {
       local: new Emitter<LocalEvents>(),
       incoming: new Emitter<IncomingEvents>(),
@@ -64,6 +62,8 @@ export const createContext = (): Context => {
       movement: new Emitter<MovementEvents>(),
       service: new Emitter<ServiceRequests>(),
     },
+    services: {},
+    systems: {},
     state: {},
     BABYLON: BABYLON,
     MAT: MAT,

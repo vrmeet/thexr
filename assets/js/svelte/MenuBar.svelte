@@ -1,6 +1,6 @@
 <script lang="ts">
     import { setContext } from "svelte";
-    import {  afterUpdate } from 'svelte';
+    import { afterUpdate } from 'svelte';
     import MenuHome from "./MenuHome.svelte";
     import type { Context } from "../context";
 
@@ -10,8 +10,10 @@
     export let updateCallback: () => void
 
     setContext("context", context)
+    setContext("updateCallback", updateCallback)
+
     $: muted = context.my_mic_muted
-   let menu_opened = false;
+    let menu_opened = false;
     const toggleMic = () => {
       context.my_mic_muted = !context.my_mic_muted
       context.signalHub.outgoing.emit("components_upserted", {

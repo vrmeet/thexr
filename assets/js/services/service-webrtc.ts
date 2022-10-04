@@ -113,10 +113,16 @@ export class ServiceWebRTC implements IService {
       });
 
     this.context.signalHub.incoming.on("entities_deleted").subscribe((evt) => {
+      let matched = false;
       evt.ids.forEach((id) => {
-        delete this.micsMuted[id];
+        if (this.micsMuted[id]) {
+          delete this.micsMuted[id];
+          matched = true;
+        }
       });
-      this.updateCountAndJoinOrUnjoin();
+      if (matched) {
+        this.updateCountAndJoinOrUnjoin();
+      }
     });
   }
 

@@ -76,16 +76,16 @@ export class ServiceMenu implements IService {
 */
   }
 
-  buttonFromEl(el: HTMLButtonElement) {
+  buttonFromEl(el: HTMLButtonElement, style: CSSStyleDeclaration) {
     const gui = new GUI.Button(el.id);
-    const style = getComputedStyle(el);
 
-    gui.hoverCursor = "pointer";
-    gui.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-    gui.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+    // gui.hoverCursor = "pointer";
+    // gui.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    // gui.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
 
-    gui.isPointerBlocker = true;
-    gui.leftInPixels = el.offsetLeft;
+    // gui.isPointerBlocker = true;
+    // gui.leftInPixels = el.offsetLeft;
+    // gui.topInPixels = el.offsetTop;
     gui.thickness = 0;
     gui.onPointerUpObservable.add(() => {
       el.click();
@@ -106,30 +106,38 @@ export class ServiceMenu implements IService {
     return gui;
   }
 
-  rectFromEl(el: HTMLDivElement) {
+  rectFromEl(el: HTMLDivElement, style: CSSStyleDeclaration) {
     const gui = new GUI.Rectangle(el.id);
-    const style = getComputedStyle(el);
-    console.log("border width", style.borderWidth);
     gui.thickness = Number(style.borderWidth.replace("px", ""));
 
     gui.color = style.borderColor;
-
-    // gui.background = style["background-color"];
+    gui.background = style.backgroundColor;
+    if (el.children.length === 0 && el.innerText.length > 0) {
+      const label = new GUI.TextBlock(`${el.id}_inner_txt`);
+      label.text = el.innerText;
+      label.fontSize = 12;
+      label.color = style.color;
+      label.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+      gui.addControl(label);
+    }
     return gui;
   }
 
   htmlToGui(el: HTMLElement) {
     let gui: GUI.Container;
+    const style = getComputedStyle(el);
+
     switch (el.nodeName) {
       case "DIV":
-        gui = this.rectFromEl(el as HTMLDivElement);
+        gui = this.rectFromEl(el as HTMLDivElement, style);
         // gui.color = "#ff0000";
         // gui.background = "#aa00ee";
         break;
       case "BUTTON":
-        gui = this.buttonFromEl(el as HTMLButtonElement);
+        gui = this.buttonFromEl(el as HTMLButtonElement, style);
         break;
       default:
+        console.log("node name", el.nodeName);
         gui = new GUI.Container(el.id);
     }
 
@@ -137,16 +145,23 @@ export class ServiceMenu implements IService {
       gui[key] = el.dataset[key];
     });
 
-    // visit each child
     for (let i = 0; i < el.children.length; i++) {
       const childControl = this.htmlToGui(el.children.item(i) as HTMLElement);
       gui.addControl(childControl);
     }
+
     // set height and width at the end as the last thing you do
     //because adding children into a container seems to
     // set them to % instead of px dimensions
     gui.height = `${el.clientHeight}px`;
     gui.width = `${el.clientWidth}px`;
+    gui.hoverCursor = "pointer";
+    gui.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    gui.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+
+    gui.isPointerBlocker = true;
+    gui.leftInPixels = el.offsetLeft;
+    gui.topInPixels = el.offsetTop;
 
     return gui;
   }
@@ -164,13 +179,14 @@ export class ServiceMenu implements IService {
   }
 
   renderMenuToTexture() {
+    const menuBarCtrl = this.htmlToGui(document.getElementById("menu_bar"));
+
     if (this.mode === "fs") {
       if (this.fsGui) {
         this.fsGui.rootContainer.dispose();
       } else {
         this.createFullScreenMenuOverlay();
       }
-      const menuBarCtrl = this.htmlToGui(document.getElementById("menu_bar"));
       menuBarCtrl.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
       menuBarCtrl.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
       // this.fsGui.rootContainer.scaleX = window.devicePixelRatio;
@@ -190,7 +206,6 @@ export class ServiceMenu implements IService {
       if (this.wristGui) {
         this.wristGui.rootContainer.dispose();
         this.browseGui.rootContainer.dispose();
-        const menuBarCtrl = this.htmlToGui(document.getElementById("menu_bar"));
         this.wristGui.addControl(menuBarCtrl);
         const elementMenuHome = document.getElementById("menu_home");
         if (elementMenuHome) {

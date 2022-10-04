@@ -13,6 +13,7 @@ import Ammo from "ammojs-typed";
 import { ServiceStartModal } from "./services/service-start-modal";
 import { ServiceMenu } from "./services/service-menu";
 import { ServiceWebRTC } from "./services/service-webrtc";
+import { ServiceAttendees } from "./services/service-attendees";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -22,8 +23,6 @@ export class Synergize {
   public scene: BABYLON.Scene;
   public freeCamera: BABYLON.FreeCamera;
   public systemsForEntities: ISystem[] = [];
-  public systems: Record<string, ISystem> = {};
-  public services: Record<string, IService> = {};
   /**
    *
    * @param my_member_id
@@ -38,7 +37,6 @@ export class Synergize {
   ) {
     // create an initialize context
     this.context = createContext();
-    this.context.synergizer = this;
     this.context.my_member_id = my_member_id;
     this.context.my_nickname =
       sessionPersistance.getNickname()?.nickname || my_member_id;
@@ -73,16 +71,15 @@ export class Synergize {
     this.addService(new ServiceMenu());
     // enables basic voice and video communication with others over web RTC
     this.addService(new ServiceWebRTC());
+    // keeps track of who is present in the space
+    this.addService(new ServiceAttendees());
   }
 
   addService(service: IService) {
-    this.services[service.name] = service;
+    this.context.services[service.name] = service;
     service.init(this.context);
   }
 
-  getSystemByName(name: string) {
-    return this.systems[name];
-  }
   async addSystem(systemPath: string, systemName: string = null) {
     if (!systemName) {
       const parts = systemPath.split("/");
@@ -90,14 +87,13 @@ export class Synergize {
       systemName = lastPart.replace(".js", "");
     }
     await BABYLON.Tools.LoadScriptAsync(systemPath);
-    console.log("adding system", systemPath);
     const system = window[systemName];
-    if (!this.systems[system.name]) {
+    if (!this.context.systems[system.name]) {
       system.init(this.context);
       if (system.initEntity) {
         this.systemsForEntities.push(system);
       }
-      this.systems[system.name] = system;
+      this.context.systems[system.name] = system;
     }
     return system;
   }
@@ -122,7 +118,6 @@ export class Synergize {
 
   setupListeners() {
     this.context.signalHub.incoming.on("space_state").subscribe((state) => {
-      console.log("getting space_state");
       // draw any previously existing entities in genserver memory
       for (const [entity_id, components] of Object.entries(state)) {
         this.context.signalHub.incoming.emit("entity_created", {

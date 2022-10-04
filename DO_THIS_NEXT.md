@@ -3,6 +3,8 @@ component upserted and components removed?
 
 need to test xr, - mic, teleportation
 
+add back ability to place a few primitives
+
 
 
 
