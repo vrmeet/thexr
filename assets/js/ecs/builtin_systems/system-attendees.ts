@@ -5,25 +5,27 @@ import { filter } from "rxjs";
 import type { ComponentObj } from "../components/component-obj";
 
 export class SystemAttendees implements ISystem {
-  public name = "service-attendees";
+  public name = "system-attendees";
   public order = 3;
   public context: Context;
-  public attendees: Record<string, ComponentObj> = {};
+  public attendees: Record<string, ComponentObj> = {}; // entity to components
 
   init(context: Context) {
     this.context = context;
-
-    this.context.signalHub.incoming
-      .on("entity_created")
-      .pipe(filter((evt) => evt.components.hasOwnProperty("nickname")))
-      .subscribe((evt) => {
-        this.attendees[evt.id] = evt.components;
-      });
-
-    this.context.signalHub.incoming.on("entities_deleted").subscribe((evt) => {
-      evt.ids.forEach((id) => {
-        delete this.attendees[id];
-      });
-    });
+  }
+  registerEntity(entity_id: string, components: ComponentObj): void {
+    if (components.nickname !== undefined) {
+      this.attendees[entity_id] = components;
+    }
+  }
+  upsertComponents(entity_id: string, components: ComponentObj): void {
+    if (components.nickname && this.attendees[entity_id]) {
+      Object.assign(this.attendees[entity_id], components);
+    }
+  }
+  deregisterEntity(entity_id: string): void {
+    if (this.attendees[entity_id] !== undefined) {
+      delete this.attendees[entity_id];
+    }
   }
 }

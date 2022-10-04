@@ -155,6 +155,7 @@ export class Synergize {
             id: this.context.my_member_id,
             components: {
               nickname: this.context.my_nickname,
+              mic_muted: this.context.my_mic_muted,
             },
           });
         }

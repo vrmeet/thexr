@@ -6,7 +6,7 @@ import type { ISystem } from "./isystem";
 
 export class SystemLighting implements ISystem {
   public lights: { [entity_name: string]: BABYLON.Light } = {};
-  public name = "lighting";
+  public name = "system-lighting";
   public order = 1;
   public scene: BABYLON.Scene;
   public context: Context;

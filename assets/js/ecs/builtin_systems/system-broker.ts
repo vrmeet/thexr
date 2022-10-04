@@ -6,8 +6,8 @@ import type { PosRot } from "../../types";
 import type { ISystem } from "./isystem";
 
 export class SystemBroker implements ISystem {
-  public name = "service-broker";
-  public order = 3;
+  public name = "system-broker";
+  public order = 15;
   public context: Context;
   public socket: Socket;
   public channel: Channel;

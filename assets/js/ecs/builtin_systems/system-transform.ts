@@ -22,7 +22,7 @@ export class SystemTransform implements ISystem {
     this.registerEntity(entity_id, components);
   }
   deregisterEntity(entity_id: string): void {
-    return;
+    delete this.transforms[entity_id];
   }
   registerEntity(entity_id: string, components: ComponentObj) {
     const mesh = this.scene.getMeshByName(entity_id);

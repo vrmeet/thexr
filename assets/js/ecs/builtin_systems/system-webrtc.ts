@@ -12,9 +12,10 @@ import type {
   IRemoteVideoTrack,
 } from "agora-rtc-sdk-ng";
 import { filter, take, Subject, scan } from "rxjs";
+import type { ComponentObj } from "../components/component-obj";
 
 export class SystemWebRTC implements ISystem {
-  public name = "service-webrtc";
+  public name = "system-webrtc";
   public order = 10;
   public context: Context;
   public client: IAgoraRTCClient;
@@ -95,36 +96,28 @@ export class SystemWebRTC implements ISystem {
       }
       console.log("after verify", this.state);
     });
+  }
 
-    // listen for mic_muted changes on everyone
-    this.context.signalHub.incoming
-      .on("components_upserted")
-      .pipe(filter((evt) => evt.components.hasOwnProperty("mic_muted")))
-      .subscribe((evt) => {
-        this.micsMuted[evt.id] = evt.components.mic_muted;
-        this.updateCountAndJoinOrUnjoin();
-      });
-
-    this.context.signalHub.incoming
-      .on("entity_created")
-      .pipe(filter((evt) => evt.components.hasOwnProperty("mic_muted")))
-      .subscribe((evt) => {
-        this.micsMuted[evt.id] = evt.components.mic_muted;
-        this.updateCountAndJoinOrUnjoin();
-      });
-
-    this.context.signalHub.incoming.on("entities_deleted").subscribe((evt) => {
-      let matched = false;
-      evt.ids.forEach((id) => {
-        if (this.micsMuted[id]) {
-          delete this.micsMuted[id];
-          matched = true;
-        }
-      });
-      if (matched) {
-        this.updateCountAndJoinOrUnjoin();
-      }
-    });
+  registerEntity(entity_id: string, components: ComponentObj): void {
+    if (components.mic_muted !== undefined) {
+      this.micsMuted[entity_id] = components.mic_muted;
+      this.updateCountAndJoinOrUnjoin();
+    }
+  }
+  upsertComponents(entity_id: string, components: ComponentObj): void {
+    if (
+      components.mic_muted !== undefined &&
+      this.micsMuted[entity_id] !== undefined
+    ) {
+      this.micsMuted[entity_id] = components.mic_muted;
+      this.updateCountAndJoinOrUnjoin();
+    }
+  }
+  deregisterEntity(entity_id: string): void {
+    if (this.micsMuted[entity_id] !== undefined) {
+      delete this.micsMuted[entity_id];
+      this.updateCountAndJoinOrUnjoin();
+    }
   }
 
   numConnected() {
@@ -137,8 +130,10 @@ export class SystemWebRTC implements ISystem {
 
   updateCountAndJoinOrUnjoin() {
     if (this.numConnected() >= 2 && this.numMicsOn() >= 1) {
+      console.log("be connected");
       this.verification.next("be_connected");
     } else {
+      console.log("be disconnected");
       this.verification.next("be_disconnected");
     }
   }

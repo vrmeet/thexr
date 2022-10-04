@@ -10,7 +10,7 @@ import { isMobileVR } from "../../utils/utils-browser";
 import MenuBar from "../../svelte/MenuBar.svelte";
 
 export class SystemMenu implements ISystem {
-  public name = "service-menu";
+  public name = "system-menu";
   public order = 8;
   public fsGui: GUI.AdvancedDynamicTexture;
   public smallPlane: BABYLON.AbstractMesh;

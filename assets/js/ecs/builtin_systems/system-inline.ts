@@ -10,7 +10,7 @@ import * as BABYLON from "babylonjs";
  */
 export class SystemInline implements ISystem {
   flying = false;
-  name = "service-inline";
+  name = "system-inline";
   public order = 2;
   observerCamera: BABYLON.Observer<BABYLON.Camera>;
   observerKeyboard: BABYLON.Observer<BABYLON.KeyboardInfo>;
