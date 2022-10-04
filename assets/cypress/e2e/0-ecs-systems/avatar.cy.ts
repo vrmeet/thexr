@@ -8,7 +8,7 @@ import type {
 } from "../../../js/types";
 import { EventName } from "../../../js/event-names";
 import type { ComponentObj } from "../../../js/ecs/components/component-obj";
-import type { SystemAvatar } from "../../../js/ecs/systems/system-avatar";
+import type { SystemAvatar } from "../../../js/ecs/builtin_systems/system-avatar";
 describe("inline system", () => {
   let synergizer: Synergize;
   let avatarSystem;

@@ -1,16 +1,17 @@
 import { filter } from "rxjs";
-import type { Context } from "../context";
-import { FreeCameraKeyboardFlyingInput } from "../scene/camera-inputs/free-camera-keyboard-flying-input";
-import { FreeCameraKeyboardWalkInput } from "../scene/camera-inputs/free-camera-keyboard-walk-input";
-import type { IService } from "./service";
+import type { Context } from "../../context";
+import { FreeCameraKeyboardFlyingInput } from "../../scene/camera-inputs/free-camera-keyboard-flying-input";
+import { FreeCameraKeyboardWalkInput } from "../../scene/camera-inputs/free-camera-keyboard-walk-input";
+import type { ISystem } from "./isystem";
 import * as BABYLON from "babylonjs";
 /**
  * Inline mode means 2D, not immersive playing
  * navigation using cursor or WASD keys
  */
-export class ServiceInline implements IService {
+export class SystemInline implements ISystem {
   flying = false;
   name = "service-inline";
+  public order = 2;
   observerCamera: BABYLON.Observer<BABYLON.Camera>;
   observerKeyboard: BABYLON.Observer<BABYLON.KeyboardInfo>;
   camera: BABYLON.FreeCamera;
@@ -28,6 +29,23 @@ export class ServiceInline implements IService {
       }
     );
     this.bindFKeyForFlight();
+
+    this.context.signalHub.local
+      .on("xr_state_changed")
+      .pipe(filter((msg) => msg === BABYLON.WebXRState.EXITING_XR))
+      .subscribe(() => {
+        // show block hands next to face
+        // this.createInlineHands();
+        // this.bindInlineEvents();
+      });
+
+    this.context.signalHub.local
+      .on("xr_state_changed")
+      .pipe(filter((msg) => msg === BABYLON.WebXRState.ENTERING_XR))
+      .subscribe(() => {
+        // can hide own hands because we have controllers
+        // this.unbindInlineEvents();
+      });
   }
   enhanceCamera() {
     this.camera.inputs.removeByType("FreeCameraKeyboardMoveInput");

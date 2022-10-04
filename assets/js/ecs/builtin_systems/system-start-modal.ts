@@ -1,12 +1,13 @@
 /// <reference types="svelte" />
 
-import type { Context } from "../context";
-import type { IService } from "./service";
+import type { Context } from "../../context";
+import type { ISystem } from "./isystem";
 
-import App from "../svelte/App.svelte";
+import App from "../../svelte/App.svelte";
 
-export class ServiceStartModal implements IService {
-  name: "service-start_modal";
+export class SystemStartModal implements ISystem {
+  name = "service-start_modal";
+  public order = 8;
   init(context: Context) {
     // wait until system has loaded all the plugins
     // otherwise this modal might cause race condition

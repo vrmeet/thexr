@@ -1,24 +1,25 @@
-import type { Context } from "../context";
-import type { IService } from "./service";
+import type { Context } from "../../context";
+import type { ISystem } from "./isystem";
 import * as BABYLON from "babylonjs";
-import type { SignalHub } from "../signalHub";
-import { camPosRot, getPosRot } from "../utils/misc";
+import type { SignalHub } from "../../signalHub";
+import { camPosRot, getPosRot } from "../../utils/misc";
 import { distinctUntilChanged, filter, map, Observable, takeUntil } from "rxjs";
-import type { xr_component } from "../types";
-import { isMobileVR } from "../utils/utils-browser";
+import type { xr_component } from "../../types";
+import { isMobileVR } from "../../utils/utils-browser";
 
 /*
 enables the XR experience
 sends head motion and hand controller data
 */
-export class ServiceXR implements IService {
+export class SystemXR implements ISystem {
   public name = "service-xr";
+  public order = 3;
   public context: Context;
   public scene: BABYLON.Scene;
   public xrHelper: BABYLON.WebXRDefaultExperience;
   public exitingXR$;
   public controllerPhysicsFeature: BABYLON.WebXRControllerPhysics;
-
+  public teleportation: BABYLON.WebXRMotionControllerTeleportation;
   public signalHub: SignalHub;
   init(context: Context) {
     this.context = context;
@@ -70,10 +71,24 @@ export class ServiceXR implements IService {
       )
     );
 
-    // this.teleportationManager = new TeleportationManager(
-    //   this.xrHelper,
-    //   this.scene
-    // );
+    this.teleportation =
+      this.xrHelper.baseExperience.featuresManager.enableFeature(
+        BABYLON.WebXRFeatureName.TELEPORTATION,
+        "latest" /* or latest */,
+        {
+          xrInput: this.xrHelper.input,
+          floorMeshes: [],
+          defaultTargetMeshOptions: {
+            teleportationFillColor: "yellow",
+            teleportationBorderColor: "green",
+            timeToTeleport: 0,
+            disableAnimation: true,
+            disableLighting: true,
+          },
+          forceHandedness: "right",
+        }
+      ) as BABYLON.WebXRMotionControllerTeleportation;
+    this.teleportation.rotationEnabled = false;
 
     // function added here does not build up when entered and exiting VR
     // multiple times - tested with console.log

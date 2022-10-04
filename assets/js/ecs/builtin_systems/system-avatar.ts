@@ -4,7 +4,7 @@ import type * as BABYLON from "babylonjs";
 import type { SignalHub } from "../../signalHub";
 import type { ComponentObj } from "../components/component-obj";
 import type { PosRot } from "../../types";
-import type { ISystem } from "../system";
+import type { ISystem } from "./isystem";
 
 const ANIMATION_FRAME_PER_SECOND = 60;
 const TOTAL_ANIMATION_FRAMES = 5;
@@ -206,8 +206,9 @@ class Avatar {
 
 // position of an avatar should be at the feet
 
-class SystemAvatar implements ISystem {
+export class SystemAvatar implements ISystem {
   public name = "system-avatar";
+  public order = 1;
   public avatars: Record<string, Avatar> = {};
   public scene: BABYLON.Scene;
   public context: Context;
@@ -217,15 +218,6 @@ class SystemAvatar implements ISystem {
     this.context = context;
     this.signalHub = context.signalHub;
     this.scene = context.scene;
-
-    this.context.signalHub.incoming.on("entities_deleted").subscribe((evt) => {
-      evt.ids.forEach((id) => {
-        if (this.avatars[id]) {
-          this.avatars[id].dispose();
-          delete this.avatars[id];
-        }
-      });
-    });
 
     // this.signalHub.incoming.on("about_members").subscribe((members) => {
     //   for (const [member_id, payload] of Object.entries(members.movements)) {
@@ -258,19 +250,6 @@ class SystemAvatar implements ISystem {
     //     }
     //   }
     // });
-
-    this.signalHub.incoming.on("components_upserted").subscribe((msg) => {
-      if (
-        msg.components.avatar !== undefined &&
-        this.avatars[msg.id] !== undefined
-      ) {
-        const avatar = this.avatars[msg.id];
-        if (msg.id !== this.context.my_member_id) {
-          // we can ignore updates for own avatar since we are the source of messages
-          avatar.pose(msg.components.avatar);
-        }
-      }
-    });
 
     // this.signalHub.incoming.on("event").subscribe((mpts) => {
     //   if (mpts.m === EventName.member_entered) {
@@ -324,7 +303,8 @@ class SystemAvatar implements ISystem {
   }
 
   dispose() {}
-  initEntity(entity_id: string, components: ComponentObj) {
+
+  registerEntity(entity_id: string, components: ComponentObj) {
     if (components.avatar) {
       if (!this.avatars[entity_id]) {
         this.avatars[entity_id] = new Avatar(
@@ -335,5 +315,24 @@ class SystemAvatar implements ISystem {
       }
     }
   }
+
+  deregisterEntity(entity_id: string): void {
+    if (this.avatars[entity_id] !== undefined) {
+      this.avatars[entity_id].dispose();
+      delete this.avatars[entity_id];
+    }
+  }
+
+  upsertComponents(entity_id: string, components: ComponentObj): void {
+    if (
+      components.avatar !== undefined &&
+      this.avatars[entity_id] !== undefined
+    ) {
+      const avatar = this.avatars[entity_id];
+      if (entity_id !== this.context.my_member_id) {
+        // we can ignore updates for own avatar since we are the source of messages
+        avatar.pose(components.avatar);
+      }
+    }
+  }
 }
-window["system-avatar"] = new SystemAvatar();

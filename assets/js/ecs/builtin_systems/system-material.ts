@@ -1,12 +1,14 @@
 import type * as BABYLON from "babylonjs";
-import type { ISystem } from "../system";
 import type { Context } from "../../context";
 import type { MaterialComponent } from "../components/material";
 import type { ComponentObj } from "../components/component-obj";
+import type { ISystem } from "./isystem";
 
-class SystemMaterial implements ISystem {
+export class SystemMaterial implements ISystem {
   public materials: { [material_name: string]: BABYLON.Material } = {};
+  public entities: Record<string, string> = {}; // entity_id to material name mapping
   public name = "system-material";
+  public order = 3;
   public scene: BABYLON.Scene;
   public context: Context;
   init(context: Context) {
@@ -14,10 +16,46 @@ class SystemMaterial implements ISystem {
     this.scene = context.scene;
   }
 
-  initEntity(entity_id: string, components: ComponentObj) {
+  registerEntity(entity_id: string, components: ComponentObj) {
     if (components.material) {
       const mat = this.findOrCreateMaterial(components.material);
+      //save material
+      if (this.materials[mat.name] === undefined) {
+        this.materials[mat.name] = mat;
+      }
       this.assignMaterial(mat, entity_id);
+    }
+  }
+
+  upsertComponents(entity_id: string, components: ComponentObj): void {
+    if (
+      components.material != undefined &&
+      this.entities[entity_id] !== undefined
+    ) {
+      const oldMaterialName = this.entities[entity_id];
+      const mat = this.findOrCreateMaterial(components.material);
+      //save material
+      if (this.materials[mat.name] === undefined) {
+        this.materials[mat.name] = mat;
+      }
+      this.assignMaterial(mat, entity_id);
+      this.pruneMaterial(oldMaterialName);
+    }
+  }
+
+  deregisterEntity(entity_id: string): void {
+    if (this.entities[entity_id] !== undefined) {
+      const materialName = this.entities[entity_id];
+      delete this.entities[entity_id];
+      this.pruneMaterial(materialName);
+    }
+  }
+
+  pruneMaterial(materialName: string) {
+    if (!Object.values(this.entities).includes(materialName)) {
+      // no one else is using this material, so remove the material too
+      this.materials[materialName].dispose();
+      delete this.materials[materialName];
     }
   }
 
@@ -34,6 +72,7 @@ class SystemMaterial implements ISystem {
     if (mesh) {
       mesh.material = mat;
     }
+    this.entities[entity_id] = mat.name;
   }
 
   findOrCreateColor(colorString: string) {
@@ -47,7 +86,6 @@ class SystemMaterial implements ISystem {
     );
     const color = this.context.BABYLON.Color3.FromHexString(colorString);
     myMaterial.diffuseColor = color;
-    this.materials[matName] = myMaterial;
     return myMaterial;
   }
 
@@ -57,11 +95,8 @@ class SystemMaterial implements ISystem {
       return this.materials[matName];
     }
     const myMaterial = new this.context.MAT.GridMaterial(matName, this.scene);
-    this.materials[matName] = myMaterial;
     return myMaterial;
   }
 
   dispose() {}
 }
-
-window["system-material"] = new SystemMaterial();

@@ -6,8 +6,8 @@
     "build": "node esbuild.js",
     "deploy": "node esbuild.js --deploy && npm run sys",
     "watch": "node esbuild.js --watch",
-    "sys": "esbuild `find js/ecs/systems -name '*.ts'` --outdir=../priv/static/systems --target=es2016",
-    "watchsys": "esbuild `find js/ecs/systems -name '*.ts'` --outdir=../priv/static/systems --target=es2016 --watch",
+    "sys": "esbuild `find js/ecs/pluggable_systems -name '*.ts'` --outdir=../priv/static/systems --target=es2016",
+    "watchsys": "esbuild `find js/ecs/pluggable_systems -name '*.ts'` --outdir=../priv/static/systems --target=es2016 --watch",
     "typecheck": "tsc --watch",
     "sync_event_types": "node event-name-watcher.js",
     "check": "svelte-check --tsconfig ./tsconfig.json"

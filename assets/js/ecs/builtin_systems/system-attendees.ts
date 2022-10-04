@@ -1,11 +1,12 @@
 /* eslint-disable no-prototype-builtins */
-import type { Context } from "../context";
-import type { IService } from "./service";
+import type { Context } from "../../context";
+import type { ISystem } from "./isystem";
 import { filter } from "rxjs";
-import type { ComponentObj } from "../ecs/components/component-obj";
+import type { ComponentObj } from "../components/component-obj";
 
-export class ServiceAttendees implements IService {
+export class SystemAttendees implements ISystem {
   public name = "service-attendees";
+  public order = 3;
   public context: Context;
   public attendees: Record<string, ComponentObj> = {};
 

@@ -1,10 +1,10 @@
 <script lang="ts">
   import { getContext } from "svelte";
   import type { Context } from "../context";
-  import type { ServiceAttendees } from "../services/service-attendees";
+  import type { SystemAttendees } from "../ecs/builtin_systems/system-attendees";
   
   let context: Context = getContext("context");
-  const serviceAttendees = context.services['service-attendees'] as ServiceAttendees
+  const serviceAttendees = context.systems['system-attendees'] as SystemAttendees
   const nicknames = Object.values(serviceAttendees.attendees).map(comp => comp.nickname)
 
 

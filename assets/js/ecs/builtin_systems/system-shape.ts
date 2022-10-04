@@ -1,29 +1,43 @@
-import type { ISystem } from "../system";
 import type { Context } from "../../context";
 import type { ComponentObj } from "../components/component-obj";
 import type { ShapeComponent } from "../components/shape";
+import type { ISystem } from "./isystem";
 
-class SystemShape implements ISystem {
+export class SystemShape implements ISystem {
   public meshes: Record<string, BABYLON.AbstractMesh> = {};
   public name = "system-shape";
+  public order = 0;
   public context: Context;
   init(context: Context) {
     this.context = context;
-    this.context.signalHub.incoming.on("entity_deleted").subscribe((evt) => {
-      if (this.meshes[evt.id]) {
-        this.meshes[evt.id].dispose();
-        delete this.meshes[evt.id];
-      }
-    });
   }
 
-  initEntity(entity_id: string, components: ComponentObj) {
+  registerEntity(entity_id: string, components: ComponentObj) {
     if (components.shape) {
       if (!this.meshes[entity_id]) {
         this.meshes[entity_id] = this.createMesh(entity_id, components.shape);
       }
     }
   }
+
+  upsertComponents(entity_id: string, components: ComponentObj): void {
+    if (
+      components.shape !== undefined &&
+      this.meshes[entity_id] !== undefined
+    ) {
+      // recreate the mesh
+      this.meshes[entity_id].dispose();
+      this.meshes[entity_id] = this.createMesh(entity_id, components.shape);
+    }
+  }
+
+  deregisterEntity(entity_id: string): void {
+    if (this.meshes[entity_id] !== undefined) {
+      this.meshes[entity_id].dispose();
+      delete this.meshes[entity_id];
+    }
+  }
+
   capitalize(string: string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
@@ -55,4 +69,3 @@ class SystemShape implements ISystem {
 
   dispose() {}
 }
-window["system-shape"] = new SystemShape();

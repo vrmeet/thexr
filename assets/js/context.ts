@@ -12,8 +12,7 @@ type RXJS = typeof RXJS;
 
 import { Emitter } from "typed-rx-emitter";
 import type { ComponentObj } from "./ecs/components/component-obj";
-import type { ISystem } from "./ecs/system";
-import type { IService } from "./services/service";
+import type { ISystem } from "./ecs/builtin_systems/isystem";
 import type {
   SignalHub,
   LocalEvents,
@@ -37,7 +36,6 @@ export interface Context {
   userToken: string;
   scene: BABYLON.Scene;
   signalHub: SignalHub;
-  services: Record<string, IService>;
   systems: Record<string, ISystem>;
   state: State;
   BABYLON: BABYLON;
@@ -62,7 +60,6 @@ export const createContext = (): Context => {
       movement: new Emitter<MovementEvents>(),
       service: new Emitter<ServiceRequests>(),
     },
-    services: {},
     systems: {},
     state: {},
     BABYLON: BABYLON,

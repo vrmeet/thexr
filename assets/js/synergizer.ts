@@ -1,19 +1,23 @@
 import * as BABYLON from "babylonjs";
-import type { ISystem } from "./ecs/system";
 import { createContext, type Context } from "./context";
 import type { ComponentObj } from "./ecs/components/component-obj";
-import type { IService } from "./services/service";
-import { ServiceBroker } from "./services/service-broker";
-import { ServiceUtilities } from "./services/service-utilities";
-import { ServiceInline } from "./services/service-inline";
+import type { ISystem } from "./ecs/builtin_systems/isystem";
+import { SystemBroker } from "./ecs/builtin_systems/system-broker";
+import { SystemUtilities } from "./ecs/builtin_systems/system-utilities";
+import { SystemInline } from "./ecs/builtin_systems/system-inline";
 import { camPosRot } from "./utils/misc";
 import * as sessionPersistance from "./sessionPersistance";
-import { ServiceXR } from "./services/service-xr";
+import { SystemXR } from "./ecs/builtin_systems/system-xr";
 import Ammo from "ammojs-typed";
-import { ServiceStartModal } from "./services/service-start-modal";
-import { ServiceMenu } from "./services/service-menu";
-import { ServiceWebRTC } from "./services/service-webrtc";
-import { ServiceAttendees } from "./services/service-attendees";
+import { SystemStartModal } from "./ecs/builtin_systems/system-start-modal";
+import { SystemMenu } from "./ecs/builtin_systems/system-menu";
+import { SystemWebRTC } from "./ecs/builtin_systems/system-webrtc";
+import { SystemAttendees } from "./ecs/builtin_systems/system-attendees";
+import { SystemTransform } from "./ecs/builtin_systems/system-transform";
+import { SystemShape } from "./ecs/builtin_systems/system-shape";
+import { SystemAvatar } from "./ecs/builtin_systems/system-avatar";
+import { SystemMaterial } from "./ecs/builtin_systems/system-material";
+import { SystemLighting } from "./ecs/builtin_systems/system-lighting";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -22,7 +26,7 @@ export class Synergize {
   public context: Context;
   public scene: BABYLON.Scene;
   public freeCamera: BABYLON.FreeCamera;
-  public systemsForEntities: ISystem[] = [];
+  public processList: ISystem[];
   /**
    *
    * @param my_member_id
@@ -52,35 +56,48 @@ export class Synergize {
     const scene = await this.createScene(this.engine);
 
     this.context.scene = scene;
-    this.setupServices();
+    this.setupSystems();
     this.setupListeners();
   }
 
-  setupServices() {
+  setupSystems() {
     // connects to phoenix channel to send and receive events over websocket
-    this.addService(new ServiceBroker());
+    this.addSystem(new SystemBroker());
     // some basic animations as event rpc
-    this.addService(new ServiceUtilities());
+    this.addSystem(new SystemUtilities());
     // maps functions to keyboard and tablet when one can't be in VR
-    this.addService(new ServiceInline());
+    this.addSystem(new SystemInline());
     // setups VR
-    this.addService(new ServiceXR());
+    this.addSystem(new SystemXR());
     // initial modal to get nickname, choose avatar and other options
-    this.addService(new ServiceStartModal());
+    this.addSystem(new SystemStartModal());
     // enables a menu to mute mic, access other tools and UI
-    this.addService(new ServiceMenu());
+    this.addSystem(new SystemMenu());
     // enables basic voice and video communication with others over web RTC
-    this.addService(new ServiceWebRTC());
+    this.addSystem(new SystemWebRTC());
     // keeps track of who is present in the space
-    this.addService(new ServiceAttendees());
+    this.addSystem(new SystemAttendees());
+    // updates position/rotation/scale
+    this.addSystem(new SystemTransform());
+    // basic shapes
+    this.addSystem(new SystemShape());
+    // avatars
+    this.addSystem(new SystemAvatar());
+    this.addSystem(new SystemMaterial());
+    this.addSystem(new SystemLighting());
   }
 
-  addService(service: IService) {
-    this.context.services[service.name] = service;
-    service.init(this.context);
+  addSystem(system: ISystem) {
+    if (this.context.systems[system.name] === undefined) {
+      this.context.systems[system.name] = system;
+      system.init(this.context);
+      this.processList = Object.values(this.context.systems)
+        .filter((system) => system.registerEntity !== undefined)
+        .sort((a, b) => a.order - b.order);
+    }
   }
 
-  async addSystem(systemPath: string, systemName: string = null) {
+  async addRemoteSystem(systemPath: string, systemName: string = null) {
     if (!systemName) {
       const parts = systemPath.split("/");
       const lastPart = parts[parts.length - 1];
@@ -88,21 +105,22 @@ export class Synergize {
     }
     await BABYLON.Tools.LoadScriptAsync(systemPath);
     const system = window[systemName];
-    if (!this.context.systems[system.name]) {
-      system.init(this.context);
-      if (system.initEntity) {
-        this.systemsForEntities.push(system);
-      }
-      this.context.systems[system.name] = system;
-    }
+    this.addSystem(system);
     return system;
   }
 
-  initEntity(entity_id: string, components: ComponentObj) {
+  registerEntity(entity_id: string, components: ComponentObj) {
     this.context.state[entity_id] = components;
-    this.systemsForEntities.forEach((system) => {
-      system.initEntity(entity_id, components);
+    this.processList.forEach((system) => {
+      system.registerEntity(entity_id, components);
     });
+  }
+
+  deregisterEntity(entity_id: string) {
+    for (let i = this.processList.length - 1; i >= 0; i--) {
+      this.processList[i].deregisterEntity(entity_id);
+    }
+    delete this.context.state[entity_id];
   }
 
   enter() {
@@ -124,7 +142,6 @@ export class Synergize {
           id: entity_id,
           components: components,
         });
-        // this.initEntity(entity_id, components);
       }
       // send initial entity for self if not already in the state
       if (!state[this.context.my_member_id]) {
@@ -145,12 +162,12 @@ export class Synergize {
     });
 
     this.context.signalHub.incoming.on("entity_created").subscribe((evt) => {
-      this.initEntity(evt.id, evt.components);
+      this.registerEntity(evt.id, evt.components);
     });
 
     this.context.signalHub.incoming.on("entities_deleted").subscribe((evt) => {
       evt.ids.forEach((id) => {
-        delete this.context.state[id];
+        this.deregisterEntity(id);
       });
     });
 
@@ -162,6 +179,9 @@ export class Synergize {
           return;
         }
         Object.assign(components, evt.components);
+        this.processList.forEach((system) =>
+          system.upsertComponents(evt.id, evt.components)
+        );
       });
 
     // route clicks to mesh picked event

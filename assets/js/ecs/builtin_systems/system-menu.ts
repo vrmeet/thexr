@@ -1,16 +1,17 @@
 /// <reference types="svelte" />
-import type { Context } from "../context";
-import type { IService } from "./service";
+import type { Context } from "../../context";
+import type { ISystem } from "./isystem";
 import * as BABYLON from "babylonjs";
 import * as GUI from "babylonjs-gui";
-import type { SignalHub } from "../signalHub";
+import type { SignalHub } from "../../signalHub";
 import { filter, take } from "rxjs";
-import { isMobileVR } from "../utils/utils-browser";
+import { isMobileVR } from "../../utils/utils-browser";
 
-import MenuBar from "../svelte/MenuBar.svelte";
+import MenuBar from "../../svelte/MenuBar.svelte";
 
-export class ServiceMenu implements IService {
-  name: "service-menu";
+export class SystemMenu implements ISystem {
+  public name = "service-menu";
+  public order = 8;
   public fsGui: GUI.AdvancedDynamicTexture;
   public smallPlane: BABYLON.AbstractMesh;
   public bigPlane: BABYLON.AbstractMesh;

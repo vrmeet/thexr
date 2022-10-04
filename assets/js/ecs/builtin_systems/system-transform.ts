@@ -1,8 +1,8 @@
 import type * as BABYLON from "babylonjs";
 
-import type { ISystem } from "../system";
 import type { Context } from "../../context";
 import type { ComponentObj } from "../components/component-obj";
+import type { ISystem } from "./isystem";
 
 interface ITransformable {
   position: BABYLON.Vector3;
@@ -10,15 +10,21 @@ interface ITransformable {
   scaling: BABYLON.Vector3;
 }
 
-class SystemTransform implements ISystem {
+export class SystemTransform implements ISystem {
   public transforms: { [entity_id: string]: ITransformable } = {};
   public name = "system-transform";
+  public order = 3;
   public scene: BABYLON.Scene;
   init(context: Context) {
     this.scene = context.scene;
   }
-
-  initEntity(entity_id: string, components: ComponentObj) {
+  upsertComponents(entity_id: string, components: ComponentObj): void {
+    this.registerEntity(entity_id, components);
+  }
+  deregisterEntity(entity_id: string): void {
+    return;
+  }
+  registerEntity(entity_id: string, components: ComponentObj) {
     const mesh = this.scene.getMeshByName(entity_id);
     if (mesh) {
       this.transforms[entity_id] = mesh;
@@ -54,5 +60,3 @@ class SystemTransform implements ISystem {
   }
   dispose() {}
 }
-
-window["system-transform"] = new SystemTransform();

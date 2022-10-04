@@ -53,12 +53,7 @@ defmodule ThexrWeb.TestController do
       member_id: conn.assigns.unique_id,
       user_token: user_token(conn),
       space_id: space_id,
-      systems: ~w(/systems/system-lighting.js
-        /systems/system-shape.js
-        /systems/system-avatar.js
-        /systems/system-transform.js
-        /systems/system-material.js
-        ) |> Enum.join(","),
+      systems: nil,
       webrtc_channel_id: 2,
       layout: false
     )

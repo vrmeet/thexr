@@ -1,6 +1,6 @@
 /* eslint-disable no-prototype-builtins */
-import type { Context } from "../context";
-import type { IService } from "./service";
+import type { Context } from "../../context";
+import type { ISystem } from "./isystem";
 import AgoraRTC from "agora-rtc-sdk-ng";
 import type {
   ConnectionState,
@@ -13,8 +13,9 @@ import type {
 } from "agora-rtc-sdk-ng";
 import { filter, take, Subject, scan } from "rxjs";
 
-export class ServiceWebRTC implements IService {
+export class SystemWebRTC implements ISystem {
   public name = "service-webrtc";
+  public order = 10;
   public context: Context;
   public client: IAgoraRTCClient;
   public verification = new Subject<"be_connected" | "be_disconnected">();

@@ -1,11 +1,12 @@
-import type { Context } from "../context";
+import type { Context } from "../../context";
 import * as BABYLON from "babylonjs";
-import type { IService } from "./service";
+import type { ISystem } from "./isystem";
 
 const ANIMATION_FRAME_PER_SECOND = 60;
 
-export class ServiceUtilities implements IService {
-  name: "service-utilities";
+export class SystemUtilities implements ISystem {
+  name = "service-utilities";
+  public order = 10;
   public animatables: Record<string, BABYLON.Animatable> = {};
   public context: Context;
   init(context: Context) {
