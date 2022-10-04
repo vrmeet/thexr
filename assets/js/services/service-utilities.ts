@@ -23,8 +23,6 @@ export class ServiceUtilities implements IService {
       if (Array.isArray(to)) {
         to = BABYLON.Vector3.FromArray(to);
       }
-      console.log("req", req);
-      console.log("received animation request", target, from, to);
       const animationName = `translate_${target.name}`;
       if (this.animatables[animationName]) {
         this.animatables[animationName].stop();
@@ -41,7 +39,6 @@ export class ServiceUtilities implements IService {
         BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
         null,
         () => {
-          console.log("applying callback");
           if (req.callback) {
             req.callback();
             delete this.animatables[animationName];
@@ -50,7 +47,6 @@ export class ServiceUtilities implements IService {
         this.context.scene
       );
       this.animatables[animationName] = animatable;
-      console.log("animateable", animatable);
     });
 
     //rotation
@@ -83,7 +79,6 @@ export class ServiceUtilities implements IService {
         BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
         null,
         () => {
-          console.log("applying callback");
           if (req.callback) {
             req.callback();
             delete this.animatables[animationName];
@@ -92,7 +87,6 @@ export class ServiceUtilities implements IService {
         this.context.scene
       );
       this.animatables[animationName] = animatable;
-      console.log("animateable", animatable);
     });
   }
 }

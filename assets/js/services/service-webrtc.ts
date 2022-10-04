@@ -17,7 +17,7 @@ export class ServiceWebRTC implements IService {
   public name = "service-webrtc";
   public context: Context;
   public client: IAgoraRTCClient;
-  public eventLoop = new Subject<"connect" | "disconnect">();
+  public verification = new Subject<"be_connected" | "be_disconnected">();
   public state = { joined: false, published_audio: false };
   // keep track of how many users in total have
   // we need at least 2 (so someone can hear)
@@ -42,6 +42,8 @@ export class ServiceWebRTC implements IService {
     this.context = context;
     this.options.channel = this.context.webrtc_channel_id;
     this.options.uid = this.context.my_member_id;
+
+    // currently we get app id when we join channel
     this.context.signalHub.local
       .on("space_channel_connected")
       .pipe(take(1))
@@ -53,36 +55,44 @@ export class ServiceWebRTC implements IService {
     this.client.on("exception", (event) => {
       console.warn(event);
     });
-    this.client.on("user-published", this.handleRemotePublished);
-    this.client.on("user-unpublished", this.handleRemoteUnpublished);
+
+    this.client.on("user-published", (user, mediaType) => {
+      this.subscribeRemoteUser(user, mediaType);
+    });
+    this.client.on("user-unpublished", (user, mediaType) => {
+      if (mediaType === "video") {
+        this.destroyVideoPlayerContainer(user);
+      }
+    });
 
     AgoraRTC.enableLogUpload();
 
     // create a single event loop for connecting and disconnecting
     // so we can be idempotent, and avoid race conditions
-    this.eventLoop.subscribe(async (val) => {
-      console.log(val, this.state);
-      if (val === "connect") {
+    this.verification.subscribe(async (val) => {
+      if (val === "be_connected") {
         if (this.state.joined === false) {
           await this.join();
           this.state.joined = true;
         }
-        if (
-          this.state.joined === true &&
-          this.state.published_audio === false &&
-          !this.context.my_mic_muted
-        ) {
+        // if we're unmuted and not yet publishing audio, we should publish
+        if (!this.state.published_audio && !this.context.my_mic_muted) {
           await this.publishAudio();
           this.state.published_audio = true;
         }
-      } else if (val === "disconnect") {
+        // if we're muted, but publishing audio, we should unpublish it
+        else if (this.context.my_mic_muted && this.state.published_audio) {
+          await this.unpublishAudio();
+          this.state.published_audio = false;
+        }
+      } else if (val === "be_disconnected") {
         if (this.state.joined === true) {
           await this.leave();
           this.state.published_audio = false;
           this.state.joined = false;
         }
       }
-      console.log("after", this.state);
+      console.log("after verify", this.state);
     });
 
     // listen for mic_muted changes on everyone
@@ -119,10 +129,10 @@ export class ServiceWebRTC implements IService {
   }
 
   updateCountAndJoinOrUnjoin() {
-    if (this.numConnected() > 1 && this.numMicsOn() > 0) {
-      this.eventLoop.next("connect");
+    if (this.numConnected() >= 2 && this.numMicsOn() >= 1) {
+      this.verification.next("be_connected");
     } else {
-      this.eventLoop.next("disconnect");
+      this.verification.next("be_disconnected");
     }
   }
 
@@ -151,6 +161,7 @@ export class ServiceWebRTC implements IService {
   }
   async publishAudio() {
     this.localTracks.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+    this.client.publish(this.localTracks.audioTrack);
     console.log("published my audio");
   }
   async unpublishAudio() {
@@ -164,34 +175,37 @@ export class ServiceWebRTC implements IService {
     this.localTracks.audioTrack = null;
     console.log("stopped publishing my audio");
   }
-  handleRemotePublished(
-    user: IAgoraRTCRemoteUser,
-    mediaType: "audio" | "video"
-  ) {
-    console.log("remote user published", user.uid);
-    this.subscribe(user, mediaType);
-  }
-  handleRemoteUnpublished(
-    user: IAgoraRTCRemoteUser,
-    mediaType: "audio" | "video"
-  ) {
-    if (mediaType === "video") {
-      this.destroyVideoPlayerContainer(user);
-    }
-  }
 
-  async subscribe(user: IAgoraRTCRemoteUser, mediaType: "audio" | "video") {
+  async subscribeRemoteUser(
+    user: IAgoraRTCRemoteUser,
+    mediaType: "audio" | "video"
+  ) {
+    console.log("in this subscribe");
     // subscribe to a remote user
-    await this.client.subscribe(user, mediaType);
-    console.log("subscribe success");
-    if (mediaType === "video") {
-      // need to create a video container
-      const playerContainer = this.createVideoPlayerContainer(user);
-      user.videoTrack.play(playerContainer);
-    }
-    if (mediaType === "audio") {
-      user.audioTrack.play();
-      console.log("subscribing to remote user", user.uid, "and playing audio");
+    try {
+      console.log(
+        "attempting to subscribe to remote user",
+        user.uid,
+        mediaType
+      );
+
+      await this.client.subscribe(user, mediaType);
+      console.log("subscribe success");
+      if (mediaType === "video") {
+        // need to create a video container
+        const playerContainer = this.createVideoPlayerContainer(user);
+        user.videoTrack.play(playerContainer);
+      }
+      if (mediaType === "audio") {
+        user.audioTrack.play();
+        console.log(
+          "subscribing to remote user",
+          user.uid,
+          "and playing audio"
+        );
+      }
+    } catch (e) {
+      console.error(e);
     }
   }
 
