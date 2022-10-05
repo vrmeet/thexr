@@ -175,13 +175,16 @@ export class Synergize {
     this.context.signalHub.incoming
       .on("components_upserted")
       .subscribe((evt) => {
-        const components = this.context.state[evt.id];
-        if (!components) {
+        const oldComponents = this.context.state[evt.id];
+        if (!oldComponents) {
+          console.error("received upsert but no record in state", evt);
           return;
         }
-        Object.assign(components, evt.components);
+        const newComponents = { ...oldComponents, ...evt.components };
+        // modify context.state before giving to each system, but pass system both old and new components
+        Object.assign(this.context.state[evt.id], evt.components);
         this.processList.forEach((system) =>
-          system.upsertComponents(evt.id, evt.components)
+          system.upsertComponents(evt.id, oldComponents, newComponents)
         );
       });
 

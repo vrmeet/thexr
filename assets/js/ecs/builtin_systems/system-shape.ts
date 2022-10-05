@@ -20,14 +20,18 @@ export class SystemShape implements ISystem {
     }
   }
 
-  upsertComponents(entity_id: string, components: ComponentObj): void {
+  upsertComponents(
+    entity_id: string,
+    _oldComponents: ComponentObj,
+    newComponents: ComponentObj
+  ) {
     if (
-      components.shape !== undefined &&
+      newComponents.shape !== undefined &&
       this.meshes[entity_id] !== undefined
     ) {
       // recreate the mesh
       this.meshes[entity_id].dispose();
-      this.meshes[entity_id] = this.createMesh(entity_id, components.shape);
+      this.meshes[entity_id] = this.createMesh(entity_id, newComponents.shape);
     }
   }
 

@@ -26,20 +26,21 @@ window.addEventListener("DOMContentLoaded", async () => {
     engine
   );
   window["synergizer"] = synergizer;
+  synergizer.context.bypass_modal = true;
   await synergizer.init();
   console.log("systems is", window["systems"]);
   if (typeof window["systems"] === "string" && window["systems"].length > 0) {
     const systemPaths = window["systems"].split(",");
     for (let i = 0; i < systemPaths.length; i++) {
       const path = systemPaths[i];
-      await synergizer.addSystem(path);
+      await synergizer.addRemoteSystem(path);
     }
     // (async (sys) => {
     //   console.log("attempting to add system", sys);
     //   await synergizer.addSystem(sys);
     // });
   }
+
   synergizer.run();
   // console.log("sending client ready");
-  // synergizer.context.signalHub.local.emit("client_ready", "enter");
 });

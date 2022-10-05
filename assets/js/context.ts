@@ -31,6 +31,7 @@ export interface Context {
   my_member_id: string;
   my_nickname: string;
   my_mic_muted: boolean;
+  bypass_modal: boolean;
   space_id: string;
   webrtc_channel_id: string;
   userToken: string;
@@ -48,6 +49,7 @@ export const createContext = (): Context => {
     my_member_id: null,
     my_nickname: null,
     my_mic_muted: true,
+    bypass_modal: false,
     space_id: null,
     webrtc_channel_id: null,
     userToken: null,

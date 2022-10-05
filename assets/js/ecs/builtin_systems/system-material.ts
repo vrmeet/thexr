@@ -27,13 +27,17 @@ export class SystemMaterial implements ISystem {
     }
   }
 
-  upsertComponents(entity_id: string, components: ComponentObj): void {
+  upsertComponents(
+    entity_id: string,
+    _oldComponents: ComponentObj,
+    newComponents: ComponentObj
+  ) {
     if (
-      components.material != undefined &&
+      newComponents.material != undefined &&
       this.entities[entity_id] !== undefined
     ) {
       const oldMaterialName = this.entities[entity_id];
-      const mat = this.findOrCreateMaterial(components.material);
+      const mat = this.findOrCreateMaterial(newComponents.material);
       //save material
       if (this.materials[mat.name] === undefined) {
         this.materials[mat.name] = mat;

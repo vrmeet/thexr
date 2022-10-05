@@ -16,35 +16,18 @@ describe("lift system", () => {
     cy.window().then(async (win) => {
       synergizer = win["synergizer"] as Synergize;
       synergizer.debug();
-      await synergizer.addSystem(
-        "http://localhost:4000/systems/system-lighting.js",
-        "system-lighting"
-      );
-      await synergizer.addSystem(
-        "http://localhost:4000/systems/system-shape.js",
-        "system-shape"
-      );
-      await synergizer.addSystem(
-        "http://localhost:4000/systems/system-transform.js",
-        "system-transform"
-      );
-      await synergizer.addSystem(
-        "http://localhost:4000/systems/system-material.js",
-        "system-material"
-      );
-      await synergizer.addSystem(
+      await synergizer.addRemoteSystem(
         "http://localhost:4000/systems/system-lift.js",
         "system-lift"
       );
-      console.log("systems", synergizer.systems);
-      //create a light
-      const event = {
-        id: `light_${random_id(3)}`,
-        components: {
-          lighting: true,
-        },
-      };
-      synergizer.context.signalHub.incoming.emit("entity_created", event);
+      // //create a light
+      // const event = {
+      //   id: `light_${random_id(3)}`,
+      //   components: {
+      //     lighting: true,
+      //   },
+      // };
+      // synergizer.context.signalHub.incoming.emit("entity_created", event);
     });
   });
 
@@ -58,7 +41,7 @@ describe("lift system", () => {
         acts_like_lift: { height: 2, speed: 0.01, state: "down" },
       },
     };
-    synergizer.context.signalHub.incoming.emit("entity_created", event);
+    synergizer.context.signalHub.outgoing.emit("entity_created", event);
     cy.wait(200).then(() => {
       const pickInfo = synergizer.scene.pick(0, 0) as BABYLON.PickingInfo;
       pickInfo.hit = true;

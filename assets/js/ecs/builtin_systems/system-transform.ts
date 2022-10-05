@@ -18,8 +18,13 @@ export class SystemTransform implements ISystem {
   init(context: Context) {
     this.scene = context.scene;
   }
-  upsertComponents(entity_id: string, components: ComponentObj): void {
-    this.registerEntity(entity_id, components);
+  upsertComponents(
+    entity_id: string,
+    _oldComponents: ComponentObj,
+    newComponents: ComponentObj
+  ) {
+    //TODO, add animation
+    this.registerEntity(entity_id, newComponents);
   }
   deregisterEntity(entity_id: string): void {
     delete this.transforms[entity_id];

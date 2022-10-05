@@ -14,6 +14,22 @@ defmodule ThexrWeb.TestController do
     Thexr.SpaceSupervisor.start_space(space_id)
     |> IO.inspect(label: "starting test/blank")
 
+    Thexr.SpaceServer.process_event(space_id, "entity_created", %{
+      "id" => "my-light",
+      "components" => %{
+        "lighting" => %{}
+      }
+    })
+
+    Thexr.SpaceServer.process_event(space_id, "entity_created", %{
+      "id" => "grid-floor",
+      "components" => %{
+        "shape" => %{"prim" => "plane", "prim_params" => %{"size" => 25}},
+        "rotation" => [1.5708, 0, 0],
+        "material" => %{"name" => "grid"}
+      }
+    })
+
     render(conn, "index.html",
       member_id: conn.assigns.unique_id,
       user_token: user_token(conn),
@@ -53,7 +69,7 @@ defmodule ThexrWeb.TestController do
       member_id: conn.assigns.unique_id,
       user_token: user_token(conn),
       space_id: space_id,
-      systems: nil,
+      systems: ~w{/systems/system-lift.js},
       webrtc_channel_id: 2,
       layout: false
     )

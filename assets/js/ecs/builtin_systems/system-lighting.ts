@@ -23,10 +23,17 @@ export class SystemLighting implements ISystem {
     }
   }
 
-  upsertComponents(entity_id: string, components: ComponentObj): void {
-    if (this.lights[entity_id] !== undefined) {
+  upsertComponents(
+    entity_id: string,
+    _oldComponents: ComponentObj,
+    newComponents: ComponentObj
+  ) {
+    if (
+      newComponents.lighting != undefined &&
+      this.lights[entity_id] !== undefined
+    ) {
       this.lights[entity_id].dispose();
-      this.lights[entity_id] = this.createLight(entity_id, components);
+      this.lights[entity_id] = this.createLight(entity_id, newComponents);
     }
   }
 
