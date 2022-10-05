@@ -18,16 +18,12 @@ export class SystemAttendees implements ISystem {
       this.attendees[entity_id] = components;
     }
   }
-  upsertComponents(
-    entity_id: string,
-    _oldComponents: ComponentObj,
-    newComponents: ComponentObj
-  ): void {
+  upsertComponents(entity_id: string, components: ComponentObj): void {
     if (
-      newComponents.nickname !== undefined &&
+      components.nickname !== undefined &&
       this.attendees[entity_id] !== undefined
     ) {
-      Object.assign(this.attendees[entity_id], newComponents);
+      Object.assign(this.attendees[entity_id], components);
     }
   }
   deregisterEntity(entity_id: string): void {

@@ -65,6 +65,15 @@ defmodule ThexrWeb.TestController do
       }
     })
 
+    Thexr.SpaceServer.process_event(space_id, "entity_created", %{
+      "id" => "door",
+      "components" => %{
+        "shape" => %{"prim" => "box", "prim_params" => %{"height" => 2}},
+        "material" => %{"name" => "color", "color_string" => "#FF0000"},
+        "acts_like_lift" => %{"height" => 2, "speed" => 0.01, "state" => "down"}
+      }
+    })
+
     render(conn, "index.html",
       member_id: conn.assigns.unique_id,
       user_token: user_token(conn),

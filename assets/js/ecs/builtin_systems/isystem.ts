@@ -9,10 +9,6 @@ export interface ISystem {
   // if you're going to implement any of these, you MUST implement all three
 
   registerEntity?(entity_id: string, components: ComponentObj): void;
-  upsertComponents?(
-    entity_id: string,
-    oldComponents: ComponentObj,
-    newComponents: ComponentObj
-  ): void;
+  upsertComponents?(entity_id: string, components: ComponentObj): void;
   deregisterEntity?(entity_id: string): void;
 }

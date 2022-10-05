@@ -175,17 +175,18 @@ export class Synergize {
     this.context.signalHub.incoming
       .on("components_upserted")
       .subscribe((evt) => {
-        const oldComponents = this.context.state[evt.id];
-        if (!oldComponents) {
-          console.error("received upsert but no record in state", evt);
+        if (this.context.state[evt.id] === undefined) {
+          console.warn("cannot upsert components of undefined entity", evt);
           return;
         }
-        const newComponents = { ...oldComponents, ...evt.components };
-        // modify context.state before giving to each system, but pass system both old and new components
+        this.processList.forEach((system) => {
+          system.upsertComponents(evt.id, evt.components);
+        });
+        // save change into state at the end of all passes, the final result
+        // would be the same if we did this before looping through each system,
+        // but this way each system gets a chance to look at context.state before the
+        // change, and consider components as new data
         Object.assign(this.context.state[evt.id], evt.components);
-        this.processList.forEach((system) =>
-          system.upsertComponents(evt.id, oldComponents, newComponents)
-        );
       });
 
     // route clicks to mesh picked event

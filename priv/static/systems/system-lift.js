@@ -26,9 +26,9 @@ class SystemLift {
     this.context = context;
     this.meshPickedSubscription = context.signalHub.local.on("mesh_picked").subscribe((mesh) => {
       console.log("inside mesh_picked", mesh);
-      const liftState = this.meshIsALift(mesh);
-      if (liftState) {
-        this.toggleLift(mesh, liftState);
+      if (this.meshIsALift(mesh)) {
+        console.log("this is a lift");
+        this.toggleLift(mesh);
       }
     });
   }
@@ -41,14 +41,14 @@ class SystemLift {
       };
     }
   }
-  upsertComponents(entity_id, oldComponents, newComponents) {
-    if (newComponents.acts_like_lift !== void 0) {
+  upsertComponents(entity_id, components) {
+    if (components.acts_like_lift !== void 0) {
       const mesh = this.context.scene.getMeshByName(entity_id);
       if (mesh) {
-        if (newComponents.acts_like_lift.state === "going-down") {
-          this.goDown(mesh, newComponents.acts_like_lift);
-        } else if (newComponents.acts_like_lift.state === "going-up") {
-          this.goUp(mesh, newComponents.acts_like_lift);
+        if (components.acts_like_lift.state === "going-down") {
+          this.goDown(mesh);
+        } else if (components.acts_like_lift.state === "going-up") {
+          this.goUp(mesh);
         }
       }
     }
@@ -56,10 +56,14 @@ class SystemLift {
   deregisterEntity(_entity_id) {
   }
   meshIsALift(mesh) {
-    return this.context.state[mesh.name]["acts_like_lift"];
+    console.log(mesh.name);
+    console.log(this.context.state[mesh.name]["acts_like_lift"]);
+    return this.context.state[mesh.name]["acts_like_lift"] !== void 0;
   }
-  toggleLift(mesh, liftState) {
+  toggleLift(mesh) {
+    const liftState = this.context.state[mesh.name].acts_like_lift;
     if (liftState.state === "up") {
+      liftState.state = "going-down";
       this.context.signalHub.outgoing.emit("components_upserted", {
         id: mesh.name,
         components: {
@@ -67,6 +71,7 @@ class SystemLift {
         }
       });
     } else if (liftState.state === "down") {
+      liftState.state = "going-up";
       this.context.signalHub.outgoing.emit("components_upserted", {
         id: mesh.name,
         components: {
@@ -75,7 +80,8 @@ class SystemLift {
       });
     }
   }
-  goDown(mesh, liftState) {
+  goDown(mesh) {
+    const liftState = this.context.state[mesh.name].acts_like_lift;
     this.context.signalHub.service.emit("animate_translate", {
       target: mesh,
       from: mesh.position,
@@ -92,7 +98,8 @@ class SystemLift {
       }
     });
   }
-  goUp(mesh, liftState) {
+  goUp(mesh) {
+    const liftState = this.context.state[mesh.name].acts_like_lift;
     this.context.signalHub.service.emit("animate_translate", {
       target: mesh,
       from: mesh.position,

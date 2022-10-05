@@ -323,19 +323,15 @@ export class SystemAvatar implements ISystem {
     }
   }
 
-  upsertComponents(
-    entity_id: string,
-    _oldComponents: ComponentObj,
-    newComponents: ComponentObj
-  ): void {
+  upsertComponents(entity_id: string, components: ComponentObj): void {
     if (
-      newComponents.avatar !== undefined &&
+      components.avatar !== undefined &&
       this.avatars[entity_id] !== undefined
     ) {
       const avatar = this.avatars[entity_id];
       if (entity_id !== this.context.my_member_id) {
         // we can ignore updates for own avatar since we are the source of messages
-        avatar.pose(newComponents.avatar);
+        avatar.pose(components.avatar);
       }
     }
   }

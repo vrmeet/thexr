@@ -27,17 +27,13 @@ export class SystemMaterial implements ISystem {
     }
   }
 
-  upsertComponents(
-    entity_id: string,
-    _oldComponents: ComponentObj,
-    newComponents: ComponentObj
-  ) {
+  upsertComponents(entity_id: string, components: ComponentObj): void {
     if (
-      newComponents.material != undefined &&
+      components.material != undefined &&
       this.entities[entity_id] !== undefined
     ) {
       const oldMaterialName = this.entities[entity_id];
-      const mat = this.findOrCreateMaterial(newComponents.material);
+      const mat = this.findOrCreateMaterial(components.material);
       //save material
       if (this.materials[mat.name] === undefined) {
         this.materials[mat.name] = mat;
@@ -63,11 +59,13 @@ export class SystemMaterial implements ISystem {
     }
   }
 
-  findOrCreateMaterial(MaterialComponent: MaterialComponent): BABYLON.Material {
-    if (MaterialComponent.name === "color") {
-      return this.findOrCreateColor(MaterialComponent.color_string);
-    } else if (MaterialComponent.name === "grid") {
+  findOrCreateMaterial(component: MaterialComponent): BABYLON.Material {
+    if (component.name === "color") {
+      return this.findOrCreateColor(component.color_string);
+    } else if (component.name === "grid") {
       return this.findOrCreateGrid();
+    } else {
+      console.error("material component requires a name", component);
     }
   }
 

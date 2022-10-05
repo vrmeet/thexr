@@ -104,16 +104,12 @@ export class SystemWebRTC implements ISystem {
       this.updateCountAndJoinOrUnjoin();
     }
   }
-  upsertComponents(
-    entity_id: string,
-    _oldComponents: ComponentObj,
-    newComponents: ComponentObj
-  ) {
+  upsertComponents(entity_id: string, components: ComponentObj): void {
     if (
-      newComponents.mic_muted !== undefined &&
+      components.mic_muted !== undefined &&
       this.micsMuted[entity_id] !== undefined
     ) {
-      this.micsMuted[entity_id] = newComponents.mic_muted;
+      this.micsMuted[entity_id] = components.mic_muted;
       this.updateCountAndJoinOrUnjoin();
     }
   }

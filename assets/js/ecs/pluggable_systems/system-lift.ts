@@ -17,9 +17,9 @@ class SystemLift implements ISystem {
       .on("mesh_picked")
       .subscribe((mesh) => {
         console.log("inside mesh_picked", mesh);
-        const liftState = this.meshIsALift(mesh);
-        if (liftState) {
-          this.toggleLift(mesh, liftState);
+        if (this.meshIsALift(mesh)) {
+          console.log("this is a lift");
+          this.toggleLift(mesh);
         }
       });
   }
@@ -34,18 +34,14 @@ class SystemLift implements ISystem {
     }
   }
 
-  upsertComponents(
-    entity_id: string,
-    oldComponents: ComponentObj,
-    newComponents: ComponentObj
-  ) {
-    if (newComponents.acts_like_lift !== undefined) {
+  upsertComponents(entity_id: string, components: ComponentObj) {
+    if (components.acts_like_lift !== undefined) {
       const mesh = this.context.scene.getMeshByName(entity_id);
       if (mesh) {
-        if (newComponents.acts_like_lift.state === "going-down") {
-          this.goDown(mesh, newComponents.acts_like_lift);
-        } else if (newComponents.acts_like_lift.state === "going-up") {
-          this.goUp(mesh, newComponents.acts_like_lift);
+        if (components.acts_like_lift.state === "going-down") {
+          this.goDown(mesh);
+        } else if (components.acts_like_lift.state === "going-up") {
+          this.goUp(mesh);
         }
       }
     }
@@ -53,12 +49,16 @@ class SystemLift implements ISystem {
 
   deregisterEntity(_entity_id: string): void {}
 
-  meshIsALift(mesh): ActsLikeLiftComponent {
-    return this.context.state[mesh.name]["acts_like_lift"];
+  meshIsALift(mesh): boolean {
+    console.log(mesh.name);
+    console.log(this.context.state[mesh.name]["acts_like_lift"]);
+    return this.context.state[mesh.name]["acts_like_lift"] !== undefined;
   }
 
-  toggleLift(mesh: BABYLON.AbstractMesh, liftState: ActsLikeLiftComponent) {
+  toggleLift(mesh: BABYLON.AbstractMesh) {
+    const liftState = this.context.state[mesh.name].acts_like_lift;
     if (liftState.state === "up") {
+      liftState.state = "going-down";
       this.context.signalHub.outgoing.emit("components_upserted", {
         id: mesh.name,
         components: {
@@ -66,6 +66,7 @@ class SystemLift implements ISystem {
         },
       });
     } else if (liftState.state === "down") {
+      liftState.state = "going-up";
       this.context.signalHub.outgoing.emit("components_upserted", {
         id: mesh.name,
         components: {
@@ -75,7 +76,8 @@ class SystemLift implements ISystem {
     }
   }
 
-  goDown(mesh: BABYLON.AbstractMesh, liftState: ActsLikeLiftComponent) {
+  goDown(mesh: BABYLON.AbstractMesh) {
+    const liftState = this.context.state[mesh.name].acts_like_lift;
     this.context.signalHub.service.emit("animate_translate", {
       target: mesh,
       from: mesh.position,
@@ -93,7 +95,8 @@ class SystemLift implements ISystem {
     });
   }
 
-  goUp(mesh: BABYLON.AbstractMesh, liftState: ActsLikeLiftComponent) {
+  goUp(mesh: BABYLON.AbstractMesh) {
+    const liftState = this.context.state[mesh.name].acts_like_lift;
     this.context.signalHub.service.emit("animate_translate", {
       target: mesh,
       from: mesh.position,
