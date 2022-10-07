@@ -32,6 +32,8 @@ export class SystemXR implements ISystem {
     this.signalHub.local.on("client_ready").subscribe(async () => {
       await this.enableWebXRExperience();
 
+      // this doesn't work without a one time user interaction
+      // that's another reason why start modal is necessary
       if (isMobileVR()) {
         this.enterXR();
       }
@@ -118,24 +120,17 @@ export class SystemXR implements ISystem {
 
     // triggered once per hand
     xrInput.onControllerAddedObservable.add((inputSource) => {
-      inputSource.onMotionControllerInitObservable.add(
-        (abstractMotionController) => {
-          this.initController(inputSource, abstractMotionController);
-        }
-      );
+      inputSource.onMotionControllerInitObservable.add(() => {
+        this.initController(inputSource);
+      });
     });
   }
 
-  initController(
-    inputSource: BABYLON.WebXRInputSource,
-    motionController: BABYLON.WebXRAbstractMotionController
-  ) {
-    this.setupComponentData(motionController);
-    this.setupVibration(motionController);
-    this.setupHandMotionData(motionController, inputSource);
-    this.setupCleanPressAndRelease(
-      motionController.handness as "left" | "right"
-    );
+  initController(inputSource: BABYLON.WebXRInputSource) {
+    this.setupComponentData(inputSource);
+    this.setupVibration(inputSource);
+    this.setupHandMotionData(inputSource);
+    this.setupCleanPressAndRelease(inputSource);
     // new XRGripManager(
     //   this.member_id,
     //   this.scene,
@@ -150,10 +145,8 @@ export class SystemXR implements ISystem {
     // )
   }
 
-  setupHandMotionData(
-    motionController: BABYLON.WebXRAbstractMotionController,
-    inputSource: BABYLON.WebXRInputSource
-  ) {
+  setupHandMotionData(inputSource: BABYLON.WebXRInputSource) {
+    const motionController = inputSource.motionController;
     motionController.onModelLoadedObservable.add((mc) => {
       const imposter =
         this.controllerPhysicsFeature.getImpostorForController(inputSource);
@@ -184,7 +177,8 @@ export class SystemXR implements ISystem {
     );
   }
 
-  setupVibration(motionController: BABYLON.WebXRAbstractMotionController) {
+  setupVibration(inputSource: BABYLON.WebXRInputSource) {
+    const motionController = inputSource.motionController;
     let inPulse = false;
     this.signalHub.local
       .on("pulse")
@@ -201,11 +195,12 @@ export class SystemXR implements ISystem {
 
   // produces a noisy stream of every button on the controller
   // for every value 0-100
-  setupComponentData(motionController: BABYLON.WebXRAbstractMotionController) {
-    const componentIds = motionController.getComponentIds();
+  setupComponentData(inputSource: BABYLON.WebXRInputSource) {
+    const componentIds = inputSource.motionController.getComponentIds();
     componentIds.forEach((componentId) => {
-      const webXRComponent = motionController.getComponent(componentId);
-      this.publishChanges(motionController, webXRComponent);
+      const webXRComponent =
+        inputSource.motionController.getComponent(componentId);
+      this.publishChanges(inputSource.motionController, webXRComponent);
     });
   }
 
@@ -215,6 +210,7 @@ export class SystemXR implements ISystem {
   ) {
     //wrap babylon observable in rxjs observable
     const hand = motionController.handedness as "left" | "right";
+
     const componentObservable$ = new Observable<any>((subscriber) => {
       // wrap the babylonjs observable
       const babylonObserver = component.onButtonStateChangedObservable.add(
@@ -244,7 +240,8 @@ export class SystemXR implements ISystem {
       });
   }
 
-  setupCleanPressAndRelease(hand: "left" | "right") {
+  setupCleanPressAndRelease(inputSource: BABYLON.WebXRInputSource) {
+    const hand = inputSource.motionController.handness as "left" | "right";
     // listen for clean grip and release
 
     this.signalHub.movement
@@ -256,9 +253,9 @@ export class SystemXR implements ISystem {
       )
       .subscribe((squeezed) => {
         if (squeezed) {
-          this.signalHub.movement.emit(`${hand}_grip_squeezed`, true);
+          this.signalHub.movement.emit(`${hand}_grip_squeezed`, inputSource);
         } else {
-          this.signalHub.movement.emit(`${hand}_grip_released`, true);
+          this.signalHub.movement.emit(`${hand}_grip_released`, inputSource);
         }
       });
 
@@ -271,9 +268,9 @@ export class SystemXR implements ISystem {
       )
       .subscribe((squeezed) => {
         if (squeezed) {
-          this.signalHub.movement.emit(`${hand}_trigger_squeezed`, true);
+          this.signalHub.movement.emit(`${hand}_trigger_squeezed`, inputSource);
         } else {
-          this.signalHub.movement.emit(`${hand}_trigger_released`, true);
+          this.signalHub.movement.emit(`${hand}_trigger_released`, inputSource);
         }
       });
   }

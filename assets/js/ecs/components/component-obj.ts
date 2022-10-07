@@ -20,6 +20,7 @@ export interface ComponentObj {
   scaling?: number[];
   shape?: ShapeComponent;
   acts_like_lift?: ActsLikeLiftComponent;
+  acts_like_floor?: any;
   avatar?: {
     head: PosRot;
     left?: PosRot | null;
@@ -29,5 +30,7 @@ export interface ComponentObj {
   material?: MaterialComponent;
   mic_muted?: boolean;
   nickname?: string;
+  grabbable?: any;
+
   [anykey: string]: any;
 }

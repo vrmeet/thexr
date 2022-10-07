@@ -1,14 +1,5 @@
-should sysnergizer manually forward entity deleted to each system as well as
-component upserted and components removed?
-
-need to test xr, - mic, teleportation
-
-add back ability to place a few primitives
-
-ability to design spaces - like doom
-
-
-
+need a better way to test XR without putting on headset.
+  simulate XR mode at least to create controller menus, grabbing
 
 future:
   - in microphone picking, display microphone testing levels

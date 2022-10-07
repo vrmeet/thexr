@@ -30,26 +30,26 @@
 
 <style>
     #menu_home {
-       border: 1px solid blue;
-       position: absolute;
-       top: 100px;
-       right: 100px;
-       width: 500px;
-       height: 500px;
+      border: 1px solid blue;
+      position: absolute;
+      top: 100px;
+      right: 100px;
+      width: 384px;
+      height: 384px;
     }
     #menu_left {
-        border: 1px solid red;
-        width: 150px;
+      position: absolute;
+        width: 30%;
         height: 100%;
-        background-color: blue;
+        background-color: black;
     }
     #menu_left button {
         width: 100%;
+        padding: 0
     }
     #menu_right {
-      border: 1px solid green;
-      width: 350px;
-      height: 500px;
+      width: 70%;
+      height: 100%;
       position: absolute;
       background-color: brown;
       top: 0;

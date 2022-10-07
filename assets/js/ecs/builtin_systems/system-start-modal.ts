@@ -8,7 +8,7 @@ import type { Subscription } from "rxjs";
 
 export class SystemStartModal implements ISystem {
   name = "system-start-modal";
-  public order = 8;
+  public order = 10;
   public context: Context;
   init(context: Context) {
     this.context = context;

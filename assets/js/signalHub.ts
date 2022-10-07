@@ -123,14 +123,14 @@ export type MovementEvents = {
   right_touchpad: types.xr_component;
 
   // clean grip and release (alternating values)
-  left_grip_squeezed: any;
-  left_grip_released: any;
-  left_trigger_squeezed: any;
-  left_trigger_released: any;
-  right_grip_squeezed: any;
-  right_grip_released: any;
-  right_trigger_squeezed: any;
-  right_trigger_released: any;
+  left_grip_squeezed: BABYLON.WebXRInputSource;
+  left_grip_released: BABYLON.WebXRInputSource;
+  left_trigger_squeezed: BABYLON.WebXRInputSource;
+  left_trigger_released: BABYLON.WebXRInputSource;
+  right_grip_squeezed: BABYLON.WebXRInputSource;
+  right_grip_released: BABYLON.WebXRInputSource;
+  right_trigger_squeezed: BABYLON.WebXRInputSource;
+  right_trigger_released: BABYLON.WebXRInputSource;
   left_grip_mesh: BABYLON.AbstractMesh;
   right_grip_mesh: BABYLON.AbstractMesh;
 
