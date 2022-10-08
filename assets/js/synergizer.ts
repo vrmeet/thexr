@@ -21,6 +21,7 @@ import { SystemLighting } from "./ecs/builtin_systems/system-lighting";
 import { SystemGrabbable } from "./ecs/builtin_systems/system-grabbable";
 import { SystemFloor } from "./ecs/builtin_systems/system-floor";
 import { SystemLogger } from "./ecs/builtin_systems/system-logger";
+import { SystemXRFlight } from "./ecs/builtin_systems/system-xr-flight";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -91,6 +92,7 @@ export class Synergize {
     this.addSystem(new SystemGrabbable());
     this.addSystem(new SystemFloor());
     this.addSystem(new SystemLogger());
+    this.addSystem(new SystemXRFlight());
   }
 
   addSystem(system: ISystem) {

@@ -211,14 +211,14 @@ export class SystemXR implements ISystem {
     //wrap babylon observable in rxjs observable
     const hand = motionController.handedness as "left" | "right";
 
-    const componentObservable$ = new Observable<any>((subscriber) => {
+    const componentButtonObservable$ = new Observable<any>((subscriber) => {
       // wrap the babylonjs observable
       const babylonObserver = component.onButtonStateChangedObservable.add(
         (state) => {
           const payload: xr_component = {
             pressed: state.pressed,
             touched: state.touched,
-            value: state.value, // x and y go from -1 to 1
+            value: state.value, // x and y go from -1 to 1, but only when button pressed, not for axis changes
             axes: state.axes,
             id: state.id,
           };
@@ -230,13 +230,31 @@ export class SystemXR implements ISystem {
       };
     });
 
-    componentObservable$
+    componentButtonObservable$
       .pipe(takeUntil(this.exitingXR$))
       .subscribe((xr_button_change_evt) => {
+        // console.log(`${hand}_${component.type}`, xr_button_change_evt);
         this.signalHub.movement.emit(
           `${hand}_${component.type}`,
           xr_button_change_evt
         );
+      });
+
+    const componentAxisObservable$ = new Observable<any>((subscriber) => {
+      // wrap the babylonjs observable
+      const babylonObserver = component.onAxisValueChangedObservable.add(
+        (state) => {
+          subscriber.next(state);
+        }
+      );
+      return () => {
+        component.onAxisValueChangedObservable.remove(babylonObserver);
+      };
+    });
+    componentAxisObservable$
+      .pipe(takeUntil(this.exitingXR$))
+      .subscribe((axisChange) => {
+        this.signalHub.movement.emit(`${hand}_axes`, axisChange);
       });
   }
 
@@ -271,6 +289,21 @@ export class SystemXR implements ISystem {
           this.signalHub.movement.emit(`${hand}_trigger_squeezed`, inputSource);
         } else {
           this.signalHub.movement.emit(`${hand}_trigger_released`, inputSource);
+        }
+      });
+
+    this.signalHub.movement
+      .on(`${hand}_button`)
+      .pipe(
+        takeUntil(this.exitingXR$),
+        // map((val) => val.pressed),
+        distinctUntilChanged((a, b) => a.pressed === b.pressed)
+      )
+      .subscribe((val) => {
+        if (val.pressed) {
+          this.signalHub.movement.emit(`${hand}_button_down`, val.id);
+        } else {
+          this.signalHub.movement.emit(`${hand}_button_up`, val.id);
         }
       });
   }
