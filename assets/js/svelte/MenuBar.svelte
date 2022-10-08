@@ -13,7 +13,12 @@
     setContext("updateCallback", updateCallback)
 
     $: muted = context.my_mic_muted
-    let menu_opened = false;
+    $: menu_opened = context.menu_opened;
+    $: logs_opened = context.logs_opened;
+    $: micLabel = (muted) ? "Muted" : "Unmuted";
+    $: menuLabel = (menu_opened) ? "Close Menu" : "Open Menu"
+    $: logsLabel = (logs_opened) ? "Hide Logs" : "Show Logs"
+
     const toggleMic = () => {
       context.my_mic_muted = !context.my_mic_muted
       context.signalHub.outgoing.emit("components_upserted", {
@@ -23,11 +28,19 @@
         }
       })
     }
-    $: micLabel = (muted) ? "Muted" : "Unmuted";
+    
     const toggleMenu = () => {
-        menu_opened = !menu_opened
+        context.menu_opened = !context.menu_opened
     }
-    $: menuLabel = (menu_opened) ? "Close Menu" : "Open Menu"
+    
+    const toggleLogs = () => {
+      context.logs_opened = !context.logs_opened
+      if (context.logs_opened) {
+        context.signalHub.local.emit("menu_event", "logger_opened")
+      } else {
+        context.signalHub.local.emit("menu_event", "logger_closed")
+      }
+    }
 
 
     afterUpdate(()=>{
@@ -38,7 +51,7 @@
 <div id="menu_bar">
     <button id="toggle_mute" on:click={toggleMic}>{micLabel}</button>
     <button id="toggle_menu_home" on:click={toggleMenu}>{menuLabel}</button>
-    <button>[Health]</button>
+    <button id="toggle_logs" on:click={toggleLogs}>{logsLabel}</button>
     <button>Exit</button>
 </div>
 {#if menu_opened}

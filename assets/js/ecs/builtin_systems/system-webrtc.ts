@@ -52,7 +52,7 @@ export class SystemWebRTC implements ISystem {
       .subscribe((resp) => {
         this.options.appid = resp.agora_app_id;
       });
-    AgoraRTC.setLogLevel(0);
+    // AgoraRTC.setLogLevel(0);
     this.client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
     this.client.on("exception", (event) => {
       console.warn(event);
@@ -94,7 +94,6 @@ export class SystemWebRTC implements ISystem {
           this.state.joined = false;
         }
       }
-      console.log("after verify", this.state);
     });
   }
 
@@ -145,7 +144,6 @@ export class SystemWebRTC implements ISystem {
       this.options.token,
       this.options.uid
     );
-    console.log("joined agora client");
   }
   async leave() {
     this.localTracks.audioTrack?.stop();
@@ -159,40 +157,28 @@ export class SystemWebRTC implements ISystem {
     };
 
     await this.client.leave();
-    console.log("left agora client");
   }
   async publishAudio() {
     this.localTracks.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
     this.client.publish(this.localTracks.audioTrack);
-    console.log("published my audio");
   }
   async unpublishAudio() {
     if (!this.localTracks.audioTrack) {
-      console.warn("not currently publishing audio");
       return;
     }
     await this.client.unpublish([this.localTracks.audioTrack]);
     this.localTracks.audioTrack.stop();
     this.localTracks.audioTrack.close();
     this.localTracks.audioTrack = null;
-    console.log("stopped publishing my audio");
   }
 
   async subscribeRemoteUser(
     user: IAgoraRTCRemoteUser,
     mediaType: "audio" | "video"
   ) {
-    console.log("in this subscribe");
     // subscribe to a remote user
     try {
-      console.log(
-        "attempting to subscribe to remote user",
-        user.uid,
-        mediaType
-      );
-
       await this.client.subscribe(user, mediaType);
-      console.log("subscribe success");
       if (mediaType === "video") {
         // need to create a video container
         const playerContainer = this.createVideoPlayerContainer(user);
@@ -200,11 +186,6 @@ export class SystemWebRTC implements ISystem {
       }
       if (mediaType === "audio") {
         user.audioTrack.play();
-        console.log(
-          "subscribing to remote user",
-          user.uid,
-          "and playing audio"
-        );
       }
     } catch (e) {
       console.error(e);

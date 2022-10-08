@@ -25,9 +25,7 @@ class SystemLift {
   init(context) {
     this.context = context;
     this.meshPickedSubscription = context.signalHub.local.on("mesh_picked").subscribe((mesh) => {
-      console.log("inside mesh_picked", mesh);
       if (this.meshIsALift(mesh)) {
-        console.log("this is a lift");
         this.toggleLift(mesh);
       }
     });
@@ -56,9 +54,7 @@ class SystemLift {
   deregisterEntity(_entity_id) {
   }
   meshIsALift(mesh) {
-    console.log(mesh.name);
-    console.log(this.context.state[mesh.name]["acts_like_lift"]);
-    return this.context.state[mesh.name]["acts_like_lift"] !== void 0;
+    return this.context.state[mesh.name] !== void 0 && this.context.state[mesh.name]["acts_like_lift"] !== void 0;
   }
   toggleLift(mesh) {
     const liftState = this.context.state[mesh.name].acts_like_lift;

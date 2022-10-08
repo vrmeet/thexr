@@ -16,9 +16,7 @@ class SystemLift implements ISystem {
     this.meshPickedSubscription = context.signalHub.local
       .on("mesh_picked")
       .subscribe((mesh) => {
-        console.log("inside mesh_picked", mesh);
         if (this.meshIsALift(mesh)) {
-          console.log("this is a lift");
           this.toggleLift(mesh);
         }
       });
@@ -50,9 +48,10 @@ class SystemLift implements ISystem {
   deregisterEntity(_entity_id: string): void {}
 
   meshIsALift(mesh): boolean {
-    console.log(mesh.name);
-    console.log(this.context.state[mesh.name]["acts_like_lift"]);
-    return this.context.state[mesh.name]["acts_like_lift"] !== undefined;
+    return (
+      this.context.state[mesh.name] !== undefined &&
+      this.context.state[mesh.name]["acts_like_lift"] !== undefined
+    );
   }
 
   toggleLift(mesh: BABYLON.AbstractMesh) {

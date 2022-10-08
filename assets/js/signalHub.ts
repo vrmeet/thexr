@@ -48,6 +48,7 @@ export type LocalEvents = {
     pos: number[];
     direction: number[];
   };
+  menu_event: "logger_opened" | "logger_closed";
 };
 
 export type IncomingEvents = {

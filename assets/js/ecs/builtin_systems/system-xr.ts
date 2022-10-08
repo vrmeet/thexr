@@ -218,7 +218,7 @@ export class SystemXR implements ISystem {
           const payload: xr_component = {
             pressed: state.pressed,
             touched: state.touched,
-            value: state.value,
+            value: state.value, // x and y go from -1 to 1
             axes: state.axes,
             id: state.id,
           };

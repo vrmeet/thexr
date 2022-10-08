@@ -53,7 +53,6 @@ export class SystemBroker implements ISystem {
     // forward incoming from channel to event bus
     this.channel.onMessage = (event: keyof IncomingEvents, payload) => {
       if (!event.startsWith("phx_") && !event.startsWith("chan_")) {
-        console.log("channel incoming", event, payload);
         this.context.signalHub.incoming.emit(event, payload);
       }
       return payload;
