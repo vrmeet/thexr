@@ -1,17 +1,3 @@
-system logger 
-
-system VR flight
-
-
-need a better way to test XR without putting on headset.
-  simulate XR mode at least to create controller menus, grabbing
-
- - or a better way to see logs in VR
- - create logs on a client, 
-    1. see on a giant debug wall texture
-    1.5 each log message is a text wrapped text gui plane.  We move all planes up as
-    new messages come in.  each height is fixed but width expends with length of string.
-    2. write to server so I can see in a different client
 
 future:
   - in microphone picking, display microphone testing levels

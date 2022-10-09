@@ -66,6 +66,16 @@ defmodule ThexrWeb.TestController do
       }
     })
 
+    Thexr.SpaceServer.process_event(space_id, "entity_created", %{
+      "id" => "grabbable_thing",
+      "components" => %{
+        "shape" => %{"prim" => "box", "prim_params" => %{"size" => 0.3}},
+        "material" => %{"name" => "color", "color_string" => "#FF0000"},
+        "position" => [1, 1.5, -7],
+        "grabbable" => true
+      }
+    })
+
     # Thexr.SpaceServer.process_event(space_id, "entity_created", %{
     #   "id" => "door",
     #   "components" => %{

@@ -60,6 +60,7 @@ export class SystemLogger implements ISystem {
     this.logPlane.isPickable = false;
     this.logPlane.showBoundingBox = true;
     this.logPlane.position.y = Math.ceil(WALL_HEIGHT / 2);
+    this.logPlane.rotation.x = BABYLON.Angle.FromDegrees(-15).radians();
 
     this.logTexture = GUI.AdvancedDynamicTexture.CreateForMesh(
       this.logPlane,

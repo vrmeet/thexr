@@ -74,6 +74,9 @@ export class SystemMenu implements ISystem {
           )
           .subscribe((payload) => {
             this.grip = payload.grip;
+            if (!this.grip) {
+              console.error("menu needs a grip but grip was empty");
+            }
             this.prepVRScreenMenuExperience();
             this.renderMenuToTexture();
           });
