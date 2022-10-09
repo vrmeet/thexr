@@ -1,4 +1,15 @@
 
+1. ensure we're patching components on upsert: is a component_upsert a patch or a put
+on the component?  should always do a patch... values are never removed
+but we don't have to pass the whole component value
+2. add delete_components to the ISystem
+3. add components list to ISystem
+4. modify synergizer to choose the systems to process an upsert,
+: say an upsert components comes with 3 components: parent, position, rotation
+- which system can handle this?  if we loop them them all.
+- or... name the system the same as the component
+
+
 future:
   - in microphone picking, display microphone testing levels
 

@@ -61,6 +61,10 @@ export class SystemXRFlight implements ISystem {
     const frame$ = makeXRFrameSignal(systemXR.xrHelper);
     const sub4 = frame$.subscribe(() => {
       const camera = this.context.scene.activeCamera as BABYLON.WebXRCamera;
+      if (!camera._localDirection) {
+        // undefined for 1 frame?
+        return;
+      }
       const speed = camera._computeLocalCameraSpeed() * this.dampeningFactor;
       // check input and move camera
       camera._localDirection

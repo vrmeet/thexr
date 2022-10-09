@@ -30,7 +30,8 @@ export interface ComponentObj {
   material?: MaterialComponent;
   mic_muted?: boolean;
   nickname?: string;
-  grabbable?: any;
+  grabbable?: { pickup?: "any" | "fixed"; lever?: any; grabbed_by: string };
+  parent?: string;
 
   [anykey: string]: any;
 }

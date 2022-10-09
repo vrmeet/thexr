@@ -1,20 +1,16 @@
-import { filter, takeUntil, map } from "rxjs";
+import { filter, takeUntil, map, Observable } from "rxjs";
 import type { Context } from "../../context";
 import type { ComponentObj } from "../components/component-obj";
 import type { ISystem } from "./isystem";
 import * as BABYLON from "babylonjs";
 
-/**
- * Doesn't modify scene, but detects if palm has a mesh with grabbable component underneath it
- * And emits a mesh grabbed message.
- * Doesn't parent anything because maybe you want to collect an item rather than pick it up
- *
- */
 export class SystemGrabbable implements ISystem {
   public context: Context;
   public name = "system-grabbable";
   public order = 20;
-  public exitingXR$;
+  public exitingXR$: Observable<BABYLON.WebXRState>;
+  public leftPalmMesh: BABYLON.AbstractMesh;
+  public rightPalmMesh: BABYLON.AbstractMesh;
   init(context: Context) {
     this.context = context;
 
@@ -22,28 +18,91 @@ export class SystemGrabbable implements ISystem {
       .on("xr_state_changed")
       .pipe(filter((msg) => msg === BABYLON.WebXRState.EXITING_XR));
 
-    this.listen("left");
-    this.listen("right");
+    this.parentAvatarHandsToGrip();
+
+    this.listenForGrab("left");
+    this.listenForGrab("right");
   }
 
-  listen(hand: "left" | "right") {
+  parentAvatarHandsToGrip() {
+    this.context.signalHub.local
+      .on("controller_ready")
+      .subscribe(({ hand, grip }) => {
+        const meshName = `avatar_${this.context.my_member_id}_${hand}`;
+        const mesh = this.context.scene.getMeshByName(meshName);
+
+        // return everything the way it was after we're done
+        const prevParent = mesh.parent;
+        const prevPosition = mesh.position.clone();
+        const prevRotation = mesh.rotationQuaternion.clone();
+        this.exitingXR$.subscribe(() => {
+          mesh.parent = null;
+          mesh.position = prevPosition;
+          mesh.rotationQuaternion = prevRotation;
+          mesh.parent = prevParent;
+        });
+
+        mesh.parent = null;
+        mesh.showBoundingBox = true;
+        mesh.visibility = 0.8;
+
+        // set in relative space of the grip
+        mesh.position =
+          hand[0] === "l"
+            ? new BABYLON.Vector3(0.03, -0.05, 0.0)
+            : new BABYLON.Vector3(-0.03, -0.05, 0.0);
+        mesh.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(
+          BABYLON.Angle.FromDegrees(45).radians(),
+          0,
+          0
+        );
+        mesh.parent = grip;
+        this[`${hand}PalmMesh`] = mesh;
+      });
+  }
+
+  listenForGrab(hand: "left" | "right") {
     this.context.signalHub.movement
       .on(`${hand}_grip_squeezed`)
       .pipe(
         takeUntil(this.exitingXR$),
         map((inputSource) => {
-          return { mesh: this.findGrabbableMesh(inputSource), inputSource };
+          return this.findGrabbableMesh(inputSource);
         }),
-        filter(({ mesh }) => mesh !== null)
+        filter((result) => result !== null)
       )
       .subscribe((data) => {
-        this.context.signalHub.movement.emit(`${hand}_grip_mesh`, data.mesh);
+        if (data.grabbableComponent.pickup !== undefined) {
+          // this.parentMesh(data.inputSource, data.mesh);
+        }
+        // this.context.signalHub.movement.emit(`${hand}_grip_mesh`, data.mesh);
       });
   }
 
-  findGrabbableMesh(
-    inputSource: BABYLON.WebXRInputSource
-  ): BABYLON.AbstractMesh {
+  parentGrabbedMeshIntoHand(
+    handMesh: BABYLON.AbstractMesh,
+    grabbedMesh: BABYLON.AbstractMesh,
+    grabbableComponent: ComponentObj["grabbable"]
+  ) {
+    if (grabbableComponent.pickup === "any") {
+      // you can pick this object up anywhere
+      grabbedMesh.setParent(handMesh); // retains grabbedMesh position in world space
+    } else if (grabbableComponent.pickup === "fixed") {
+      grabbedMesh.parent = handMesh;
+    }
+    this.context.signalHub.outgoing.emit("components_upserted", {
+      id: grabbedMesh.name,
+      components: {
+        grabbable: {},
+      },
+    });
+  }
+
+  findGrabbableMesh(inputSource: BABYLON.WebXRInputSource): {
+    mesh: BABYLON.AbstractMesh;
+    grabbableComponent: ComponentObj["grabbable"];
+    inputSource: BABYLON.WebXRInputSource;
+  } | null {
     // ray points right on left grip, points left on right grip
     const offset = inputSource.motionController.handness[0] === "l" ? 1 : -1;
     const localDirection = new BABYLON.Vector3(offset, 0, 0);
@@ -65,7 +124,12 @@ export class SystemGrabbable implements ISystem {
       this.context.state[pickInfo.pickedMesh.name] !== undefined &&
       this.context.state[pickInfo.pickedMesh.name].grabbable !== undefined
     ) {
-      return pickInfo.pickedMesh;
+      return {
+        mesh: pickInfo.pickedMesh,
+        grabbableComponent:
+          this.context.state[pickInfo.pickedMesh.name].grabbable,
+        inputSource,
+      };
     }
     return null;
   }

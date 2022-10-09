@@ -67,12 +67,22 @@ defmodule ThexrWeb.TestController do
     })
 
     Thexr.SpaceServer.process_event(space_id, "entity_created", %{
-      "id" => "grabbable_thing",
+      "id" => "grab_anywhere",
       "components" => %{
         "shape" => %{"prim" => "box", "prim_params" => %{"size" => 0.3}},
         "material" => %{"name" => "color", "color_string" => "#FF0000"},
         "position" => [1, 1.5, -7],
-        "grabbable" => true
+        "grabbable" => %{"pickup" => "any"}
+      }
+    })
+
+    Thexr.SpaceServer.process_event(space_id, "entity_created", %{
+      "id" => "grab_snap",
+      "components" => %{
+        "shape" => %{"prim" => "box", "prim_params" => %{"size" => 0.25}},
+        "material" => %{"name" => "color", "color_string" => "#00FF00"},
+        "position" => [-1, 1.5, 3],
+        "grabbable" => %{"pickup" => "fixed"}
       }
     })
 

@@ -22,6 +22,7 @@ import { SystemGrabbable } from "./ecs/builtin_systems/system-grabbable";
 import { SystemFloor } from "./ecs/builtin_systems/system-floor";
 import { SystemLogger } from "./ecs/builtin_systems/system-logger";
 import { SystemXRFlight } from "./ecs/builtin_systems/system-xr-flight";
+import { SystemParent } from "./ecs/builtin_systems/system-parent";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -85,14 +86,19 @@ export class Synergize {
     this.addSystem(new SystemTransform());
     // basic shapes
     this.addSystem(new SystemShape());
-    // avatars
+    // avatars for people in the space
     this.addSystem(new SystemAvatar());
+    // assign color and grid to basic shapes
     this.addSystem(new SystemMaterial());
+    // makes a basic light in the scene
     this.addSystem(new SystemLighting());
+    // detects mesh under the palm and adds/removes parenting component
     this.addSystem(new SystemGrabbable());
     this.addSystem(new SystemFloor());
     this.addSystem(new SystemLogger());
     this.addSystem(new SystemXRFlight());
+    // parents one entity to another
+    this.addSystem(new SystemParent());
   }
 
   addSystem(system: ISystem) {
