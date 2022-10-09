@@ -1,11 +1,24 @@
 import { filter, map, pipe, scan } from "rxjs";
-
+import { Observable } from "rxjs";
 import * as BABYLON from "babylonjs";
 import * as MAT from "babylonjs-materials";
 import type { PosRot } from "../types";
 import type { Entity } from "../ecs/entities/entity";
 
 const ANIMATION_FRAME_PER_SECOND = 60;
+
+export const makeXRFrameSignal = (xrHelper: BABYLON.WebXRDefaultExperience) => {
+  return new Observable<XRFrame>((subscriber) => {
+    const obs = xrHelper.baseExperience.sessionManager.onXRFrameObservable.add(
+      (value) => {
+        subscriber.next(value);
+      }
+    );
+    return () => {
+      xrHelper.baseExperience.sessionManager.onXRFrameObservable.remove(obs);
+    };
+  });
+};
 
 export const animateTranslation = (
   entity: Entity,

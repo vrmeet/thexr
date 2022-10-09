@@ -1,9 +1,9 @@
-import { filter, takeUntil, map } from "rxjs";
+import { filter, Subscription } from "rxjs";
 import type { Context } from "../../context";
-import type { ComponentObj } from "../components/component-obj";
 import type { ISystem } from "./isystem";
 import * as BABYLON from "babylonjs";
-import { cameraFrontPosition } from "../../utils/misc";
+import { makeXRFrameSignal } from "../../utils/misc";
+import type { SystemXR } from "./system-xr";
 
 const NORMAL_DAMPENING_FACTOR = 0.1;
 const GO_FASTER_DAMPENING = 0.2;
@@ -15,51 +15,75 @@ export class SystemXRFlight implements ISystem {
   public forwardVelocity = 0;
   public sideVelocity = 0;
   public dampeningFactor = NORMAL_DAMPENING_FACTOR; // slows down the speed to prevent nausea
+
+  // public exitingXR$;
+  // public enteringXR$;
+  public subscriptions: Subscription[] = [];
+
   init(context: Context) {
     this.context = context;
-    this.context.signalHub.movement
+
+    this.context.signalHub.local
+      .on("xr_state_changed")
+      .pipe(filter((msg) => msg === BABYLON.WebXRState.ENTERING_XR))
+      .subscribe(() => {
+        this.setupFlight();
+      });
+
+    this.context.signalHub.local
+      .on("xr_state_changed")
+      .pipe(filter((msg) => msg === BABYLON.WebXRState.EXITING_XR))
+      .subscribe(() => {
+        this.tearDownFlight();
+      });
+  }
+
+  setupFlight() {
+    const sub1 = this.context.signalHub.movement
       .on("left_trigger_squeezed")
       .subscribe(() => {
         this.dampeningFactor = GO_FASTER_DAMPENING;
       });
-    this.context.signalHub.movement
+    const sub2 = this.context.signalHub.movement
       .on("left_trigger_released")
       .subscribe(() => {
         this.dampeningFactor = NORMAL_DAMPENING_FACTOR;
       });
 
-    this.context.signalHub.movement.on("left_axes").subscribe((axes) => {
-      const camera = this.context.scene.activeCamera;
+    const sub3 = this.context.signalHub.movement
+      .on("left_axes")
+      .subscribe((axes) => {
+        this.forwardVelocity = -axes.y;
+        this.sideVelocity = axes.x;
+      });
+    // let localDirection = BABYLON.Vector3.Zero();
+    const systemXR = this.context.systems["system-xr"] as SystemXR;
+    const frame$ = makeXRFrameSignal(systemXR.xrHelper);
+    const sub4 = frame$.subscribe(() => {
+      const camera = this.context.scene.activeCamera as BABYLON.WebXRCamera;
+      const speed = camera._computeLocalCameraSpeed() * this.dampeningFactor;
+      // check input and move camera
+      camera._localDirection
+        .copyFromFloats(this.sideVelocity, 0, this.forwardVelocity)
+        .scaleInPlace(speed);
 
-      const localDirectionToGoTo = new BABYLON.Vector3(
-        axes.x,
-        0,
-        -axes.y
-      ).scaleInPlace(this.dampeningFactor);
-
-      const globalDirectionToGoTo = BABYLON.Vector3.TransformCoordinates(
-        localDirectionToGoTo,
-        camera.getWorldMatrix()
+      camera.getViewMatrix().invertToRef(camera._cameraTransformMatrix);
+      BABYLON.Vector3.TransformNormalToRef(
+        camera._localDirection,
+        camera._cameraTransformMatrix,
+        camera._transformedDirection
       );
-      // console.log("direction", globalDirectionToGoTo.asArray());
-      // .scaleInPlace(this.dampeningFactor);
-      // .scaleInPlace(this.dampeningFactor);
-      camera.position.copyFrom(globalDirectionToGoTo);
-      // const forwardVec = this.camera
-      //   .getDirection(BABYLON.Vector3.Forward())
-      //   .normalize()
-      //   .scaleInPlace(-axes.y / this.dampeningFactor);
+      camera.position.addInPlace(camera._transformedDirection);
+    });
 
-      // const sideVec = this.context.scene.activeCamera
-      //   .getDirection(BABYLON.Vector3.Right())
-      //   .normalize()
-      //   .scaleInPlace(axes.x / this.dampeningFactor);
-
-      // const newPosition = this.context.scene.activeCamera.position
-      //   .add(forwardVec)
-      //   .add(sideVec);
-
-      // this.context.scene.activeCamera.position = newPosition;
+    this.subscriptions.push(sub1);
+    this.subscriptions.push(sub2);
+    this.subscriptions.push(sub3);
+    this.subscriptions.push(sub4);
+  }
+  tearDownFlight() {
+    this.subscriptions.forEach((sub) => {
+      sub.unsubscribe();
     });
   }
 }
