@@ -324,7 +324,6 @@ export class SystemAvatar implements ISystem {
   }
 
   upsertComponents(entity_id: string, components: ComponentObj): void {
-    console.log("reciving upsert in avatar");
     if (
       components.avatar !== undefined &&
       this.avatars[entity_id] !== undefined

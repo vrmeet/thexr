@@ -29,7 +29,6 @@ export class Orchestrator {
     this.webRTCManager = new WebRTCManager(member_id, this.space_id);
 
     window["orchestrator"] = this;
-    console.log("in orchestrator constructor");
 
     new App({
       target: document.body,

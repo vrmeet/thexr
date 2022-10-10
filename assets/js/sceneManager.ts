@@ -98,11 +98,8 @@ export class SceneManager {
 
       // falling objects should not fall for ever
       // setInterval(() => {
-      //     console.log("checking meshes for falling")
       //     const meshes = this.scene.getMeshesByTags("physics || targetable")
-      //     console.log("meshes count", meshes.length)
       //     meshes.forEach(mesh => {
-      //         console.log("mesh y", mesh.absolutePosition.y)
       //         if (mesh.absolutePosition.y < -10) {
       //             if (mesh.physicsImpostor) {
       //                 mesh.physicsImpostor.dispose()
@@ -237,7 +234,6 @@ export class SceneManager {
 
     this.scene.onPointerObservable.add((pointerInfo) => {
       signalHub.local.emit("pointer_info", pointerInfo);
-      console.log("pointerInfo", pointerInfo);
       if (
         pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK &&
         pointerInfo.pickInfo.hit &&

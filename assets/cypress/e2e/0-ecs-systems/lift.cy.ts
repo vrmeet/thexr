@@ -49,7 +49,6 @@ describe("lift system", () => {
       synergizer.scene.simulatePointerDown(pickInfo, { pointerId: 8 });
 
       cy.wait(1100).then(() => {
-        console.log(synergizer.context.state);
         expect(
           synergizer.context.state[entity_id]["acts_like_lift"].state
         ).to.eql("up");
@@ -88,7 +87,6 @@ describe("lift system", () => {
 //     pickInfo.pickedMesh = entity.mesh;
 //     scene.simulatePointerDown(pickInfo, { pointerId: 8 });
 //     await new Promise((r) => setTimeout(r, 1100));
-//     console.log(entity.mesh.position, "posit oin");
 //     expect(systems.lift.lifts["door1"].state).to.eql("up");
 //   });
 // });

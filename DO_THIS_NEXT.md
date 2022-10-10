@@ -2,6 +2,16 @@
 QA: if a person grabs and object
 then disconnects, what happens to the object?
 
+menu bar Vr menu keeps getting detached from grip.
+WHY?
+
+basic grabbing and holding functionality not there yet
+
+work on text input so we can inspect entities
+and edit their components 
+
+
+
 1. ensure we're patching components on upsert: is a component_upsert a patch or a put
 on the component?  should always do a patch... values are never removed
 but we don't have to pass the whole component value

@@ -12,7 +12,7 @@ enum LogLevel {
   ERROR,
 }
 
-const WALL_HEIGHT = 10;
+const WALL_HEIGHT = 5;
 const WALL_WIDTH = 20;
 
 export class SystemLogger implements ISystem {

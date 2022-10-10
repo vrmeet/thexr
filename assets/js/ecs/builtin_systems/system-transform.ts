@@ -9,6 +9,7 @@ interface ITransformable {
   rotation: BABYLON.Vector3;
   scaling: BABYLON.Vector3;
   parent: BABYLON.Node;
+  name: string;
 }
 
 export class SystemTransform implements ISystem {
@@ -51,15 +52,26 @@ export class SystemTransform implements ISystem {
 
   setParenting(entity_id: string, components: ComponentObj) {
     if (components.transform.parent !== undefined) {
+      console.log("transform: inside set parenting");
       if (
         components.transform.parent === null &&
         this.transforms[entity_id].parent !== null
       ) {
-        this.transforms[entity_id].parent = null;
+        console.log("transform will UNparent", this.transforms[entity_id].name);
+        (this.transforms[entity_id] as BABYLON.AbstractMesh).setParent(null);
       } else if (
-        this.transforms[entity_id].parent == null &&
-        components.transform.parent !== null
+        this.transforms[entity_id].parent?.name !== components.transform.parent
       ) {
+        console.log(
+          "transform will parent",
+          this.transforms[entity_id].name,
+          "to",
+          components.transform.parent
+        );
+        console.log(
+          "transform: parent of grabbed is",
+          this.transforms[entity_id].parent?.name
+        );
         this.transforms[entity_id].parent = this.scene.getMeshByName(
           components.transform.parent
         );

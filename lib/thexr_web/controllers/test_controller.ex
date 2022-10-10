@@ -71,7 +71,7 @@ defmodule ThexrWeb.TestController do
       "components" => %{
         "shape" => %{"prim" => "box", "prim_params" => %{"size" => 0.3}},
         "material" => %{"name" => "color", "color_string" => "#FF0000"},
-        "transform" => %{"position" => [1, 1.5, -3]},
+        "transform" => %{"position" => [0.5, 1.5, -5]},
         "grabbable" => %{"pickup" => "any"}
       }
     })
@@ -81,7 +81,7 @@ defmodule ThexrWeb.TestController do
       "components" => %{
         "shape" => %{"prim" => "box", "prim_params" => %{"size" => 0.25}},
         "material" => %{"name" => "color", "color_string" => "#00FF00"},
-        "transform" => %{"position" => [-1, 1.5, 3]},
+        "transform" => %{"position" => [-0.5, 0.5, -5]},
         "grabbable" => %{"pickup" => "fixed"}
       }
     })

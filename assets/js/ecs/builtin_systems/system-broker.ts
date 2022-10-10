@@ -53,7 +53,6 @@ export class SystemBroker implements ISystem {
     // forward incoming from channel to event bus
     this.channel.onMessage = (event: keyof IncomingEvents, payload) => {
       if (!event.startsWith("phx_") && !event.startsWith("chan_")) {
-        console.log("incoming", event, payload )
         this.context.signalHub.incoming.emit(event, payload);
       }
       return payload;
@@ -63,7 +62,6 @@ export class SystemBroker implements ISystem {
     this.channel
       .join()
       .receive("ok", (resp) => {
-        console.log("joined channel", resp);
         this.context.signalHub.local.emit("space_channel_connected", resp);
         window["channel"] = this.channel;
       })

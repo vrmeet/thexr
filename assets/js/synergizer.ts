@@ -263,9 +263,6 @@ export class Synergize {
     const physicsPlugin = new BABYLON.AmmoJSPlugin(true, ammo);
     this.scene.enablePhysics(gravityVector, physicsPlugin);
 
-    // this.scene.onKeyboardObservable.add((event) => {
-    //   console.log("someting was pressed", event.event.keyCode);
-    // });
     this.createDefaultCamera();
     return this.scene;
   }

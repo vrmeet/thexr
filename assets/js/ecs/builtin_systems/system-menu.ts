@@ -148,7 +148,6 @@ export class SystemMenu implements ISystem {
         gui = this.buttonFromEl(el as HTMLButtonElement, style);
         break;
       default:
-        console.log("node name", el.nodeName);
         gui = new GUI.Container(el.id);
     }
 

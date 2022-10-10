@@ -177,7 +177,6 @@ export interface SignalHub {
 // set signalHub message routings
 
 // window["signalHub"] = signalHub;
-// console.log(
 //   "signal hub initialized and assigned to window",
 //   window["signalHub"]
 // );
