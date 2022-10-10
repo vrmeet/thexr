@@ -16,7 +16,13 @@ export class SystemStartModal implements ISystem {
     // where channel is connected before material system is loaded
     this.context.signalHub.local.on("system_started").subscribe(() => {
       if (context.bypass_modal) {
+        // eslint-disable-next-line no-inner-declarations
+        // function firstInteraction() {
+        //   console.log("first interation");
+        //   window.removeEventListener("click", firstInteraction);
         context.signalHub.local.emit("client_ready", "enter");
+        // }
+        // window.addEventListener("click", firstInteraction);
       } else {
         this.insertModal();
       }

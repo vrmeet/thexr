@@ -4,8 +4,7 @@
     export let avatarAndNicknameCallback;
 
     let context: Context = getContext("context");
-    let nickname: string = context.my_nickname
-        
+    let nickname: string = context.my_nickname;
 </script>
 
 <div class="modal">

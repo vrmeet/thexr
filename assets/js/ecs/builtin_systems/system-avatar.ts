@@ -207,7 +207,7 @@ class Avatar {
 // position of an avatar should be at the feet
 
 export class SystemAvatar implements ISystem {
-  public name = "system-avatar";
+  public name = "avatar";
   public order = 1;
   public avatars: Record<string, Avatar> = {};
   public scene: BABYLON.Scene;
@@ -324,6 +324,7 @@ export class SystemAvatar implements ISystem {
   }
 
   upsertComponents(entity_id: string, components: ComponentObj): void {
+    console.log("reciving upsert in avatar");
     if (
       components.avatar !== undefined &&
       this.avatars[entity_id] !== undefined

@@ -36,6 +36,7 @@ export class SystemGrabbable implements ISystem {
         const prevParent = mesh.parent;
         const prevPosition = mesh.position.clone();
         const prevRotation = mesh.rotationQuaternion.clone();
+
         this.exitingXR$.subscribe(() => {
           mesh.parent = null;
           mesh.position = prevPosition;
@@ -74,7 +75,11 @@ export class SystemGrabbable implements ISystem {
       )
       .subscribe((data) => {
         if (data.grabbableComponent.pickup !== undefined) {
-          // this.parentMesh(data.inputSource, data.mesh);
+          this.parentGrabbedMeshIntoHand(
+            this[`${hand}PalmMesh`],
+            data.mesh,
+            data.grabbableComponent
+          );
         }
         // this.context.signalHub.movement.emit(`${hand}_grip_mesh`, data.mesh);
       });

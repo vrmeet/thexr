@@ -15,11 +15,11 @@
 
     //props
     export let context: Context;
-   
+
     let choice: "enter" | "observe";
 
     setContext("context", context);
-   
+
     //state
     let didInteract = false;
     let showAvatarAndNickNameForm = false;
@@ -27,7 +27,7 @@
 
     const micConfirmed = async () => {
         const micChoice = sessionPersistance.getMicAndOutputChoice();
-        console.log('micChoice', micChoice)
+        console.log("micChoice", micChoice);
         if (micChoice === null) {
             return false;
         } else {
@@ -42,17 +42,17 @@
 
     //callbacks
     const avatarAndNicknameCallback = async (nickname: string) => {
-        context.my_nickname = nickname
+        context.my_nickname = nickname;
         sessionPersistance.saveNickname({ nickname });
-        
+
         showAvatarAndNickNameForm = false;
         if (isMobileVR()) {
-            // no need to check mic and speaker, 
+            // no need to check mic and speaker,
             // there is only one option on head mounted displays
             return ready();
         }
-        if (! await micConfirmed()) {
-            console.log('we should show mic and out form')
+        if (!(await micConfirmed())) {
+            console.log("we should show mic and out form");
             showMicAndOutputForm = true;
         } else {
             ready();

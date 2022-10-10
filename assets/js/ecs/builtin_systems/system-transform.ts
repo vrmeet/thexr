@@ -26,6 +26,9 @@ export class SystemTransform implements ISystem {
     delete this.transforms[entity_id];
   }
   registerEntity(entity_id: string, components: ComponentObj) {
+    if (components.transform === undefined) {
+      return;
+    }
     const mesh = this.scene.getMeshByName(entity_id);
     if (mesh) {
       this.transforms[entity_id] = mesh;

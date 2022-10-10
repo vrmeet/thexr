@@ -57,7 +57,7 @@ export class SystemXRFlight implements ISystem {
         this.sideVelocity = axes.x;
       });
     // let localDirection = BABYLON.Vector3.Zero();
-    const systemXR = this.context.systems["system-xr"] as SystemXR;
+    const systemXR = this.context.systems["xr"] as SystemXR;
     const frame$ = makeXRFrameSignal(systemXR.xrHelper);
     const sub4 = frame$.subscribe(() => {
       const camera = this.context.scene.activeCamera as BABYLON.WebXRCamera;

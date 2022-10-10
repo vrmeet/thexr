@@ -1,6 +1,7 @@
 <script lang="ts">
     import { getContext } from "svelte";
     import { query, operationStore } from "@urql/svelte";
+
     //props
     export let enterCallback;
     export let observeCallback;
@@ -11,14 +12,14 @@
 
     // onMount(async () => {
 
-//     const space = operationStore(`
-// query {
-//   space(space_id: "${space_id}") {
-//     name
-//     description
-//   }
-// }
-// `);
+    //     const space = operationStore(`
+    // query {
+    //   space(space_id: "${space_id}") {
+    //     name
+    //     description
+    //   }
+    // }
+    // `);
 
     // query(space);
     // space.subscribe((value) => {
@@ -35,20 +36,20 @@
 {:else if $space.error}
     <p>Oh no... {$space.error.message}</p>
 {:else} -->
-    <div class="modal">
-        <div class="modal-content">
-            <!-- <h2>Welcome to {$space.data.space.name}</h2> -->
-            <!-- {#if $space.data.space.description}
+<div class="modal">
+    <div class="modal-content">
+        <!-- <h2>Welcome to {$space.data.space.name}</h2> -->
+        <!-- {#if $space.data.space.description}
                 <p>
                     {$space.data.space.description}
                 </p>
             {/if} -->
-            <button on:click={enterCallback}>Enter</button>
-            <button on:click={observeCallback}>Observe</button>
-        </div>
+        <button on:click={enterCallback}>Enter</button>
+        <button on:click={observeCallback}>Observe</button>
     </div>
-<!-- {/if} -->
+</div>
 
+<!-- {/if} -->
 <style>
     :global(.modal) {
         /* display: none;*/ /* Hidden by default */
