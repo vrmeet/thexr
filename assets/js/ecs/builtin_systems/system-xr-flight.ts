@@ -10,7 +10,7 @@ const GO_FASTER_DAMPENING = 0.2;
 
 export class SystemXRFlight implements ISystem {
   public context: Context;
-  public name = "system-xr-flight";
+  public name = "xr-flight";
   public order = 20;
   public forwardVelocity = 0;
   public sideVelocity = 0;

@@ -44,12 +44,12 @@ export class SpaceBroker {
     const $cameraReady = signalHub.local.on("camera_ready");
     const $client_ready = signalHub.local.on("client_ready");
 
-    $client_ready.subscribe(choiceValue => {
+    $client_ready.subscribe((choiceValue) => {
       this.channelParams.choice = choiceValue;
       this.connectToChannel();
     });
 
-    const $enter = $client_ready.pipe(filter(value => value === "enter"));
+    const $enter = $client_ready.pipe(filter((value) => value === "enter"));
 
     this.setupChannelSubscriptions();
 
@@ -67,19 +67,19 @@ export class SpaceBroker {
     // forward incoming from channel to event bus
     this.spaceChannel.onMessage = (event: keyof IncomingEvents, payload) => {
       if (!event.startsWith("phx_") && !event.startsWith("chan_")) {
-        //       console.log('channel incoming', event, payload)
+        console.log("channel incoming", event, payload);
         signalHub.incoming.emit(event, payload);
       }
       return payload;
     };
 
-    signalHub.outgoing.on("event").subscribe(mp => {
+    signalHub.outgoing.on("event").subscribe((mp) => {
       if (this.spaceChannelJoined) {
         this.spaceChannel.push("event", { ...mp, ts: new Date().getTime() });
       }
     });
 
-    signalHub.outgoing.on("hud_broadcast").subscribe(value => {
+    signalHub.outgoing.on("hud_broadcast").subscribe((value) => {
       if (this.spaceChannelJoined) {
         this.spaceChannel.push("hud_broadcast", value);
       }
@@ -94,18 +94,18 @@ export class SpaceBroker {
     this.socket.connect();
     this.spaceChannel
       .join()
-      .receive("ok", resp => {
+      .receive("ok", (resp) => {
         this.spaceChannelJoined = true;
         signalHub.local.emit("space_channel_connected", resp);
         window["channel"] = this.spaceChannel;
       })
-      .receive("error", resp => {
+      .receive("error", (resp) => {
         console.error("Unable to join space channel", resp);
       });
   }
 
   forwardCameraMovement() {
-    let payload = {
+    const payload = {
       left: null,
       right: null,
       cam: null,
@@ -113,7 +113,7 @@ export class SpaceBroker {
 
     signalHub.local
       .on("xr_state_changed")
-      .pipe(filter(msg => msg === BABYLON.WebXRState.EXITING_XR))
+      .pipe(filter((msg) => msg === BABYLON.WebXRState.EXITING_XR))
       .subscribe(() => {
         payload.left = null;
         payload.right = null;
@@ -121,39 +121,39 @@ export class SpaceBroker {
 
     const leftMovement$ = signalHub.movement.on("left_hand_moved").pipe(
       throttleTime(50),
-      map(orig => ({
+      map((orig) => ({
         pos: arrayReduceSigFigs(orig.pos),
         rot: arrayReduceSigFigs(orig.rot),
       })),
       throttleByMovement(0.005)
     );
 
-    leftMovement$.subscribe(left => {
+    leftMovement$.subscribe((left) => {
       payload.left = left;
     });
 
     const rightMovement$ = signalHub.movement.on("right_hand_moved").pipe(
       throttleTime(50),
-      map(orig => ({
+      map((orig) => ({
         pos: arrayReduceSigFigs(orig.pos),
         rot: arrayReduceSigFigs(orig.rot),
       })),
       throttleByMovement(0.005)
     );
-    rightMovement$.subscribe(right => {
+    rightMovement$.subscribe((right) => {
       payload.right = right;
     });
 
     const camMovement$ = signalHub.movement.on("camera_moved").pipe(
       throttleTime(50),
-      map(orig => ({
+      map((orig) => ({
         pos: arrayReduceSigFigs(orig.pos),
         rot: arrayReduceSigFigs(orig.rot),
       })),
       throttleByMovement(0.005)
     );
 
-    camMovement$.subscribe(cam => {
+    camMovement$.subscribe((cam) => {
       payload.cam = cam;
     });
 

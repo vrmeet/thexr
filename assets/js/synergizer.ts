@@ -12,7 +12,7 @@ import Ammo from "ammojs-typed";
 import { SystemStartModal } from "./ecs/builtin_systems/system-start-modal";
 import { SystemMenu } from "./ecs/builtin_systems/system-menu";
 import { SystemWebRTC } from "./ecs/builtin_systems/system-webrtc";
-import { SystemAttendees } from "./ecs/builtin_systems/system-attendees";
+import { SystemAttendance } from "./ecs/builtin_systems/system-attendance";
 import { SystemTransform } from "./ecs/builtin_systems/system-transform";
 import { SystemShape } from "./ecs/builtin_systems/system-shape";
 import { SystemAvatar } from "./ecs/builtin_systems/system-avatar";
@@ -22,7 +22,6 @@ import { SystemGrabbable } from "./ecs/builtin_systems/system-grabbable";
 import { SystemFloor } from "./ecs/builtin_systems/system-floor";
 import { SystemLogger } from "./ecs/builtin_systems/system-logger";
 import { SystemXRFlight } from "./ecs/builtin_systems/system-xr-flight";
-import { SystemParent } from "./ecs/builtin_systems/system-parent";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -31,6 +30,7 @@ export class Synergize {
   public context: Context;
   public scene: BABYLON.Scene;
   public freeCamera: BABYLON.FreeCamera;
+  // order matters when creating an entity
   public processList: ISystem[];
   /**
    *
@@ -72,7 +72,7 @@ export class Synergize {
     this.addSystem(new SystemUtilities());
     // maps functions to keyboard and tablet when one can't be in VR
     this.addSystem(new SystemInline());
-    // setups VR
+    // setup VR capability and broadcasts buttons and motion
     this.addSystem(new SystemXR());
     // initial modal to get nickname, choose avatar and other options
     this.addSystem(new SystemStartModal());
@@ -81,10 +81,10 @@ export class Synergize {
     // enables basic voice and video communication with others over web RTC
     this.addSystem(new SystemWebRTC());
     // keeps track of who is present in the space
-    this.addSystem(new SystemAttendees());
-    // updates position/rotation/scale
+    this.addSystem(new SystemAttendance());
+    // updates position/rotation/scale as well as parenting
     this.addSystem(new SystemTransform());
-    // basic shapes
+    // create basic primitive shapes
     this.addSystem(new SystemShape());
     // avatars for people in the space
     this.addSystem(new SystemAvatar());
@@ -94,11 +94,12 @@ export class Synergize {
     this.addSystem(new SystemLighting());
     // detects mesh under the palm and adds/removes parenting component
     this.addSystem(new SystemGrabbable());
+    // floor component makes a mesh a teleportable destination
     this.addSystem(new SystemFloor());
+    // brings console logs into VR for easier debugging
     this.addSystem(new SystemLogger());
+    // brings joystick flight to VR
     this.addSystem(new SystemXRFlight());
-    // parents one entity to another
-    this.addSystem(new SystemParent());
   }
 
   addSystem(system: ISystem) {
@@ -132,7 +133,9 @@ export class Synergize {
 
   deregisterEntity(entity_id: string) {
     for (let i = this.processList.length - 1; i >= 0; i--) {
-      this.processList[i].deregisterEntity(entity_id);
+      if (this.processList[i].deregisterEntity !== undefined) {
+        this.processList[i].deregisterEntity(entity_id);
+      }
     }
     delete this.context.state[entity_id];
   }
@@ -142,8 +145,10 @@ export class Synergize {
       id: this.context.my_member_id,
       components: {
         avatar: { head: camPosRot(this.context.scene.activeCamera) },
-        nickname: this.context.my_nickname,
-        mic_muted: this.context.my_mic_muted,
+        attendance: {
+          nickname: this.context.my_nickname,
+          mic_muted: this.context.my_mic_muted,
+        },
       },
     });
   }
@@ -168,8 +173,10 @@ export class Synergize {
           this.context.signalHub.outgoing.emit("components_upserted", {
             id: this.context.my_member_id,
             components: {
-              nickname: this.context.my_nickname,
-              mic_muted: this.context.my_mic_muted,
+              attendance: {
+                nickname: this.context.my_nickname,
+                mic_muted: this.context.my_mic_muted,
+              },
             },
           });
         }
@@ -193,15 +200,41 @@ export class Synergize {
           console.warn("cannot upsert components of undefined entity", evt);
           return;
         }
-        this.processList.forEach((system) => {
-          system.upsertComponents(evt.id, evt.components);
+        Object.keys(evt.components).forEach((compName) => {
+          // call systems upsertComponents func if it is defined
+          if (
+            this.context.systems[compName] !== undefined &&
+            this.context.systems[compName].upsertComponents !== undefined
+          ) {
+            this.context.systems[compName].upsertComponents(
+              evt.id,
+              evt.components
+            );
+          }
+          // patch new values into the state
+          if (
+            this.context.state[evt.id][compName] !== undefined &&
+            typeof this.context.state[evt.id][compName] === "object"
+          ) {
+            Object.assign(
+              this.context.state[evt.id][compName],
+              evt.components[compName]
+            );
+          } else {
+            this.context.state[evt.id][compName] = evt.components[compName];
+          }
         });
-        // save change into state at the end of all passes, the final result
-        // would be the same if we did this before looping through each system,
-        // but this way each system gets a chance to look at context.state before the
-        // change, and consider components as new data
-        Object.assign(this.context.state[evt.id], evt.components);
       });
+
+    // this.context.signalHub.incoming
+    //   .on("components_removed")
+    //   .subscribe((evt) => {
+    //     if (this.context.state[evt.id] === undefined) {
+    //       console.warn("cannot delete components of undefined entity", evt);
+    //       return;
+    //     }
+    //     // TODO
+    //   });
 
     // route clicks to mesh picked event
     this.scene.onPointerObservable.add((pointerInfo) => {

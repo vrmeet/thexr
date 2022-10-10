@@ -165,8 +165,17 @@ defmodule Thexr.SpaceServer do
 
     new_entity_components =
       case {entity_current_components, components} do
-        {%{}, %{}} -> Map.merge(entity_current_components, components)
-        _ -> components
+        {%{}, %{}} ->
+          # Map.merge/3 adds keys in 2nd map to keys in 1st map, resolving any key conflicts with a function
+          Map.merge(entity_current_components, components, fn _key, old_val, new_val ->
+            case {old_val, new_val} do
+              {%{}, %{}} -> Map.merge(old_val, new_val)
+              _ -> new_val
+            end
+          end)
+
+        _ ->
+          components
       end
 
     Map.put(space_state, entity_id, new_entity_components)

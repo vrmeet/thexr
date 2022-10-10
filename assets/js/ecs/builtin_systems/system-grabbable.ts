@@ -3,10 +3,11 @@ import type { Context } from "../../context";
 import type { ComponentObj } from "../components/component-obj";
 import type { ISystem } from "./isystem";
 import * as BABYLON from "babylonjs";
+import { arrayReduceSigFigs } from "../../utils/misc";
 
 export class SystemGrabbable implements ISystem {
   public context: Context;
-  public name = "system-grabbable";
+  public name = "grabbable";
   public order = 20;
   public exitingXR$: Observable<BABYLON.WebXRState>;
   public leftPalmMesh: BABYLON.AbstractMesh;
@@ -93,7 +94,12 @@ export class SystemGrabbable implements ISystem {
     this.context.signalHub.outgoing.emit("components_upserted", {
       id: grabbedMesh.name,
       components: {
-        grabbable: {},
+        grabbable: { grabbed_by: this.context.my_member_id },
+        transform: {
+          position: arrayReduceSigFigs(grabbedMesh.position.asArray()),
+          rotation: arrayReduceSigFigs(grabbedMesh.rotation.asArray()),
+          parent: handMesh.name,
+        },
       },
     });
   }

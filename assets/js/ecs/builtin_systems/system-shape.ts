@@ -1,11 +1,10 @@
 import type { Context } from "../../context";
 import type { ComponentObj } from "../components/component-obj";
-import type { ShapeComponent } from "../components/shape";
 import type { ISystem } from "./isystem";
 
 export class SystemShape implements ISystem {
   public meshes: Record<string, BABYLON.AbstractMesh> = {};
-  public name = "system-shape";
+  public name = "shape";
   public order = 0;
   public context: Context;
   init(context: Context) {
@@ -44,7 +43,7 @@ export class SystemShape implements ISystem {
 
   createMesh(
     entity_id: string,
-    shapeComponent: ShapeComponent
+    shapeComponent: ComponentObj["shape"]
   ): BABYLON.AbstractMesh {
     if (
       ["box", "sphere", "cylinder", "plane", "capsule"].includes(

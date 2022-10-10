@@ -12,7 +12,7 @@ enables the XR experience
 sends head motion and hand controller data
 */
 export class SystemXR implements ISystem {
-  public name = "system-xr";
+  public name = "xr";
   public order = 3;
   public context: Context;
   public scene: BABYLON.Scene;

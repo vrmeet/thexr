@@ -16,7 +16,7 @@ const WALL_HEIGHT = 10;
 const WALL_WIDTH = 20;
 
 export class SystemLogger implements ISystem {
-  public name = "system-logger";
+  public name = "logger";
   public order = 3;
   public scene: BABYLON.Scene;
   public signalHub: SignalHub;

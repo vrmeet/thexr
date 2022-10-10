@@ -4,10 +4,9 @@ import type { Context } from "../../context";
 import type { ISystem } from "./isystem";
 
 import App from "../../svelte/App.svelte";
-import type { Subscription } from "rxjs";
 
 export class SystemStartModal implements ISystem {
-  name = "system-start-modal";
+  name = "start-modal";
   public order = 10;
   public context: Context;
   init(context: Context) {

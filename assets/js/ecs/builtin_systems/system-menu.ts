@@ -9,7 +9,7 @@ import { filter, take } from "rxjs";
 import MenuBar from "../../svelte/MenuBar.svelte";
 
 export class SystemMenu implements ISystem {
-  public name = "system-menu";
+  public name = "menu";
   public order = 8;
   public fsGui: GUI.AdvancedDynamicTexture;
   public smallPlane: BABYLON.AbstractMesh;

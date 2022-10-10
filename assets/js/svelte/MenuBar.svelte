@@ -24,7 +24,7 @@
       context.signalHub.outgoing.emit("components_upserted", {
         id: context.my_member_id,
         components: {
-            mic_muted: context.my_mic_muted
+          attendance: {  mic_muted: context.my_mic_muted }
         }
       })
     }

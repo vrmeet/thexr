@@ -2,11 +2,10 @@ import type * as BABYLON from "babylonjs";
 import type { Context } from "../../context";
 import type { Subscription } from "rxjs";
 import type { ComponentObj } from "../components/component-obj";
-import type { ActsLikeLiftComponent } from "../components/acts-like-lift";
 import type { ISystem } from "../builtin_systems/isystem";
 
 class SystemLift implements ISystem {
-  public name = "system-lift";
+  public name = "acts_like_lift";
   public order = 20;
   public scene: BABYLON.Scene;
   public meshPickedSubscription: Subscription;
@@ -87,7 +86,7 @@ class SystemLift implements ISystem {
           id: mesh.name,
           components: {
             acts_like_lift: { ...liftState, state: "down" },
-            position: mesh.position.asArray(),
+            transform: { position: mesh.position.asArray() },
           },
         });
       },
@@ -108,7 +107,7 @@ class SystemLift implements ISystem {
           id: mesh.name,
           components: {
             acts_like_lift: { ...liftState, state: "up" },
-            position: mesh.position.asArray(),
+            transform: { position: mesh.position.asArray() },
           },
         });
       },

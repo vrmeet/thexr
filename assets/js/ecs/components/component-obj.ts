@@ -1,7 +1,11 @@
 import type { PosRot } from "../../types";
-import type { ActsLikeLiftComponent } from "./acts-like-lift";
-import type { MaterialComponent } from "./material";
-import type { ShapeComponent } from "./shape";
+import type {
+  BoxShape,
+  SphereShape,
+  CylinderShape,
+  PlaneShape,
+  CapsuleShape,
+} from "./shape";
 
 /**
  * The ComponentObj has unique keys for every possible component
@@ -15,11 +19,18 @@ import type { ShapeComponent } from "./shape";
  * quickly to move or whether to play a dying animation.
  */
 export interface ComponentObj {
-  position?: number[];
-  rotation?: number[];
-  scaling?: number[];
-  shape?: ShapeComponent;
-  acts_like_lift?: ActsLikeLiftComponent;
+  transform?: {
+    position?: number[];
+    rotation?: number[];
+    scaling?: number[];
+    parent?: string;
+  };
+  shape?: BoxShape | SphereShape | CylinderShape | PlaneShape | CapsuleShape;
+  acts_like_lift?: {
+    state?: "up" | "down" | "going-up" | "going-down";
+    height?: number;
+    speed?: number;
+  };
   acts_like_floor?: any;
   avatar?: {
     head: PosRot;
@@ -27,11 +38,12 @@ export interface ComponentObj {
     right?: PosRot | null;
   };
   lighting?: any;
-  material?: MaterialComponent;
-  mic_muted?: boolean;
-  nickname?: string;
-  grabbable?: { pickup?: "any" | "fixed"; lever?: any; grabbed_by: string };
-  parent?: string;
+  material?: { name: "color"; color_string: string } | { name: "grid" };
+  attendance?: {
+    mic_muted?: boolean;
+    nickname?: string;
+  };
+  grabbable?: { pickup?: "any" | "fixed"; lever?: any; grabbed_by?: string };
 
   [anykey: string]: any;
 }

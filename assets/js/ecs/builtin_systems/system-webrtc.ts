@@ -15,7 +15,7 @@ import { filter, take, Subject, scan } from "rxjs";
 import type { ComponentObj } from "../components/component-obj";
 
 export class SystemWebRTC implements ISystem {
-  public name = "system-webrtc";
+  public name = "webrtc";
   public order = 10;
   public context: Context;
   public client: IAgoraRTCClient;
@@ -95,28 +95,42 @@ export class SystemWebRTC implements ISystem {
         }
       }
     });
-  }
 
-  registerEntity(entity_id: string, components: ComponentObj): void {
-    if (components.mic_muted !== undefined) {
-      this.micsMuted[entity_id] = components.mic_muted;
-      this.updateCountAndJoinOrUnjoin();
-    }
-  }
-  upsertComponents(entity_id: string, components: ComponentObj): void {
-    if (
-      components.mic_muted !== undefined &&
-      this.micsMuted[entity_id] !== undefined
-    ) {
-      this.micsMuted[entity_id] = components.mic_muted;
-      this.updateCountAndJoinOrUnjoin();
-    }
-  }
-  deregisterEntity(entity_id: string): void {
-    if (this.micsMuted[entity_id] !== undefined) {
-      delete this.micsMuted[entity_id];
-      this.updateCountAndJoinOrUnjoin();
-    }
+    // this system observes attendance, but isn't called by synergizer since system name isn't a component
+    this.context.signalHub.incoming
+      .on("entity_created")
+      .pipe(
+        filter((msg) => msg.components?.attendance?.mic_muted !== undefined)
+      )
+      .subscribe((msg) => {
+        this.micsMuted[msg.id] = msg.components.attendance.mic_muted;
+        this.updateCountAndJoinOrUnjoin();
+      });
+
+    this.context.signalHub.incoming
+      .on("components_upserted")
+      .pipe(
+        filter(
+          (msg) =>
+            msg.components?.attendance?.mic_muted !== undefined &&
+            this.micsMuted[msg.id] !== undefined
+        )
+      )
+      .subscribe((msg) => {
+        this.micsMuted[msg.id] = msg.components.attendance.mic_muted;
+        this.updateCountAndJoinOrUnjoin();
+      });
+
+    this.context.signalHub.incoming
+      .on("entities_deleted")
+      .subscribe(({ ids }) => {
+        ids.forEach((id) => {
+          if (this.micsMuted[id] !== undefined) {
+            delete this.micsMuted[id];
+          }
+        });
+        this.updateCountAndJoinOrUnjoin();
+      });
   }
 
   numConnected() {

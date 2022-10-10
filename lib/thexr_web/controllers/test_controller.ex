@@ -60,9 +60,9 @@ defmodule ThexrWeb.TestController do
       "id" => "grid-floor",
       "components" => %{
         "shape" => %{"prim" => "plane", "prim_params" => %{"size" => 25}},
-        "rotation" => [1.5708, 0, 0],
+        "transform" => %{"rotation" => [1.5708, 0, 0]},
         "material" => %{"name" => "grid"},
-        "acts_like_floor" => %{}
+        "floor" => %{}
       }
     })
 
@@ -71,7 +71,7 @@ defmodule ThexrWeb.TestController do
       "components" => %{
         "shape" => %{"prim" => "box", "prim_params" => %{"size" => 0.3}},
         "material" => %{"name" => "color", "color_string" => "#FF0000"},
-        "position" => [1, 1.5, -7],
+        "transform" => %{"position" => [1, 1.5, -3]},
         "grabbable" => %{"pickup" => "any"}
       }
     })
@@ -81,19 +81,20 @@ defmodule ThexrWeb.TestController do
       "components" => %{
         "shape" => %{"prim" => "box", "prim_params" => %{"size" => 0.25}},
         "material" => %{"name" => "color", "color_string" => "#00FF00"},
-        "position" => [-1, 1.5, 3],
+        "transform" => %{"position" => [-1, 1.5, 3]},
         "grabbable" => %{"pickup" => "fixed"}
       }
     })
 
-    # Thexr.SpaceServer.process_event(space_id, "entity_created", %{
-    #   "id" => "door",
-    #   "components" => %{
-    #     "shape" => %{"prim" => "box", "prim_params" => %{"height" => 2}},
-    #     "material" => %{"name" => "color", "color_string" => "#FF0000"},
-    #     "acts_like_lift" => %{"height" => 2, "speed" => 0.01, "state" => "down"}
-    #   }
-    # })
+    Thexr.SpaceServer.process_event(space_id, "entity_created", %{
+      "id" => "door",
+      "components" => %{
+        "shape" => %{"prim" => "box", "prim_params" => %{"height" => 0.1}},
+        "material" => %{"name" => "color", "color_string" => "#FF0000"},
+        "transform" => %{"position" => [0, 1, 0]},
+        "acts_like_lift" => %{"height" => 2, "speed" => 0.01, "state" => "down"}
+      }
+    })
 
     render(conn, "index.html",
       member_id: conn.assigns.unique_id,

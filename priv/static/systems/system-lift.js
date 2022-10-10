@@ -19,7 +19,7 @@ var __spreadValues = (a, b) => {
 var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
 class SystemLift {
   constructor() {
-    this.name = "system-lift";
+    this.name = "acts_like_lift";
     this.order = 20;
   }
   init(context) {
@@ -88,7 +88,7 @@ class SystemLift {
           id: mesh.name,
           components: {
             acts_like_lift: __spreadProps(__spreadValues({}, liftState), { state: "down" }),
-            position: mesh.position.asArray()
+            transform: { position: mesh.position.asArray() }
           }
         });
       }
@@ -106,7 +106,7 @@ class SystemLift {
           id: mesh.name,
           components: {
             acts_like_lift: __spreadProps(__spreadValues({}, liftState), { state: "up" }),
-            position: mesh.position.asArray()
+            transform: { position: mesh.position.asArray() }
           }
         });
       }

@@ -5,7 +5,7 @@ import type { ISystem } from "./isystem";
 const ANIMATION_FRAME_PER_SECOND = 60;
 
 export class SystemUtilities implements ISystem {
-  name = "system-utilities";
+  name = "utilities";
   public order = 10;
   public animatables: Record<string, BABYLON.Animatable> = {};
   public context: Context;

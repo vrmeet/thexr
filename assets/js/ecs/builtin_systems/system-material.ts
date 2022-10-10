@@ -1,13 +1,12 @@
 import type * as BABYLON from "babylonjs";
 import type { Context } from "../../context";
-import type { MaterialComponent } from "../components/material";
 import type { ComponentObj } from "../components/component-obj";
 import type { ISystem } from "./isystem";
 
 export class SystemMaterial implements ISystem {
   public materials: { [material_name: string]: BABYLON.Material } = {};
   public entities: Record<string, string> = {}; // entity_id to material name mapping
-  public name = "system-material";
+  public name = "material";
   public order = 3;
   public scene: BABYLON.Scene;
   public context: Context;
@@ -59,7 +58,7 @@ export class SystemMaterial implements ISystem {
     }
   }
 
-  findOrCreateMaterial(component: MaterialComponent): BABYLON.Material {
+  findOrCreateMaterial(component: ComponentObj["material"]): BABYLON.Material {
     if (component.name === "color") {
       return this.findOrCreateColor(component.color_string);
     } else if (component.name === "grid") {
