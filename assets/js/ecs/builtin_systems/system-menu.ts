@@ -60,26 +60,15 @@ export class SystemMenu implements ISystem {
         this.renderMenuToTexture();
       });
 
+    // make sure there is something to bind menu to
     this.signalHub.local
-      .on("xr_state_changed")
-      .pipe(filter((msg) => msg === BABYLON.WebXRState.ENTERING_XR))
-      .subscribe(() => {
+      .on("controller_ready")
+      .pipe(filter((payload) => payload.hand === "left"))
+      .subscribe((payload) => {
         this.mode = "vr";
-        // make sure there is something to bind menu to
-        this.signalHub.local
-          .on("controller_ready")
-          .pipe(
-            filter((payload) => payload.hand === "left"),
-            take(1)
-          )
-          .subscribe((payload) => {
-            this.grip = payload.grip;
-            if (!this.grip) {
-              console.error("menu needs a grip but grip was empty");
-            }
-            this.prepVRScreenMenuExperience();
-            this.renderMenuToTexture();
-          });
+        this.grip = payload.grip;
+        this.prepVRScreenMenuExperience();
+        this.renderMenuToTexture();
       });
 
     /*
