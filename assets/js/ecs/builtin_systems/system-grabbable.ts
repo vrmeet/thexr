@@ -11,8 +11,12 @@ export class SystemGrabbable implements ISystem {
   public name = "grabbable";
   public order = 20;
   public exitingXR$: Observable<BABYLON.WebXRState>;
-  public leftHandNode: BABYLON.AbstractMesh;
-  public rightHandNode: BABYLON.AbstractMesh;
+  public leftHandNode: BABYLON.Node;
+  public rightHandNode: BABYLON.Node;
+  // retain some memory of what we're holding here in case controller blip off we can reattach to our grip
+  public leftGrabbedObject: BABYLON.Node;
+  public rightGrabbedObject: BABYLON.Node;
+
   init(context: Context) {
     this.context = context;
 
@@ -62,6 +66,10 @@ export class SystemGrabbable implements ISystem {
         // );
         node.parent = grip;
         this[`${hand}HandNode`] = node;
+        const grabbedObject = this[`${hand}GrabbedObject`];
+        if (grabbedObject) {
+          grabbedObject.parent = node;
+        }
       });
   }
 
@@ -133,7 +141,9 @@ export class SystemGrabbable implements ISystem {
       )
     )
       .pipe(take(1))
-      .subscribe();
+      .subscribe(() => {
+        this[`${hand}GrabbedObject`] = null;
+      });
   }
 
   parentGrabbedMeshIntoHand(
@@ -141,6 +151,7 @@ export class SystemGrabbable implements ISystem {
     grabbedMesh: BABYLON.AbstractMesh,
     grabbableComponent: ComponentObj["grabbable"]
   ) {
+    this[`${hand}GrabbedObject`] = grabbedMesh;
     if (grabbedMesh.parent) {
       // if grabbed by other hand, unparent so we get world position
       grabbedMesh.setParent(null);
@@ -196,15 +207,15 @@ export class SystemGrabbable implements ISystem {
     // const ray = new BABYLON.Ray(origin, worldDirection, 0.25);
     const multiplier =
       inputSource.motionController.handness[0] === "l" ? 1 : -1;
-    const p1 = new BABYLON.Vector3(0.1 * multiplier, 0.05, -0.05);
-    const p2 = new BABYLON.Vector3(0, -0.2, 0.1);
+    const p1 = new BABYLON.Vector3(0.1 * multiplier, 0.1, -0.1);
+    const p2 = new BABYLON.Vector3(0, -0.2, 0.02);
     const ray = BABYLON.Ray.CreateNewFromTo(
       p1,
       p2,
       inputSource.grip.getWorldMatrix()
     );
-    // const rayHelper = new BABYLON.RayHelper(ray);
-    // rayHelper.show(this.context.scene, BABYLON.Color3.Red());
+    const rayHelper = new BABYLON.RayHelper(ray);
+    rayHelper.show(this.context.scene, BABYLON.Color3.Red());
     const pickInfo = this.context.scene.pickWithRay(ray);
     if (
       pickInfo.pickedMesh &&
