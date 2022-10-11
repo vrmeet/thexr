@@ -1,10 +1,11 @@
+do optimization to always send messages
+to self fast, and do not forward messages
+back down to self
 
-QA: if a person grabs and object
-then disconnects, what happens to the object?
+if player permanently disconnects
+what happens to objects they grabbed?
 
-menu bar Vr menu keeps getting detached from grip.
-WHY?  Because when you put headset down the controller is removed
-and anything parented to it is now parented to null.
+why is it when genserver timesout, it was brought back to life?  It should end.  is it because there is a browser reloading the page?
 
 work on text input so we can inspect entities
 and edit their components 

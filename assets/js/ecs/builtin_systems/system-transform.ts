@@ -64,17 +64,24 @@ export class SystemTransform implements ISystem {
       newParentName !== null &&
       (currentParent === null || currentParent?.name !== newParentName)
     ) {
-      console.log(
-        "transform will parent",
-        this.transforms[entity_id].name,
-        "to",
-        components.transform.parent
-      );
+      if (this.transforms[entity_id])
+        console.log(
+          "transform will parent",
+          this.transforms[entity_id].name,
+          "to",
+          components.transform.parent
+        );
       const parent =
         this.scene.getTransformNodeByName(components.transform.parent) ||
         this.scene.getMeshByName(components.transform.parent);
 
-      this.transforms[entity_id].parent = parent;
+      const child = this.transforms[entity_id] as BABYLON.AbstractMesh;
+      // parenting fights with imposters, so remove the imposter if this was just thrown
+      if (child.physicsImpostor) {
+        child.physicsImpostor.dispose();
+        child.physicsImpostor = null;
+      }
+      child.parent = parent;
     }
   }
 

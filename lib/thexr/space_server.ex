@@ -48,19 +48,14 @@ defmodule Thexr.SpaceServer do
     GenServer.call(via_tuple(space_id), :space_state)
   end
 
-  def process_event(server, event, message) when is_pid(server) do
+  def process_event(server, event, message, channel_pid) when is_pid(server) do
     message = AtomicMap.convert(message, %{safe: false})
-    GenServer.cast(server, {:process_event, event, message})
+    GenServer.cast(server, {:process_event, event, message, channel_pid})
   end
 
-  def process_event(space_id, event, message) do
+  def process_event(space_id, event, message, channel_pid) do
     message = AtomicMap.convert(message, %{safe: false})
-    GenServer.cast(via_tuple(space_id), {:process_event, event, message})
-  end
-
-  # legacy match, can remove later
-  def process_event(space_id, _, _, _) do
-    GenServer.cast(via_tuple(space_id), {:process_event, 1, 1})
+    GenServer.cast(via_tuple(space_id), {:process_event, event, message, channel_pid})
   end
 
   def member_connected(server, member_id) do
@@ -89,9 +84,13 @@ defmodule Thexr.SpaceServer do
     {:reply, state.space_state, state}
   end
 
-  def handle_cast({:process_event, event, message}, state) do
+  def handle_cast({:process_event, event, message, channel_pid}, state) do
     # for now, broadcast everything to every body
-    ThexrWeb.Endpoint.broadcast("space:#{state.space_id}", event, message)
+    if channel_pid == nil do
+      ThexrWeb.Endpoint.broadcast("space:#{state.space_id}", event, message)
+    else
+      ThexrWeb.Endpoint.broadcast_from(channel_pid, "space:#{state.space_id}", event, message)
+    end
 
     # patch the state
     new_space_state = make_patch(event, message, state.space_state)
@@ -116,9 +115,14 @@ defmodule Thexr.SpaceServer do
 
   def handle_info(:kick_check, state) do
     if MapSet.size(state.disconnected) > 0 do
-      __MODULE__.process_event(self(), "entities_deleted", %{
-        ids: MapSet.to_list(state.disconnected)
-      })
+      __MODULE__.process_event(
+        self(),
+        "entities_deleted",
+        %{
+          ids: MapSet.to_list(state.disconnected)
+        },
+        nil
+      )
     end
 
     state = %{state | disconnected: MapSet.new()}

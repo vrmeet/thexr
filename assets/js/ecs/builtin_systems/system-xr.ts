@@ -157,13 +157,13 @@ export class SystemXR implements ISystem {
   setupHandMotionData(inputSource: BABYLON.WebXRInputSource) {
     const motionController = inputSource.motionController;
     motionController.onModelLoadedObservable.add((mc) => {
-      const imposter =
-        this.controllerPhysicsFeature.getImpostorForController(inputSource);
+      // const imposter =
+      //   this.controllerPhysicsFeature.getImpostorForController(inputSource);
 
       inputSource.grip.onAfterWorldMatrixUpdateObservable.add(() => {
         const payload: any = getPosRot(inputSource.grip);
-        payload.lv = imposter.getLinearVelocity().asArray();
-        payload.av = imposter.getAngularVelocity().asArray();
+        // payload.lv = imposter.getLinearVelocity().asArray();
+        // payload.av = imposter.getAngularVelocity().asArray();
         this.signalHub.movement.emit(
           `${mc.handness as "left" | "right"}_hand_moved`,
           payload

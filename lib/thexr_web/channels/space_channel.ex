@@ -18,12 +18,17 @@ defmodule ThexrWeb.SpaceChannel do
     {:noreply, socket}
   end
 
+  def handle_in("msg", message, socket) do
+    broadcast_from(socket, "msg", message)
+    {:noreply, socket}
+  end
+
   def handle_in(event, message, socket) do
     IO.inspect("handle in called")
     IO.inspect(event)
     IO.inspect(message)
     IO.inspect(socket.assigns)
-    SpaceServer.process_event(socket.assigns.server, event, message)
+    SpaceServer.process_event(socket.assigns.server, event, message, self())
     {:noreply, socket}
   end
 

@@ -3,8 +3,9 @@ import type { Context } from "../../context";
 import type { ComponentObj } from "../components/component-obj";
 import type { ISystem } from "./isystem";
 import * as BABYLON from "babylonjs";
-import { arrayReduceSigFigs } from "../../utils/misc";
+import { arrayReduceSigFigs, getPosRot } from "../../utils/misc";
 import type { AbstractMesh } from "babylonjs";
+import type { SystemXR } from "./system-xr";
 
 export class SystemGrabbable implements ISystem {
   public context: Context;
@@ -16,9 +17,11 @@ export class SystemGrabbable implements ISystem {
   // retain some memory of what we're holding here in case controller blip off we can reattach to our grip
   public leftGrabbedObject: BABYLON.Node;
   public rightGrabbedObject: BABYLON.Node;
+  public systemXR: SystemXR;
 
   init(context: Context) {
     this.context = context;
+    this.systemXR = context.systems["xr"] as SystemXR;
 
     this.exitingXR$ = this.context.signalHub.local
       .on("xr_state_changed")
@@ -116,14 +119,14 @@ export class SystemGrabbable implements ISystem {
             msg.id === grabbedMesh.name &&
             msg.components?.grabbable?.grabbed_by !== this.context.my_member_id
         ),
-        tap(() => {
-          console.log("other player stole mesh away");
+        tap((msg) => {
+          console.log("other player stole mesh away", msg.components.grabbable);
         })
       ),
 
       // OR the hand released the mesh
       this.context.signalHub.movement.on(`${hand}_grip_released`).pipe(
-        tap(() => {
+        tap((inputSource) => {
           console.log("hand released mesh");
           grabbedMesh.setParent(null); // keeps current position in world space
           this.context.signalHub.outgoing.emit("components_upserted", {
@@ -137,6 +140,35 @@ export class SystemGrabbable implements ISystem {
               },
             },
           });
+          // if this grabble component supports throwable, then send custom message
+          // to impulse it and determine it's final resting position with another pos rotation update msg
+          if (this.context.state[grabbedMesh.name].grabbable?.throwable) {
+            console.log("this is throwable");
+            //tell everyone to send it flying
+            const imposter =
+              this.systemXR.controllerPhysicsFeature.getImpostorForController(
+                inputSource
+              );
+            const lv = arrayReduceSigFigs(
+              imposter.getLinearVelocity().asArray()
+            );
+            const av = arrayReduceSigFigs(
+              imposter.getAngularVelocity().asArray()
+            );
+
+            this.context.signalHub.outgoing.emit("msg", {
+              system: "grabbable",
+              data: {
+                throw: grabbedMesh.name,
+                av,
+                lv,
+                pos: arrayReduceSigFigs(
+                  grabbedMesh.getAbsolutePosition().asArray()
+                ),
+                rot: arrayReduceSigFigs(grabbedMesh.rotation.asArray()),
+              },
+            });
+          }
         })
       )
     )
@@ -151,6 +183,11 @@ export class SystemGrabbable implements ISystem {
     grabbedMesh: BABYLON.AbstractMesh,
     grabbableComponent: ComponentObj["grabbable"]
   ) {
+    if (grabbedMesh.physicsImpostor) {
+      grabbedMesh.physicsImpostor.dispose();
+      grabbedMesh.physicsImpostor = null;
+    }
+
     this[`${hand}GrabbedObject`] = grabbedMesh;
     if (grabbedMesh.parent) {
       // if grabbed by other hand, unparent so we get world position
@@ -208,14 +245,16 @@ export class SystemGrabbable implements ISystem {
     const multiplier =
       inputSource.motionController.handness[0] === "l" ? 1 : -1;
     const p1 = new BABYLON.Vector3(0.1 * multiplier, 0.1, -0.1);
-    const p2 = new BABYLON.Vector3(0, -0.2, 0.02);
+    const p2 = new BABYLON.Vector3(0, -0.26, 0.024);
     const ray = BABYLON.Ray.CreateNewFromTo(
       p1,
       p2,
       inputSource.grip.getWorldMatrix()
     );
+    // const ray = new BABYLON.Ray(p1, p2, 1);
     const rayHelper = new BABYLON.RayHelper(ray);
     rayHelper.show(this.context.scene, BABYLON.Color3.Red());
+    // rayHelper.attachToMesh(inputSource.grip);
     const pickInfo = this.context.scene.pickWithRay(ray);
     if (
       pickInfo.pickedMesh &&
@@ -237,5 +276,35 @@ export class SystemGrabbable implements ISystem {
     }
     console.log("no grab");
     return null;
+  }
+
+  process_msg(data: {
+    throw: string;
+    av: number[];
+    lv: number[];
+    pos: number[];
+    rot: number[];
+  }): void {
+    // handle throw
+    const thrownObject = this.context.scene.getMeshByName(data.throw);
+    // reset pos, rot for more accurate client simulations
+    thrownObject.position = BABYLON.Vector3.FromArray(data.pos);
+    thrownObject.rotation = BABYLON.Vector3.FromArray(data.rot);
+    if (!thrownObject.physicsImpostor) {
+      thrownObject.physicsImpostor = new BABYLON.PhysicsImpostor(
+        thrownObject,
+        BABYLON.PhysicsImpostor.BoxImpostor,
+        { mass: 1, friction: 0.8, restitution: 0.5 },
+        this.context.scene
+      );
+    }
+    thrownObject.physicsImpostor.setLinearVelocity(
+      BABYLON.Vector3.FromArray(data.lv)
+    );
+    thrownObject.physicsImpostor.setAngularVelocity(
+      BABYLON.Vector3.FromArray(data.av)
+    );
+    // in one second, unless canceled by another interaction
+    // save the final resting position of the mesh and remove the physics imposter
   }
 }

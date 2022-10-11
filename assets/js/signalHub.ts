@@ -58,7 +58,7 @@ export type IncomingEvents = {
   entities_deleted: { ids: string[] };
   components_upserted: { id: string; components: ComponentObj };
   components_removed: { id: string; names: string[] };
-  custom_msg: any;
+  msg: { system: string; data: any };
   hud_broadcast: { message: string };
   presence_diff: types.PresenceDiff;
   presence_state: types.PresenceState;
@@ -92,7 +92,7 @@ export type OutgoingEvents = {
   entities_deleted: { ids: string };
   components_upserted: { id: string; components: ComponentObj };
   components_removed: { id: string; names: string[] };
-  custom_msg: any;
+  msg: { system: string; data: any };
   hud_broadcast: { msg: string };
 };
 

@@ -226,6 +226,13 @@ export class Synergize {
         });
       });
 
+    this.context.signalHub.incoming.on("msg").subscribe((data) => {
+      const system = this.context.systems[data.system];
+      if (system && system.process_msg !== undefined) {
+        system.process_msg(data.data);
+      }
+    });
+
     // this.context.signalHub.incoming
     //   .on("components_removed")
     //   .subscribe((evt) => {

@@ -34,12 +34,15 @@ export class SystemBroker implements ISystem {
         this.pipeOutgoingToChannel("entities_deleted");
         this.pipeOutgoingToChannel("components_upserted");
         this.pipeOutgoingToChannel("components_removed");
+        this.pipeOutgoingToChannel("msg");
       }
     });
   }
 
   pipeOutgoingToChannel(pattern: keyof OutgoingEvents) {
     this.context.signalHub.outgoing.on(pattern).subscribe((data) => {
+      // send to self for fast reaction
+      this.context.signalHub.incoming.emit(pattern, data as any);
       if (this.channel) {
         this.channel.push(pattern, data);
       }

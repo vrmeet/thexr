@@ -9,4 +9,5 @@ export interface ISystem {
   registerEntity?(entity_id: string, components: ComponentObj): void;
   upsertComponents?(entity_id: string, components: ComponentObj): void;
   deregisterEntity?(entity_id: string): void;
+  process_msg?(data: any): void;
 }

@@ -43,7 +43,12 @@ export interface ComponentObj {
     mic_muted?: boolean;
     nickname?: string;
   };
-  grabbable?: { pickup?: "any" | "fixed"; lever?: any; grabbed_by?: string };
+  grabbable?: {
+    pickup?: "any" | "fixed";
+    lever?: any;
+    grabbed_by?: string;
+    throwable?: boolean;
+  };
 
   [anykey: string]: any;
 }
