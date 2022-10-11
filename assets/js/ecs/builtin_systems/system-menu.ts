@@ -7,6 +7,7 @@ import type { SignalHub } from "../../signalHub";
 import { filter, take } from "rxjs";
 
 import MenuBar from "../../svelte/MenuBar.svelte";
+import { PlayAnimationAction } from "babylonjs";
 
 export class SystemMenu implements ISystem {
   public name = "menu";
@@ -71,9 +72,16 @@ export class SystemMenu implements ISystem {
         this.renderMenuToTexture();
       });
 
-    /*
-   
-*/
+    // if controller is removed for a moment, the menu doesn't have a grip to be parented to
+    this.signalHub.local
+      .on("controller_removed")
+      .pipe(filter((payload) => payload.hand === "left"))
+      .subscribe(() => {
+        if (this.smallPlane) {
+          this.smallPlane.setEnabled(false);
+          this.bigPlane.setEnabled(false);
+        }
+      });
   }
 
   buttonFromEl(el: HTMLButtonElement, style: CSSStyleDeclaration) {
@@ -320,6 +328,10 @@ export class SystemMenu implements ISystem {
     if (this.wristGui) {
       this.wristGui.rootContainer.dispose();
       this.browseGui.rootContainer.dispose();
+      // also try reparenting if controller had blipped away for a moment
+      this.smallPlane.setEnabled(true);
+      this.smallPlane.parent = this.grip;
+      this.bigPlane.parent = this.grip;
       return;
     }
     this.tearDownFullScreenMenu();

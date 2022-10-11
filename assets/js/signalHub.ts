@@ -30,6 +30,7 @@ export type LocalEvents = {
   space_channel_connected: { agora_app_id: string };
   camera_ready: { pos: number[]; rot: number[] };
   controller_ready: { hand: string; grip: BABYLON.AbstractMesh };
+  controller_removed: { hand: string };
   //   xr_component_changed: types.xr_component
   xr_state_changed: BABYLON.WebXRState;
   new_log: any;

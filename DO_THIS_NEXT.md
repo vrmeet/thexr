@@ -3,7 +3,8 @@ QA: if a person grabs and object
 then disconnects, what happens to the object?
 
 menu bar Vr menu keeps getting detached from grip.
-WHY?
+WHY?  Because when you put headset down the controller is removed
+and anything parented to it is now parented to null.
 
 work on text input so we can inspect entities
 and edit their components 

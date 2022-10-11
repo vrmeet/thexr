@@ -123,7 +123,14 @@ export class SystemXR implements ISystem {
     xrInput.onControllerAddedObservable.add((inputSource) => {
       console.log("controller added");
       inputSource.onMotionControllerInitObservable.add(() => {
+        console.log("motion controller init");
         this.initController(inputSource);
+      });
+    });
+
+    xrInput.onControllerRemovedObservable.add((inputSource) => {
+      this.signalHub.local.emit("controller_removed", {
+        hand: inputSource.motionController.handness,
       });
     });
   }
