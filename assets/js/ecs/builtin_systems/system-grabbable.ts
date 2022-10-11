@@ -11,8 +11,8 @@ export class SystemGrabbable implements ISystem {
   public name = "grabbable";
   public order = 20;
   public exitingXR$: Observable<BABYLON.WebXRState>;
-  public leftPalmMesh: BABYLON.AbstractMesh;
-  public rightPalmMesh: BABYLON.AbstractMesh;
+  public leftHandNode: BABYLON.AbstractMesh;
+  public rightHandNode: BABYLON.AbstractMesh;
   init(context: Context) {
     this.context = context;
 
@@ -30,37 +30,38 @@ export class SystemGrabbable implements ISystem {
     this.context.signalHub.local
       .on("controller_ready")
       .subscribe(({ hand, grip }) => {
-        const meshName = `avatar_${this.context.my_member_id}_${hand}`;
-        const mesh = this.context.scene.getMeshByName(meshName);
+        const nodeName = `${this.context.my_member_id}_avatar_${hand}_transform`;
+        const node = this.context.scene.getTransformNodeByName(nodeName);
 
         // return everything the way it was after we're done
-        const prevParent = mesh.parent;
-        const prevPosition = mesh.position.clone();
-        const prevRotation = mesh.rotationQuaternion.clone();
+        const prevParent = node.parent;
+        const prevPosition = node.position.clone();
+        const prevRotation = node.rotationQuaternion.clone();
 
         this.exitingXR$.subscribe(() => {
-          mesh.parent = null;
-          mesh.position = prevPosition;
-          mesh.rotationQuaternion = prevRotation;
-          mesh.parent = prevParent;
+          node.parent = null;
+          node.position = prevPosition;
+          node.rotationQuaternion = prevRotation;
+          node.parent = prevParent;
         });
-
-        mesh.parent = null;
-        mesh.showBoundingBox = true;
-        mesh.visibility = 0.8;
+        node.position = BABYLON.Vector3.Zero();
+        node.rotationQuaternion = new BABYLON.Quaternion();
+        node.parent = null;
+        // node.showBoundingBox = true;
+        // node.visibility = 0.8;
 
         // set in relative space of the grip
-        mesh.position =
-          hand[0] === "l"
-            ? new BABYLON.Vector3(0.03, -0.05, 0.0)
-            : new BABYLON.Vector3(-0.03, -0.05, 0.0);
-        mesh.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(
-          BABYLON.Angle.FromDegrees(45).radians(),
-          0,
-          0
-        );
-        mesh.parent = grip;
-        this[`${hand}PalmMesh`] = mesh;
+        // node.position =
+        //   hand[0] === "l"
+        //     ? new BABYLON.Vector3(0.03, -0.05, 0.0)
+        //     : new BABYLON.Vector3(-0.03, -0.05, 0.0);
+        // node.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(
+        //   BABYLON.Angle.FromDegrees(45).radians(),
+        //   0,
+        //   0
+        // );
+        node.parent = grip;
+        this[`${hand}HandNode`] = node;
       });
   }
 
@@ -144,21 +145,22 @@ export class SystemGrabbable implements ISystem {
       // if grabbed by other hand, unparent so we get world position
       grabbedMesh.setParent(null);
     }
-    const handMesh = this[`${hand}PalmMesh`];
+    const handNode = this[`${hand}HandNode`];
     if (grabbableComponent.pickup === "any") {
       // you can pick this object up anywhere
-      grabbedMesh.setParent(handMesh); // retains grabbedMesh position in world space
+      grabbedMesh.setParent(handNode); // retains grabbedMesh position in world space
     } else if (grabbableComponent.pickup === "fixed") {
       grabbedMesh.position = BABYLON.Vector3.Zero();
-      grabbedMesh.parent = handMesh;
+      grabbedMesh.rotation = BABYLON.Vector3.Zero();
+      grabbedMesh.parent = handNode;
     }
 
     const transform = {
       position: arrayReduceSigFigs(grabbedMesh.position.asArray()),
       rotation: arrayReduceSigFigs(grabbedMesh.rotation.asArray()),
-      parent: handMesh.name,
+      parent: handNode.name,
     };
-    console.log("parented mesh", grabbedMesh.name, "to", handMesh.name);
+    console.log("parented mesh", grabbedMesh.name, "to", handNode.name);
     // update your own state, this helps dup delayed incoming event from repeating
     Object.assign(this.context.state[grabbedMesh.name].transform, transform);
 

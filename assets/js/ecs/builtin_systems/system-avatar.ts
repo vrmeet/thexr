@@ -1,6 +1,6 @@
 import type { Context } from "../../context";
 
-import type * as BABYLON from "babylonjs";
+import * as BABYLON from "babylonjs";
 import type { SignalHub } from "../../signalHub";
 import type { ComponentObj } from "../components/component-obj";
 import type { PosRot } from "../../types";
@@ -11,11 +11,15 @@ const TOTAL_ANIMATION_FRAMES = 5;
 
 class Avatar {
   public height: number; // actual height of user
-  public head: BABYLON.AbstractMesh;
-  public rightHand: BABYLON.AbstractMesh;
-  public leftHand: BABYLON.AbstractMesh;
 
-  public animatables: BABYLON.Animatable[];
+  public headTransform: BABYLON.TransformNode;
+  public leftTransform: BABYLON.TransformNode;
+  public rightTransform: BABYLON.TransformNode;
+
+  public headMesh: BABYLON.AbstractMesh;
+  public rightHandMesh: BABYLON.AbstractMesh;
+  public leftHandMesh: BABYLON.AbstractMesh;
+
   public signalHub: SignalHub;
   public scene: BABYLON.Scene;
   constructor(
@@ -25,32 +29,35 @@ class Avatar {
   ) {
     this.scene = this.context.scene;
     this.signalHub = this.context.signalHub;
-    this.animatables = [];
     this.height = 1.6;
-    this.head = this.findOrCreateAvatarHead();
-    this.head.position.y = this.height;
-    this.leftHand = this.findOrCreateAvatarHand("left");
-    this.rightHand = this.findOrCreateAvatarHand("right");
-    this.setHandRaisedPosition(this.leftHand, "left");
-    this.setHandRaisedPosition(this.rightHand, "right");
+    this.findOrCreateAvatarHead();
+
+    this.findOrCreateAvatarHand("left");
+    this.setHandRaisedPosition(this.leftTransform, "left");
+
+    this.findOrCreateAvatarHand("right");
+    this.setHandRaisedPosition(this.rightTransform, "right");
     if (this.entity_id !== this.context.my_member_id) {
       this.pose(components.avatar);
     }
   }
 
   dispose() {
-    this.head.dispose();
-    this.leftHand.dispose();
-    this.rightHand.dispose();
+    this.headTransform.dispose();
+    this.leftTransform.dispose();
+    this.rightTransform.dispose();
+    this.headMesh.dispose();
+    this.leftHandMesh.dispose();
+    this.rightHandMesh.dispose();
   }
 
-  poseMeshUsingPosRot(mesh: BABYLON.AbstractMesh, posRot: PosRot) {
-    if (!mesh) {
+  poseMeshUsingPosRot(node: BABYLON.TransformNode, posRot: PosRot) {
+    if (!node) {
       return;
     }
     // if we're getting a hand position, then free the hand from the face
-    if (mesh.parent) {
-      mesh.setParent(null);
+    if (node.parent) {
+      node.setParent(null);
     }
 
     // this.animatables.push(
@@ -65,7 +72,7 @@ class Avatar {
     //     this.context.BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
     //   )
     // );
-    mesh.position.fromArray(posRot.pos);
+    node.position.fromArray(posRot.pos);
 
     let newQuaternion;
     if (posRot.rot.length === 4) {
@@ -77,7 +84,7 @@ class Avatar {
         posRot.rot[2]
       );
     }
-    mesh.rotationQuaternion = newQuaternion;
+    node.rotationQuaternion = newQuaternion;
     // this.animatables.push(
     //   this.context.BABYLON.Animation.CreateAndStartAnimation(
     //     "",
@@ -92,8 +99,8 @@ class Avatar {
     // );
   }
 
-  setHandRaisedPosition(handMesh: BABYLON.AbstractMesh, hand: string) {
-    if (handMesh.parent) {
+  setHandRaisedPosition(handTransform: BABYLON.TransformNode, hand: string) {
+    if (handTransform.parent) {
       return;
     }
     let offset;
@@ -104,19 +111,12 @@ class Avatar {
     }
     // first parent to head so that our adjustments on local space...
     if (this.entity_id != this.context.my_member_id) {
-      handMesh.parent = this.head;
+      handTransform.parent = this.headTransform;
     } else {
-      handMesh.parent = this.scene.activeCamera;
+      handTransform.parent = this.scene.activeCamera;
     }
-    handMesh.rotationQuaternion.copyFromFloats(0, 0, 0, 1);
-    handMesh.position.copyFromFloats(offset[0], offset[1], offset[2]);
-  }
-
-  stopPreviousAnimations() {
-    this.animatables.forEach((a) => {
-      a.stop();
-    });
-    this.animatables = [];
+    handTransform.rotationQuaternion.copyFromFloats(0, 0, 0, 1);
+    handTransform.position.copyFromFloats(offset[0], offset[1], offset[2]);
   }
 
   pose(avatarComponent: {
@@ -127,80 +127,81 @@ class Avatar {
     // this.stopPreviousAnimations();
     // this.poseMeshUsingPosRot(this.head, avatarComponent.head);
     this.signalHub.service.emit("animate_translate", {
-      target: this.head,
-      from: this.head.position,
+      target: this.headTransform,
+      from: this.headTransform.position,
       to: avatarComponent.head.pos,
       duration: 100,
     });
     this.signalHub.service.emit("animate_rotation", {
-      target: this.head,
-      from: this.head.rotationQuaternion,
+      target: this.headTransform,
+      from: this.headTransform.rotationQuaternion,
       to: avatarComponent.head.rot,
       duration: 100,
     });
 
     if (avatarComponent.left) {
-      this.poseMeshUsingPosRot(this.leftHand, avatarComponent.left);
+      this.poseMeshUsingPosRot(this.leftTransform, avatarComponent.left);
     } else {
-      this.setHandRaisedPosition(this.leftHand, "left");
+      this.setHandRaisedPosition(this.leftTransform, "left");
     }
     if (avatarComponent.right) {
-      this.poseMeshUsingPosRot(this.rightHand, avatarComponent.right);
+      this.poseMeshUsingPosRot(this.rightTransform, avatarComponent.right);
     } else {
-      this.setHandRaisedPosition(this.rightHand, "right");
+      this.setHandRaisedPosition(this.rightTransform, "right");
     }
-  }
-
-  findAvatarHead() {
-    const headName = `avatar_${this.entity_id}_head`;
-    return this.scene.getMeshByName(headName);
   }
 
   findOrCreateAvatarHead() {
-    const headName = `avatar_${this.entity_id}_head`;
-    const head = this.findAvatarHead();
-    if (head) {
-      return head;
-    }
-    const box = this.context.BABYLON.MeshBuilder.CreateBox(
-      headName,
-      { size: 0.3 },
-      this.scene
-    );
-    box.rotationQuaternion = new this.context.BABYLON.Quaternion();
-    box.isPickable = false;
-    // box.metadata ||= {};
-    // box.metadata["member_id"] = member_id;
-    // BABYLON.Tags.AddTagsTo(box, "avatar");
-    box.visibility = 0.5;
-    if (this.entity_id === this.context.my_member_id) {
-      // don't draw my own head, it gets in the way
+    const headTransformName = `${this.entity_id}_avatar_head_transform`;
+    const headName = `${this.entity_id}_avatar_head`;
+    this.headTransform = this.scene.getTransformNodeByName(headTransformName);
+    if (!this.headTransform) {
+      this.headTransform = new BABYLON.TransformNode(
+        headTransformName,
+        this.scene
+      );
+      this.headTransform.rotationQuaternion =
+        new this.context.BABYLON.Quaternion();
 
-      box.setEnabled(false);
-    }
-    return box;
-  }
+      const box = this.context.BABYLON.MeshBuilder.CreateBox(
+        headName,
+        { size: 0.3 },
+        this.scene
+      );
+      box.isPickable = false;
+      // box.metadata ||= {};
+      // box.metadata["member_id"] = member_id;
+      // BABYLON.Tags.AddTagsTo(box, "avatar");
+      box.visibility = 0.5;
+      if (this.entity_id === this.context.my_member_id) {
+        // don't draw my own head, it gets in the way
 
-  findAvatarHand(hand: string) {
-    const meshName = `avatar_${this.entity_id}_${hand}`;
-    return this.scene.getMeshByName(meshName);
+        box.setEnabled(false);
+      }
+      this.headMesh = box;
+      this.headMesh.parent = this.headTransform;
+    }
   }
 
   findOrCreateAvatarHand(hand: string) {
-    const meshName = `avatar_${this.entity_id}_${hand}`;
-    let mesh = this.findAvatarHand(hand);
-    if (mesh) {
-      return mesh;
+    const transformName = `${this.entity_id}_avatar_${hand}_transform`;
+    const meshName = `${this.entity_id}_avatar_${hand}`;
+    let transform = this.scene.getTransformNodeByName(transformName);
+    if (!transform) {
+      transform = new BABYLON.TransformNode(transformName, this.scene);
+      transform.rotationQuaternion = new this.context.BABYLON.Quaternion();
+      this[`${hand}Transform`] = transform;
+      const mesh = this.context.BABYLON.MeshBuilder.CreateBox(
+        meshName,
+        { width: 0.053, height: 0.08, depth: 0.1 },
+        this.scene
+      );
+
+      mesh.isPickable = false;
+      mesh.visibility = 0.5;
+      this[`${hand}HandMesh`] = mesh;
+      mesh.parent = transform;
     }
-    mesh = this.context.BABYLON.MeshBuilder.CreateBox(
-      meshName,
-      { width: 0.053, height: 0.08, depth: 0.1 },
-      this.scene
-    );
-    mesh.rotationQuaternion = new this.context.BABYLON.Quaternion();
-    mesh.isPickable = false;
-    mesh.visibility = 0.5;
-    return mesh;
   }
 }
 

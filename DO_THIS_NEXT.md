@@ -5,8 +5,6 @@ then disconnects, what happens to the object?
 menu bar Vr menu keeps getting detached from grip.
 WHY?
 
-basic grabbing and holding functionality not there yet
-
 work on text input so we can inspect entities
 and edit their components 
 

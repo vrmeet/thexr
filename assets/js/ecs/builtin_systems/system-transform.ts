@@ -70,9 +70,11 @@ export class SystemTransform implements ISystem {
         "to",
         components.transform.parent
       );
-      this.transforms[entity_id].parent = this.scene.getMeshByName(
-        components.transform.parent
-      );
+      const parent =
+        this.scene.getTransformNodeByName(components.transform.parent) ||
+        this.scene.getMeshByName(components.transform.parent);
+
+      this.transforms[entity_id].parent = parent;
     }
   }
 

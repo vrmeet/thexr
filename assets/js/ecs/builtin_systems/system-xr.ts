@@ -97,6 +97,7 @@ export class SystemXR implements ISystem {
     this.xrHelper.baseExperience.onStateChangedObservable.add((state) => {
       // tell menu manager about what kind of menu to load
       this.signalHub.local.emit("xr_state_changed", state);
+      console.log("xr_state_changed", state);
 
       // ENTERING_XR = 0,
       // /**
