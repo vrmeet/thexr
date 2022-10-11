@@ -116,7 +116,7 @@ export class SystemGrabbable implements ISystem {
       this.context.signalHub.movement.on(`${hand}_grip_released`).pipe(
         tap(() => {
           console.log("hand released mesh");
-          grabbedMesh.setParent(null);
+          grabbedMesh.setParent(null); // keeps current position in world space
           this.context.signalHub.outgoing.emit("components_upserted", {
             id: grabbedMesh.name,
             components: {
@@ -152,13 +152,15 @@ export class SystemGrabbable implements ISystem {
       grabbedMesh.position = BABYLON.Vector3.Zero();
       grabbedMesh.parent = handMesh;
     }
-    console.log("parented mesh", grabbedMesh.name, "to", handMesh.name);
-    // update your own state
-    Object.assign(this.context.state[grabbedMesh.name].transform, {
+
+    const transform = {
       position: arrayReduceSigFigs(grabbedMesh.position.asArray()),
       rotation: arrayReduceSigFigs(grabbedMesh.rotation.asArray()),
       parent: handMesh.name,
-    });
+    };
+    console.log("parented mesh", grabbedMesh.name, "to", handMesh.name);
+    // update your own state, this helps dup delayed incoming event from repeating
+    Object.assign(this.context.state[grabbedMesh.name].transform, transform);
 
     // make grip mesh event
     this.context.signalHub.movement.emit(`${hand}_grip_mesh`, grabbedMesh);
@@ -168,11 +170,7 @@ export class SystemGrabbable implements ISystem {
       id: grabbedMesh.name,
       components: {
         grabbable: { grabbed_by: this.context.my_member_id },
-        transform: {
-          position: arrayReduceSigFigs(grabbedMesh.position.asArray()),
-          rotation: arrayReduceSigFigs(grabbedMesh.rotation.asArray()),
-          parent: handMesh.name,
-        },
+        transform: transform,
       },
     });
   }
