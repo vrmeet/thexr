@@ -1,6 +1,6 @@
-do optimization to always send messages
-to self fast, and do not forward messages
-back down to self
+
+long term persistence
+
 
 menu can be smarter and do a partial render of components that change
 
@@ -10,7 +10,13 @@ what happens to objects they grabbed?
 why is it when genserver timesout, it was brought back to life?  It should end.  is it because there is a browser reloading the page?
 
 work on text input so we can inspect entities
-and edit their components 
+and edit their components, special components to support 
+adding shootable, floor, lift, grabbable, collidable 
+
+don't lift elevator on mesh pick when in 'edit' mode.
+
+better laser rays for determining grabbing
+
 
 
 

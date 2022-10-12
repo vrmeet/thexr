@@ -20,12 +20,21 @@ export class SystemShootable implements ISystem {
     this.context = context;
     this.signalHub = this.context.signalHub;
     const hand = "left";
+    const ref = BABYLON.MeshBuilder.CreateBox(
+      "ref",
+      { size: 0.05 },
+      this.context.scene
+    );
+    ref.setEnabled(false);
     this.signalHub.movement.on("left_grip_mesh").subscribe(() => {
       this.signalHub.movement
         .on("left_trigger_squeezed")
         .pipe(takeUntil(this.signalHub.movement.on("left_lost_mesh")))
-        .subscribe(() => {
+        .subscribe((inputSource) => {
           console.log("fire!");
+          const clone = ref.clone("");
+          clone.position.copyFrom(inputSource.grip.position);
+          clone.setEnabled(true);
         });
     });
   }

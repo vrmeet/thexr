@@ -131,7 +131,7 @@ defmodule Thexr.SpaceServer do
 
   def handle_info(:timeout, state) do
     IO.inspect("space server timed out after no activity")
-    {:noreply, state}
+    {:stop, :normal, state}
   end
 
   def make_patch(
