@@ -130,6 +130,22 @@ defmodule ThexrWeb.TestController do
           nil
         )
 
+        Thexr.SpaceServer.process_event(
+          space_id,
+          "entity_created",
+          %{
+            "id" => "gun",
+            "components" => %{
+              "shape" => %{"prim" => "box", "prim_params" => %{"size" => 0.1}},
+              "material" => %{"name" => "color", "color_string" => "#0000FF"},
+              "transform" => %{"position" => [1.1, 1, 2.2]},
+              "grabbable" => %{"pickup" => "fixed"},
+              "shootable" => %{}
+            }
+          },
+          nil
+        )
+
       _ ->
         :no_op
     end

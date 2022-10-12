@@ -175,6 +175,7 @@ export class SystemGrabbable implements ISystem {
       .pipe(take(1))
       .subscribe(() => {
         this[`${hand}GrabbedObject`] = null;
+        this.context.signalHub.movement.emit(`${hand}_lost_mesh`, {});
       });
   }
 

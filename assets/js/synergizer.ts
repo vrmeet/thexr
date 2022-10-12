@@ -22,6 +22,7 @@ import { SystemGrabbable } from "./ecs/builtin_systems/system-grabbable";
 import { SystemFloor } from "./ecs/builtin_systems/system-floor";
 import { SystemLogger } from "./ecs/builtin_systems/system-logger";
 import { SystemXRFlight } from "./ecs/builtin_systems/system-xr-flight";
+import { SystemShootable } from "./ecs/builtin_systems/system-shootable";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -100,6 +101,8 @@ export class Synergize {
     this.addSystem(new SystemLogger());
     // brings joystick flight to VR
     this.addSystem(new SystemXRFlight());
+    // shootable
+    this.addSystem(new SystemShootable());
   }
 
   addSystem(system: ISystem) {
