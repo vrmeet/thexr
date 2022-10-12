@@ -149,10 +149,12 @@ export const unsetPosRot = (mesh: BABYLON.AbstractMesh) => {
   mesh.rotationQuaternion.copyFromFloats(0, 0, 0, 1);
 };
 
-export const getPosRot = (t: BABYLON.AbstractMesh) => {
+export const getPosRot = (t: BABYLON.AbstractMesh, quaternion = true) => {
   return {
     pos: arrayReduceSigFigs(t.absolutePosition.asArray()),
-    rot: arrayReduceSigFigs(t.absoluteRotationQuaternion.asArray()),
+    rot: arrayReduceSigFigs(
+      quaternion ? t.absoluteRotationQuaternion.asArray() : t.rotation.asArray()
+    ),
   };
 };
 
