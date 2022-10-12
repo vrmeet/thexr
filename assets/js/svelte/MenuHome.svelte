@@ -3,6 +3,7 @@
   import type { Context } from "../context";
   import Attendees from "./Attendees.svelte";
   import Primitives from "./Primitives.svelte";
+  import Inspector from "./Inspector.svelte";
   import { afterUpdate } from "svelte";
   let updateCallback: () => void = getContext("updateCallback");
 
@@ -22,6 +23,7 @@
   <div id="menu_left">
     <button on:click={setSelected(Attendees)}>Attendees</button>
     <button on:click={setSelected(Primitives)}>Primitives</button>
+    <button on:click={setSelected(Inspector)}>Inspector</button>
   </div>
   <div id="menu_right">
     <svelte:component this={selected} />

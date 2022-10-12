@@ -2,6 +2,8 @@ do optimization to always send messages
 to self fast, and do not forward messages
 back down to self
 
+menu can be smarter and do a partial render of components that change
+
 if player permanently disconnects
 what happens to objects they grabbed?
 

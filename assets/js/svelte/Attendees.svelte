@@ -4,9 +4,7 @@
   import type { SystemAttendance } from "../ecs/builtin_systems/system-attendance";
 
   let context: Context = getContext("context");
-  const serviceAttendees = context.systems[
-    "system-attendees"
-  ] as SystemAttendance;
+  const serviceAttendees = context.systems["attendance"] as SystemAttendance;
   const nicknames = Object.values(serviceAttendees.attendees).map(
     (comp) => comp.attendance.nickname
   );

@@ -28,6 +28,7 @@ export class SystemMenu implements ISystem {
     this.context = context;
     this.scene = context.scene;
     this.mode = "fs";
+
     // const engine = this.context.scene.getEngine();
     // crisp text
     // engine.setHardwareScalingLevel(1 / window.devicePixelRatio);
