@@ -68,8 +68,8 @@ defmodule ThexrWeb.Router do
     live "/spaces/new", SpaceLive.Index, :new
     live "/spaces/:id/edit", SpaceLive.Index, :edit
 
-    live "/edit_space/:id", SpaceEditLive.Index, :index
-    live "/edit_space/:id/edit", SpaceEditLive.Index, :edit
+    # live "/edit_space/:id", SpaceEditLive.Index, :index
+    # live "/edit_space/:id/edit", SpaceEditLive.Index, :edit
 
     # live "/spaces/:id/show/edit", SpaceLive.Show, :edit
   end

@@ -9,6 +9,13 @@
     phx-change="validate"
     phx-submit="save">
 
+    <%= if @action == :edit do %>
+      <%= label f, :id %>
+      <%= text_input f, :id %>
+      <%= error_tag f, :id %>
+    <% else %>
+      <%= hidden_input f, :id %>
+    <% end %>
   
     <%= label f, :name %>
     <%= text_input f, :name %>
@@ -18,27 +25,7 @@
     <%= textarea f, :description %>
     <%= error_tag f, :description %>
 
-   <%= if @action == :edit do %>
-
-    <%= inputs_for f, :settings, fn ff -> %>
-      <%= label ff, :clear_color %>
-      <%= text_input ff, :clear_color %>
-
-      <%= label ff, :use_skybox %>
-      <%= checkbox ff, :use_skybox %>
-
-     <%= label ff, :skybox_inclination %>
-      <%= text_input ff, :skybox_inclination %>
-
-      
-      <%= label ff, :fog_color %>
-      <%= text_input ff, :fog_color %>
-      
-      <%= label ff, :fog_density %>
-      <%= text_input ff, :fog_density %>
-    <% end %>
-
-  <% end %>
+    <%= hidden_input f, :state_id %>
   
     <div>
       <%= submit "Save", phx_disable_with: "Saving..." %>

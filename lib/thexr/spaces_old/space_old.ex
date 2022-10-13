@@ -1,38 +1,32 @@
-defmodule Thexr.Spaces.Space do
+defmodule Thexr.Spaces.SpaceOld do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Thexr.Spaces.Settings
+
   @primary_key {:id, :string, []}
   schema "spaces" do
-    field(:name, :string)
     field(:description, :string)
-    field(:state_id, :string)
     # embeds_one(:settings, Settings, on_replace: :update)
     timestamps()
   end
 
-  def changeset(space, attrs) do
+  @doc false
+  def new_changeset(space, attrs) do
     space
-    |> cast(attrs, [:id, :name, :description, :state_id])
-    |> validate_required([:id, :name, :state_id])
-    |> unique_constraint(:id, name: :spaces_pkey)
+    |> cast(attrs, [:name, :description])
+    |> validate_required([:name])
 
     # |> cast_embed(:settings)
   end
 
-  # def create_id_if_not_set(changeset) do
-  #   if changeset.valid? do
-  #     case fetch_field(changeset, :id) do
-  #       {:data, nil} ->
-  #         put_change(changeset, :id, Thexr.Utils.random_id(5))
+  def edit_changeset(space, attrs) do
+    space
+    |> cast(attrs, [:name, :description])
+    |> validate_required([:name])
 
-  #       _ ->
-  #         changeset
-  #     end
-  #   else
-  #     changeset
-  #   end
-  # end
+    # |> cast_embed(:settings)
+  end
 
   # def create_settings_if_missing(changeset) do
   #   if changeset.valid? do

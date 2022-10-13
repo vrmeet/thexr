@@ -17,13 +17,13 @@ defmodule ThexrWeb.SpaceLive.Index do
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Space")
-    |> assign(:space, Spaces.get_space!(id))
+    |> assign(:space, Spaces.get_space(id))
   end
 
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, "New Space")
-    |> assign(:space, %Space{})
+    |> assign(:space, Spaces.new_space())
   end
 
   defp apply_action(socket, :index, _params) do
@@ -34,9 +34,7 @@ defmodule ThexrWeb.SpaceLive.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    space = Spaces.get_space!(id)
-    {:ok, _} = Spaces.delete_space(space)
-
+    {:ok, _} = Spaces.delete_space(%Space{id: id})
     {:noreply, assign(socket, :spaces, list_spaces())}
   end
 

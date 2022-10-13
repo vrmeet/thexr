@@ -1,5 +1,12 @@
 
 long term persistence
+  - create a new space with short id
+      - creates an internal state_id that is assigned to the space
+      - periodic flush of genserver state into the DB table of 'states'
+      - ability for new clients to get state from table and genserver
+      - handle entity deletes
+
+handle loading a space in the regular URL path
 
 
 menu can be smarter and do a partial render of components that change

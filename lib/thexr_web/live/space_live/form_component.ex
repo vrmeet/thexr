@@ -5,11 +5,15 @@ defmodule ThexrWeb.SpaceLive.FormComponent do
 
   @impl true
   def update(%{space: space} = assigns, socket) do
+    IO.inspect(assigns, label: "in update")
+
     changeset =
       case socket.assigns[:changeset] do
-        nil -> Spaces.change_space(space)
-        changeset -> changeset
+        nil -> Spaces.change_space(space) |> IO.inspect(label: "when nil")
+        changeset -> changeset |> IO.inspect(label: "when not nil")
       end
+
+    IO.inspect(changeset, label: "changeset")
 
     {:ok,
      socket
@@ -19,12 +23,14 @@ defmodule ThexrWeb.SpaceLive.FormComponent do
 
   @impl true
   def handle_event("validate", %{"space" => space_params}, socket) do
+    IO.inspect("in validate")
     # TODO validate as new or edit based on live_action
     changeset =
       socket.assigns.space
       |> Spaces.change_space(space_params)
       |> Map.put(:action, :validate)
 
+    IO.inspect(changeset, label: "changeset")
     {:noreply, assign(socket, :changeset, changeset)}
   end
 
