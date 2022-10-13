@@ -8,17 +8,10 @@ defmodule Thexr.Spaces do
 
   alias Thexr.Repo
 
-  alias Thexr.Spaces.Space
+  alias Thexr.Spaces.{Space, State}
 
-  @doc """
-  Returns the list of spaces.
+  # space records
 
-  ## Examples
-
-      iex> list_spaces()
-      [%Space{}, ...]
-
-  """
   def list_spaces do
     query = from Space, order_by: [desc: :inserted_at]
     Repo.all(query)
@@ -31,12 +24,9 @@ defmodule Thexr.Spaces do
   end
 
   def create_space(attrs \\ %{}) do
-    IO.inspect("in create space")
-
     %Space{}
     |> Space.changeset(attrs)
     |> Repo.insert()
-    |> IO.inspect()
   end
 
   def delete_space(%Space{} = space) do
@@ -51,7 +41,106 @@ defmodule Thexr.Spaces do
     space
     |> Space.changeset(attrs)
     |> Repo.update()
+  end
 
-    # |> broadcast_space_update()
+  # state records
+
+  def get_state(state_id) do
+    query = from(s in State, select: {s.entity_id, s.components}, where: s.state_id == ^state_id)
+
+    Repo.all(query) |> Enum.into(%{})
+  end
+
+  def get_entity(state_id, entity_id) do
+    query =
+      from s in State,
+        select: s.components,
+        where: s.state_id == ^state_id and s.entity_id == ^entity_id
+
+    Repo.one(query)
+  end
+
+  def upsert_entity(state_id, entity_id, nil) do
+    delete_entity(state_id, entity_id)
+  end
+
+  def upsert_entity(state_id, entity_id, components) do
+    new_components =
+      case get_entity(state_id, entity_id) do
+        nil ->
+          components
+
+        old_components ->
+          DeepMerge.deep_merge(old_components, components)
+      end
+
+    Repo.insert(
+      %State{
+        state_id: state_id,
+        entity_id: entity_id,
+        components: new_components
+      },
+      on_conflict: [set: [components: new_components]],
+      conflict_target: [:state_id, :entity_id]
+    )
+  end
+
+  def delete_entity(state_id, entity_id) do
+    query =
+      from s in State,
+        select: s.components,
+        where: s.state_id == ^state_id and s.entity_id == ^entity_id
+
+    Repo.delete_all(query)
+  end
+
+  def persist_state(state_id, state) do
+    Enum.each(state, fn {entity_id, components} ->
+      upsert_entity(state_id, entity_id, components)
+    end)
+
+    # |> Enum.reduce(Ecto.Multi.new(), fn {entity_id, components}, multi ->
+    #   # IO.inspect(entity_id)
+    #   # IO.inspect(components)
+    #   # multi
+    #   case components do
+    #     nil ->
+    #       Ecto.Multi.delete_all(
+    #         multi,
+    #         {:delete, entity_id},
+    #         from(s in State, where: s.state_id == ^state_id and s.entity_id == ^entity_id)
+    #       )
+
+    #     %{} ->
+    #       Enum.reduce(components, multi, fn {name, value}, acc ->
+    #         json_string = Jason.encode!(value)
+
+    #         Ecto.Multi.insert(
+    #           acc,
+    #           {entity_id, name},
+    #           %State{
+    #             state_id: state_id,
+    #             entity_id: entity_id,
+    #             component_name: name,
+    #             component_value: json_string
+    #           },
+    #           on_conflict: [set: [component_value: json_string]],
+    #           conflict_target: [:state_id, :entity_id, :component_name]
+    #         )
+    #       end)
+    #   end
+
+    #   # Ecto.Multi.insert(multi, , profile, on_conflict: [set: [profile: profile_url]], conflict_target: [:source, :source_uuid])
+    # end)
+    # |> Repo.transaction()
+
+    # # Enum.reduce(state, %{}, fn ({k, v}, acc) ->
+    # #   IO.inspect(k)
+    # #   IO.inspect(v)
+    # # end)
+    # Enum.map(state, fn {entity_id, components} ->
+    #   IO.inspect(k)
+    #   IO.inspect(v)
+    # end)
   end
 end

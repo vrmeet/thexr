@@ -8,6 +8,10 @@ defmodule Thexr.SpaceServer do
 
   @timeout :timer.minutes(5)
   @kick_check_timeout :timer.seconds(5)
+  @flush_after :timer.seconds(5)
+
+  alias Thexr.Spaces
+  alias Thexr.Spaces.Space
 
   # Client (Public) Interface
 
@@ -15,11 +19,11 @@ defmodule Thexr.SpaceServer do
   Spawns a new space server process registered under the given `space.id`.
   options are passed to initialize the space state
   """
-  def start_link(space_id) do
+  def start_link(%Space{} = space) do
     GenServer.start_link(
       __MODULE__,
-      {:ok, space_id},
-      name: via_tuple(space_id)
+      {:ok, space},
+      name: via_tuple(space.id)
     )
   end
 
@@ -49,12 +53,12 @@ defmodule Thexr.SpaceServer do
   end
 
   def process_event(server, event, message, channel_pid) when is_pid(server) do
-    message = AtomicMap.convert(message, %{safe: false})
+    # message = AtomicMap.convert(message, %{safe: false})
     GenServer.cast(server, {:process_event, event, message, channel_pid})
   end
 
   def process_event(space_id, event, message, channel_pid) do
-    message = AtomicMap.convert(message, %{safe: false})
+    # message = AtomicMap.convert(message, %{safe: false})
     GenServer.cast(via_tuple(space_id), {:process_event, event, message, channel_pid})
   end
 
@@ -70,11 +74,11 @@ defmodule Thexr.SpaceServer do
   # Server Callbacks
   #################################################################
 
-  def init({:ok, space_id}) do
+  def init({:ok, space}) do
     {:ok,
      %{
        disconnected: MapSet.new(),
-       space_id: space_id,
+       space: space,
        space_state: %{},
        commands: []
      }, @timeout}
@@ -85,17 +89,23 @@ defmodule Thexr.SpaceServer do
   end
 
   def handle_cast({:process_event, event, message, channel_pid}, state) do
-    # for now, broadcast everything to every body
+    IO.inspect("in handle cast for process event")
+
     if channel_pid == nil do
-      ThexrWeb.Endpoint.broadcast("space:#{state.space_id}", event, message)
+      ThexrWeb.Endpoint.broadcast("space:#{state.space.id}", event, message)
     else
-      ThexrWeb.Endpoint.broadcast_from(channel_pid, "space:#{state.space_id}", event, message)
+      ThexrWeb.Endpoint.broadcast_from(channel_pid, "space:#{state.space.id}", event, message)
     end
 
     # patch the state
     new_space_state = make_patch(event, message, state.space_state)
     state = Map.put(state, :space_state, new_space_state)
-    # add commands
+
+    state =
+      case Map.get(state, :flush_ref) do
+        nil -> Map.put(state, :flush_ref, Process.send_after(self(), :flush_state, @flush_after))
+        _ -> state
+      end
 
     {:noreply, state, @timeout}
   end
@@ -107,19 +117,30 @@ defmodule Thexr.SpaceServer do
   end
 
   def handle_cast({:member_disconnected, member_id}, state) do
+    IO.inspect("in handle cast for member disconnected")
     new_disconnected = MapSet.put(state.disconnected, member_id)
     state = %{state | disconnected: new_disconnected}
     Process.send_after(self(), :kick_check, @kick_check_timeout)
     {:noreply, state, @timeout}
   end
 
+  def handle_info(:flush_state, state) do
+    state = Map.delete(state, :flush_ref)
+    IO.inspect(state.space_state, label: "should flush here")
+    Spaces.persist_state(state.space.state_id, state.space_state)
+    state = Map.put(state, :space_state, %{})
+    {:noreply, state, @timeout}
+  end
+
   def handle_info(:kick_check, state) do
+    IO.inspect("handle info for kick check")
+
     if MapSet.size(state.disconnected) > 0 do
       __MODULE__.process_event(
         self(),
         "entities_deleted",
         %{
-          ids: MapSet.to_list(state.disconnected)
+          "ids" => MapSet.to_list(state.disconnected)
         },
         nil
       )
@@ -136,53 +157,57 @@ defmodule Thexr.SpaceServer do
 
   def make_patch(
         "components_upserted",
-        %{id: entity_id, components: components},
+        %{"id" => entity_id, "components" => components},
         space_state
       ) do
-    patch_space_state(entity_id, components, space_state)
+    DeepMerge.deep_merge(space_state, %{entity_id => components})
   end
 
-  def make_patch("entity_created", %{id: entity_id, components: components}, space_state) do
-    patch_space_state(entity_id, components, space_state)
+  def make_patch("entity_created", %{"id" => entity_id, "components" => components}, space_state) do
+    DeepMerge.deep_merge(space_state, %{entity_id => components})
   end
 
-  def make_patch("entities_deleted", %{ids: entity_ids}, space_state) do
+  def make_patch("entities_deleted", %{"ids" => entity_ids}, space_state) do
     # patch_space_state(entity_id, :tombstone, space_state)
     Enum.reduce(entity_ids, space_state, fn id, acc ->
-      Map.delete(acc, id)
+      Map.put(acc, id, nil)
+      # Map.delete(acc, id)
     end)
   end
 
-  def make_patch("components_removed", %{id: entity_id, names: names}, space_state) do
-    entity_current_components = Map.get(space_state, entity_id)
+  # not supported yet
+  # def make_patch("components_removed", %{id: entity_id, names: names}, space_state) do
+  #   entity_current_components = Map.get(space_state, entity_id)
 
-    new_entity_components =
-      Enum.reduce(names, entity_current_components, fn name, acc ->
-        Map.delete(acc, name)
-      end)
+  #   new_entity_components =
+  #     Enum.reduce(names, entity_current_components, fn name, acc ->
+  #       Map.delete(acc, name)
+  #     end)
 
-    Map.put(space_state, entity_id, new_entity_components)
-  end
+  #   Map.put(space_state, entity_id, new_entity_components)
+  # end
 
   def patch_space_state(entity_id, components, space_state) do
-    entity_current_components = Map.get(space_state, entity_id)
+    DeepMerge.deep_merge(space_state, %{entity_id => components})
 
-    new_entity_components =
-      case {entity_current_components, components} do
-        {%{}, %{}} ->
-          # Map.merge/3 adds keys in 2nd map to keys in 1st map, resolving any key conflicts with a function
-          Map.merge(entity_current_components, components, fn _key, old_val, new_val ->
-            case {old_val, new_val} do
-              {%{}, %{}} -> Map.merge(old_val, new_val)
-              _ -> new_val
-            end
-          end)
+    # entity_current_components = Map.get(space_state, entity_id)
 
-        _ ->
-          components
-      end
+    # new_entity_components =
+    #   case {entity_current_components, components} do
+    #     {%{}, %{}} ->
+    #       # Map.merge/3 adds keys in 2nd map to keys in 1st map, resolving any key conflicts with a function
+    #       Map.merge(entity_current_components, components, fn _key, old_val, new_val ->
+    #         case {old_val, new_val} do
+    #           {%{}, %{}} -> Map.merge(old_val, new_val)
+    #           _ -> new_val
+    #         end
+    #       end)
 
-    Map.put(space_state, entity_id, new_entity_components)
+    #     _ ->
+    #       components
+    #   end
+
+    # Map.put(space_state, entity_id, new_entity_components)
   end
 
   def terminate({:shutdown, :timeout}, _game) do

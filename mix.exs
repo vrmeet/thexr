@@ -59,7 +59,8 @@ defmodule Thexr.MixProject do
       {:elixir_uuid, "~> 1.2"},
       {:aws, "~> 0.11.0"},
       {:hackney, "~> 1.18"},
-      {:cors_plug, "~> 3.0"}
+      {:cors_plug, "~> 3.0"},
+      {:deep_merge, "~> 1.0"}
     ]
   end
 

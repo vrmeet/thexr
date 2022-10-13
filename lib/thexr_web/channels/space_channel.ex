@@ -13,7 +13,6 @@ defmodule ThexrWeb.SpaceChannel do
 
   @impl true
   def handle_in("hud_broadcast", message, socket) do
-    IO.inspect(message, label: "hud broadcast")
     ThexrWeb.Endpoint.broadcast("space:#{socket.assigns.space_id}", "hud_msg", message)
     {:noreply, socket}
   end
@@ -24,10 +23,6 @@ defmodule ThexrWeb.SpaceChannel do
   end
 
   def handle_in(event, message, socket) do
-    IO.inspect("handle in called")
-    IO.inspect(event)
-    IO.inspect(message)
-    IO.inspect(socket.assigns)
     SpaceServer.process_event(socket.assigns.server, event, message, self())
     {:noreply, socket}
   end
@@ -151,7 +146,6 @@ defmodule ThexrWeb.SpaceChannel do
     socket = assign(socket, :server, server)
     SpaceServer.member_connected(server, socket.assigns.member_id)
 
-    IO.inspect(socket.assigns, label: "after join assign")
     # case Thexr.SpaceServer.ets_refs(socket.assigns.space_id) do
     #   {:error, _} ->
     #     push(socket, "server_lost", %{})
@@ -181,6 +175,7 @@ defmodule ThexrWeb.SpaceChannel do
   def terminate(_reason, socket) do
     # tell the server the channel is disconnected
     try do
+      IO.inspect("channel disconnecting/terminating")
       SpaceServer.member_disconnected(socket.assigns.server, socket.assigns.member_id)
     rescue
       _e ->

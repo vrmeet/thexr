@@ -3,7 +3,7 @@ defmodule ThexrWeb.TestController do
   plug :put_root_layout, "xr_test_root.html"
 
   import ThexrWeb.Plugs.Identity, only: [user_token: 1]
-
+  alias Thexr.Spaces.Space
   # blank has no systems
   # kills and recreates a new genserver every time
 
@@ -56,7 +56,11 @@ defmodule ThexrWeb.TestController do
   def default(conn, _params) do
     space_id = "test-default"
 
-    case Thexr.SpaceSupervisor.start_space(space_id) do
+    case Thexr.SpaceSupervisor.start_space(%Space{
+           id: "test-default",
+           name: "test-default",
+           state_id: "test-state"
+         }) do
       {:ok, _} ->
         Thexr.SpaceServer.process_event(
           space_id,

@@ -9,7 +9,7 @@ config :thexr, Thexr.Repo,
   username: "postgres",
   password: "postgres",
   database: "thexr_test#{System.get_env("MIX_TEST_PARTITION")}",
-  hostname: "db",
+  hostname: "0.0.0.0",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
 
