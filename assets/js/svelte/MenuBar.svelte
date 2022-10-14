@@ -3,7 +3,7 @@
   import { afterUpdate } from "svelte";
   import MenuHome from "./MenuHome.svelte";
   import type { Context } from "../context";
-
+  import { BAR_HEIGHT, BAR_WIDTH } from "../ecs/builtin_systems/system-menu";
   //props
 
   export let context: Context;
@@ -47,7 +47,7 @@
   });
 </script>
 
-<div id="menu_bar">
+<div id="menu_bar" style="width: {BAR_WIDTH}px; height: {BAR_HEIGHT}px;">
   <button id="toggle_mute" on:click={toggleMic}>{micLabel}</button>
   <button id="toggle_menu_home" on:click={toggleMenu}>{menuLabel}</button>
   <button id="toggle_logs" on:click={toggleLogs}>{logsLabel}</button>
@@ -60,10 +60,7 @@
 <style>
   #menu_bar {
     position: absolute;
-    width: 256px;
-    height: 256px;
     border: 1px solid red;
-
     right: 0;
   }
   #menu_bar button {

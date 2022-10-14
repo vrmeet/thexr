@@ -5,6 +5,8 @@
   import Primitives from "./Primitives.svelte";
   import Inspector from "./Inspector.svelte";
   import { afterUpdate } from "svelte";
+  import { HOME_HEIGHT, HOME_WIDTH } from "../ecs/builtin_systems/system-menu";
+
   let updateCallback: () => void = getContext("updateCallback");
 
   let selected;
@@ -19,7 +21,7 @@
   });
 </script>
 
-<div id="menu_home">
+<div id="menu_home" style="width: {HOME_WIDTH}px; height: {HOME_HEIGHT}px;">
   <div id="menu_left">
     <button on:click={setSelected(Attendees)}>Attendees</button>
     <button on:click={setSelected(Primitives)}>Primitives</button>
@@ -36,13 +38,11 @@
     position: absolute;
     top: 100px;
     right: 100px;
-    width: 384px;
-    height: 384px;
   }
 
   #menu_left {
     position: absolute;
-    width: 30%;
+    width: 20%;
     height: 100%;
     background-color: black;
   }
@@ -53,7 +53,7 @@
   }
 
   #menu_right {
-    width: 70%;
+    width: 80%;
     height: 100%;
     position: absolute;
     background-color: brown;

@@ -4,10 +4,14 @@ import type { ISystem } from "./isystem";
 import * as BABYLON from "babylonjs";
 import * as GUI from "babylonjs-gui";
 import type { SignalHub } from "../../signalHub";
-import { filter, take } from "rxjs";
+import { filter } from "rxjs";
 
 import MenuBar from "../../svelte/MenuBar.svelte";
-import { PlayAnimationAction } from "babylonjs";
+
+export const BAR_WIDTH = 256;
+export const BAR_HEIGHT = 256;
+export const HOME_WIDTH = 640;
+export const HOME_HEIGHT = 384;
 
 export class SystemMenu implements ISystem {
   public name = "menu";
@@ -292,8 +296,8 @@ export class SystemMenu implements ISystem {
     this.smallPlane.parent = this.grip;
     this.wristGui = GUI.AdvancedDynamicTexture.CreateForMesh(
       this.smallPlane,
-      256,
-      256
+      BAR_WIDTH,
+      BAR_HEIGHT
     );
   }
 
@@ -318,8 +322,8 @@ export class SystemMenu implements ISystem {
 
     this.browseGui = GUI.AdvancedDynamicTexture.CreateForMesh(
       this.bigPlane,
-      384,
-      384
+      HOME_WIDTH,
+      HOME_HEIGHT
     );
   }
 
