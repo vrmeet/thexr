@@ -89,7 +89,7 @@ defmodule Thexr.SpaceServer do
   end
 
   def handle_cast({:process_event, event, message, channel_pid}, state) do
-    IO.inspect("in handle cast for process event")
+    IO.inspect(message, label: "#{event}")
 
     if channel_pid == nil do
       ThexrWeb.Endpoint.broadcast("space:#{state.space.id}", event, message)

@@ -164,7 +164,9 @@ defmodule ThexrWeb.SpaceChannel do
 
     #     push(socket, "about_agents", %{agents: SpaceServer.agents(socket.assigns.space_id)})
 
-    push(socket, "space_state", SpaceServer.space_state(server))
+    space = Thexr.Spaces.get_space(socket.assigns.space_id)
+
+    push(socket, "space_state", Thexr.Spaces.get_state(space.state_id, server))
 
     #     SpaceServer.member_connected(socket.assigns.space_id, socket.assigns.member_id)
     {:noreply, socket}

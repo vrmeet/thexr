@@ -24,7 +24,9 @@
 <canvas class="spaceCanvas" id={ @space.id }></canvas>
 
 <script>
-  window['serializedSpace'] = <%= raw Thexr.Spaces.serialize(@space) %>;
-  window['member_id'] = '<%= @member_id %>'
+  window['member_id'] = '<%= @member_id %>';
   window['userToken'] = '<%= @user_token %>';
+  window['space_id'] = '<%= @space.id %>';
+  window['webrtc_channel_id'] = '<%= @webrtc_channel_id %>';
+  window['systems'] = '<%= @systems %>';
 </script>

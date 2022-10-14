@@ -4,11 +4,24 @@ defmodule Thexr.Spaces do
   """
 
   import Ecto.Query, warn: false
-  alias Ecto.Multi
 
   alias Thexr.Repo
 
   alias Thexr.Spaces.{Space, State}
+
+  # the genserver
+
+  def find_and_nudge_space(space_id) do
+    case get_space(space_id) do
+      nil ->
+        nil
+
+      space ->
+        Thexr.SpaceSupervisor.start_space(space)
+        pid = Thexr.SpaceServer.pid(space_id)
+        {:ok, space, pid}
+    end
+  end
 
   # space records
 
@@ -24,9 +37,41 @@ defmodule Thexr.Spaces do
   end
 
   def create_space(attrs \\ %{}) do
-    %Space{}
-    |> Space.changeset(attrs)
-    |> Repo.insert()
+    {:ok, space} =
+      %Space{}
+      |> Space.changeset(attrs)
+      |> Repo.insert()
+
+    Thexr.SpaceSupervisor.start_space(space)
+
+    Thexr.SpaceServer.process_event(
+      space.id,
+      "entity_created",
+      %{
+        "id" => "my-light",
+        "components" => %{
+          "lighting" => %{}
+        }
+      },
+      nil
+    )
+
+    Thexr.SpaceServer.process_event(
+      space.id,
+      "entity_created",
+      %{
+        "id" => "grid-floor",
+        "components" => %{
+          "shape" => %{"prim" => "plane", "prim_params" => %{"size" => 25}},
+          "transform" => %{"rotation" => [-1.5708, 0, 0]},
+          "material" => %{"name" => "grid"},
+          "floor" => %{}
+        }
+      },
+      nil
+    )
+
+    {:ok, space}
   end
 
   def delete_space(%Space{} = space) do
@@ -45,9 +90,14 @@ defmodule Thexr.Spaces do
 
   # state records
 
+  def get_state(state_id, pid) do
+    server_state = Thexr.SpaceServer.space_state(pid)
+    db_state = get_state(state_id)
+    DeepMerge.deep_merge(db_state, server_state)
+  end
+
   def get_state(state_id) do
     query = from(s in State, select: {s.entity_id, s.components}, where: s.state_id == ^state_id)
-
     Repo.all(query) |> Enum.into(%{})
   end
 
