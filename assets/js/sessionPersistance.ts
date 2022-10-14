@@ -2,11 +2,17 @@ export const SESS_KEY_CAM_POSROT = "camPosRot";
 export const SESS_KEY_MIC_OPTIONS = "micOption";
 export const SESS_KEY_NICKNAME = "nickname";
 
-export function getCameraPosRot(): { pos: number[]; rot: number[] } {
-  return getAndParseKey(SESS_KEY_CAM_POSROT);
+export function getCameraPosRot(space_id: string): {
+  pos: number[];
+  rot: number[];
+} {
+  return getAndParseKey(SESS_KEY_CAM_POSROT + space_id);
 }
-export function saveCameraPosRot(data: { pos: number[]; rot: number[] }) {
-  save(SESS_KEY_CAM_POSROT, data);
+export function saveCameraPosRot(
+  space_id: string,
+  data: { pos: number[]; rot: number[] }
+) {
+  save(SESS_KEY_CAM_POSROT + space_id, data);
 }
 export function getNickname(): { nickname: string } {
   return getAndParseKey(SESS_KEY_NICKNAME, "localStorage");

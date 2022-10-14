@@ -283,7 +283,9 @@ export class Synergize {
       new BABYLON.Vector3(),
       this.scene
     );
-    const prevPosition = sessionPersistance.getCameraPosRot();
+    const prevPosition = sessionPersistance.getCameraPosRot(
+      this.context.space_id
+    );
     if (prevPosition) {
       this.freeCamera.position.fromArray(prevPosition.pos);
       this.freeCamera.rotationQuaternion = BABYLON.Quaternion.FromArray(
@@ -303,7 +305,10 @@ export class Synergize {
     addEventListener(
       "beforeunload",
       () => {
-        sessionPersistance.saveCameraPosRot(camPosRot(this.scene.activeCamera));
+        sessionPersistance.saveCameraPosRot(
+          this.context.space_id,
+          camPosRot(this.scene.activeCamera)
+        );
       },
       { capture: true }
     );
