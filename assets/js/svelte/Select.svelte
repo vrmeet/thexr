@@ -5,11 +5,12 @@
     import * as BABYLON from "babylonjs";
     import type { SystemSerializedMesh } from "../ecs/builtin_systems/system-serialized-mesh";
     import type { SystemMenu } from "../ecs/builtin_systems/system-menu";
-
+    import Primitives from "./Primitives.svelte";
     import { arrayReduceSigFigs } from "../utils/misc";
     import { filter } from "rxjs";
 
     let context: Context = getContext("context");
+    let setSelected: (any) => () => void = getContext("setSelected");
     const systemSerializedMesh: SystemSerializedMesh = context.systems[
         "serialized_mesh"
     ] as SystemSerializedMesh;
@@ -195,8 +196,18 @@
         data.selectedMeshes.push(diffMesh);
         refreshData();
     };
-    const intersectSelectedMeshes = () => {};
+    const intersectSelectedMeshes = () => {
+        const intersectedMesh = systemSerializedMesh.intersect(
+            data.prevSelectedMesh,
+            data.selectedMesh
+        );
+        clearData();
+        data.selectedMeshes.push(intersectedMesh);
+        refreshData();
+    };
 </script>
+
+<button id="primitives" on:click={setSelected(Primitives)}>+</button>
 
 {#if data.selectedMeshes.length !== 1}
     <div>{data.selectedMeshes.length} objects selected</div>
@@ -209,18 +220,24 @@
     {/each}
 {/if}
 
-{#if data.selectedMeshes.length > 1}
-    <button on:click={merge}>Merge</button>
-{/if}
-{#if data.selectedMeshes.length >= 1}
-    <button on:click={deleteSelectedMeshes}>Delete</button>
-{/if}
-{#if data.selectedMeshes.length == 2}
-    <button on:click={subtractSelectedMeshes}>Subtract</button>
-{/if}
-{#if data.selectedMeshes.length == 2}
-    <button on:click={intersectSelectedMeshes}>Intersect</button>
-{/if}
+<button id="merge" disabled={data.selectedMeshes.length < 2} on:click={merge}
+    >Merge</button
+>
+
+<button
+    disabled={data.selectedMeshes.length < 1}
+    on:click={deleteSelectedMeshes}>Delete</button
+>
+
+<button
+    disabled={data.selectedMeshes.length !== 2}
+    on:click={subtractSelectedMeshes}>Subtract</button
+>
+
+<button
+    disabled={data.selectedMeshes.length != 2}
+    on:click={intersectSelectedMeshes}>Intersect</button
+>
 
 <style>
     div {

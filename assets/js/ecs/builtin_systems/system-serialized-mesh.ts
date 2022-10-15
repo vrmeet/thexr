@@ -39,6 +39,38 @@ export class SystemSerializedMesh implements ISystem {
     }
   }
 
+  intersect(meshA: BABYLON.Mesh, meshB: BABYLON.Mesh) {
+    const csgA = BABYLON.CSG.FromMesh(meshA);
+    const csgB = BABYLON.CSG.FromMesh(meshB);
+    const csgIntersected = csgA.intersect(csgB);
+    const newMesh = csgIntersected.toMesh(
+      `intersected_${random_id(5)}`,
+      null,
+      this.context.scene,
+      false
+    );
+    // const center = newMesh.getBoundingInfo().boundingBox.center;
+    // newMesh.position.subtractInPlace(center);
+    // newMesh.bakeCurrentTransformIntoVertices();
+    // newMesh.position = center;
+    const serializedMesh = BABYLON.SceneSerializer.SerializeMesh(newMesh);
+    this.context.channel.push("save_serialized_mesh", {
+      entity_id: newMesh.name,
+      data: serializedMesh,
+    });
+    this.context.signalHub.outgoing.emit("entities_deleted", {
+      ids: [meshA.name, meshB.name],
+    });
+    this.context.signalHub.outgoing.emit("entity_created", {
+      id: newMesh.name,
+      components: {
+        serialized_mesh: {},
+        transform: { position: arrayReduceSigFigs(newMesh.position.asArray()) },
+      },
+    });
+    return newMesh;
+  }
+
   subtract(meshA: BABYLON.Mesh, meshB: BABYLON.Mesh) {
     const csgA = BABYLON.CSG.FromMesh(meshA);
     const csgB = BABYLON.CSG.FromMesh(meshB);
@@ -104,11 +136,9 @@ export class SystemSerializedMesh implements ISystem {
       this.meshes[entity_id] = mesh;
       return;
     }
-    console.log("in create mesh");
     this.context.channel
       .push("get_serialized_mesh", { entity_id: entity_id })
       .receive("ok", async (response) => {
-        console.log("the serialized mesh response is", response);
         await BABYLON.SceneLoader.ImportMeshAsync(
           "",
           "",

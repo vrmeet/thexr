@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getContext } from "svelte";
+  import { getContext, setContext } from "svelte";
   import type { Context } from "../context";
   import Attendees from "./Attendees.svelte";
   import Primitives from "./Primitives.svelte";
@@ -12,6 +12,8 @@
     SystemMenu,
   } from "../ecs/builtin_systems/system-menu";
 
+  export let toggleMenu: () => void;
+
   let context: Context = getContext("context");
   const systemMenu: SystemMenu = context.systems["menu"] as SystemMenu;
   let selected;
@@ -20,6 +22,8 @@
       selected = component;
     };
   };
+  // allow edit menu to call up primitives
+  setContext("setSelected", setSelected);
 
   afterUpdate(() => {
     systemMenu.renderMenuToTexture();
@@ -29,31 +33,40 @@
 <div id="menu_home" style="width: {HOME_WIDTH}px; height: {HOME_HEIGHT}px;">
   <div id="menu_left">
     <button
+      id="attendees_btn"
       class:selected={selected == Attendees}
       on:click={setSelected(Attendees)}>Attendees</button
     >
+
     <button
-      class:selected={selected == Primitives}
-      on:click={setSelected(Primitives)}>Primitives</button
-    >
-    <button class:selected={selected == Select} on:click={setSelected(Select)}
-      >Select</button
-    >
-    <button class:selected={selected == Sculpt} on:click={setSelected(Sculpt)}
-      >Sculpt</button
+      id="edit_btn"
+      class:selected={selected == Select || selected == Primitives}
+      on:click={setSelected(Select)}>Edit</button
     >
   </div>
   <div id="menu_right">
     <svelte:component this={selected} />
   </div>
+  <button id="close_menu" on:click={toggleMenu}>x</button>
 </div>
 
 <style>
+  #close_menu {
+    padding: 0;
+    margin: 0;
+    height: 2em;
+    width: 2em;
+    border: 1px solid red;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
   #menu_home {
     border: 1px solid blue;
     position: absolute;
-    /* top: 100px;
-    right: 100px; */
+    top: 100px;
+    right: 300px;
+    /* z-index: 22; */
     right: -500px; /* flash of content, off screen */
   }
   .selected {

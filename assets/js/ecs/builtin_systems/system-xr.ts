@@ -121,9 +121,7 @@ export class SystemXR implements ISystem {
 
     // triggered once per hand
     xrInput.onControllerAddedObservable.add((inputSource) => {
-      console.log("controller added");
       inputSource.onMotionControllerInitObservable.add(() => {
-        console.log("motion controller init");
         this.initController(inputSource);
       });
     });

@@ -143,10 +143,8 @@ export class SystemWebRTC implements ISystem {
 
   updateCountAndJoinOrUnjoin() {
     if (this.numConnected() >= 2 && this.numMicsOn() >= 1) {
-      console.log("be connected");
       this.verification.next("be_connected");
     } else {
-      console.log("be disconnected");
       this.verification.next("be_disconnected");
     }
   }

@@ -24,7 +24,6 @@ export class SystemMenu implements ISystem {
   public wristGui: GUI.AdvancedDynamicTexture;
   public browseGui: GUI.AdvancedDynamicTexture;
   public grip: BABYLON.AbstractMesh;
-
   public context: Context;
   public signalHub: SignalHub;
   public mode: "vr" | "fs";
@@ -91,31 +90,9 @@ export class SystemMenu implements ISystem {
       });
   }
 
-  getGUIControlByName(name: string) {
-    if (this.mode === "fs") {
-      const texture = this.scene.getTextureByName(
-        "fsGui"
-      ) as GUI.AdvancedDynamicTexture;
-      console.log("texture is", texture);
-      return texture.getControlByName(name);
-    } else {
-      const texture = this.scene.getTextureByName(
-        "browseGui"
-      ) as GUI.AdvancedDynamicTexture;
-      return texture.getControlByName(name);
-    }
-  }
-
   buttonFromEl(el: HTMLButtonElement, style: CSSStyleDeclaration) {
     const gui = new GUI.Button(el.id);
 
-    // gui.hoverCursor = "pointer";
-    // gui.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-    // gui.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
-
-    // gui.isPointerBlocker = true;
-    // gui.leftInPixels = el.offsetLeft;
-    // gui.topInPixels = el.offsetTop;
     gui.thickness = 0;
     gui.onPointerUpObservable.add(() => {
       el.click();
@@ -130,6 +107,11 @@ export class SystemMenu implements ISystem {
     label.fontWeight = "bold";
     label.color = style.color;
     label.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+
+    if (el.disabled) {
+      gui.isEnabled = false;
+      rect.background = "#888888";
+    }
 
     rect.addControl(label);
     gui.addControl(rect);
@@ -154,10 +136,7 @@ export class SystemMenu implements ISystem {
   }
 
   htmlToGui(el: HTMLElement) {
-    let gui: GUI.Container = this.getGUIControlByName(el.id) as GUI.Container;
-    if (gui) {
-      gui.dispose();
-    }
+    let gui: GUI.Container;
 
     const style = getComputedStyle(el);
     switch (el.nodeName) {

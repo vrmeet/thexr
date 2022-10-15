@@ -18,7 +18,7 @@
   $: menu_opened = context.menu_opened;
   $: logs_opened = context.logs_opened;
   $: micLabel = muted ? "Muted" : "Unmuted";
-  $: menuLabel = menu_opened ? "Close Menu" : "Open Menu";
+  $: menuLabel = menu_opened ? "Close Menu Ξ" : "Open Menu Ξ";
   $: logsLabel = logs_opened ? "Hide Logs" : "Show Logs";
 
   const toggleMic = () => {
@@ -61,7 +61,7 @@
   >
 </div>
 {#if menu_opened}
-  <MenuHome />
+  <MenuHome {toggleMenu} />
 {/if}
 
 <style>

@@ -36,12 +36,10 @@ export class SystemTransform implements ISystem {
     delete this.transforms[entity_id];
   }
   registerEntity(entity_id: string, components: ComponentObj) {
-    console.log("got here", entity_id);
     if (components.transform === undefined) {
       return;
     }
     const mesh = this.scene.getMeshByName(entity_id);
-    console.log("got here", entity_id, mesh);
 
     if (mesh) {
       this.transforms[entity_id] = mesh;
@@ -70,19 +68,11 @@ export class SystemTransform implements ISystem {
     const currentParent = this.transforms[entity_id].parent;
 
     if (newParentName === null && currentParent !== null) {
-      console.log("transform will UNparent", this.transforms[entity_id].name);
       (this.transforms[entity_id] as BABYLON.AbstractMesh).parent = null; // because pos,rot,scale are already in world positions
     } else if (
       newParentName !== null &&
       (currentParent === null || currentParent?.name !== newParentName)
     ) {
-      if (this.transforms[entity_id])
-        console.log(
-          "transform will parent",
-          this.transforms[entity_id].name,
-          "to",
-          components.transform.parent
-        );
       const parent =
         this.scene.getTransformNodeByName(components.transform.parent) ||
         this.scene.getMeshByName(components.transform.parent);
