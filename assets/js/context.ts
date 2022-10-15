@@ -22,6 +22,7 @@ import type {
   OutgoingEvents,
   ServiceRequests,
 } from "./signalHub";
+import type { Channel } from "phoenix";
 
 export interface State {
   [entityId: string]: ComponentObj;
@@ -38,6 +39,7 @@ export interface Context {
   webrtc_channel_id: string;
   userToken: string;
   scene: BABYLON.Scene;
+  channel: Channel;
   signalHub: SignalHub;
   systems: Record<string, ISystem>;
   state: State;
@@ -58,6 +60,7 @@ export const createContext = (): Context => {
     webrtc_channel_id: null,
     userToken: null,
     scene: null,
+    channel: null,
     signalHub: {
       local: new Emitter<LocalEvents>(),
       incoming: new Emitter<IncomingEvents>(),

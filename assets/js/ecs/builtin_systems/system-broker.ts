@@ -53,6 +53,7 @@ export class SystemBroker implements ISystem {
     this.channel = this.socket.channel(`space:${this.context.space_id}`, {
       choice: choice,
     });
+    this.context.channel = this.channel;
     // forward incoming from channel to event bus
     this.channel.onMessage = (event: keyof IncomingEvents, payload) => {
       if (!event.startsWith("phx_") && !event.startsWith("chan_")) {

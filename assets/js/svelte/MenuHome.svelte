@@ -3,7 +3,8 @@
   import type { Context } from "../context";
   import Attendees from "./Attendees.svelte";
   import Primitives from "./Primitives.svelte";
-  import Inspector from "./Inspector.svelte";
+  import Select from "./Select.svelte";
+  import Sculpt from "./Sculpt.svelte";
   import { afterUpdate } from "svelte";
   import { HOME_HEIGHT, HOME_WIDTH } from "../ecs/builtin_systems/system-menu";
 
@@ -25,7 +26,8 @@
   <div id="menu_left">
     <button on:click={setSelected(Attendees)}>Attendees</button>
     <button on:click={setSelected(Primitives)}>Primitives</button>
-    <button on:click={setSelected(Inspector)}>Inspector</button>
+    <button on:click={setSelected(Select)}>Select</button>
+    <button on:click={setSelected(Sculpt)}>Sculpt</button>
   </div>
   <div id="menu_right">
     <svelte:component this={selected} />

@@ -7,7 +7,7 @@ defmodule Thexr.Spaces do
 
   alias Thexr.Repo
 
-  alias Thexr.Spaces.{Space, State}
+  alias Thexr.Spaces.{Space, Entity, SerializedMesh}
 
   # the genserver
 
@@ -97,15 +97,20 @@ defmodule Thexr.Spaces do
   end
 
   def get_state(state_id) do
-    query = from(s in State, select: {s.entity_id, s.components}, where: s.state_id == ^state_id)
+    query = from(e in Entity, select: {e.id, e.components}, where: e.state_id == ^state_id)
     Repo.all(query) |> Enum.into(%{})
+  end
+
+  def list_entities(state_id) do
+    query = from(e in Entity, where: e.state_id == ^state_id)
+    Repo.all(query)
   end
 
   def get_entity(state_id, entity_id) do
     query =
-      from s in State,
-        select: s.components,
-        where: s.state_id == ^state_id and s.entity_id == ^entity_id
+      from e in Entity,
+        select: e.components,
+        where: e.state_id == ^state_id and e.id == ^entity_id
 
     Repo.one(query)
   end
@@ -125,72 +130,54 @@ defmodule Thexr.Spaces do
       end
 
     Repo.insert(
-      %State{
+      %Entity{
         state_id: state_id,
-        entity_id: entity_id,
+        id: entity_id,
         components: new_components
       },
       on_conflict: [set: [components: new_components]],
-      conflict_target: [:state_id, :entity_id]
+      conflict_target: [:state_id, :id]
     )
   end
 
+  # TODO, improve with a join
   def delete_entity(state_id, entity_id) do
     query =
-      from s in State,
-        select: s.components,
-        where: s.state_id == ^state_id and s.entity_id == ^entity_id
+      from(e in Entity,
+        where: e.state_id == ^state_id and e.id == ^entity_id
+      )
 
     Repo.delete_all(query)
+
+    query2 =
+      from(s in SerializedMesh,
+        where: s.state_id == ^state_id and s.entity_id == ^entity_id
+      )
+
+    Repo.delete_all(query2)
   end
 
   def persist_state(state_id, state) do
     Enum.each(state, fn {entity_id, components} ->
       upsert_entity(state_id, entity_id, components)
     end)
+  end
 
-    # |> Enum.reduce(Ecto.Multi.new(), fn {entity_id, components}, multi ->
-    #   # IO.inspect(entity_id)
-    #   # IO.inspect(components)
-    #   # multi
-    #   case components do
-    #     nil ->
-    #       Ecto.Multi.delete_all(
-    #         multi,
-    #         {:delete, entity_id},
-    #         from(s in State, where: s.state_id == ^state_id and s.entity_id == ^entity_id)
-    #       )
+  ### serialized meshes
 
-    #     %{} ->
-    #       Enum.reduce(components, multi, fn {name, value}, acc ->
-    #         json_string = Jason.encode!(value)
+  def get_serialized_mesh(state_id, entity_id) do
+    Repo.get_by(SerializedMesh, state_id: state_id, entity_id: entity_id)
+  end
 
-    #         Ecto.Multi.insert(
-    #           acc,
-    #           {entity_id, name},
-    #           %State{
-    #             state_id: state_id,
-    #             entity_id: entity_id,
-    #             component_name: name,
-    #             component_value: json_string
-    #           },
-    #           on_conflict: [set: [component_value: json_string]],
-    #           conflict_target: [:state_id, :entity_id, :component_name]
-    #         )
-    #       end)
-    #   end
+  def save_serialized_mesh(state_id, entity_id, data) do
+    Repo.insert(%SerializedMesh{state_id: state_id, entity_id: entity_id, data: data})
+  end
 
-    #   # Ecto.Multi.insert(multi, , profile, on_conflict: [set: [profile: profile_url]], conflict_target: [:source, :source_uuid])
-    # end)
-    # |> Repo.transaction()
+  def delete_serialized_mesh(state_id, entity_id) do
+    query =
+      from s in SerializedMesh,
+        where: s.state_id == ^state_id and s.entity_id == ^entity_id
 
-    # # Enum.reduce(state, %{}, fn ({k, v}, acc) ->
-    # #   IO.inspect(k)
-    # #   IO.inspect(v)
-    # # end)
-    # Enum.map(state, fn {entity_id, components} ->
-    #   IO.inspect(k)
-    #   IO.inspect(v)
-    # end)
+    Repo.delete_all(query)
   end
 end

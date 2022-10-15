@@ -6,6 +6,9 @@ defmodule Thexr.SpacesTest do
   describe "spaces" do
     alias Thexr.Spaces.{Space, State}
 
+    test "creating a space requires state_id" do
+    end
+
     test "persists space state" do
       state = %{
         "F5kFjp" => %{

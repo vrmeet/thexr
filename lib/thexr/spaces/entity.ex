@@ -1,19 +1,19 @@
-defmodule Thexr.Spaces.State do
+defmodule Thexr.Spaces.Entity do
   use Ecto.Schema
   import Ecto.Changeset
 
   @primary_key false
-  schema "states" do
+  schema "entities" do
     field(:state_id, :string, primary_key: true)
-    field(:entity_id, :string, primary_key: true)
+    field(:id, :string, primary_key: true)
     field(:components, :map)
     timestamps()
   end
 
   def changeset(state, attrs) do
     state
-    |> cast(attrs, [:state_id, :entity_id, :components])
-    |> validate_required([:state_id, :entity_id, :components])
+    |> cast(attrs, [:state_id, :id, :components])
+    |> validate_required([:state_id, :id, :components])
 
     # |> cast_embed(:settings)
   end

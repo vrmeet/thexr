@@ -1,20 +1,14 @@
 
-long term persistence
-  - create a new space with short id
-      - creates an internal state_id that is assigned to the space
-      - periodic flush of genserver state into the DB table of 'states'
-      - ability for new clients to get state from table and genserver
-      - handle entity deletes
-
-handle loading a space in the regular URL path
-
+need ability to save models created in the space
+  select
+  group
+  
 
 menu can be smarter and do a partial render of components that change
 
 if player permanently disconnects
 what happens to objects they grabbed?
 
-why is it when genserver timesout, it was brought back to life?  It should end.  is it because there is a browser reloading the page?
 
 work on text input so we can inspect entities
 and edit their components, special components to support 

@@ -56,11 +56,13 @@ export class SystemShape implements ISystem {
         builderOptions["sideOrientation"] =
           this.context.BABYLON.Mesh.DOUBLESIDE;
       }
-      return this.context.BABYLON.MeshBuilder[builderFunction](
+      const mesh = this.context.BABYLON.MeshBuilder[builderFunction](
         entity_id,
         builderOptions,
         this.context.scene
       );
+      this.context.signalHub.local.emit("mesh_built", { name: entity_id });
+      return mesh;
     } else {
       throw new Error("unsupported shape");
     }

@@ -1,4 +1,4 @@
-defmodule Thexr.Spaces.Entity do
+defmodule Thexr.Spaces.OldEntity do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -6,7 +6,7 @@ defmodule Thexr.Spaces.Entity do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
-  schema "entities" do
+  schema "old_entities" do
     field :name, :string
     field :type, :string
     belongs_to :space, Thexr.Spaces.Space

@@ -23,6 +23,7 @@ import { SystemFloor } from "./ecs/builtin_systems/system-floor";
 import { SystemLogger } from "./ecs/builtin_systems/system-logger";
 import { SystemXRFlight } from "./ecs/builtin_systems/system-xr-flight";
 import { SystemShootable } from "./ecs/builtin_systems/system-shootable";
+import { SystemSerializedMesh } from "./ecs/builtin_systems/system-serialized-mesh";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -101,6 +102,8 @@ export class Synergize {
     this.addSystem(new SystemLogger());
     // brings joystick flight to VR
     this.addSystem(new SystemXRFlight());
+    // loading models from serialized geometry
+    this.addSystem(new SystemSerializedMesh());
     // shootable
     this.addSystem(new SystemShootable());
   }
@@ -265,6 +268,7 @@ export class Synergize {
     this.engine = engine;
 
     this.scene = new BABYLON.Scene(engine);
+
     this.scene.clearColor = BABYLON.Color4.FromHexString("#201111");
 
     const gravityVector = new BABYLON.Vector3(0, -9.81, 0);

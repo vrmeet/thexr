@@ -1,3 +1,4 @@
+import { composeExchanges } from "@urql/svelte";
 import type * as BABYLON from "babylonjs";
 
 import type { Context } from "../../context";
@@ -19,6 +20,14 @@ export class SystemTransform implements ISystem {
   public scene: BABYLON.Scene;
   init(context: Context) {
     this.scene = context.scene;
+    context.signalHub.local.on("mesh_built").subscribe((payload) => {
+      if (
+        context.state[payload.name] &&
+        context.state[payload.name].transform !== undefined
+      ) {
+        this.registerEntity(payload.name, context.state[payload.name]);
+      }
+    });
   }
   upsertComponents(entity_id: string, components: ComponentObj): void {
     this.registerEntity(entity_id, components);
@@ -27,10 +36,13 @@ export class SystemTransform implements ISystem {
     delete this.transforms[entity_id];
   }
   registerEntity(entity_id: string, components: ComponentObj) {
+    console.log("got here", entity_id);
     if (components.transform === undefined) {
       return;
     }
     const mesh = this.scene.getMeshByName(entity_id);
+    console.log("got here", entity_id, mesh);
+
     if (mesh) {
       this.transforms[entity_id] = mesh;
     } else {
@@ -43,7 +55,7 @@ export class SystemTransform implements ISystem {
     if (!this.transforms[entity_id]) {
       return;
     }
-
+    console.log("processing", entity_id);
     this.setPosition(entity_id, components);
     this.setRotation(entity_id, components);
     this.setScaling(entity_id, components);

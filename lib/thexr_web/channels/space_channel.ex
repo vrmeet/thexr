@@ -22,6 +22,21 @@ defmodule ThexrWeb.SpaceChannel do
     {:noreply, socket}
   end
 
+  def handle_in(
+        "save_serialized_mesh",
+        %{"entity_id" => entity_id, "data" => data},
+        socket
+      ) do
+    Thexr.Spaces.save_serialized_mesh(socket.assigns.state_id, entity_id, data)
+    {:noreply, socket}
+  end
+
+  def handle_in("get_serialized_mesh", %{"entity_id" => entity_id}, socket) do
+    serialized_mesh = Thexr.Spaces.get_serialized_mesh(socket.assigns.state_id, entity_id)
+    # {:noreply, socket}
+    {:reply, {:ok, serialized_mesh.data}, socket}
+  end
+
   def handle_in(event, message, socket) do
     SpaceServer.process_event(socket.assigns.server, event, message, self())
     {:noreply, socket}
@@ -165,7 +180,7 @@ defmodule ThexrWeb.SpaceChannel do
     #     push(socket, "about_agents", %{agents: SpaceServer.agents(socket.assigns.space_id)})
 
     space = Thexr.Spaces.get_space(socket.assigns.space_id)
-
+    socket = assign(socket, :state_id, space.state_id)
     push(socket, "space_state", Thexr.Spaces.get_state(space.state_id, server))
 
     #     SpaceServer.member_connected(socket.assigns.space_id, socket.assigns.member_id)

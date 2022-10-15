@@ -34,7 +34,7 @@ export type LocalEvents = {
   //   xr_component_changed: types.xr_component
   xr_state_changed: BABYLON.WebXRState;
   new_log: any;
-  mesh_built: { name: string; type: string }; // required to add new meshes to teleport manager
+  mesh_built: { name: string }; // required for transform system to reprocess when mesh is ready
   member_states_changed: { [member_id: string]: types.member_state };
   pulse: { hand: "left" | "right"; intensity: number; duration: number };
   my_state: types.member_state;
@@ -89,7 +89,7 @@ export type IncomingEvents = {
 export type OutgoingEvents = {
   event: types.event; //deprecate this
   entity_created: { id: string; components: ComponentObj };
-  entities_deleted: { ids: string };
+  entities_deleted: { ids: string[] };
   components_upserted: { id: string; components: ComponentObj };
   components_removed: { id: string; names: string[] };
   msg: { system: string; data: any };

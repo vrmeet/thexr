@@ -12,6 +12,8 @@ export const BAR_WIDTH = 256;
 export const BAR_HEIGHT = 256;
 export const HOME_WIDTH = 640;
 export const HOME_HEIGHT = 384;
+export const BAR_SCALING = 0.1 / 256;
+export const HOME_SCALING = 0.5 / 384;
 
 export class SystemMenu implements ISystem {
   public name = "menu";
@@ -284,9 +286,10 @@ export class SystemMenu implements ISystem {
   createSmallPlane() {
     this.smallPlane = BABYLON.MeshBuilder.CreatePlane(
       "small_plane",
-      { height: 0.1, width: 0.1 },
+      { height: BAR_HEIGHT * BAR_SCALING, width: BAR_WIDTH * BAR_SCALING },
       this.scene
     );
+    this.smallPlane.metadata = { menu: true };
     this.smallPlane.showBoundingBox = true;
     // this.smallPlane.position.z = 0.1
     // this.smallPlane.position.x = 0.05
@@ -304,12 +307,12 @@ export class SystemMenu implements ISystem {
   createBigPlane() {
     this.bigPlane = BABYLON.MeshBuilder.CreatePlane(
       "big_plane",
-      { height: 0.5, width: 0.5 },
+      { height: HOME_HEIGHT * HOME_SCALING, width: HOME_WIDTH * HOME_SCALING },
       this.scene
     );
     this.bigPlane.showBoundingBox = true;
+    this.bigPlane.metadata = { menu: true };
     // this.bigPlane.setEnabled(false);
-
     this.bigPlane.position = new BABYLON.Vector3(0.3, 0.02, 0.4);
     this.bigPlane.rotation.x = BABYLON.Angle.FromDegrees(60).radians();
 
