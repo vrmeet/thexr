@@ -1,7 +1,8 @@
 
 need ability to save models created in the space
   select
-  group
+  group, merge, subtract, intersect
+  export
   
 
 menu can be smarter and do a partial render of components that change

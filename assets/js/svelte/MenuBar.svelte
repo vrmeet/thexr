@@ -3,15 +3,17 @@
   import { afterUpdate } from "svelte";
   import MenuHome from "./MenuHome.svelte";
   import type { Context } from "../context";
-  import { BAR_HEIGHT, BAR_WIDTH } from "../ecs/builtin_systems/system-menu";
+  import {
+    BAR_HEIGHT,
+    BAR_WIDTH,
+    SystemMenu,
+  } from "../ecs/builtin_systems/system-menu";
   //props
 
   export let context: Context;
-  export let updateCallback: () => void;
 
   setContext("context", context);
-  setContext("updateCallback", updateCallback);
-
+  const systemMenu: SystemMenu = context.systems["menu"] as SystemMenu;
   $: muted = context.my_mic_muted;
   $: menu_opened = context.menu_opened;
   $: logs_opened = context.logs_opened;
@@ -43,7 +45,7 @@
   };
 
   afterUpdate(() => {
-    updateCallback();
+    systemMenu.renderMenuToTexture();
   });
 </script>
 
@@ -51,7 +53,12 @@
   <button id="toggle_mute" on:click={toggleMic}>{micLabel}</button>
   <button id="toggle_menu_home" on:click={toggleMenu}>{menuLabel}</button>
   <button id="toggle_logs" on:click={toggleLogs}>{logsLabel}</button>
-  <button>Exit</button>
+  <button
+    id="exit_btn"
+    on:click={() => {
+      window.location.href = "/";
+    }}>Exit</button
+  >
 </div>
 {#if menu_opened}
   <MenuHome />

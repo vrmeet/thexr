@@ -12,6 +12,7 @@ export class SystemShape implements ISystem {
   }
 
   registerEntity(entity_id: string, components: ComponentObj) {
+    console.log("shape", entity_id);
     if (components.shape) {
       if (!this.meshes[entity_id]) {
         this.meshes[entity_id] = this.createMesh(entity_id, components.shape);

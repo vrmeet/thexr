@@ -39,6 +39,38 @@ export class SystemSerializedMesh implements ISystem {
     }
   }
 
+  subtract(meshA: BABYLON.Mesh, meshB: BABYLON.Mesh) {
+    const csgA = BABYLON.CSG.FromMesh(meshA);
+    const csgB = BABYLON.CSG.FromMesh(meshB);
+    const csgDiff = csgA.subtract(csgB);
+    const newMesh = csgDiff.toMesh(
+      `subtract_${random_id(5)}`,
+      null,
+      this.context.scene,
+      false
+    );
+    // const center = newMesh.getBoundingInfo().boundingBox.center;
+    // newMesh.position.subtractInPlace(center);
+    // newMesh.bakeCurrentTransformIntoVertices();
+    // newMesh.position = center;
+    const serializedMesh = BABYLON.SceneSerializer.SerializeMesh(newMesh);
+    this.context.channel.push("save_serialized_mesh", {
+      entity_id: newMesh.name,
+      data: serializedMesh,
+    });
+    this.context.signalHub.outgoing.emit("entities_deleted", {
+      ids: [meshA.name, meshB.name],
+    });
+    this.context.signalHub.outgoing.emit("entity_created", {
+      id: newMesh.name,
+      components: {
+        serialized_mesh: {},
+        transform: { position: arrayReduceSigFigs(newMesh.position.asArray()) },
+      },
+    });
+    return newMesh;
+  }
+
   merge(meshes: BABYLON.Mesh[]) {
     const meshNamesToDelete = Array.from(meshes).map((mesh) => mesh.name);
     const newMesh = BABYLON.Mesh.MergeMeshes(Array.from(meshes), true);

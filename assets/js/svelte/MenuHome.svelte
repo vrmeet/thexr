@@ -6,10 +6,14 @@
   import Select from "./Select.svelte";
   import Sculpt from "./Sculpt.svelte";
   import { afterUpdate } from "svelte";
-  import { HOME_HEIGHT, HOME_WIDTH } from "../ecs/builtin_systems/system-menu";
+  import {
+    HOME_HEIGHT,
+    HOME_WIDTH,
+    SystemMenu,
+  } from "../ecs/builtin_systems/system-menu";
 
-  let updateCallback: () => void = getContext("updateCallback");
-
+  let context: Context = getContext("context");
+  const systemMenu: SystemMenu = context.systems["menu"] as SystemMenu;
   let selected;
   const setSelected = (component) => {
     return () => {
@@ -18,16 +22,26 @@
   };
 
   afterUpdate(() => {
-    updateCallback();
+    systemMenu.renderMenuToTexture();
   });
 </script>
 
 <div id="menu_home" style="width: {HOME_WIDTH}px; height: {HOME_HEIGHT}px;">
   <div id="menu_left">
-    <button on:click={setSelected(Attendees)}>Attendees</button>
-    <button on:click={setSelected(Primitives)}>Primitives</button>
-    <button on:click={setSelected(Select)}>Select</button>
-    <button on:click={setSelected(Sculpt)}>Sculpt</button>
+    <button
+      class:selected={selected == Attendees}
+      on:click={setSelected(Attendees)}>Attendees</button
+    >
+    <button
+      class:selected={selected == Primitives}
+      on:click={setSelected(Primitives)}>Primitives</button
+    >
+    <button class:selected={selected == Select} on:click={setSelected(Select)}
+      >Select</button
+    >
+    <button class:selected={selected == Sculpt} on:click={setSelected(Sculpt)}
+      >Sculpt</button
+    >
   </div>
   <div id="menu_right">
     <svelte:component this={selected} />
@@ -38,8 +52,12 @@
   #menu_home {
     border: 1px solid blue;
     position: absolute;
-    top: 100px;
-    right: 100px;
+    /* top: 100px;
+    right: 100px; */
+    right: -500px; /* flash of content, off screen */
+  }
+  .selected {
+    background-color: blue;
   }
 
   #menu_left {

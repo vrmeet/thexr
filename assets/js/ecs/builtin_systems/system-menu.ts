@@ -91,6 +91,21 @@ export class SystemMenu implements ISystem {
       });
   }
 
+  getGUIControlByName(name: string) {
+    if (this.mode === "fs") {
+      const texture = this.scene.getTextureByName(
+        "fsGui"
+      ) as GUI.AdvancedDynamicTexture;
+      console.log("texture is", texture);
+      return texture.getControlByName(name);
+    } else {
+      const texture = this.scene.getTextureByName(
+        "browseGui"
+      ) as GUI.AdvancedDynamicTexture;
+      return texture.getControlByName(name);
+    }
+  }
+
   buttonFromEl(el: HTMLButtonElement, style: CSSStyleDeclaration) {
     const gui = new GUI.Button(el.id);
 
@@ -139,9 +154,12 @@ export class SystemMenu implements ISystem {
   }
 
   htmlToGui(el: HTMLElement) {
-    let gui: GUI.Container;
-    const style = getComputedStyle(el);
+    let gui: GUI.Container = this.getGUIControlByName(el.id) as GUI.Container;
+    if (gui) {
+      gui.dispose();
+    }
 
+    const style = getComputedStyle(el);
     switch (el.nodeName) {
       case "DIV":
         gui = this.rectFromEl(el as HTMLDivElement, style);
@@ -185,17 +203,13 @@ export class SystemMenu implements ISystem {
       target: document.body,
       props: {
         context: this.context,
-        updateCallback: () => {
-          this.renderMenuToTexture();
-        },
       },
     });
   }
 
   renderMenuToFullScreen() {
-    const menuBarCtrl = this.htmlToGui(document.getElementById("menu_bar"));
-
     this.prepFullScreenMenuExperience();
+    const menuBarCtrl = this.htmlToGui(document.getElementById("menu_bar"));
 
     menuBarCtrl.scaleX = 0.5;
     menuBarCtrl.scaleY = 0.5;

@@ -4,6 +4,8 @@
     import { afterUpdate, onDestroy } from "svelte";
     import * as BABYLON from "babylonjs";
     import type { SystemSerializedMesh } from "../ecs/builtin_systems/system-serialized-mesh";
+    import type { SystemMenu } from "../ecs/builtin_systems/system-menu";
+
     import { arrayReduceSigFigs } from "../utils/misc";
     import { filter } from "rxjs";
 
@@ -11,8 +13,7 @@
     const systemSerializedMesh: SystemSerializedMesh = context.systems[
         "serialized_mesh"
     ] as SystemSerializedMesh;
-
-    let updateCallback: () => void = getContext("updateCallback");
+    const systemMenu: SystemMenu = context.systems["menu"] as SystemMenu;
 
     // Add the highlight layer.
     const hl = new BABYLON.HighlightLayer("hl1", context.scene);
@@ -119,10 +120,10 @@
     const refreshData = () => {
         // the red color means selected, the yellow color means last selected
         hl.removeAllMeshes();
-        console.log(
-            "selectedMeshes",
-            data.selectedMeshes.map((m) => m.name)
-        );
+        // highlight all meshes in orange first
+        data.selectedMeshes.forEach((m) => {
+            hl.addMesh(m, BABYLON.Color3.FromHexString("#FFA500"));
+        });
         data.selectedMesh = data.selectedMeshes[data.selectedMeshes.length - 1];
         data.prevSelectedMesh =
             data.selectedMeshes[data.selectedMeshes.length - 2];
@@ -168,12 +169,12 @@
     });
 
     afterUpdate(() => {
-        updateCallback();
+        systemMenu.renderMenuToTexture();
     });
 
     const merge = () => {
         const mergedMesh = systemSerializedMesh.merge(data.selectedMeshes);
-        data.selectedMeshes.length = 0;
+        clearData();
         data.selectedMeshes.push(mergedMesh);
         refreshData();
     };
@@ -182,9 +183,19 @@
         context.signalHub.outgoing.emit("entities_deleted", {
             ids: data.selectedMeshes.map((m) => m.name),
         });
-        data.selectedMeshes.length = 0;
+        clearData();
         refreshData();
     };
+    const subtractSelectedMeshes = () => {
+        const diffMesh = systemSerializedMesh.subtract(
+            data.prevSelectedMesh,
+            data.selectedMesh
+        );
+        clearData();
+        data.selectedMeshes.push(diffMesh);
+        refreshData();
+    };
+    const intersectSelectedMeshes = () => {};
 </script>
 
 {#if data.selectedMeshes.length !== 1}
@@ -203,6 +214,12 @@
 {/if}
 {#if data.selectedMeshes.length >= 1}
     <button on:click={deleteSelectedMeshes}>Delete</button>
+{/if}
+{#if data.selectedMeshes.length == 2}
+    <button on:click={subtractSelectedMeshes}>Subtract</button>
+{/if}
+{#if data.selectedMeshes.length == 2}
+    <button on:click={intersectSelectedMeshes}>Intersect</button>
 {/if}
 
 <style>

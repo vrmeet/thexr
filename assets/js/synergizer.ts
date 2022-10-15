@@ -190,7 +190,10 @@ export class Synergize {
     });
 
     this.context.signalHub.incoming.on("entity_created").subscribe((evt) => {
-      this.registerEntity(evt.id, evt.components);
+      // components can be nil if just deleted and just loaded state from a genserver
+      if (evt.components !== null) {
+        this.registerEntity(evt.id, evt.components);
+      }
     });
 
     this.context.signalHub.incoming.on("entities_deleted").subscribe((evt) => {
@@ -253,7 +256,7 @@ export class Synergize {
     this.scene.onPointerObservable.add((pointerInfo) => {
       this.context.signalHub.local.emit("pointer_info", pointerInfo);
       if (
-        pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN &&
+        pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK &&
         pointerInfo.pickInfo.hit &&
         pointerInfo.pickInfo.pickedMesh
       ) {
