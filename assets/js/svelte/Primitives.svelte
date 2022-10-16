@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getContext } from "svelte";
-  import { createContext, type Context } from "../context";
+  import type { Context } from "../context";
   import { cameraFrontPosition, random_id } from "../utils/misc";
   import Select from "./Select.svelte";
 
