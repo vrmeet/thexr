@@ -6,8 +6,8 @@ export interface ISystem {
   order: number;
   init(context: Context): void;
 
-  registerEntity?(entity_id: string, components: ComponentObj): void;
+  registerEntity?(entity_id: string, components: ComponentObj): any;
   upsertComponents?(entity_id: string, components: ComponentObj): void;
-  deregisterEntity?(entity_id: string): void;
+  deregisterEntity?(entity_id: string): any;
   process_msg?(data: any): void;
 }

@@ -17,9 +17,11 @@
   let context: Context = getContext("context");
   const systemMenu: SystemMenu = context.systems["menu"] as SystemMenu;
   let selected;
-  const setSelected = (component) => {
+  let componentData;
+  const setSelected = (component, data = {}) => {
     return () => {
       selected = component;
+      componentData = data;
     };
   };
   // allow edit menu to call up primitives
@@ -45,7 +47,7 @@
     >
   </div>
   <div id="menu_right">
-    <svelte:component this={selected} />
+    <svelte:component this={selected} data={componentData} />
   </div>
   <button id="close_menu" on:click={toggleMenu}>x</button>
 </div>
@@ -65,9 +67,9 @@
     border: 1px solid blue;
     position: absolute;
     top: 100px;
-    right: 300px;
+    left: 700px;
     /* z-index: 22; */
-    right: -500px; /* flash of content, off screen */
+    /* right: -500px; flash of content, off screen */
   }
   .selected {
     background-color: blue;

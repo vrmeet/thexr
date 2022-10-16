@@ -41,6 +41,7 @@ export type LocalEvents = {
   agent_damaged: { agent_name: string };
   pointer_info: BABYLON.PointerInfo;
   mesh_picked: BABYLON.AbstractMesh;
+  color_picked: BABYLON.Color3;
   keyboard_info: BABYLON.KeyboardInfo;
   trigger_substitute: any;
   collect_substitute: { entity_id: string };

@@ -1,3 +1,8 @@
+use async await after shape
+after serialized mesh
+so that we don't need to use mesh_built
+
+work on shift click or grip click to multi-select.
 
 need ability to save models created in the space
   select

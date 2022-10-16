@@ -119,6 +119,20 @@ export class SystemMenu implements ISystem {
   }
 
   rectFromEl(el: HTMLDivElement, style: CSSStyleDeclaration) {
+    if (el.id === "colorpicker") {
+      const gui = new GUI.ColorPicker();
+      gui.value = BABYLON.Color3.FromHexString(el.dataset.meshcolor);
+
+      // gui.height = "150px";
+      // gui.width = "150px";
+      // picker.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+
+      gui.onValueChangedObservable.add((value) => {
+        this.context.signalHub.local.emit("color_picked", value);
+      });
+      return gui;
+    }
+
     const gui = new GUI.Rectangle(el.id);
     gui.thickness = Number(style.borderWidth.replace("px", ""));
 

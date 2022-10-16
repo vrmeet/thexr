@@ -13,10 +13,10 @@ export class SystemSerializedMesh implements ISystem {
     this.context = context;
   }
 
-  registerEntity(entity_id: string, components: ComponentObj) {
+  async registerEntity(entity_id: string, components: ComponentObj) {
     if (components.serialized_mesh) {
       if (!this.meshes[entity_id]) {
-        this.createMesh(entity_id);
+        return this.createMesh(entity_id);
       }
     }
   }
@@ -134,21 +134,27 @@ export class SystemSerializedMesh implements ISystem {
     if (mesh) {
       // if we are the client that created the mesh, don't created it twice
       this.meshes[entity_id] = mesh;
-      return;
-    }
-    this.context.channel
-      .push("get_serialized_mesh", { entity_id: entity_id })
-      .receive("ok", async (response) => {
-        await BABYLON.SceneLoader.ImportMeshAsync(
-          "",
-          "",
-          `data:${JSON.stringify(response)}`,
-          this.context.scene
-        );
-        const importedMesh = this.context.scene.getMeshByName(entity_id);
-        this.meshes[entity_id] = importedMesh;
-        this.context.signalHub.local.emit("mesh_built", { name: entity_id });
+      return new Promise((resolve, _reject) => {
+        resolve(mesh);
       });
+    }
+
+    return new Promise((resolve, _reject) => {
+      this.context.channel
+        .push("get_serialized_mesh", { entity_id: entity_id })
+        .receive("ok", (response) => {
+          BABYLON.SceneLoader.ImportMesh(
+            "",
+            "",
+            `data:${JSON.stringify(response)}`,
+            this.context.scene
+          );
+          const importedMesh = this.context.scene.getMeshByName(entity_id);
+          this.meshes[entity_id] = importedMesh;
+          this.context.signalHub.local.emit("mesh_built", { name: entity_id });
+          resolve(importedMesh);
+        });
+    });
   }
 
   dispose() {}

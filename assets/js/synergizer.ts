@@ -130,11 +130,11 @@ export class Synergize {
     return system;
   }
 
-  registerEntity(entity_id: string, components: ComponentObj) {
+  async registerEntity(entity_id: string, components: ComponentObj) {
     this.context.state[entity_id] = components;
-    this.processList.forEach((system) => {
-      system.registerEntity(entity_id, components);
-    });
+    for (let i = 0; i < this.processList.length; i++) {
+      await this.processList[i].registerEntity(entity_id, components);
+    }
   }
 
   deregisterEntity(entity_id: string) {

@@ -11,7 +11,7 @@ export class SystemAttendance implements ISystem {
   init(context: Context) {
     this.context = context;
   }
-  registerEntity(entity_id: string, components: ComponentObj): void {
+  registerEntity(entity_id: string, components: ComponentObj) {
     if (components.attendance !== undefined) {
       // for info about people in general, we just want a pointer to the state about this person
       // and synergizer has already updated the state

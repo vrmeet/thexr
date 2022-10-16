@@ -8,9 +8,17 @@
     import Primitives from "./Primitives.svelte";
     import { arrayReduceSigFigs } from "../utils/misc";
     import { filter } from "rxjs";
+    import Color from "./Color.svelte";
+    import type { SystemTransform } from "../ecs/builtin_systems/system-transform";
 
     let context: Context = getContext("context");
-    let setSelected: (any) => () => void = getContext("setSelected");
+    let setSelected: (component: any, data?: {}) => () => void =
+        getContext("setSelected");
+    const systemTransform: SystemTransform = context.systems[
+        "transform"
+    ] as SystemTransform;
+    systemTransform.enableGizmoManager();
+
     const systemSerializedMesh: SystemSerializedMesh = context.systems[
         "serialized_mesh"
     ] as SystemSerializedMesh;
@@ -33,69 +41,10 @@
         data.prevSelectedMesh = null;
     };
 
-    const gizmoManager = new BABYLON.GizmoManager(context.scene);
-    gizmoManager.positionGizmoEnabled = true;
-    gizmoManager.rotationGizmoEnabled = true;
-    gizmoManager.gizmos.positionGizmo.scaleRatio = 2;
-    gizmoManager.gizmos.rotationGizmo.scaleRatio = 1.5;
-    gizmoManager.scaleGizmoEnabled = true;
-    gizmoManager.usePointerToAttachGizmos = false;
-
-    gizmoManager.gizmos.positionGizmo.onDragEndObservable.add((data, state) => {
-        broadcastNewPosition();
-    });
-
-    gizmoManager.gizmos.rotationGizmo.onDragEndObservable.add((data, state) => {
-        broadcastNewRotation();
-    });
-
-    gizmoManager.gizmos.scaleGizmo.onDragEndObservable.add((data, state) => {
-        broadcastNewScale();
-    });
-
     onDestroy(() => {
         hl.dispose();
-        gizmoManager.dispose();
+        systemTransform.disableGizmoManager();
     });
-
-    const broadcastNewPosition = () => {
-        context.signalHub.outgoing.emit("components_upserted", {
-            id: data.selectedMesh.name,
-            components: {
-                transform: {
-                    position: arrayReduceSigFigs(
-                        data.selectedMesh.position.asArray()
-                    ),
-                },
-            },
-        });
-    };
-
-    const broadcastNewRotation = () => {
-        context.signalHub.outgoing.emit("components_upserted", {
-            id: data.selectedMesh.name,
-            components: {
-                transform: {
-                    rotation: arrayReduceSigFigs(
-                        data.selectedMesh.rotation.asArray()
-                    ),
-                },
-            },
-        });
-    };
-
-    const broadcastNewScale = () => {
-        context.signalHub.outgoing.emit("components_upserted", {
-            id: data.selectedMesh.name,
-            components: {
-                transform: {
-                    scaling: arrayReduceSigFigs(
-                        data.selectedMesh.scaling.asArray()
-                    ),
-                },
-            },
-        });
-    };
 
     context.signalHub.incoming
         .on("components_upserted")
@@ -137,9 +86,9 @@
         }
 
         if (data.selectedMeshes.length === 1) {
-            gizmoManager.attachToMesh(data.selectedMeshes[0]);
+            systemTransform.gizmoManagerAttachMesh(data.selectedMeshes[0]);
         } else {
-            gizmoManager.attachToMesh(null);
+            systemTransform.gizmoManagerAttachMesh(null);
         }
 
         const components = context.state[data.selectedMesh?.name];
@@ -153,6 +102,12 @@
             data.componentsList.length = 0;
         }
     };
+
+    if (systemTransform.lastPickedMesh) {
+        data.selectedMesh = systemTransform.lastPickedMesh;
+        data.selectedMeshes.push(systemTransform.lastPickedMesh);
+        refreshData();
+    }
 
     context.signalHub.local.on("mesh_picked").subscribe((meshPicked) => {
         if (meshPicked.metadata?.menu === true) {
@@ -205,7 +160,7 @@
     };
 </script>
 
-<button id="primitives" on:click={setSelected(Primitives)}>Add+</button>
+<button id="goto_primitives" on:click={setSelected(Primitives)}>Add+</button>
 
 <button id="merge" disabled={data.selectedMeshes.length < 2} on:click={merge}
     >Merge</button
@@ -226,9 +181,19 @@
     on:click={intersectSelectedMeshes}>Intersect</button
 >
 
-{#if data.selectedMeshes.length !== 1}
-    <div>{data.selectedMeshes.length} objects selected</div>
-{:else}
+<button
+    disabled={data.selectedMeshes.length !== 1}
+    id="goto_color"
+    on:click={setSelected(Color, { mesh: data.selectedMesh })}>Color</button
+>
+<div>{data.selectedMeshes.length} objects selected</div>
+{#if data.selectedMeshes.length === 0}
+    <div>
+        Pick an Object to select it. Shift (Grip in VR) and Pick to select
+        multiple objects.
+    </div>
+{/if}
+{#if data.selectedMeshes.length === 1}
     <div>Name: {data.selectedMeshes[0].name}</div>
 
     {#each data.componentsList as comp}

@@ -13,6 +13,14 @@ export class SystemMaterial implements ISystem {
   init(context: Context) {
     this.context = context;
     this.scene = context.scene;
+    // context.signalHub.local.on("mesh_built").subscribe((payload) => {
+    //   if (
+    //     context.state[payload.name] &&
+    //     context.state[payload.name].material !== undefined
+    //   ) {
+    //     this.registerEntity(payload.name, context.state[payload.name]);
+    //   }
+    // });
   }
 
   registerEntity(entity_id: string, components: ComponentObj) {
@@ -27,10 +35,7 @@ export class SystemMaterial implements ISystem {
   }
 
   upsertComponents(entity_id: string, components: ComponentObj): void {
-    if (
-      components.material != undefined &&
-      this.entities[entity_id] !== undefined
-    ) {
+    if (components.material != undefined) {
       const oldMaterialName = this.entities[entity_id];
       const mat = this.findOrCreateMaterial(components.material);
       //save material
@@ -38,7 +43,9 @@ export class SystemMaterial implements ISystem {
         this.materials[mat.name] = mat;
       }
       this.assignMaterial(mat, entity_id);
-      this.pruneMaterial(oldMaterialName);
+      if (oldMaterialName) {
+        this.pruneMaterial(oldMaterialName);
+      }
     }
   }
 
