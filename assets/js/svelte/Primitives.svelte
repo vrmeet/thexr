@@ -9,24 +9,39 @@
 
   let createPrim = (prim) => {
     return () => {
+      const meshName = `${prim}_${random_id(5)}`;
       context.signalHub.outgoing.emit("entity_created", {
-        id: `${prim}_${random_id(5)}`,
+        id: meshName,
         components: {
           shape: { prim: prim, prim_params: {} },
           transform: { position: cameraFrontPosition(context.scene, 2) },
         },
       });
+      setSelected(Select)();
+      setTimeout(() => {
+        context.signalHub.local.emit(
+          "mesh_picked",
+          context.scene.getMeshByName(meshName)
+        );
+      }, 100);
     };
   };
   let createCone = () => {
-    console.log("in function to create cone");
+    const meshName = `cone_${random_id(5)}`;
     context.signalHub.outgoing.emit("entity_created", {
-      id: `cone_${random_id(5)}`,
+      id: meshName,
       components: {
         shape: { prim: "cylinder", prim_params: { diameterTop: 0 } },
         transform: { position: cameraFrontPosition(context.scene, 2) },
       },
     });
+    setSelected(Select)();
+    setTimeout(() => {
+      context.signalHub.local.emit(
+        "mesh_picked",
+        context.scene.getMeshByName(meshName)
+      );
+    }, 100);
   };
 </script>
 

@@ -34,7 +34,6 @@
     };
 
     const gizmoManager = new BABYLON.GizmoManager(context.scene);
-    console.log("gizmoManager", gizmoManager);
     gizmoManager.positionGizmoEnabled = true;
     gizmoManager.rotationGizmoEnabled = true;
     gizmoManager.gizmos.positionGizmo.scaleRatio = 2;
@@ -102,7 +101,6 @@
         .on("components_upserted")
         .pipe(filter((evt) => evt.id === data.selectedMesh?.name))
         .subscribe(() => {
-            console.log("updating");
             const components = context.state[data.selectedMesh?.name];
             if (components) {
                 data.componentsList = Object.entries(components).map(
@@ -207,18 +205,7 @@
     };
 </script>
 
-<button id="primitives" on:click={setSelected(Primitives)}>+</button>
-
-{#if data.selectedMeshes.length !== 1}
-    <div>{data.selectedMeshes.length} objects selected</div>
-{:else}
-    <div>Name: {data.selectedMeshes[0].name}</div>
-
-    {#each data.componentsList as comp}
-        <div>{comp.name}</div>
-        <div>{comp.value}</div>
-    {/each}
-{/if}
+<button id="primitives" on:click={setSelected(Primitives)}>Add+</button>
 
 <button id="merge" disabled={data.selectedMeshes.length < 2} on:click={merge}
     >Merge</button
@@ -238,6 +225,17 @@
     disabled={data.selectedMeshes.length != 2}
     on:click={intersectSelectedMeshes}>Intersect</button
 >
+
+{#if data.selectedMeshes.length !== 1}
+    <div>{data.selectedMeshes.length} objects selected</div>
+{:else}
+    <div>Name: {data.selectedMeshes[0].name}</div>
+
+    {#each data.componentsList as comp}
+        <div>{comp.name}</div>
+        <div>{comp.value}</div>
+    {/each}
+{/if}
 
 <style>
     div {

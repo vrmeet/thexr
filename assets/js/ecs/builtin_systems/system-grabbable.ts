@@ -262,12 +262,6 @@ export class SystemGrabbable implements ISystem {
       this.context.state[pickInfo.pickedMesh.name] !== undefined &&
       this.context.state[pickInfo.pickedMesh.name].grabbable !== undefined
     ) {
-      console.log(
-        inputSource.motionController.handness,
-        "found",
-        pickInfo.pickedMesh.name,
-        "to grab"
-      );
       return {
         mesh: pickInfo.pickedMesh,
         grabbableComponent:

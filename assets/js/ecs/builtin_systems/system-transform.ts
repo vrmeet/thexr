@@ -53,7 +53,6 @@ export class SystemTransform implements ISystem {
     if (!this.transforms[entity_id]) {
       return;
     }
-    console.log("processing", entity_id);
     this.setPosition(entity_id, components);
     this.setRotation(entity_id, components);
     this.setScaling(entity_id, components);
