@@ -24,15 +24,15 @@ defmodule ThexrWeb.SpaceChannel do
 
   def handle_in(
         "save_serialized_mesh",
-        %{"entity_id" => entity_id, "data" => data},
+        %{"mesh_id" => mesh_id, "data" => data},
         socket
       ) do
-    Thexr.Spaces.save_serialized_mesh(socket.assigns.state_id, entity_id, data)
+    Thexr.Spaces.save_serialized_mesh(socket.assigns.state_id, mesh_id, data)
     {:noreply, socket}
   end
 
-  def handle_in("get_serialized_mesh", %{"entity_id" => entity_id}, socket) do
-    serialized_mesh = Thexr.Spaces.get_serialized_mesh(socket.assigns.state_id, entity_id)
+  def handle_in("get_serialized_mesh", %{"mesh_id" => mesh_id}, socket) do
+    serialized_mesh = Thexr.Spaces.get_serialized_mesh(socket.assigns.state_id, mesh_id)
     # {:noreply, socket}
     {:reply, {:ok, serialized_mesh.data}, socket}
   end

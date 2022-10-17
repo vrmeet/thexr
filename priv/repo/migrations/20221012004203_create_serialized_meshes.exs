@@ -4,7 +4,7 @@ defmodule Thexr.Repo.Migrations.CreateSerializedMeshes do
   def change do
     create table(:serialized_meshes, primary_key: false) do
       add :state_id, :string, primary_key: true
-      add :entity_id, :string, primary_key: true
+      add :id, :string, primary_key: true
       add :data, :map, default: %{}, null: false
       timestamps()
     end

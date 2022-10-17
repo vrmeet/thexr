@@ -138,23 +138,65 @@ defmodule Thexr.Spaces do
       on_conflict: [set: [components: new_components]],
       conflict_target: [:state_id, :id]
     )
+
+    # serialized meshes are uploaded and created ahead of entities
+    # if this entity has a pointer to mesh id, add an entry to the join
+    # table so we can keep track of serialized mesh usage
+    case new_components do
+      %{"serialized_mesh" => %{"mesh_id" => mesh_id}} ->
+        Repo.insert_all(
+          "entity_meshes",
+          [
+            [state_id: state_id, entity_id: entity_id, mesh_id: mesh_id]
+          ],
+          on_conflict: :nothing
+        )
+
+      _ ->
+        :noop
+    end
   end
 
-  # TODO, improve with a join
+  # lookup a serialized mesh_id, if it has one
+  def entity_serialized_mesh_id(state_id, entity_id) do
+    query =
+      from(e in "entity_meshes",
+        where: e.state_id == ^state_id and e.entity_id == ^entity_id,
+        select: [:mesh_id]
+      )
+
+    case Repo.one(query) do
+      nil -> :none
+      %{mesh_id: mesh_id} -> {:ok, mesh_id}
+    end
+  end
+
+  def serialized_mesh_usage_count(state_id, mesh_id) do
+    query =
+      from(e in "entity_meshes",
+        where: e.state_id == ^state_id and e.mesh_id == ^mesh_id
+      )
+
+    Repo.aggregate(query, :count, :mesh_id)
+  end
+
   def delete_entity(state_id, entity_id) do
+    with {:ok, mesh_id} <- entity_serialized_mesh_id(state_id, entity_id),
+         1 <- serialized_mesh_usage_count(state_id, mesh_id) do
+      query2 =
+        from(s in SerializedMesh,
+          where: s.state_id == ^state_id and s.id == ^mesh_id
+        )
+
+      Repo.delete_all(query2)
+    end
+
     query =
       from(e in Entity,
         where: e.state_id == ^state_id and e.id == ^entity_id
       )
 
     Repo.delete_all(query)
-
-    query2 =
-      from(s in SerializedMesh,
-        where: s.state_id == ^state_id and s.entity_id == ^entity_id
-      )
-
-    Repo.delete_all(query2)
   end
 
   def persist_state(state_id, state) do
@@ -165,18 +207,18 @@ defmodule Thexr.Spaces do
 
   ### serialized meshes
 
-  def get_serialized_mesh(state_id, entity_id) do
-    Repo.get_by(SerializedMesh, state_id: state_id, entity_id: entity_id)
+  def get_serialized_mesh(state_id, mesh_id) do
+    Repo.get_by(SerializedMesh, state_id: state_id, id: mesh_id)
   end
 
-  def save_serialized_mesh(state_id, entity_id, data) do
-    Repo.insert(%SerializedMesh{state_id: state_id, entity_id: entity_id, data: data})
+  def save_serialized_mesh(state_id, mesh_id, data) do
+    Repo.insert(%SerializedMesh{state_id: state_id, id: mesh_id, data: data})
   end
 
-  def delete_serialized_mesh(state_id, entity_id) do
+  def delete_serialized_mesh(state_id, mesh_id) do
     query =
       from s in SerializedMesh,
-        where: s.state_id == ^state_id and s.entity_id == ^entity_id
+        where: s.state_id == ^state_id and s.id == ^mesh_id
 
     Repo.delete_all(query)
   end

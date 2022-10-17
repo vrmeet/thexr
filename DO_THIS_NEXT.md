@@ -1,6 +1,20 @@
-use async await after shape
-after serialized mesh
-so that we don't need to use mesh_built
+when serializing mesh
+
+entity id -> serialized_mesh -> mesh_id
+  save state_id, entity_id, mesh_id 
+  save mesh_id, data
+
+when deleting entity,
+  also delete state_id, entity_id, mesh_id
+
+  if no other records are using mesh_id, delete mesh_id too
+
+when duplicating an entity
+  save state_id, entity_id, mesh_id
+
+when exporting a mesh, save it to
+
+mesh_id, data, screenshot
 
 work on shift click or grip click to multi-select.
 

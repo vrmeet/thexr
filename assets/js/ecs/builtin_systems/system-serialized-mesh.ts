@@ -5,7 +5,8 @@ import * as BABYLON from "babylonjs";
 import { arrayReduceSigFigs, random_id } from "../../utils/misc";
 
 export class SystemSerializedMesh implements ISystem {
-  public meshes: Record<string, BABYLON.AbstractMesh> = {};
+  public entityMeshes: Record<string, BABYLON.AbstractMesh> = {};
+  public importedMeshes: Record<string, BABYLON.AbstractMesh> = {};
   public name = "serialized_mesh";
   public order = 0;
   public context: Context;
@@ -15,27 +16,41 @@ export class SystemSerializedMesh implements ISystem {
 
   async registerEntity(entity_id: string, components: ComponentObj) {
     if (components.serialized_mesh) {
-      if (!this.meshes[entity_id]) {
-        return this.createMesh(entity_id);
+      if (!this.entityMeshes[entity_id]) {
+        const mesh_id = components.serialized_mesh.mesh_id;
+        // if we are the ones that serialized mesh locally, no need to process this event
+        const mesh = this.context.scene.getMeshByName(mesh_id);
+        if (mesh) {
+          this.entityMeshes[mesh.name] = mesh;
+          return;
+        }
+        // else, we are another client, so load the serialization
+        this.entityMeshes[entity_id] = await this.createMesh(
+          entity_id,
+          mesh_id
+        );
       }
     }
   }
 
-  upsertComponents(entity_id: string, components: ComponentObj): void {
+  async upsertComponents(entity_id: string, components: ComponentObj) {
     if (
       components.serialized_mesh !== undefined &&
-      this.meshes[entity_id] !== undefined
+      this.entityMeshes[entity_id] !== undefined
     ) {
       // recreate the mesh
-      this.meshes[entity_id].dispose();
-      this.createMesh(entity_id);
+      this.entityMeshes[entity_id].dispose();
+      this.entityMeshes[entity_id] = await this.createMesh(
+        entity_id,
+        components.serialized_mesh.mesh_id
+      );
     }
   }
 
-  deregisterEntity(entity_id: string): void {
-    if (this.meshes[entity_id] !== undefined) {
-      this.meshes[entity_id].dispose();
-      delete this.meshes[entity_id];
+  deregisterEntity(entity_id: string) {
+    if (this.entityMeshes[entity_id] !== undefined) {
+      this.entityMeshes[entity_id].dispose();
+      delete this.entityMeshes[entity_id];
     }
   }
 
@@ -49,25 +64,7 @@ export class SystemSerializedMesh implements ISystem {
       this.context.scene,
       false
     );
-    // const center = newMesh.getBoundingInfo().boundingBox.center;
-    // newMesh.position.subtractInPlace(center);
-    // newMesh.bakeCurrentTransformIntoVertices();
-    // newMesh.position = center;
-    const serializedMesh = BABYLON.SceneSerializer.SerializeMesh(newMesh);
-    this.context.channel.push("save_serialized_mesh", {
-      entity_id: newMesh.name,
-      data: serializedMesh,
-    });
-    this.context.signalHub.outgoing.emit("entities_deleted", {
-      ids: [meshA.name, meshB.name],
-    });
-    this.context.signalHub.outgoing.emit("entity_created", {
-      id: newMesh.name,
-      components: {
-        serialized_mesh: {},
-        transform: { position: arrayReduceSigFigs(newMesh.position.asArray()) },
-      },
-    });
+    this.emitReplacementEvents(newMesh.name, newMesh, [meshA.name, meshB.name]);
     return newMesh;
   }
 
@@ -81,26 +78,30 @@ export class SystemSerializedMesh implements ISystem {
       this.context.scene,
       false
     );
-    // const center = newMesh.getBoundingInfo().boundingBox.center;
-    // newMesh.position.subtractInPlace(center);
-    // newMesh.bakeCurrentTransformIntoVertices();
-    // newMesh.position = center;
+    this.emitReplacementEvents(newMesh.name, newMesh, [meshA.name, meshB.name]);
+    return newMesh;
+  }
+
+  emitReplacementEvents(
+    newEntityId: string,
+    newMesh: BABYLON.AbstractMesh,
+    oldMeshIds: string[]
+  ) {
     const serializedMesh = BABYLON.SceneSerializer.SerializeMesh(newMesh);
     this.context.channel.push("save_serialized_mesh", {
-      entity_id: newMesh.name,
+      mesh_id: newMesh.name,
       data: serializedMesh,
     });
-    this.context.signalHub.outgoing.emit("entities_deleted", {
-      ids: [meshA.name, meshB.name],
-    });
     this.context.signalHub.outgoing.emit("entity_created", {
-      id: newMesh.name,
+      id: newEntityId,
       components: {
-        serialized_mesh: {},
+        serialized_mesh: { mesh_id: newMesh.name },
         transform: { position: arrayReduceSigFigs(newMesh.position.asArray()) },
       },
     });
-    return newMesh;
+    this.context.signalHub.outgoing.emit("entities_deleted", {
+      ids: oldMeshIds,
+    });
   }
 
   merge(meshes: BABYLON.Mesh[]) {
@@ -111,37 +112,15 @@ export class SystemSerializedMesh implements ISystem {
     newMesh.position.subtractInPlace(center);
     newMesh.bakeCurrentTransformIntoVertices();
     newMesh.position = center;
-    const serializedMesh = BABYLON.SceneSerializer.SerializeMesh(newMesh);
-    this.context.channel.push("save_serialized_mesh", {
-      entity_id: newMesh.name,
-      data: serializedMesh,
-    });
-    this.context.signalHub.outgoing.emit("entities_deleted", {
-      ids: meshNamesToDelete,
-    });
-    this.context.signalHub.outgoing.emit("entity_created", {
-      id: newMesh.name,
-      components: {
-        serialized_mesh: {},
-        transform: { position: arrayReduceSigFigs(newMesh.position.asArray()) },
-      },
-    });
+    this.emitReplacementEvents(newMesh.name, newMesh, meshNamesToDelete);
     return newMesh;
   }
 
-  createMesh(entity_id: string) {
-    const mesh = this.context.scene.getMeshByName(entity_id);
-    if (mesh) {
-      // if we are the client that created the mesh, don't created it twice
-      this.meshes[entity_id] = mesh;
-      return new Promise((resolve, _reject) => {
-        resolve(mesh);
-      });
-    }
-
+  // loads json data into a new mesh into the scene
+  asyncLoadMesh(mesh_id: string): Promise<BABYLON.AbstractMesh> {
     return new Promise((resolve, _reject) => {
       this.context.channel
-        .push("get_serialized_mesh", { entity_id: entity_id })
+        .push("get_serialized_mesh", { mesh_id: mesh_id })
         .receive("ok", (response) => {
           BABYLON.SceneLoader.ImportMesh(
             "",
@@ -149,12 +128,27 @@ export class SystemSerializedMesh implements ISystem {
             `data:${JSON.stringify(response)}`,
             this.context.scene
           );
-          const importedMesh = this.context.scene.getMeshByName(entity_id);
-          this.meshes[entity_id] = importedMesh;
-          this.context.signalHub.local.emit("mesh_built", { name: entity_id });
+          const importedMesh = this.context.scene.getMeshByName(mesh_id);
           resolve(importedMesh);
         });
     });
+  }
+
+  async createMesh(
+    entity_id: string,
+    mesh_id: string
+  ): Promise<BABYLON.AbstractMesh> {
+    let newMesh;
+
+    if (!this.importedMeshes[mesh_id]) {
+      newMesh = await this.asyncLoadMesh(mesh_id);
+      this.importedMeshes[mesh_id] = newMesh;
+      newMesh.name = entity_id;
+      return newMesh;
+    } else {
+      // you might be duplicating an existing mesh
+      return this.importedMeshes[mesh_id].clone(entity_id, null);
+    }
   }
 
   dispose() {}

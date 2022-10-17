@@ -5,7 +5,6 @@
     import Select from "./Select.svelte";
     import type { SystemTransform } from "../ecs/builtin_systems/system-transform";
     import type { ComponentObj } from "../ecs/components/component-obj";
-    export let data: { mesh: BABYLON.Mesh };
 
     let context: Context = getContext("context");
 
