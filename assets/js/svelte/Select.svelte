@@ -6,7 +6,11 @@
     import type { SystemSerializedMesh } from "../ecs/builtin_systems/system-serialized-mesh";
     import type { SystemMenu } from "../ecs/builtin_systems/system-menu";
     import Primitives from "./Primitives.svelte";
-    import { arrayReduceSigFigs } from "../utils/misc";
+    import {
+        arrayReduceSigFigs,
+        cameraFrontPosition,
+        random_id,
+    } from "../utils/misc";
     import { filter } from "rxjs";
     import Color from "./Color.svelte";
     import type { SystemTransform } from "../ecs/builtin_systems/system-transform";
@@ -158,17 +162,51 @@
         data.selectedMeshes.push(intersectedMesh);
         refreshData();
     };
+
+    const duplicateMesh = () => {
+        if (!context.state[data.selectedMesh.name]) {
+            console.warn("can't duplicate");
+            return;
+        }
+        const newComponents = { ...context.state[data.selectedMesh.name] };
+        // initialize if no transform or no transform.position
+        if (!newComponents.transform) {
+            newComponents.transform = { position: [0, 0, 0] };
+        } else if (!newComponents.transform.position) {
+            newComponents.transform.position = [0, 0, 0];
+        }
+
+        newComponents.transform.position = cameraFrontPosition(
+            context.scene,
+            2
+        );
+
+        context.signalHub.outgoing.emit("entity_created", {
+            id: `dup_${random_id(5)}`,
+            components: newComponents,
+        });
+    };
 </script>
 
 <button id="goto_primitives" on:click={setSelected(Primitives)}>Add+</button>
 
-<button id="merge" disabled={data.selectedMeshes.length < 2} on:click={merge}
-    >Merge</button
->
-
 <button
     disabled={data.selectedMeshes.length < 1}
     on:click={deleteSelectedMeshes}>Delete</button
+>
+
+<button disabled={data.selectedMeshes.length !== 1} on:click={duplicateMesh}
+    >Duplicate</button
+>
+
+<button
+    disabled={data.selectedMeshes.length !== 1}
+    id="goto_color"
+    on:click={setSelected(Color, { mesh: data.selectedMesh })}>Color</button
+>
+
+<button id="merge" disabled={data.selectedMeshes.length < 2} on:click={merge}
+    >Merge</button
 >
 
 <button
@@ -177,15 +215,10 @@
 >
 
 <button
-    disabled={data.selectedMeshes.length != 2}
+    disabled={data.selectedMeshes.length !== 2}
     on:click={intersectSelectedMeshes}>Intersect</button
 >
 
-<button
-    disabled={data.selectedMeshes.length !== 1}
-    id="goto_color"
-    on:click={setSelected(Color, { mesh: data.selectedMesh })}>Color</button
->
 <div>{data.selectedMeshes.length} objects selected</div>
 {#if data.selectedMeshes.length === 0}
     <div>

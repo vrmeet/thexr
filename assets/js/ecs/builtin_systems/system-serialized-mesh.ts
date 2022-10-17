@@ -21,8 +21,11 @@ export class SystemSerializedMesh implements ISystem {
         // if we are the ones that serialized mesh locally, no need to process this event
         const mesh = this.context.scene.getMeshByName(mesh_id);
         if (mesh) {
-          this.entityMeshes[mesh.name] = mesh;
-          return;
+          if (entity_id === mesh_id) {
+            this.entityMeshes[entity_id] = mesh;
+            this.importedMeshes[mesh_id] = mesh;
+            return; // we're probably done
+          }
         }
         // else, we are another client, so load the serialization
         this.entityMeshes[entity_id] = await this.createMesh(
