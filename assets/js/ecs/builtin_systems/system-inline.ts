@@ -8,6 +8,9 @@ import * as BABYLON from "babylonjs";
  * Inline mode means 2D, not immersive playing
  * navigation using cursor or WASD keys
  */
+
+const keyCodeForSmallF = 70;
+
 export class SystemInline implements ISystem {
   flying = false;
   name = "inline";
@@ -61,7 +64,7 @@ export class SystemInline implements ISystem {
       .pipe(
         filter(
           (data) =>
-            data.event.keyCode === 70 &&
+            data.event.keyCode === keyCodeForSmallF &&
             data.type === BABYLON.KeyboardEventTypes.KEYUP
         )
       )

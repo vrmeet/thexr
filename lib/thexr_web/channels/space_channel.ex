@@ -32,6 +32,7 @@ defmodule ThexrWeb.SpaceChannel do
   end
 
   def handle_in("get_serialized_mesh", %{"mesh_id" => mesh_id}, socket) do
+    IO.inspect("getting serialized mesh")
     serialized_mesh = Thexr.Spaces.get_serialized_mesh(socket.assigns.state_id, mesh_id)
     # {:noreply, socket}
     {:reply, {:ok, serialized_mesh.data}, socket}

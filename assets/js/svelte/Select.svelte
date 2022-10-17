@@ -11,11 +11,28 @@
         cameraFrontPosition,
         random_id,
     } from "../utils/misc";
-    import { filter } from "rxjs";
+    import { filter, Subscription } from "rxjs";
     import Color from "./Color.svelte";
     import type { SystemTransform } from "../ecs/builtin_systems/system-transform";
 
+    let multiSelect = false;
+    let subscriptions: Subscription[] = [];
+    const keyCodeForShift = 16;
+
     let context: Context = getContext("context");
+
+    const sub1 = context.signalHub.local
+        .on("keyboard_info")
+        .pipe(filter((data) => data.event.keyCode === keyCodeForShift))
+        .subscribe((data) => {
+            if (data.type === BABYLON.KeyboardEventTypes.KEYDOWN) {
+                multiSelect = true;
+            } else if (data.type === BABYLON.KeyboardEventTypes.KEYUP) {
+                multiSelect = false;
+            }
+        });
+    subscriptions.push(sub1);
+
     let setSelected: (component: any, data?: {}) => () => void =
         getContext("setSelected");
     const systemTransform: SystemTransform = context.systems[
@@ -45,12 +62,7 @@
         data.prevSelectedMesh = null;
     };
 
-    onDestroy(() => {
-        hl.dispose();
-        systemTransform.disableGizmoManager();
-    });
-
-    context.signalHub.incoming
+    const sub2 = context.signalHub.incoming
         .on("components_upserted")
         .pipe(filter((evt) => evt.id === data.selectedMesh?.name))
         .subscribe(() => {
@@ -69,24 +81,32 @@
             }
         });
 
+    subscriptions.push(sub2);
+
     const refreshData = () => {
-        // the red color means selected, the yellow color means last selected
         hl.removeAllMeshes();
-        // highlight all meshes in orange first
-        data.selectedMeshes.forEach((m) => {
-            hl.addMesh(m, BABYLON.Color3.FromHexString("#FFA500"));
-        });
         data.selectedMesh = data.selectedMeshes[data.selectedMeshes.length - 1];
         data.prevSelectedMesh =
             data.selectedMeshes[data.selectedMeshes.length - 2];
-        if (data.selectedMesh) {
-            hl.addMesh(data.selectedMesh as BABYLON.Mesh, BABYLON.Color3.Red());
-        }
-        if (data.prevSelectedMesh) {
-            hl.addMesh(
-                data.prevSelectedMesh as BABYLON.Mesh,
-                BABYLON.Color3.Yellow()
-            );
+
+        if (data.selectedMeshes.length > 1) {
+            // the red color means selected, the yellow color means last selected
+            // highlight all meshes in orange first
+            data.selectedMeshes.forEach((m) => {
+                hl.addMesh(m, BABYLON.Color3.FromHexString("#FFA500"));
+            });
+            if (data.selectedMesh) {
+                hl.addMesh(
+                    data.selectedMesh as BABYLON.Mesh,
+                    BABYLON.Color3.Red()
+                );
+            }
+            if (data.prevSelectedMesh) {
+                hl.addMesh(
+                    data.prevSelectedMesh as BABYLON.Mesh,
+                    BABYLON.Color3.Yellow()
+                );
+            }
         }
 
         if (data.selectedMeshes.length === 1) {
@@ -113,22 +133,27 @@
         refreshData();
     }
 
-    context.signalHub.local.on("mesh_picked").subscribe((meshPicked) => {
-        if (meshPicked.metadata?.menu === true) {
-            return;
-        }
-        if (data.selectedMeshes.includes(meshPicked)) {
-            const i = data.selectedMeshes.indexOf(meshPicked);
-            data.selectedMeshes.splice(i, 1);
-        } else {
-            data.selectedMeshes.push(meshPicked);
-        }
-        refreshData();
-    });
+    const sub3 = context.signalHub.local
+        .on("mesh_picked")
+        .subscribe((meshPicked) => {
+            if (meshPicked.metadata?.menu === true) {
+                return;
+            }
 
-    afterUpdate(() => {
-        systemMenu.renderMenuToTexture();
-    });
+            if (data.selectedMeshes.includes(meshPicked)) {
+                // if already selected, deselect
+                const i = data.selectedMeshes.indexOf(meshPicked);
+                data.selectedMeshes.splice(i, 1);
+            } else {
+                if (!multiSelect) {
+                    clearData();
+                }
+                data.selectedMeshes.push(meshPicked);
+            }
+
+            refreshData();
+        });
+    subscriptions.push(sub3);
 
     const merge = () => {
         const mergedMesh = systemSerializedMesh.merge(data.selectedMeshes);
@@ -186,6 +211,16 @@
             components: newComponents,
         });
     };
+
+    afterUpdate(() => {
+        systemMenu.renderMenuToTexture();
+    });
+
+    onDestroy(() => {
+        subscriptions.forEach((sub) => sub.unsubscribe());
+        hl.dispose();
+        systemTransform.disableGizmoManager();
+    });
 </script>
 
 <button id="goto_primitives" on:click={setSelected(Primitives)}>Add+</button>
@@ -205,6 +240,7 @@
     on:click={setSelected(Color, { mesh: data.selectedMesh })}>Color</button
 >
 
+<div>Boolean Operations</div>
 <button id="merge" disabled={data.selectedMeshes.length < 2} on:click={merge}
     >Merge</button
 >

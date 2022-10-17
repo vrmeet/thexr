@@ -1,20 +1,15 @@
-when serializing mesh
+serialized mesh loading happens in parallel
+and doesn't take advatange of previsouly loaded mesh
 
-entity id -> serialized_mesh -> mesh_id
-  save state_id, entity_id, mesh_id 
-  save mesh_id, data
+use fetch use-catch so that we can use browser caching (maybe)
 
-when deleting entity,
-  also delete state_id, entity_id, mesh_id
+deleting space, leaves orphaned entities and serialized Mesh, and probably entity meshes
 
-  if no other records are using mesh_id, delete mesh_id too
+ability to export a mesh to asset store
 
-when duplicating an entity
-  save state_id, entity_id, mesh_id
+ability to edit a mesh and add components such as grabble or floor or lift (start with api?)
 
-when exporting a mesh, save it to
-
-mesh_id, data, screenshot
+some boolean operations don't take
 
 work on shift click or grip click to multi-select.
 

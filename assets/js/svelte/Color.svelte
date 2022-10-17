@@ -5,7 +5,9 @@
     import Select from "./Select.svelte";
     import type { SystemTransform } from "../ecs/builtin_systems/system-transform";
     import type { ComponentObj } from "../ecs/components/component-obj";
+    import type { Subscription } from "rxjs";
 
+    let subscriptions: Subscription[] = [];
     let context: Context = getContext("context");
 
     let setSelected: (component: any, data?: {}) => () => void =
@@ -16,12 +18,15 @@
     ] as SystemTransform;
     systemTransform.enableGizmoManager();
 
-    context.signalHub.local.on("mesh_picked").subscribe((meshPicked) => {
-        if (meshPicked.metadata?.menu === true) {
-            return;
-        }
-        systemTransform.gizmoManagerAttachMesh(meshPicked);
-    });
+    const sub1 = context.signalHub.local
+        .on("mesh_picked")
+        .subscribe((meshPicked) => {
+            if (meshPicked.metadata?.menu === true) {
+                return;
+            }
+            systemTransform.gizmoManagerAttachMesh(meshPicked);
+        });
+    subscriptions.push(sub1);
 
     let meshMaterial = context.state[systemTransform.lastPickedMesh.name]
         ?.material as { color_string: string };
@@ -43,6 +48,7 @@
     };
 
     onDestroy(() => {
+        subscriptions.forEach((sub) => sub.unsubscribe());
         systemTransform.disableGizmoManager();
     });
 </script>
