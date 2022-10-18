@@ -7,13 +7,14 @@ import type { SignalHub } from "../../signalHub";
 import { filter } from "rxjs";
 
 import MenuBar from "../../svelte/MenuBar.svelte";
+import { cameraFrontPosition } from "../../utils/misc";
 
 export const BAR_WIDTH = 256;
 export const BAR_HEIGHT = 256;
 export const HOME_WIDTH = 640;
 export const HOME_HEIGHT = 384;
 export const BAR_SCALING = 0.1 / 256;
-export const HOME_SCALING = 0.5 / 384;
+export const HOME_SCALING = 1.0 / 384;
 
 export class SystemMenu implements ISystem {
   public name = "menu";
@@ -149,18 +150,40 @@ export class SystemMenu implements ISystem {
     return gui;
   }
 
+  inputFromEl(el: HTMLInputElement, style: CSSStyleDeclaration) {
+    const input = new GUI.InputText();
+    // input.width = 0.2;
+    // input.maxWidth = 0.2;
+    // input.height = "40px";
+    input.text = "";
+    input.color = "white";
+    input.onTextChangedObservable.add((data, state) => {
+      el.value = data.text;
+    });
+    input.onFocusObservable.add(() => {
+      el.focus();
+    });
+    // input.background = "green";
+    return input;
+  }
+
   htmlToGui(el: HTMLElement) {
     let gui: GUI.Container;
-
     const style = getComputedStyle(el);
     switch (el.nodeName) {
       case "DIV":
-        gui = this.rectFromEl(el as HTMLDivElement, style);
+        gui = this.rectFromEl(el as HTMLDivElement, style) as GUI.Container;
         // gui.color = "#ff0000";
         // gui.background = "#aa00ee";
         break;
       case "BUTTON":
         gui = this.buttonFromEl(el as HTMLButtonElement, style);
+        break;
+      case "INPUT":
+        gui = this.inputFromEl(
+          el as HTMLInputElement,
+          style
+        ) as unknown as GUI.Container;
         break;
       default:
         gui = new GUI.Container(el.id);
@@ -243,15 +266,20 @@ export class SystemMenu implements ISystem {
     this.wristGui.addControl(menuBarCtrl);
     const elementMenuHome = document.getElementById("menu_home");
     if (elementMenuHome) {
+      if (!this.bigPlane) {
+        this.createBigPlane();
+      } else {
+        this.bigPlane.setEnabled(true);
+      }
       const menuHome = this.htmlToGui(document.getElementById("menu_home"));
       menuHome.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
       menuHome.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
       menuHome.topInPixels = 10;
       menuHome.leftInPixels = 0;
       this.browseGui.addControl(menuHome);
-      this.bigPlane.setEnabled(true);
+      // this.bigPlane.setEnabled(true);
     } else {
-      this.bigPlane.setEnabled(false);
+      this.bigPlane?.setEnabled(false);
     }
   }
 
@@ -268,6 +296,7 @@ export class SystemMenu implements ISystem {
     this.browseGui?.dispose();
     this.smallPlane?.dispose();
     this.bigPlane?.dispose();
+    console.log("big plane is disposed", this.bigPlane?.isDisposed());
     this.wristGui = null;
     this.browseGui = null;
     this.smallPlane = null;
@@ -317,19 +346,25 @@ export class SystemMenu implements ISystem {
       { height: HOME_HEIGHT * HOME_SCALING, width: HOME_WIDTH * HOME_SCALING },
       this.scene
     );
+    console.log("big plane created");
+
+    // this.bigPlane.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
     this.bigPlane.showBoundingBox = true;
     this.bigPlane.metadata = { menu: true };
     // this.bigPlane.setEnabled(false);
-    this.bigPlane.position = new BABYLON.Vector3(0.3, 0.02, 0.4);
-    this.bigPlane.rotation.x = BABYLON.Angle.FromDegrees(60).radians();
+    // this.bigPlane.position = new BABYLON.Vector3(0.3, 0.02, 0.4);
+    // this.bigPlane.rotation.x = BABYLON.Angle.FromDegrees(60).radians();
 
     //  this.bigPlane.position.z = 0.5
     //  this.bigPlane.position.y = -0.3
     //   this.bigPlane.rotation.y = BABYLON.Angle.FromDegrees(-60).radians()
     //  this.bigPlane.rotation.x = BABYLON.Angle.FromDegrees(45).radians()
 
-    this.bigPlane.parent = this.grip;
-
+    // this.bigPlane.parent = this.grip;
+    this.bigPlane.position.fromArray(cameraFrontPosition(this.scene, 1));
+    this.bigPlane.lookAt(
+      BABYLON.Vector3.FromArray(cameraFrontPosition(this.scene, 3))
+    );
     this.browseGui = GUI.AdvancedDynamicTexture.CreateForMesh(
       this.bigPlane,
       HOME_WIDTH,
@@ -342,15 +377,16 @@ export class SystemMenu implements ISystem {
     // const utilLayer = BABYLON.UtilityLayerRenderer.DefaultUtilityLayer
     if (this.wristGui) {
       this.wristGui.rootContainer.dispose();
-      this.browseGui.rootContainer.dispose();
+      this.browseGui?.rootContainer?.dispose();
       // also try reparenting if controller had blipped away for a moment
       this.smallPlane.setEnabled(true);
       this.smallPlane.parent = this.grip;
-      this.bigPlane.parent = this.grip;
+      // this.bigPlane.position.fromArray(cameraFrontPosition(this.scene, 1));
+      // this.bigPlane.parent = this.grip;
       return;
     }
     this.tearDownFullScreenMenu();
     this.createSmallPlane();
-    this.createBigPlane();
+    // this.createBigPlane();
   }
 }

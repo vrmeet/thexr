@@ -1,13 +1,15 @@
+
+ability to export a mesh to asset store
+
+ability to edit a mesh and add components such as grabble or floor or lift (start with api?)
+
+
 serialized mesh loading happens in parallel
 and doesn't take advatange of previsouly loaded mesh
 
 use fetch use-catch so that we can use browser caching (maybe)
 
 deleting space, leaves orphaned entities and serialized Mesh, and probably entity meshes
-
-ability to export a mesh to asset store
-
-ability to edit a mesh and add components such as grabble or floor or lift (start with api?)
 
 some boolean operations don't take
 

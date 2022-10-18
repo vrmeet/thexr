@@ -13,6 +13,7 @@
     } from "../utils/misc";
     import { filter, mapTo, Subscription } from "rxjs";
     import Color from "./Color.svelte";
+    import Export from "./Export.svelte";
     import type { SystemTransform } from "../ecs/builtin_systems/system-transform";
     import { merge as rxjsmerge, tap } from "rxjs";
 
@@ -269,7 +270,13 @@
 <button
     disabled={data.selectedMeshes.length !== 1}
     id="goto_color"
-    on:click={setSelected(Color, { mesh: data.selectedMesh })}>Color</button
+    on:click={setSelected(Color)}>Color</button
+>
+
+<button
+    disabled={data.selectedMeshes.length !== 1}
+    id="goto_export"
+    on:click={setSelected(Export)}>Export</button
 >
 
 <div>Boolean Operations</div>

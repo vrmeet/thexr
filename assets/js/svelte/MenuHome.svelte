@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { getContext, setContext } from "svelte";
+  import { getContext, setContext, onDestroy } from "svelte";
   import type { Context } from "../context";
   import Attendees from "./Attendees.svelte";
   import Primitives from "./Primitives.svelte";
   import Select from "./Select.svelte";
-  import Sculpt from "./Sculpt.svelte";
+  import Export from "./Export.svelte";
   import { afterUpdate } from "svelte";
   import {
     HOME_HEIGHT,
@@ -26,9 +26,14 @@
   };
   // allow edit menu to call up primitives
   setContext("setSelected", setSelected);
-
+  setSelected(Export)();
   afterUpdate(() => {
     systemMenu.renderMenuToTexture();
+  });
+  onDestroy(() => {
+    console.log("destroy menu home");
+    systemMenu.tearDownVRMenu();
+    systemMenu.tearDownFullScreenMenu();
   });
 </script>
 
@@ -68,8 +73,9 @@
     position: absolute;
     top: 100px;
     left: 700px;
-    /* z-index: 22; */
-    /* right: -500px; flash of content, off screen */
+    z-index: 22;
+    right: -500px;
+    /* flash of content, off screen */
   }
   .selected {
     background-color: blue;
