@@ -69,7 +69,7 @@
     /* display: none; */
     position: absolute;
     border: 1px solid red;
-    right: -500px; /* flash of content, off screen */
+    /* right: -500px; flash of content, off screen */
   }
   #menu_bar button {
     padding: 0 1em;

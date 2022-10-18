@@ -11,24 +11,33 @@
         cameraFrontPosition,
         random_id,
     } from "../utils/misc";
-    import { filter, Subscription } from "rxjs";
+    import { filter, mapTo, Subscription } from "rxjs";
     import Color from "./Color.svelte";
     import type { SystemTransform } from "../ecs/builtin_systems/system-transform";
+    import { merge as rxjsmerge, tap } from "rxjs";
 
-    let multiSelect = false;
     let subscriptions: Subscription[] = [];
     const keyCodeForShift = 16;
+    let data = {
+        selectedMeshes: [],
+        componentsList: [],
+        selectedMesh: null,
+        prevSelectedMesh: null,
+        shiftDown: false,
+        leftGripDown: false,
+        rightGripDown: false,
+    };
 
     let context: Context = getContext("context");
 
     const sub1 = context.signalHub.local
         .on("keyboard_info")
-        .pipe(filter((data) => data.event.keyCode === keyCodeForShift))
-        .subscribe((data) => {
-            if (data.type === BABYLON.KeyboardEventTypes.KEYDOWN) {
-                multiSelect = true;
-            } else if (data.type === BABYLON.KeyboardEventTypes.KEYUP) {
-                multiSelect = false;
+        .pipe(filter((info) => info.event.keyCode === keyCodeForShift))
+        .subscribe((info) => {
+            if (info.type === BABYLON.KeyboardEventTypes.KEYDOWN) {
+                data.shiftDown = true;
+            } else if (info.type === BABYLON.KeyboardEventTypes.KEYUP) {
+                data.shiftDown = false;
             }
         });
     subscriptions.push(sub1);
@@ -47,13 +56,6 @@
 
     // Add the highlight layer.
     const hl = new BABYLON.HighlightLayer("hl1", context.scene);
-
-    let data = {
-        selectedMeshes: [],
-        componentsList: [],
-        selectedMesh: null,
-        prevSelectedMesh: null,
-    };
 
     const clearData = () => {
         data.selectedMeshes.length = 0;
@@ -145,7 +147,12 @@
                 const i = data.selectedMeshes.indexOf(meshPicked);
                 data.selectedMeshes.splice(i, 1);
             } else {
-                if (!multiSelect) {
+                // TODO, need to inspect the current state of the hand that was doing the picking, whether grip was also held
+                if (
+                    !data.shiftDown &&
+                    !data.leftGripDown &&
+                    !data.rightGripDown
+                ) {
                     clearData();
                 }
                 data.selectedMeshes.push(meshPicked);
@@ -154,6 +161,31 @@
             refreshData();
         });
     subscriptions.push(sub3);
+
+    const sub4 = rxjsmerge(
+        context.signalHub.movement.on("left_grip_squeezed").pipe(
+            tap(() => {
+                data.leftGripDown = true;
+            })
+        ),
+        context.signalHub.movement.on("left_grip_released").pipe(
+            tap(() => {
+                data.leftGripDown = false;
+            })
+        ),
+
+        context.signalHub.movement.on("right_grip_squeezed").pipe(
+            tap(() => {
+                data.rightGripDown = true;
+            })
+        ),
+        context.signalHub.movement.on("right_grip_released").pipe(
+            tap(() => {
+                data.rightGripDown = false;
+            })
+        )
+    ).subscribe();
+    subscriptions.push(sub4);
 
     const merge = () => {
         const mergedMesh = systemSerializedMesh.merge(data.selectedMeshes);
