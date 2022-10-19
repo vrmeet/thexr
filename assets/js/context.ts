@@ -35,7 +35,7 @@ export interface Context {
   bypass_modal: boolean;
   menu_opened: boolean;
   logs_opened: boolean;
-  space_id: string;
+  space: { id: string; name: string; state_id: string };
   webrtc_channel_id: string;
   userToken: string;
   scene: BABYLON.Scene;
@@ -56,7 +56,7 @@ export const createContext = (): Context => {
     bypass_modal: false,
     menu_opened: false,
     logs_opened: false,
-    space_id: null,
+    space: null,
     webrtc_channel_id: null,
     userToken: null,
     scene: null,

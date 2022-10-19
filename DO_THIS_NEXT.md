@@ -1,9 +1,4 @@
-
-ability to export a mesh to asset store
-  - create table
-  - map button to serializer ability
-
-create a page to view the exports
+need to save space as object into front end
 
 get serialized mesh - change to load from URL
   create endpoint to serve up json data

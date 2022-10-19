@@ -41,7 +41,7 @@ export class Synergize {
    */
   constructor(
     my_member_id: string,
-    space_id: string,
+    space: { id: string; name: string; state_id: string },
     webrtc_channel_id: string,
     userToken: string,
     public engine: BABYLON.Engine
@@ -52,7 +52,7 @@ export class Synergize {
     this.context.my_nickname =
       sessionPersistance.getNickname()?.nickname || my_member_id;
     this.context.my_mic_muted = true;
-    this.context.space_id = space_id;
+    this.context.space = space;
     this.context.webrtc_channel_id = webrtc_channel_id;
     this.context.userToken = userToken;
 
@@ -291,7 +291,7 @@ export class Synergize {
       this.scene
     );
     const prevPosition = sessionPersistance.getCameraPosRot(
-      this.context.space_id
+      this.context.space.id
     );
     if (prevPosition) {
       this.freeCamera.position.fromArray(prevPosition.pos);
@@ -313,7 +313,7 @@ export class Synergize {
       "beforeunload",
       () => {
         sessionPersistance.saveCameraPosRot(
-          this.context.space_id,
+          this.context.space.id,
           camPosRot(this.scene.activeCamera)
         );
       },

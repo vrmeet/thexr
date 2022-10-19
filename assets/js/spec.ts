@@ -5,14 +5,14 @@ import * as BABYLON from "babylonjs";
 
 window.addEventListener("DOMContentLoaded", async () => {
   const member_id = window["member_id"];
-  const space_id = window["space_id"];
+  const space = window["space"];
   const webrtc_channel_id = window["webrtc_channel_id"];
   const userToken = window["userToken"];
 
   if (!member_id) {
     return;
   }
-  const canvas = document.getElementById(space_id) as HTMLCanvasElement;
+  const canvas = document.getElementById(space.id) as HTMLCanvasElement;
   const engine = new BABYLON.Engine(canvas, true, {
     preserveDrawingBuffer: true,
     stencil: true,
@@ -20,7 +20,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const synergizer = new Synergize(
     member_id,
-    space_id,
+    space,
     webrtc_channel_id,
     userToken,
     engine
