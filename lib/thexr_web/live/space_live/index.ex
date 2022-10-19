@@ -34,7 +34,8 @@ defmodule ThexrWeb.SpaceLive.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    {:ok, _} = Spaces.delete_space(%Space{id: id})
+    space = Spaces.get_space(id)
+    {:ok, _} = Spaces.delete_space(space)
     {:noreply, assign(socket, :spaces, list_spaces())}
   end
 

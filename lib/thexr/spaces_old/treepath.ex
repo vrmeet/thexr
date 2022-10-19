@@ -1,4 +1,4 @@
-defmodule Thexr.Spaces.Treepath do
+defmodule Thexr.SpacesOld.Treepath do
   use Ecto.Schema
   import Ecto.Changeset
 

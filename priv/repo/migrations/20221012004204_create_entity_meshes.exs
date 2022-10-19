@@ -11,7 +11,7 @@ defmodule Thexr.Repo.Migrations.CreateEntityMeshes do
           primary_key: true
 
       add :mesh_id,
-          references(:serialized_meshes,
+          references(:state_meshes,
             on_delete: :delete_all,
             type: :string,
             with: [state_id: :state_id]

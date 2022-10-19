@@ -7,7 +7,7 @@ defmodule Thexr.Spaces do
 
   alias Thexr.Repo
 
-  alias Thexr.Spaces.{Space, Entity, SerializedMesh, AssetMesh}
+  alias Thexr.Spaces.{Space, Entity, AssetMesh, StateMesh}
 
   # the genserver
 
@@ -75,11 +75,11 @@ defmodule Thexr.Spaces do
   end
 
   def delete_space(%Space{} = space) do
-    Repo.delete(space)
     query = from(e in Entity, where: e.state_id == ^space.state_id)
     Repo.delete_all(query)
-    query = from(s in SerializedMesh, where: s.state_id == ^space.state_id)
+    query = from(s in StateMesh, where: s.state_id == ^space.state_id)
     Repo.delete_all(query)
+    Repo.delete(space)
   end
 
   def change_space(%Space{} = space, attrs \\ %{}) do
@@ -162,7 +162,7 @@ defmodule Thexr.Spaces do
   end
 
   # lookup a serialized mesh_id, if it has one
-  def entity_serialized_mesh_id(state_id, entity_id) do
+  def entity_state_mesh_id(state_id, entity_id) do
     query =
       from(e in "entity_meshes",
         where: e.state_id == ^state_id and e.entity_id == ^entity_id,
@@ -175,7 +175,7 @@ defmodule Thexr.Spaces do
     end
   end
 
-  def serialized_mesh_usage_count(state_id, mesh_id) do
+  def state_mesh_usage_count(state_id, mesh_id) do
     query =
       from(e in "entity_meshes",
         where: e.state_id == ^state_id and e.mesh_id == ^mesh_id
@@ -185,10 +185,10 @@ defmodule Thexr.Spaces do
   end
 
   def delete_entity(state_id, entity_id) do
-    with {:ok, mesh_id} <- entity_serialized_mesh_id(state_id, entity_id),
-         1 <- serialized_mesh_usage_count(state_id, mesh_id) do
+    with {:ok, mesh_id} <- entity_state_mesh_id(state_id, entity_id),
+         1 <- state_mesh_usage_count(state_id, mesh_id) do
       query2 =
-        from(s in SerializedMesh,
+        from(s in StateMesh,
           where: s.state_id == ^state_id and s.id == ^mesh_id
         )
 
@@ -210,18 +210,22 @@ defmodule Thexr.Spaces do
   end
 
   ### serialized meshes
-
-  def get_serialized_mesh(state_id, mesh_id) do
-    Repo.get_by(SerializedMesh, state_id: state_id, id: mesh_id)
+  def list_state_meshes(state_id) do
+    query = from s in StateMesh, where: s.state_id == ^state_id
+    Repo.all(query)
   end
 
-  def save_serialized_mesh(state_id, mesh_id, data) do
-    Repo.insert(%SerializedMesh{state_id: state_id, id: mesh_id, data: data})
+  def get_state_mesh(state_id, mesh_id) do
+    Repo.get_by(StateMesh, state_id: state_id, id: mesh_id)
   end
 
-  def delete_serialized_mesh(state_id, mesh_id) do
+  def save_state_mesh(state_id, mesh_id, data) do
+    Repo.insert(%StateMesh{state_id: state_id, id: mesh_id, data: data})
+  end
+
+  def delete_state_mesh(state_id, mesh_id) do
     query =
-      from s in SerializedMesh,
+      from s in StateMesh,
         where: s.state_id == ^state_id and s.id == ^mesh_id
 
     Repo.delete_all(query)

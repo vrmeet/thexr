@@ -50,7 +50,7 @@ export class SystemBroker implements ISystem {
   }
 
   connectToChannel(choice: "enter" | "observe") {
-    this.channel = this.socket.channel(`space:${this.context.space_id}`, {
+    this.channel = this.socket.channel(`space:${this.context.space.id}`, {
       choice: choice,
     });
     this.context.channel = this.channel;

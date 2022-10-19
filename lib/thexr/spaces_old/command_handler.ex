@@ -1,4 +1,4 @@
-defmodule Thexr.Spaces.CommandHandler do
+defmodule Thexr.SpacesOld.CommandHandler do
   alias Thexr.SpaceServer
 
   def member_enter(space_id, member_id) do

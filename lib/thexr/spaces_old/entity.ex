@@ -1,4 +1,4 @@
-defmodule Thexr.Spaces.OldEntity do
+defmodule Thexr.SpacesOld.OldEntity do
   use Ecto.Schema
   import Ecto.Changeset
 

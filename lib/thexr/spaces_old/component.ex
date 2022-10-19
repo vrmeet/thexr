@@ -4,7 +4,7 @@
 #   end
 # end
 
-defmodule Thexr.Spaces.Component do
+defmodule Thexr.SpacesOld.Component do
   use Ecto.Schema
   import Ecto.Changeset
   #  import PolymorphicEmbed, only: [cast_polymorphic_embed: 3]

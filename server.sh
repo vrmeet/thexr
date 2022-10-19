@@ -5,7 +5,7 @@ if [ -f .env ]; then
     source .env
     set +o allexport
 
-    iex -S mix phx.server
+    ERL_AFLAGS="-kernel shell_history enabled" iex -S mix phx.server
 
 else
 

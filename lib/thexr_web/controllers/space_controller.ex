@@ -26,24 +26,24 @@ defmodule ThexrWeb.SpaceController do
     end
   end
 
-  def delete_nav_mesh(conn, %{"space_id" => space_id}) do
-    Spaces.delete_nav_mesh(space_id)
-    conn |> json(%{})
-  end
+  # def delete_nav_mesh(conn, %{"space_id" => space_id}) do
+  #   Spaces.delete_nav_mesh(space_id)
+  #   conn |> json(%{})
+  # end
 
-  def save_nav_mesh(conn, %{"space_id" => space_id}) do
-    {:ok, body, conn} = Plug.Conn.read_body(conn)
+  # def save_nav_mesh(conn, %{"space_id" => space_id}) do
+  #   {:ok, body, conn} = Plug.Conn.read_body(conn)
 
-    Spaces.set_nav_mesh(space_id, body)
-    conn |> json(%{})
-  end
+  #   Spaces.set_nav_mesh(space_id, body)
+  #   conn |> json(%{})
+  # end
 
-  def get_nav_mesh(conn, %{"space_id" => space_id}) do
-    case Spaces.get_nav_mesh(space_id) do
-      # 204
-      nil -> send_resp(conn, :no_content, "")
-      # 200
-      data -> send_resp(conn, :ok, data)
-    end
-  end
+  # def get_nav_mesh(conn, %{"space_id" => space_id}) do
+  #   case Spaces.get_nav_mesh(space_id) do
+  #     # 204
+  #     nil -> send_resp(conn, :no_content, "")
+  #     # 200
+  #     data -> send_resp(conn, :ok, data)
+  #   end
+  # end
 end

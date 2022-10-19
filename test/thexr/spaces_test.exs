@@ -13,7 +13,7 @@ defmodule Thexr.SpacesTest do
 
     test "deleting an entity will remove it's serialized mesh" do
       # the UI will save the serialized mesh, even before entity is created
-      Spaces.save_serialized_mesh(@state_id, @mesh_id, %{})
+      Spaces.save_state_mesh(@state_id, @mesh_id, %{})
 
       Spaces.upsert_entity(@state_id, @entity_id, %{"serialized_mesh" => %{"mesh_id" => @mesh_id}})
 
@@ -27,7 +27,7 @@ defmodule Thexr.SpacesTest do
     end
 
     test "duplicate a mesh" do
-      Spaces.save_serialized_mesh(@state_id, @mesh_id, %{})
+      Spaces.save_state_mesh(@state_id, @mesh_id, %{})
 
       Spaces.upsert_entity(@state_id, @entity_id, %{"serialized_mesh" => %{"mesh_id" => @mesh_id}})
 
@@ -54,7 +54,7 @@ defmodule Thexr.SpacesTest do
 
     test "deleting a space will remove its state entities and serialized meshes" do
       {:ok, space} = Spaces.create_space(%{id: "abc", name: "abc", state_id: @state_id})
-      Spaces.save_serialized_mesh(@state_id, @mesh_id, %{})
+      Spaces.save_state_mesh(@state_id, @mesh_id, %{})
 
       Spaces.upsert_entity(@state_id, @entity_id, %{"serialized_mesh" => %{"mesh_id" => @mesh_id}})
 

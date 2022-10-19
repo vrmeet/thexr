@@ -1,4 +1,4 @@
-defmodule Thexr.Spaces.NavMesh do
+defmodule Thexr.SpacesOld.NavMesh do
   use Ecto.Schema
   import Ecto.Changeset
 

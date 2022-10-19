@@ -1,4 +1,4 @@
-defmodule Thexr.Spaces.EventStream do
+defmodule Thexr.SpacesOld.EventStream do
   use Ecto.Schema
   import Ecto.Changeset
 

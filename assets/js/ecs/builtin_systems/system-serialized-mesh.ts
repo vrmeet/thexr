@@ -6,7 +6,7 @@ import { arrayReduceSigFigs, random_id } from "../../utils/misc";
 
 export class SystemSerializedMesh implements ISystem {
   public entityMeshes: Record<string, BABYLON.AbstractMesh> = {};
-  public importedMeshes: Record<string, BABYLON.AbstractMesh> = {};
+  public importedMeshes: Record<string, Promise<BABYLON.AbstractMesh>> = {};
   public name = "serialized_mesh";
   public order = 0;
   public context: Context;
@@ -23,7 +23,9 @@ export class SystemSerializedMesh implements ISystem {
         if (mesh) {
           if (entity_id === mesh_id) {
             this.entityMeshes[entity_id] = mesh;
-            this.importedMeshes[mesh_id] = mesh;
+            this.importedMeshes[mesh_id] = new Promise((resolve) => {
+              resolve(mesh);
+            });
             return; // we're probably done
           }
         }
@@ -103,7 +105,7 @@ export class SystemSerializedMesh implements ISystem {
     oldMeshIds: string[]
   ) {
     const serializedMesh = BABYLON.SceneSerializer.SerializeMesh(newMesh);
-    this.context.channel.push("save_serialized_mesh", {
+    this.context.channel.push("save_state_mesh", {
       mesh_id: newMesh.name,
       data: serializedMesh,
     });
@@ -132,37 +134,49 @@ export class SystemSerializedMesh implements ISystem {
   }
 
   // loads json data into a new mesh into the scene
-  asyncLoadMesh(mesh_id: string): Promise<BABYLON.AbstractMesh> {
-    return new Promise((resolve, _reject) => {
-      this.context.channel
-        .push("get_serialized_mesh", { mesh_id: mesh_id })
-        .receive("ok", (response) => {
-          BABYLON.SceneLoader.ImportMesh(
-            "",
-            "",
-            `data:${JSON.stringify(response)}`,
-            this.context.scene
-          );
-          const importedMesh = this.context.scene.getMeshByName(mesh_id);
-          resolve(importedMesh);
-        });
-    });
-  }
+  // asyncLoadMesh(mesh_id: string): Promise<BABYLON.AbstractMesh> {
+  //   return new Promise((resolve, _reject) => {
+  //     this.context.channel
+  //       .push("get_serialized_mesh", { mesh_id: mesh_id })
+  //       .receive("ok", (response) => {
+  //         BABYLON.SceneLoader.ImportMesh(
+  //           "",
+  //           "",
+  //           `data:${JSON.stringify(response)}`,
+  //           this.context.scene
+  //         );
+  //         const importedMesh = this.context.scene.getMeshByName(mesh_id);
+  //         resolve(importedMesh);
+  //       });
+  //   });
+  // }
 
   async createMesh(
     entity_id: string,
     mesh_id: string
   ): Promise<BABYLON.AbstractMesh> {
-    let newMesh;
-
+    console.log("in create mesh", entity_id, mesh_id);
     if (!this.importedMeshes[mesh_id]) {
-      newMesh = await this.asyncLoadMesh(mesh_id);
-      this.importedMeshes[mesh_id] = newMesh;
-      newMesh.name = entity_id;
-      return newMesh;
+      console.log("no such imported mesh", mesh_id);
+      this.importedMeshes[mesh_id] = new Promise((resolve) => {
+        BABYLON.SceneLoader.ImportMesh(
+          [mesh_id],
+          `/state_meshes/${this.context.space.state_id}/${mesh_id}`,
+          null,
+          this.context.scene,
+          (success) => {
+            console.log("what is success", success[0].name);
+            const importedMesh = this.context.scene.getMeshByName(mesh_id);
+            console.log("find imported Mesh in scene", importedMesh);
+            resolve(importedMesh);
+          }
+        );
+      });
+      return this.importedMeshes[mesh_id];
     } else {
+      console.log("there is an imported mesh for", mesh_id);
       // you might be duplicating an existing mesh
-      return this.importedMeshes[mesh_id].clone(entity_id, null);
+      return (await this.importedMeshes[mesh_id]).clone(entity_id, null);
     }
   }
 

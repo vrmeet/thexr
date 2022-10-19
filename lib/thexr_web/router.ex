@@ -46,7 +46,9 @@ defmodule ThexrWeb.Router do
     get "/", PageController, :index
     get "/s/:space_id", SpaceController, :show
 
-    # get "/serialized_meshes/:state_id/:entity_id/:mesh_id", AssetController, :serialized_mesh
+    get "/objects", ObjectController, :index
+    get "/objects/:id", ObjectController, :show
+    get "/state_meshes/:state_id/:mesh_id", ObjectController, :state_mesh
 
     # get "/s/:space_id/nav_mesh", SpaceController, :get_nav_mesh
     # post "/s/:space_id/nav_mesh", SpaceController, :save_nav_mesh
@@ -75,8 +77,6 @@ defmodule ThexrWeb.Router do
 
     # live "/edit_space/:id", SpaceEditLive.Index, :index
     # live "/edit_space/:id/edit", SpaceEditLive.Index, :edit
-
-    get "/objects", ObjectController, :index
 
     # live "/spaces/:id/show/edit", SpaceLive.Show, :edit
   end
