@@ -9,6 +9,7 @@ defmodule Thexr.Spaces.Space do
     field(:description, :string)
     field(:state_id, :string)
     # embeds_one(:settings, Settings, on_replace: :update)
+    has_many(:entities, Thexr.Spaces.Entity, references: :state_id, foreign_key: :state_id)
     timestamps()
   end
 

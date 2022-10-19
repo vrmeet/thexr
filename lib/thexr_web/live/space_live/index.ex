@@ -17,7 +17,16 @@ defmodule ThexrWeb.SpaceLive.Index do
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Space")
-    |> assign(:space, Spaces.get_space(id))
+
+    case Spaces.get_space(id) do
+      nil ->
+        socket
+        |> put_flash(:error, "space #{id} not found")
+        |> redirect(to: "/")
+
+      space ->
+        socket |> assign(:space, space)
+    end
   end
 
   defp apply_action(socket, :new, _params) do
