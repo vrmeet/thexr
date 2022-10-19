@@ -70,11 +70,11 @@ defmodule ThexrWeb.SpaceLiveTest do
       assert html =~ "some updated description"
     end
 
-    test "deletes space in listing", %{conn: conn, space: space} do
-      {:ok, index_live, _html} = live(conn, Routes.space_index_path(conn, :index))
+    # test "deletes space in listing", %{conn: conn, space: space} do
+    #   {:ok, index_live, _html} = live(conn, Routes.space_index_path(conn, :index))
 
-      assert index_live |> element("#space-#{space.id} a", "Delete") |> render_click()
-      refute has_element?(index_live, "#space-#{space.id}")
-    end
+    #   assert index_live |> element("#space-#{space.id} a", "Delete") |> render_click()
+    #   refute has_element?(index_live, "#space-#{space.id}")
+    # end
   end
 end

@@ -26,7 +26,7 @@
   };
   // allow edit menu to call up primitives
   setContext("setSelected", setSelected);
-  setSelected(Export)();
+  // setSelected(Export)();
   afterUpdate(() => {
     systemMenu.renderMenuToTexture();
   });

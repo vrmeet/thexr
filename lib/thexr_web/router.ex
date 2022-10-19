@@ -39,14 +39,15 @@ defmodule ThexrWeb.Router do
       interface: :simple
   end
 
+  # public spaces
   scope "/", ThexrWeb do
     pipe_through :browser
 
     get "/", PageController, :index
     get "/s/:space_id", SpaceController, :show
-    get "/s/:space_id/nav_mesh", SpaceController, :get_nav_mesh
-    post "/s/:space_id/nav_mesh", SpaceController, :save_nav_mesh
-    delete "/s/:space_id/nav_mesh", SpaceController, :delete_nav_mesh
+    # get "/s/:space_id/nav_mesh", SpaceController, :get_nav_mesh
+    # post "/s/:space_id/nav_mesh", SpaceController, :save_nav_mesh
+    # delete "/s/:space_id/nav_mesh", SpaceController, :delete_nav_mesh
   end
 
   scope "/admin", ThexrWeb do
@@ -60,6 +61,7 @@ defmodule ThexrWeb.Router do
     # live "/templates/:id/show/edit", TemplateLive.Show, :edit
   end
 
+  # personal spaces, protect under login
   scope "/m", ThexrWeb do
     pipe_through :browser
 
@@ -70,6 +72,8 @@ defmodule ThexrWeb.Router do
 
     # live "/edit_space/:id", SpaceEditLive.Index, :index
     # live "/edit_space/:id/edit", SpaceEditLive.Index, :edit
+
+    get "/objects", ObjectController, :index
 
     # live "/spaces/:id/show/edit", SpaceLive.Show, :edit
   end

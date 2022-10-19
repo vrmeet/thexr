@@ -52,7 +52,16 @@ defmodule Thexr.SpacesTest do
       assert Repo.aggregate(from(m in "serialized_meshes"), :count, :id) == 0
     end
 
-    test "delete an entity with a mesh" do
+    test "deleting a space will remove its state entities and serialized meshes" do
+      {:ok, space} = Spaces.create_space(%{id: "abc", name: "abc", state_id: @state_id})
+      Spaces.save_serialized_mesh(@state_id, @mesh_id, %{})
+
+      Spaces.upsert_entity(@state_id, @entity_id, %{"serialized_mesh" => %{"mesh_id" => @mesh_id}})
+
+      Spaces.delete_space(space)
+      assert Repo.aggregate(from(e in "entities"), :count, :id) == 0
+      assert Repo.aggregate(from(e in "entity_meshes"), :count, :mesh_id) == 0
+      assert Repo.aggregate(from(m in "serialized_meshes"), :count, :id) == 0
     end
 
     # test "persists space state" do

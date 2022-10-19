@@ -1,5 +1,17 @@
 
 ability to export a mesh to asset store
+  - create table
+  - map button to serializer ability
+
+create a page to view the exports
+
+get serialized mesh - change to load from URL
+  create endpoint to serve up json data
+
+- bonus, create VR keyboard on a plane that appears when you focus on a GUI input
+  - plane is attached to camera and is disposed when input loses focus
+
+
 
 ability to edit a mesh and add components such as grabble or floor or lift (start with api?)
 

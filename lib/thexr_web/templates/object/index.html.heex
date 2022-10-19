@@ -1,0 +1,17 @@
+<h1>Objects</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>id</th>
+     
+    </tr>
+  </thead>
+  <tbody>
+<%= for object <- @objects do %>
+    <tr>
+      <td><%= object.id %></td>
+    </tr>
+<% end %>
+  </tbody>
+</table>

@@ -28,15 +28,24 @@ defmodule ThexrWeb.SpaceChannel do
         socket
       ) do
     Thexr.Spaces.save_serialized_mesh(socket.assigns.state_id, mesh_id, data)
-    {:noreply, socket}
+    {:reply, {:ok, mesh_id}, socket}
   end
 
-  def handle_in("get_serialized_mesh", %{"mesh_id" => mesh_id}, socket) do
-    IO.inspect("getting serialized mesh")
-    serialized_mesh = Thexr.Spaces.get_serialized_mesh(socket.assigns.state_id, mesh_id)
-    # {:noreply, socket}
-    {:reply, {:ok, serialized_mesh.data}, socket}
+  def handle_in(
+        "save_asset_mesh",
+        %{"mesh_id" => mesh_id, "data" => data},
+        socket
+      ) do
+    Thexr.Spaces.save_asset_mesh(mesh_id, data)
+    {:reply, {:ok, mesh_id}, socket}
   end
+
+  # def handle_in("get_serialized_mesh", %{"mesh_id" => mesh_id}, socket) do
+  #   IO.inspect("getting serialized mesh")
+  #   serialized_mesh = Thexr.Spaces.get_serialized_mesh(socket.assigns.state_id, mesh_id)
+  #   # {:noreply, socket}
+  #   {:reply, {:ok, serialized_mesh.data}, socket}
+  # end
 
   def handle_in(event, message, socket) do
     SpaceServer.process_event(socket.assigns.server, event, message, self())

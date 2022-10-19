@@ -7,7 +7,7 @@ defmodule Thexr.Spaces do
 
   alias Thexr.Repo
 
-  alias Thexr.Spaces.{Space, Entity, SerializedMesh}
+  alias Thexr.Spaces.{Space, Entity, SerializedMesh, AssetMesh}
 
   # the genserver
 
@@ -76,6 +76,10 @@ defmodule Thexr.Spaces do
 
   def delete_space(%Space{} = space) do
     Repo.delete(space)
+    query = from(e in Entity, where: e.state_id == ^space.state_id)
+    Repo.delete_all(query)
+    query = from(s in SerializedMesh, where: s.state_id == ^space.state_id)
+    Repo.delete_all(query)
   end
 
   def change_space(%Space{} = space, attrs \\ %{}) do
@@ -219,6 +223,29 @@ defmodule Thexr.Spaces do
     query =
       from s in SerializedMesh,
         where: s.state_id == ^state_id and s.id == ^mesh_id
+
+    Repo.delete_all(query)
+  end
+
+  ### asset meshes
+
+  def list_asset_meshes() do
+    # query = from s in AssetMesh
+    Repo.all(AssetMesh)
+  end
+
+  def get_asset_mesh(mesh_id) do
+    Repo.get_by(AssetMesh, id: mesh_id)
+  end
+
+  def save_asset_mesh(mesh_id, data) do
+    Repo.insert(%AssetMesh{id: mesh_id, data: data})
+  end
+
+  def delete_asset_mesh(mesh_id) do
+    query =
+      from s in AssetMesh,
+        where: s.id == ^mesh_id
 
     Repo.delete_all(query)
   end

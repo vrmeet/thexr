@@ -85,6 +85,18 @@ export class SystemSerializedMesh implements ISystem {
     return newMesh;
   }
 
+  exportMesh(name: string, mesh: BABYLON.AbstractMesh) {
+    const serializedMesh = BABYLON.SceneSerializer.SerializeMesh(mesh);
+    this.context.channel
+      .push("save_asset_mesh", {
+        mesh_id: name,
+        data: serializedMesh,
+      })
+      .receive("ok", () => {
+        console.log("mesh exported");
+      });
+  }
+
   emitReplacementEvents(
     newEntityId: string,
     newMesh: BABYLON.AbstractMesh,
