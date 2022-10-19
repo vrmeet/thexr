@@ -1,38 +1,17 @@
-need to save space as object into front end
+provide a way to load an asset mesh into a space, or use it as a head or hands for self
+  wearable component?  
 
-get serialized mesh - change to load from URL
-  create endpoint to serve up json data
+ability to edit a mesh and add components such as grabble or floor or lift (start with api?)
 
 - bonus, create VR keyboard on a plane that appears when you focus on a GUI input
   - plane is attached to camera and is disposed when input loses focus
 
-
-
-ability to edit a mesh and add components such as grabble or floor or lift (start with api?)
-
-
-serialized mesh loading happens in parallel
-and doesn't take advatange of previsouly loaded mesh
-
-use fetch use-catch so that we can use browser caching (maybe)
-
-deleting space, leaves orphaned entities and serialized Mesh, and probably entity meshes
-
 some boolean operations don't take
-
-work on shift click or grip click to multi-select.
-
-need ability to save models created in the space
-  select
-  group, merge, subtract, intersect
-  export
-  
 
 menu can be smarter and do a partial render of components that change
 
 if player permanently disconnects
 what happens to objects they grabbed?
-
 
 work on text input so we can inspect entities
 and edit their components, special components to support 
