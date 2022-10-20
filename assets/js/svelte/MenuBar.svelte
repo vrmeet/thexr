@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { setContext } from "svelte";
+  import { setContext, onDestroy } from "svelte";
   import { afterUpdate } from "svelte";
+  import type { Subscription } from "rxjs";
   import MenuHome from "./MenuHome.svelte";
   import type { Context } from "../context";
   import {
@@ -20,6 +21,23 @@
   $: micLabel = muted ? "Muted" : "Unmuted";
   $: menuLabel = menu_opened ? "Close Menu Ξ" : "Open Menu Ξ";
   $: logsLabel = logs_opened ? "Hide Logs" : "Show Logs";
+
+  const subscriptions: Subscription[] = [];
+  let inXR = false;
+  const sub1 = context.signalHub.local
+    .on("xr_state_changed")
+    .subscribe((value) => {
+      if (
+        value === BABYLON.WebXRState.ENTERING_XR ||
+        value === BABYLON.WebXRState.IN_XR
+      ) {
+        inXR = true;
+      } else {
+        inXR = false;
+      }
+    });
+
+  subscriptions.push(sub1);
 
   const toggleMic = () => {
     context.my_mic_muted = !context.my_mic_muted;
@@ -47,12 +65,18 @@
   afterUpdate(() => {
     systemMenu.renderMenuToTexture();
   });
+
+  onDestroy(() => {
+    subscriptions.forEach((sub) => sub.unsubscribe());
+  });
 </script>
 
 <div id="menu_bar" style="width: {BAR_WIDTH}px; height: {BAR_HEIGHT}px;">
   <button id="toggle_mute" on:click={toggleMic}>{micLabel}</button>
   <button id="toggle_menu_home" on:click={toggleMenu}>{menuLabel}</button>
-  <button id="toggle_logs" on:click={toggleLogs}>{logsLabel}</button>
+  {#if inXR === true}
+    <button id="toggle_logs" on:click={toggleLogs}>{logsLabel}</button>
+  {/if}
   <button
     id="exit_btn"
     on:click={() => {
@@ -68,7 +92,7 @@
   #menu_bar {
     /* display: none; */
     position: absolute;
-    border: 1px solid red;
+    /* border: 1px solid red; */
     /* right: -500px; flash of content, off screen */
   }
   #menu_bar button {

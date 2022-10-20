@@ -69,11 +69,11 @@
     top: 0;
   }
   #menu_home {
-    border: 1px solid blue;
+    /* border: 1px solid white; */
     position: absolute;
     top: 100px;
     left: 700px;
-    z-index: 22;
+    /* z-index: 22; */
     right: -500px;
     /* flash of content, off screen */
   }

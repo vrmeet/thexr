@@ -29,6 +29,7 @@ export class SystemMenu implements ISystem {
   public signalHub: SignalHub;
   public mode: "vr" | "fs";
   public scene: BABYLON.Scene;
+  public inputs: Record<string, GUI.InputText> = {};
 
   init(context: Context) {
     this.context = context;
@@ -151,7 +152,7 @@ export class SystemMenu implements ISystem {
   }
 
   inputFromEl(el: HTMLInputElement, style: CSSStyleDeclaration) {
-    const input = new GUI.InputText();
+    const input = new GUI.InputText(el.id);
     // input.width = 0.2;
     // input.maxWidth = 0.2;
     // input.height = "40px";
@@ -163,6 +164,7 @@ export class SystemMenu implements ISystem {
     input.onFocusObservable.add(() => {
       el.focus();
     });
+    this.inputs[el.id] = input;
     // input.background = "green";
     return input;
   }
@@ -230,10 +232,11 @@ export class SystemMenu implements ISystem {
     menuBarCtrl.scaleX = 0.5;
     menuBarCtrl.scaleY = 0.5;
     menuBarCtrl.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-    menuBarCtrl.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+    menuBarCtrl.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+    menuBarCtrl.topInPixels = 0;
     menuBarCtrl.leftInPixels = 0;
     menuBarCtrl.transformCenterX = 0;
-    menuBarCtrl.transformCenterY = 1;
+    menuBarCtrl.transformCenterY = 0;
 
     // menuBarCtrl.widthInPixels = Math.floor(menuBarCtrl.widthInPixels / 2);
     // menuBarCtrl.heightInPixels = Math.floor(menuBarCtrl.heightInPixels / 2);
@@ -246,7 +249,7 @@ export class SystemMenu implements ISystem {
       const menuHome = this.htmlToGui(document.getElementById("menu_home"));
       menuHome.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
       menuHome.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
-      menuHome.topInPixels = 10;
+      menuHome.topInPixels = Math.ceil(BAR_HEIGHT / 2);
       menuHome.leftInPixels = 0;
 
       this.fsGui.addControl(menuHome);
@@ -274,9 +277,20 @@ export class SystemMenu implements ISystem {
       const menuHome = this.htmlToGui(document.getElementById("menu_home"));
       menuHome.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
       menuHome.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
-      menuHome.topInPixels = 10;
+      menuHome.topInPixels = 0;
       menuHome.leftInPixels = 0;
       this.browseGui.addControl(menuHome);
+      // add a keyboard if there are any inputs
+      if (Object.keys(this.inputs).length > 0) {
+        const keyboard = GUI.VirtualKeyboard.CreateDefaultLayout("keyboard");
+        keyboard.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        keyboard.zIndex = 100;
+        Object.values(this.inputs).forEach((i) => {
+          keyboard.connect(i);
+        });
+        this.browseGui.addControl(keyboard);
+      }
+
       // this.bigPlane.setEnabled(true);
     } else {
       this.bigPlane?.setEnabled(false);
@@ -370,14 +384,20 @@ export class SystemMenu implements ISystem {
       HOME_WIDTH,
       HOME_HEIGHT
     );
+    this.inputs = {};
   }
 
   prepVRScreenMenuExperience() {
     // the utilitiy layer doesn't draw the laser point on it
     // const utilLayer = BABYLON.UtilityLayerRenderer.DefaultUtilityLayer
     if (this.wristGui) {
-      this.wristGui.rootContainer.dispose();
-      this.browseGui?.rootContainer?.dispose();
+      // this.wristGui.rootContainer.dispose();
+      // this.browseGui?.rootContainer?.dispose();
+      // if (this.keyboard && this.browseGui) {
+      //   this.browseGui?.addControl(this.keyboard);
+      // } else {
+      //   console.log("no keyboard and no brow to attac")
+      // }
       // also try reparenting if controller had blipped away for a moment
       this.smallPlane.setEnabled(true);
       this.smallPlane.parent = this.grip;

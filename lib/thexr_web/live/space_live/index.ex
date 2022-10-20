@@ -2,7 +2,6 @@ defmodule ThexrWeb.SpaceLive.Index do
   use ThexrWeb, :live_view
 
   alias Thexr.Spaces
-  alias Thexr.Spaces.Space
 
   @impl true
   def mount(_params, _session, socket) do
