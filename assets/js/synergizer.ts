@@ -24,6 +24,8 @@ import { SystemLogger } from "./ecs/builtin_systems/system-logger";
 import { SystemXRFlight } from "./ecs/builtin_systems/system-xr-flight";
 import { SystemShootable } from "./ecs/builtin_systems/system-shootable";
 import { SystemSerializedMesh } from "./ecs/builtin_systems/system-serialized-mesh";
+import { SystemHUD } from "./ecs/builtin_systems/system-hud";
+import { Observable, filter, race, take } from "rxjs";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -106,6 +108,8 @@ export class Synergize {
     this.addSystem(new SystemSerializedMesh());
     // shootable
     this.addSystem(new SystemShootable());
+    // heads up display message
+    this.addSystem(new SystemHUD());
   }
 
   addSystem(system: ISystem) {
@@ -252,8 +256,59 @@ export class Synergize {
     //     // TODO
     //   });
 
+    const meshPickObservable$ = new Observable<BABYLON.PointerInfo>(
+      (subscriber) => {
+        // wrap the babylonjs observable
+        const babylonObserver = this.scene.onPointerObservable.add(
+          (pointerInfo) => {
+            subscriber.next(pointerInfo);
+          }
+        );
+        return () => {
+          this.scene.onPointerObservable.remove(babylonObserver);
+        };
+      }
+    );
+    // meshPickObservable$.subscribe((d) => console.log(d.type));
+
+    const pointerDown$ = meshPickObservable$.pipe(
+      filter((pi) => pi.type === BABYLON.PointerEventTypes.POINTERDOWN)
+    );
+    const pointerUp$ = meshPickObservable$.pipe(
+      filter((pi) => pi.type === BABYLON.PointerEventTypes.POINTERUP)
+    );
+    const pointerMove$ = meshPickObservable$.pipe(
+      filter((pi) => pi.type === BABYLON.PointerEventTypes.POINTERMOVE)
+    );
+
+    // pointerDown$.subscribe((info) => {
+    //   console.log("pointer down");
+    //   race(pointerMove$, pointerUp$)
+    //     .pipe(take(1))
+    //     .subscribe((pointerInfo) => {
+    //       console.log(pointerInfo.type);
+    //       if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERUP) {
+    //         if (
+    //           pointerInfo.type === BABYLON.PointerEventTypes.POINTERUP &&
+    //           pointerInfo.pickInfo.hit &&
+    //           pointerInfo.pickInfo.pickedMesh
+    //         ) {
+    //           this.context.signalHub.local.emit(
+    //             "mesh_picked",
+    //             pointerInfo.pickInfo.pickedMesh
+    //           );
+    //         }
+    //       }
+    //     });
+    // });
+
     // route clicks to mesh picked event
     this.scene.onPointerObservable.add((pointerInfo) => {
+      console.log(
+        "pointerInfo.type",
+        pointerInfo.type,
+        pointerInfo.pickInfo.hit
+      );
       this.context.signalHub.local.emit("pointer_info", pointerInfo);
       if (
         pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK &&

@@ -29,7 +29,9 @@ export class SystemMenu implements ISystem {
   public signalHub: SignalHub;
   public mode: "vr" | "fs";
   public scene: BABYLON.Scene;
+  // used to determine when to attach keyboard
   public inputs: Record<string, GUI.InputText> = {};
+  public guiControls: Record<string, GUI.Control> = {};
 
   init(context: Context) {
     this.context = context;
@@ -94,7 +96,6 @@ export class SystemMenu implements ISystem {
 
   buttonFromEl(el: HTMLButtonElement, style: CSSStyleDeclaration) {
     const gui = new GUI.Button(el.id);
-
     gui.thickness = 0;
     gui.onPointerUpObservable.add(() => {
       el.click();
@@ -114,6 +115,17 @@ export class SystemMenu implements ISystem {
       gui.isEnabled = false;
       rect.background = "#888888";
     }
+    // setInterval(() => {
+    //   console.log("inter val for ", el.id);
+    //   document.getElementById(el.id);
+    //   if (el.disabled) {
+    //     gui.isEnabled = false;
+    //     rect.background = "#888888";
+    //   } else {
+    //     gui.isEnabled = true;
+    //     rect.background = "#FF00FF";
+    //   }
+    // }, 1000);
 
     rect.addControl(label);
     gui.addControl(rect);
@@ -156,14 +168,13 @@ export class SystemMenu implements ISystem {
     // input.width = 0.2;
     // input.maxWidth = 0.2;
     // input.height = "40px";
-    input.text = "";
+    input.text = el.value;
     input.color = "white";
     input.onTextChangedObservable.add((data, state) => {
       el.value = data.text;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
     });
-    input.onFocusObservable.add(() => {
-      el.focus();
-    });
+
     this.inputs[el.id] = input;
     // input.background = "green";
     return input;
@@ -189,6 +200,9 @@ export class SystemMenu implements ISystem {
         break;
       default:
         gui = new GUI.Container(el.id);
+    }
+    if (el.id) {
+      this.guiControls[el.id] = gui;
     }
 
     Object.keys(el.dataset).forEach((key) => {
@@ -251,7 +265,6 @@ export class SystemMenu implements ISystem {
       menuHome.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
       menuHome.topInPixels = Math.ceil(BAR_HEIGHT / 2);
       menuHome.leftInPixels = 0;
-
       this.fsGui.addControl(menuHome);
     }
   }
@@ -297,7 +310,20 @@ export class SystemMenu implements ISystem {
     }
   }
 
+  refresh(el: HTMLElement) {
+    if (el && this.guiControls[el.id]) {
+      const ctrl = this.guiControls[el.id];
+
+      const parent = ctrl.parent;
+      parent.removeControl(ctrl);
+      const refreshedGui = this.htmlToGui(el);
+      this.guiControls[el.id] = refreshedGui;
+      parent.addControl(refreshedGui);
+    }
+  }
+
   renderMenuToTexture() {
+    this.guiControls = {};
     if (this.mode === "fs") {
       this.renderMenuToFullScreen();
     } else {

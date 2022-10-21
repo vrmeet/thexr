@@ -246,7 +246,9 @@
     };
 
     afterUpdate(() => {
-        systemMenu.renderMenuToTexture();
+        systemMenu.refresh(document.getElementById("menu_right"));
+
+        // systemMenu.renderMenuToTexture();
     });
 
     onDestroy(() => {

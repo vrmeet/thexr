@@ -3,14 +3,14 @@
 <table>
   <thead>
     <tr>
-      <th>id</th>
-     
+      <th>ID</th>
+      <th>Name</th>
     </tr>
   </thead>
   <tbody>
 <%= for object <- @objects do %>
     <tr>
-      <td><%= object.id %></td>
+      <td><%= object.id %></td><td><%= object.name %></td>
     </tr>
 <% end %>
   </tbody>

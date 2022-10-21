@@ -24,16 +24,30 @@
     let setSelected: (component: any, data?: {}) => () => void =
         getContext("setSelected");
 
-    const exportMesh = () => {
-        systemSerializedMesh.exportMesh(
-            `${random_id(5)}`,
-            systemTransform.lastPickedMesh
-        );
+    const exportMesh = async () => {
+        const mesh_name = (
+            document.getElementById("mesh_name") as HTMLInputElement
+        ).value;
+        let result;
+        try {
+            result = await systemSerializedMesh.exportMesh(
+                mesh_name,
+                systemTransform.lastPickedMesh
+            );
+        } catch (e) {
+            console.log(e);
+            result = e;
+        }
+        context.signalHub.incoming.emit("msg", {
+            system: "hud",
+            data: { msg: result },
+        });
+        setSelected(Select)();
     };
 </script>
 
 <button id="back" on:click={setSelected(Select)}>‹ Back</button>
-<div>Name your export</div>
+<div>Name/Describe Your Export</div>
 <input id="mesh_name" />
 <button on:click={exportMesh} id="export">Export</button>
 

@@ -60,7 +60,6 @@ export type IncomingEvents = {
   components_upserted: { id: string; components: ComponentObj };
   components_removed: { id: string; names: string[] };
   msg: { system: string; data: any };
-  hud_broadcast: { message: string };
   presence_diff: types.PresenceDiff;
   presence_state: types.PresenceState;
   space_settings_changed: types.scene_settings;
@@ -84,7 +83,6 @@ export type IncomingEvents = {
     agents: { [name: string]: { position: number[]; next_position: number[] } };
     entities: { [entity_id: string]: types.event };
   };
-  hud_msg: { msg: string } | string;
 };
 
 export type OutgoingEvents = {
@@ -94,7 +92,6 @@ export type OutgoingEvents = {
   components_upserted: { id: string; components: ComponentObj };
   components_removed: { id: string; names: string[] };
   msg: { system: string; data: any };
-  hud_broadcast: { msg: string };
 };
 
 export type MenuEvents = {

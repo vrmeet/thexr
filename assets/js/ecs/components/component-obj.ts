@@ -49,7 +49,7 @@ export interface ComponentObj {
     grabbed_by?: string;
     throwable?: boolean;
   };
-  serialized_mesh?: { mesh_id: string };
+  serialized_mesh?: { mesh_id: string; path: string };
 
   [anykey: string]: any;
 }

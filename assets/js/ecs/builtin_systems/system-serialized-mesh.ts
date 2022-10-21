@@ -30,10 +30,15 @@ export class SystemSerializedMesh implements ISystem {
           }
         }
         // else, we are another client, so load the serialization
-        this.entityMeshes[entity_id] = await this.createMesh(
-          entity_id,
-          mesh_id
-        );
+        try {
+          this.entityMeshes[entity_id] = await this.loadMesh(
+            entity_id,
+            mesh_id,
+            components.serialized_mesh.path
+          );
+        } catch (e) {
+          console.error("caught", e);
+        }
       }
     }
   }
@@ -45,9 +50,10 @@ export class SystemSerializedMesh implements ISystem {
     ) {
       // recreate the mesh
       this.entityMeshes[entity_id].dispose();
-      this.entityMeshes[entity_id] = await this.createMesh(
+      this.entityMeshes[entity_id] = await this.loadMesh(
         entity_id,
-        components.serialized_mesh.mesh_id
+        components.serialized_mesh.mesh_id,
+        components.serialized_mesh.path
       );
     }
   }
@@ -87,16 +93,23 @@ export class SystemSerializedMesh implements ISystem {
     return newMesh;
   }
 
-  exportMesh(name: string, mesh: BABYLON.AbstractMesh) {
-    const serializedMesh = BABYLON.SceneSerializer.SerializeMesh(mesh);
-    this.context.channel
-      .push("save_asset_mesh", {
-        mesh_id: name,
-        data: serializedMesh,
-      })
-      .receive("ok", () => {
-        console.log("mesh exported");
-      });
+  exportMesh(name: string, mesh: BABYLON.AbstractMesh): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const serializedMesh = BABYLON.SceneSerializer.SerializeMesh(mesh);
+      this.context.channel
+        .push("save_asset_mesh", {
+          mesh_id: mesh.name,
+          name: name,
+          data: serializedMesh,
+        })
+        .receive("ok", () => {
+          console.log("mesh exported");
+          resolve("Mesh Exported " + mesh.name);
+        })
+        .receive("error", (reason) => {
+          reject("Error: " + JSON.stringify(reason));
+        });
+    });
   }
 
   emitReplacementEvents(
@@ -109,10 +122,14 @@ export class SystemSerializedMesh implements ISystem {
       mesh_id: newMesh.name,
       data: serializedMesh,
     });
+
     this.context.signalHub.outgoing.emit("entity_created", {
       id: newEntityId,
       components: {
-        serialized_mesh: { mesh_id: newMesh.name },
+        serialized_mesh: {
+          mesh_id: newMesh.name,
+          path: `/state_meshes/${this.context.space.state_id}/${newMesh.name}`,
+        },
         transform: { position: arrayReduceSigFigs(newMesh.position.asArray()) },
       },
     });
@@ -133,35 +150,20 @@ export class SystemSerializedMesh implements ISystem {
     return newMesh;
   }
 
-  // loads json data into a new mesh into the scene
-  // asyncLoadMesh(mesh_id: string): Promise<BABYLON.AbstractMesh> {
-  //   return new Promise((resolve, _reject) => {
-  //     this.context.channel
-  //       .push("get_serialized_mesh", { mesh_id: mesh_id })
-  //       .receive("ok", (response) => {
-  //         BABYLON.SceneLoader.ImportMesh(
-  //           "",
-  //           "",
-  //           `data:${JSON.stringify(response)}`,
-  //           this.context.scene
-  //         );
-  //         const importedMesh = this.context.scene.getMeshByName(mesh_id);
-  //         resolve(importedMesh);
-  //       });
-  //   });
-  // }
-
-  async createMesh(
+  async loadMesh(
     entity_id: string,
-    mesh_id: string
+    mesh_id: string,
+    path: string
+    // state_mesh = true
   ): Promise<BABYLON.AbstractMesh> {
     console.log("in create mesh", entity_id, mesh_id);
     if (!this.importedMeshes[mesh_id]) {
       console.log("no such imported mesh", mesh_id);
-      this.importedMeshes[mesh_id] = new Promise((resolve) => {
+
+      this.importedMeshes[mesh_id] = new Promise((resolve, reject) => {
         BABYLON.SceneLoader.ImportMesh(
           [mesh_id],
-          `/state_meshes/${this.context.space.state_id}/${mesh_id}`,
+          path,
           null,
           this.context.scene,
           (success) => {
@@ -169,6 +171,10 @@ export class SystemSerializedMesh implements ISystem {
             const importedMesh = this.context.scene.getMeshByName(mesh_id);
             console.log("find imported Mesh in scene", importedMesh);
             resolve(importedMesh);
+          },
+          null,
+          (_scene, msg, exception) => {
+            reject(exception);
           }
         );
       });

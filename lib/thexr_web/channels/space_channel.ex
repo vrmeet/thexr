@@ -33,11 +33,13 @@ defmodule ThexrWeb.SpaceChannel do
 
   def handle_in(
         "save_asset_mesh",
-        %{"mesh_id" => mesh_id, "data" => data},
+        %{"mesh_id" => mesh_id, "name" => name, "data" => data},
         socket
       ) do
-    Thexr.Spaces.save_asset_mesh(mesh_id, data)
-    {:reply, {:ok, mesh_id}, socket}
+    case Thexr.Spaces.save_asset_mesh(mesh_id, name, data) do
+      {:ok, _} -> {:reply, {:ok, mesh_id}, socket}
+      {:error, changeset} -> {:reply, {:error, Thexr.Utils.errors_on(changeset)}, socket}
+    end
   end
 
   # def handle_in("get_serialized_mesh", %{"mesh_id" => mesh_id}, socket) do

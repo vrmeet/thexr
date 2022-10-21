@@ -3,6 +3,7 @@
   import type { Context } from "../context";
   import { cameraFrontPosition, random_id } from "../utils/misc";
   import Select from "./Select.svelte";
+  import Import from "./Import.svelte";
 
   let context: Context = getContext("context");
   let setSelected: (any) => () => void = getContext("setSelected");
@@ -46,7 +47,7 @@
 </script>
 
 <button id="back" on:click={setSelected(Select)}>‹ Back</button>
-<div id="choices">
+<div id="primitive_choices">
   <button id="box" on:click={createPrim("box")}>Box</button>
   <button id="sphere" on:click={createPrim("sphere")}>Sphere</button>
   <button id="cone" on:click={createCone}>Cone</button>
@@ -54,14 +55,24 @@
   <button id="plane" on:click={createPrim("plane")}>Plane</button>
   <button id="capsule" on:click={createPrim("capsule")}>Capsule</button>
 </div>
+<div id="construct_choices">
+  <button id="goto_import_mesh" on:click={setSelected(Import)}
+    >Import Mesh</button
+  >
+</div>
 
 <style>
   #back {
     background-color: transparent;
     padding: 0;
   }
-  #choices {
-    border: 1px solid red;
+  #primitive_choices {
+    border: 1px solid white;
+    width: 100%;
+    position: relative;
+  }
+  #construct_choices {
+    border: 1px solid white;
     width: 100%;
     position: relative;
   }

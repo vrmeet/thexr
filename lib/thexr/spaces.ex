@@ -242,8 +242,8 @@ defmodule Thexr.Spaces do
     Repo.get_by(AssetMesh, id: mesh_id)
   end
 
-  def save_asset_mesh(mesh_id, data) do
-    Repo.insert(%AssetMesh{id: mesh_id, data: data})
+  def save_asset_mesh(mesh_id, name, data) do
+    Repo.insert(AssetMesh.changeset(%AssetMesh{}, %{id: mesh_id, name: name, data: data}))
   end
 
   def delete_asset_mesh(mesh_id) do
