@@ -147,14 +147,20 @@ defmodule Thexr.Spaces do
     # if this entity has a pointer to mesh id, add an entry to the join
     # table so we can keep track of serialized mesh usage
     case new_components do
-      %{"serialized_mesh" => %{"mesh_id" => mesh_id}} ->
-        Repo.insert_all(
-          "entity_meshes",
-          [
-            [state_id: state_id, entity_id: entity_id, mesh_id: mesh_id]
-          ],
-          on_conflict: :nothing
-        )
+      %{"serialized_mesh" => %{"mesh_id" => mesh_id, "path" => path}} ->
+        case path do
+          "/objects/" <> _ ->
+            :noop
+
+          "/state_meshes/" <> _ ->
+            Repo.insert_all(
+              "entity_meshes",
+              [
+                [state_id: state_id, entity_id: entity_id, mesh_id: mesh_id]
+              ],
+              on_conflict: :nothing
+            )
+        end
 
       _ ->
         :noop

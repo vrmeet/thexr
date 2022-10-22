@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { getContext } from "svelte";
     import type { Context } from "../context";
-    import { afterUpdate, onDestroy } from "svelte";
+    import { afterUpdate, onDestroy, getContext } from "svelte";
     import * as BABYLON from "babylonjs";
     import type { SystemSerializedMesh } from "../ecs/builtin_systems/system-serialized-mesh";
     import type { SystemMenu } from "../ecs/builtin_systems/system-menu";
     import Primitives from "./Primitives.svelte";
+    import Inspect from "./Inspect.svelte";
     import {
         arrayReduceSigFigs,
         cameraFrontPosition,
@@ -21,7 +21,6 @@
     const keyCodeForShift = 16;
     let data = {
         selectedMeshes: [],
-        componentsList: [],
         selectedMesh: null,
         prevSelectedMesh: null,
         shiftDown: false,
@@ -60,31 +59,9 @@
 
     const clearData = () => {
         data.selectedMeshes.length = 0;
-        data.componentsList.length = 0;
         data.selectedMesh = null;
         data.prevSelectedMesh = null;
     };
-
-    const sub2 = context.signalHub.incoming
-        .on("components_upserted")
-        .pipe(filter((evt) => evt.id === data.selectedMesh?.name))
-        .subscribe(() => {
-            const components = context.state[data.selectedMesh?.name];
-            if (components) {
-                data.componentsList = Object.entries(components).map(
-                    ([compName, compValue]) => {
-                        return {
-                            name: compName,
-                            value: JSON.stringify(compValue),
-                        };
-                    }
-                );
-            } else {
-                data.componentsList.length = 0;
-            }
-        });
-
-    subscriptions.push(sub2);
 
     const refreshData = () => {
         hl.removeAllMeshes();
@@ -116,17 +93,6 @@
             systemTransform.gizmoManagerAttachMesh(data.selectedMeshes[0]);
         } else {
             systemTransform.gizmoManagerAttachMesh(null);
-        }
-
-        const components = context.state[data.selectedMesh?.name];
-        if (components) {
-            data.componentsList = Object.entries(components).map(
-                ([compName, compValue]) => {
-                    return { name: compName, value: JSON.stringify(compValue) };
-                }
-            );
-        } else {
-            data.componentsList.length = 0;
         }
     };
 
@@ -276,6 +242,13 @@
 >
 
 <button
+    disabled={data.selectedMeshes.length !== 1 ||
+        !context.state[data.selectedMesh.name]}
+    id="goto_inspect"
+    on:click={setSelected(Inspect)}>Inspect</button
+>
+
+<button
     disabled={data.selectedMeshes.length !== 1}
     id="goto_export"
     on:click={setSelected(Export)}>Export</button
@@ -305,11 +278,6 @@
 {/if}
 {#if data.selectedMeshes.length === 1}
     <div>Name: {data.selectedMeshes[0].name}</div>
-
-    {#each data.componentsList as comp}
-        <div>{comp.name}</div>
-        <div>{comp.value}</div>
-    {/each}
 {/if}
 
 <style>

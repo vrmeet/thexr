@@ -133,8 +133,9 @@ export class SystemMenu implements ISystem {
   }
 
   rectFromEl(el: HTMLDivElement, style: CSSStyleDeclaration) {
+    let gui;
     if (el.id === "colorpicker") {
-      const gui = new GUI.ColorPicker();
+      gui = new GUI.ColorPicker();
       gui.value = BABYLON.Color3.FromHexString(el.dataset.meshcolor);
 
       // gui.height = "150px";
@@ -146,8 +147,11 @@ export class SystemMenu implements ISystem {
       });
       return gui;
     }
-
-    const gui = new GUI.Rectangle(el.id);
+    if (style.overflow === "scroll") {
+      gui = new GUI.ScrollViewer(el.id);
+    } else {
+      gui = new GUI.Rectangle(el.id);
+    }
     gui.thickness = Number(style.borderWidth.replace("px", ""));
 
     gui.color = style.borderColor;
@@ -155,8 +159,9 @@ export class SystemMenu implements ISystem {
     if (el.children.length === 0 && el.innerText.length > 0) {
       const label = new GUI.TextBlock(`${el.id}_inner_txt`);
       label.text = el.innerText;
-      label.fontSize = 12;
+      label.fontSize = 14;
       label.color = style.color;
+      label.paddingLeft = style.paddingLeft;
       label.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
       gui.addControl(label);
     }

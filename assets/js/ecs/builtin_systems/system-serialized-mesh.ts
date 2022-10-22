@@ -169,6 +169,7 @@ export class SystemSerializedMesh implements ISystem {
           (success) => {
             console.log("what is success", success[0].name);
             const importedMesh = this.context.scene.getMeshByName(mesh_id);
+            importedMesh.name = entity_id;
             console.log("find imported Mesh in scene", importedMesh);
             resolve(importedMesh);
           },

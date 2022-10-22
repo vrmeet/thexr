@@ -1,3 +1,5 @@
+ability to edit a mesh and add components such as grabble or floor or lift (start with api?)
+
 after exporting a mesh,
 should give some visual feed back, flash message
 and redirect to select page
@@ -18,7 +20,6 @@ import an image from the internet onto a plane and place it into the scene
 provide a way to load an asset mesh into a space, or use it as a head or hands for self
   wearable component?  
 
-ability to edit a mesh and add components such as grabble or floor or lift (start with api?)
 
 - bonus, create VR keyboard on a plane that appears when you focus on a GUI input
   - plane is attached to camera and is disposed when input loses focus
