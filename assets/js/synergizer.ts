@@ -256,30 +256,30 @@ export class Synergize {
     //     // TODO
     //   });
 
-    const meshPickObservable$ = new Observable<BABYLON.PointerInfo>(
-      (subscriber) => {
-        // wrap the babylonjs observable
-        const babylonObserver = this.scene.onPointerObservable.add(
-          (pointerInfo) => {
-            subscriber.next(pointerInfo);
-          }
-        );
-        return () => {
-          this.scene.onPointerObservable.remove(babylonObserver);
-        };
-      }
-    );
+    // const meshPickObservable$ = new Observable<BABYLON.PointerInfo>(
+    //   (subscriber) => {
+    //     // wrap the babylonjs observable
+    //     const babylonObserver = this.scene.onPointerObservable.add(
+    //       (pointerInfo) => {
+    //         subscriber.next(pointerInfo);
+    //       }
+    //     );
+    //     return () => {
+    //       this.scene.onPointerObservable.remove(babylonObserver);
+    //     };
+    //   }
+    // );
     // meshPickObservable$.subscribe((d) => console.log(d.type));
 
-    const pointerDown$ = meshPickObservable$.pipe(
-      filter((pi) => pi.type === BABYLON.PointerEventTypes.POINTERDOWN)
-    );
-    const pointerUp$ = meshPickObservable$.pipe(
-      filter((pi) => pi.type === BABYLON.PointerEventTypes.POINTERUP)
-    );
-    const pointerMove$ = meshPickObservable$.pipe(
-      filter((pi) => pi.type === BABYLON.PointerEventTypes.POINTERMOVE)
-    );
+    // const pointerDown$ = meshPickObservable$.pipe(
+    //   filter((pi) => pi.type === BABYLON.PointerEventTypes.POINTERDOWN)
+    // );
+    // const pointerUp$ = meshPickObservable$.pipe(
+    //   filter((pi) => pi.type === BABYLON.PointerEventTypes.POINTERUP)
+    // );
+    // const pointerMove$ = meshPickObservable$.pipe(
+    //   filter((pi) => pi.type === BABYLON.PointerEventTypes.POINTERMOVE)
+    // );
 
     // pointerDown$.subscribe((info) => {
     //   console.log("pointer down");
@@ -304,11 +304,6 @@ export class Synergize {
 
     // route clicks to mesh picked event
     this.scene.onPointerObservable.add((pointerInfo) => {
-      console.log(
-        "pointerInfo.type",
-        pointerInfo.type,
-        pointerInfo.pickInfo.hit
-      );
       this.context.signalHub.local.emit("pointer_info", pointerInfo);
       if (
         pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK &&

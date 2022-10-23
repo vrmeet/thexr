@@ -31,7 +31,7 @@ export interface ComponentObj {
     height?: number;
     speed?: number;
   };
-  acts_like_floor?: any;
+  floor?: any;
   avatar?: {
     head: PosRot;
     left?: PosRot | null;

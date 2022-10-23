@@ -1,4 +1,14 @@
-ability to edit a mesh and add components such as grabble or floor or lift (start with api?)
+ability to edit existing components in VR menu
+
+after edit component, should reflect new component in UI
+
+move select and ability to multi-select into something that can be shared across menus
+  so that when menu is locked, can color several items
+
+can also move last selected mesh into context for easier access ?  has more to do with editing 
+then transform, so can move it into it's own system (or the menu system) (or a class used by menu system) and keep it there until editing menu is closed
+
+- use an exported mesh as your head
 
 after exporting a mesh,
 should give some visual feed back, flash message
