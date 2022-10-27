@@ -6,6 +6,7 @@ import * as BABYLON from "babylonjs";
 import { arrayReduceSigFigs, getPosRot } from "../../utils/misc";
 import type { AbstractMesh } from "babylonjs";
 import type { SystemXR } from "./system-xr";
+import type { SignalHub } from "../../signalHub";
 
 export class SystemGrabbable implements ISystem {
   public context: Context;
@@ -18,9 +19,11 @@ export class SystemGrabbable implements ISystem {
   public leftGrabbedObject: BABYLON.Node;
   public rightGrabbedObject: BABYLON.Node;
   public systemXR: SystemXR;
+  public signalHub: SignalHub;
 
   init(context: Context) {
     this.context = context;
+    this.signalHub = context.signalHub;
     this.systemXR = context.systems["xr"] as SystemXR;
 
     this.exitingXR$ = this.context.signalHub.local
@@ -31,6 +34,43 @@ export class SystemGrabbable implements ISystem {
 
     this.listenForGrab("left");
     this.listenForGrab("right");
+
+    this.listenForShootDuringGrab("left");
+    this.listenForShootDuringGrab("right");
+  }
+
+  listenForShootDuringGrab(hand: "left" | "right") {
+    this.signalHub.movement.on(`${hand}_grip_mesh`).subscribe((mesh) => {
+      if (this.context.state[mesh.name].grabbable.shootable === "discreet") {
+        this.signalHub.movement
+          .on(`${hand}_trigger_squeezed`)
+          .pipe(takeUntil(this.signalHub.movement.on(`${hand}_lost_mesh`)))
+          .subscribe((inputSource) => {
+            console.log(
+              "discreet gun fire",
+              hand,
+              inputSource.grip.position.asArray()
+            );
+            // this.signalHub.movement.emit("");
+          });
+      } else if (
+        this.context.state[mesh.name].grabbable.shootable === "continuous"
+      ) {
+        this.signalHub.movement
+          .on("left_trigger")
+          .pipe(takeUntil(this.signalHub.movement.on(`${hand}_lost_mesh`)))
+          .subscribe((compChange) => {
+            console.log(
+              "continous spry",
+              hand,
+              compChange.inputSource.grip.position.asArray(),
+              compChange.controllerComponent.value,
+              compChange.inputSource.pointer.forward.asArray() // direction
+            );
+            // this.signalHub.movement.emit("");
+          });
+      }
+    });
   }
 
   parentAvatarHandsToGrip() {

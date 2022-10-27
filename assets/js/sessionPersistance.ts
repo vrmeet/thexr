@@ -8,6 +8,7 @@ export function getCameraPosRot(space_id: string): {
 } {
   return getAndParseKey(SESS_KEY_CAM_POSROT + space_id);
 }
+
 export function saveCameraPosRot(
   space_id: string,
   data: { pos: number[]; rot: number[] }

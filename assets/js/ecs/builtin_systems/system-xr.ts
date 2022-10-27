@@ -207,29 +207,32 @@ export class SystemXR implements ISystem {
     componentIds.forEach((componentId) => {
       const webXRComponent =
         inputSource.motionController.getComponent(componentId);
-      this.publishChanges(inputSource.motionController, webXRComponent);
+      this.publishChanges(inputSource, webXRComponent);
     });
   }
 
   publishChanges(
-    motionController: BABYLON.WebXRAbstractMotionController,
+    inputSource: BABYLON.WebXRInputSource,
     component: BABYLON.WebXRControllerComponent
   ) {
     //wrap babylon observable in rxjs observable
-    const hand = motionController.handedness as "left" | "right";
+    const hand = inputSource.motionController.handedness as "left" | "right";
 
-    const componentButtonObservable$ = new Observable<any>((subscriber) => {
+    const componentButtonObservable$ = new Observable<{
+      inputSource: BABYLON.WebXRInputSource;
+      controllerComponent: BABYLON.WebXRControllerComponent;
+    }>((subscriber) => {
       // wrap the babylonjs observable
       const babylonObserver = component.onButtonStateChangedObservable.add(
-        (state) => {
-          const payload: xr_component = {
-            pressed: state.pressed,
-            touched: state.touched,
-            value: state.value, // x and y go from -1 to 1, but only when button pressed, not for axis changes
-            axes: state.axes,
-            id: state.id,
-          };
-          subscriber.next(payload);
+        (controllerComponent, _state) => {
+          // const payload: xr_component = {
+          //   pressed: state.pressed,
+          //   touched: state.touched,
+          //   value: state.value, // x and y go from -1 to 1, but only when button pressed, not for axis changes
+          //   axes: state.axes,
+          //   id: state.id,
+          // };
+          subscriber.next({ inputSource, controllerComponent });
         }
       );
       return () => {
@@ -273,7 +276,7 @@ export class SystemXR implements ISystem {
       .on(`${hand}_squeeze`)
       .pipe(
         takeUntil(this.exitingXR$),
-        map((val) => val.pressed),
+        map((val) => val.controllerComponent.pressed),
         distinctUntilChanged()
       )
       .subscribe((squeezed) => {
@@ -288,7 +291,7 @@ export class SystemXR implements ISystem {
       .on(`${hand}_trigger`)
       .pipe(
         takeUntil(this.exitingXR$),
-        map((val) => val.pressed),
+        map((val) => val.controllerComponent.pressed),
         distinctUntilChanged()
       )
       .subscribe((squeezed) => {
@@ -304,13 +307,22 @@ export class SystemXR implements ISystem {
       .pipe(
         takeUntil(this.exitingXR$),
         // map((val) => val.pressed),
-        distinctUntilChanged((a, b) => a.pressed === b.pressed)
+        distinctUntilChanged(
+          (a, b) =>
+            a.controllerComponent.pressed === b.controllerComponent.pressed
+        )
       )
       .subscribe((val) => {
-        if (val.pressed) {
-          this.signalHub.movement.emit(`${hand}_button_down`, val.id);
+        if (val.controllerComponent.pressed) {
+          this.signalHub.movement.emit(
+            `${hand}_button_down`,
+            val.controllerComponent.id
+          );
         } else {
-          this.signalHub.movement.emit(`${hand}_button_up`, val.id);
+          this.signalHub.movement.emit(
+            `${hand}_button_up`,
+            val.controllerComponent.id
+          );
         }
       });
   }

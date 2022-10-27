@@ -1,4 +1,5 @@
 import * as BABYLON from "babylonjs";
+import { mergeAdvanced } from "object-merge-advanced";
 import { createContext, type Context } from "./context";
 import type { ComponentObj } from "./ecs/components/component-obj";
 import type { ISystem } from "./ecs/builtin_systems/isystem";
@@ -25,7 +26,8 @@ import { SystemXRFlight } from "./ecs/builtin_systems/system-xr-flight";
 import { SystemShootable } from "./ecs/builtin_systems/system-shootable";
 import { SystemSerializedMesh } from "./ecs/builtin_systems/system-serialized-mesh";
 import { SystemHUD } from "./ecs/builtin_systems/system-hud";
-import { Observable, filter, race, take } from "rxjs";
+import { SystemHealth } from "./ecs/builtin_systems/system-health";
+import { SystemCollectable } from "./ecs/builtin_systems/system-collectable";
 /**
  * The Synergizer's job is to create the scene
  * and initialize the given systems
@@ -110,6 +112,10 @@ export class Synergize {
     this.addSystem(new SystemShootable());
     // heads up display message
     this.addSystem(new SystemHUD());
+    // health
+    this.addSystem(new SystemHealth());
+    // collectable
+    this.addSystem(new SystemCollectable());
   }
 
   addSystem(system: ISystem) {
@@ -158,6 +164,8 @@ export class Synergize {
         attendance: {
           nickname: this.context.my_nickname,
           mic_muted: this.context.my_mic_muted,
+          collectable_values: { health: 100 },
+          collectable_items: [],
         },
       },
     });
@@ -225,17 +233,21 @@ export class Synergize {
             );
           }
           // patch new values into the state
-          if (
-            this.context.state[evt.id][compName] !== undefined &&
-            typeof this.context.state[evt.id][compName] === "object"
-          ) {
-            Object.assign(
-              this.context.state[evt.id][compName],
-              evt.components[compName]
-            );
-          } else {
-            this.context.state[evt.id][compName] = evt.components[compName];
-          }
+          this.context.state[evt.id][compName] = mergeAdvanced(
+            this.context.state[evt.id][compName],
+            evt.components[compName]
+          );
+          // if (
+          //   this.context.state[evt.id][compName] !== undefined &&
+          //   typeof this.context.state[evt.id][compName] === "object"
+          // ) {
+          //   Object.assign(
+          //     this.context.state[evt.id][compName],
+          //     evt.components[compName]
+          //   );
+          // } else {
+          //   this.context.state[evt.id][compName] = evt.components[compName];
+          // }
         });
       });
 
@@ -310,6 +322,7 @@ export class Synergize {
         pointerInfo.pickInfo.hit &&
         pointerInfo.pickInfo.pickedMesh
       ) {
+        // generic message some mesh picked
         this.context.signalHub.local.emit(
           "mesh_picked",
           pointerInfo.pickInfo.pickedMesh

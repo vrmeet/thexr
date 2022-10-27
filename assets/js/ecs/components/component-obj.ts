@@ -42,14 +42,18 @@ export interface ComponentObj {
   attendance?: {
     mic_muted?: boolean;
     nickname?: string;
+    collectable_values?: Record<string, number>;
+    collectable_items?: string[];
   };
   grabbable?: {
     pickup?: "any" | "fixed";
     lever?: any;
     grabbed_by?: string;
     throwable?: boolean;
+    shootable?: "continuous" | "discreet";
   };
   serialized_mesh?: { mesh_id: string; path: string };
+  collectable?: { value?: { label: string; amount: number }; item?: string };
 
   [anykey: string]: any;
 }

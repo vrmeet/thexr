@@ -31,7 +31,7 @@ export type LocalEvents = {
   camera_ready: { pos: number[]; rot: number[] };
   controller_ready: { hand: string; grip: BABYLON.AbstractMesh };
   controller_removed: { hand: string };
-  //   xr_component_changed: types.xr_component
+  //   xr_component_changed: xrComponentChange
   xr_state_changed: BABYLON.WebXRState;
   new_log: any;
   mesh_built: { name: string }; // required for transform system to reprocess when mesh is ready
@@ -106,21 +106,26 @@ export type MenuEvents = {
 //     hand: string, pos: number[], rot: number[]
 // }
 
+export type xrComponentChange = {
+  inputSource: BABYLON.WebXRInputSource;
+  controllerComponent: BABYLON.WebXRControllerComponent;
+};
+
 export type MovementEvents = {
   // continuous values
   camera_moved: types.PosRot;
   left_hand_moved: types.PosRotWithVelocities;
-  left_trigger: types.xr_component;
-  left_squeeze: types.xr_component;
-  left_button: types.xr_component;
-  left_thumbstick: types.xr_component;
-  left_touchpad: types.xr_component;
+  left_trigger: xrComponentChange;
+  left_squeeze: xrComponentChange;
+  left_button: xrComponentChange;
+  left_thumbstick: xrComponentChange;
+  left_touchpad: xrComponentChange;
   right_hand_moved: types.PosRotWithVelocities;
-  right_trigger: types.xr_component;
-  right_squeeze: types.xr_component;
-  right_button: types.xr_component;
-  right_thumbstick: types.xr_component;
-  right_touchpad: types.xr_component;
+  right_trigger: xrComponentChange;
+  right_squeeze: xrComponentChange;
+  right_button: xrComponentChange;
+  right_thumbstick: xrComponentChange;
+  right_touchpad: xrComponentChange;
   left_axes: { x: number; y: number };
   right_axes: { x: number; y: number };
 

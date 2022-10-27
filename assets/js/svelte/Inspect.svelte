@@ -17,7 +17,7 @@
 
     const mesh = systemTransform.lastPickedMesh;
     const existingComponentNames = Object.keys(context.state[mesh.name]);
-    const fullComponentNames = ["floor", "grabbable"];
+    const fullComponentNames = ["floor", "grabbable", "collectable"];
     const availableComponentsToAdd = fullComponentNames.filter(
         (el) => !existingComponentNames.includes(el)
     );
@@ -37,6 +37,15 @@
                         grabbable: {
                             pickup: "any",
                             throwable: true,
+                        },
+                    },
+                });
+            } else if (componentName === "collectable") {
+                context.signalHub.outgoing.emit("components_upserted", {
+                    id: mesh.name,
+                    components: {
+                        collectable: {
+                            value: { label: "ammo", amount: 10 },
                         },
                     },
                 });

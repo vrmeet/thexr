@@ -1,3 +1,101 @@
+focus on the experience you'll have in this space that you won't have in other spaces:
+
+- can you play doom yet?
+
+What's next?
+
+- health system ->
+    always present with attendance upon synergizer 'enter', creating avatar, attendance components on the create entity event
+    - health can be persisted into sessionStorage on window unload, so multiple reloads don't recharge health
+    - listen for bullet hit message, emit upsert health message inside attendance
+
+    - when someone enters, they get 100
+    - when someone is damaged, state of health is updated
+
+= implemented health value in the enter() function of synergizer, but maybe this can be
+abstract into a local "first_enter" event.
+
+- how is health deducted?  local event?
+
+
+- collection system
+  - fungible or non-fungible
+  - key: number
+  like ammo acount
+  health count
+  armor count
+
+   an object of collected items, always present on attendance
+   listen for mesh click or grab when component of collectable is present
+   emit upsert component on the collectable, setting state to collectedBy
+   - change visiblity and enabled false on the collectable item
+   and update attedance collections object with the entity of what was collected
+   - announce item collected custom message
+
+- ammo system
+   - is a kind of collectable value
+
+- gun system
+   - moniters for discreet trigger sequeezes while holding an entity with a shootable component
+   - create a bullet and animate it, 
+   - if originator: monitering it on every frame for a contact
+   - on contact, announce bullet hit
+   - listen to collection system custom message
+
+- monster/enemy system
+  - on entity created, places a monster, moved by leader
+  - leader emits upsert component position
+  - listens for bullet damage and emits upsert component health changes
+  
+-armor - similar to health
+
+- cause and effect system
+  - listen for event
+  - check conditions
+  - emit event
+
+
+- biggest problem, is people create spaces, but they are kind of crappy.  the spaces need to be
+   very cool.  like the kind in hand drawn worlds... artistically they are paintings and are amazing
+   - but maybe this is just a rating system....  but i like that all demos in Quill have a "painted"
+   look.
+   - flat shaded, low poly, no textures
+
+- but many people are not going to spend the time to create these... artists will, but most people will not
+- they can be incentivised with $$
+
+- even if there is not much animation, it's the mood and atmosphere, and lighting
+
+
+
+- more control over your face appearance, your out fit
+- ability to build and trade items in the world
+- ability to add some cause and effect on those items
+
+====
+if everyone creates their own world, with varying artistic ability, it's like myspace
+  worlds are inconsistent, ugly, textures and models with mixed art style
+
+- can we create worlds that are procedurally generated from some user input.  So user has a say
+in what 'seed' to provide, yet the algorithm interprets and creates a complex and rich geometry.
+
+
+
+
+make an interactable object
+
+grab something in 2D inline too
+
+make a face, export it, then wear it
+
+- create cause and effect
+
+- ability to customize your look using parameter sliders, they are all morph targets
+  - do what altspace did:
+     have a fix set of head geometry, 
+     then decals for eyes, eye brows, mouth
+
+
 ability to edit existing components in VR menu
 
 after edit component, should reflect new component in UI
