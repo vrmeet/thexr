@@ -4,38 +4,31 @@ import type { ISystem } from "./isystem";
 import type { SystemXR } from "./system-xr";
 import * as BABYLON from "babylonjs";
 import type { SignalHub } from "../../signalHub";
-import { switchMap, takeUntil } from "rxjs";
+import { filter, switchMap, takeUntil } from "rxjs";
 
 /*
-things marked as floor should be teleportable, also physics objects should no penetrate them
-
+a particular implementation of a gun
 */
 
-export class SystemShootable implements ISystem {
-  public name = "shootable";
+export class SystemGun implements ISystem {
+  public name = "gun";
   public order = 30;
   public context: Context;
   public signalHub: SignalHub;
   init(context: Context) {
     this.context = context;
     this.signalHub = this.context.signalHub;
-    const hand = "left";
-    const ref = BABYLON.MeshBuilder.CreateBox(
-      "ref",
-      { size: 0.05 },
-      this.context.scene
-    );
-    ref.setEnabled(false);
-    this.signalHub.movement.on("left_grip_mesh").subscribe(() => {
-      this.signalHub.movement
-        .on("left_trigger_squeezed")
-        .pipe(takeUntil(this.signalHub.movement.on("left_lost_mesh")))
-        .subscribe((inputSource) => {
-          console.log("fire!");
-          const clone = ref.clone("");
-          clone.position.copyFrom(inputSource.grip.position);
-          clone.setEnabled(true);
-        });
-    });
+    this.signalHub.movement
+      .on("trigger_holding_mesh")
+      .pipe(
+        filter(
+          (evt) =>
+            this.context.state[evt.mesh.name] !== undefined &&
+            this.context.state[evt.mesh.name].gun !== undefined
+        )
+      )
+      .subscribe((evt) => {
+        console.log("fire a bullet");
+      });
   }
 }

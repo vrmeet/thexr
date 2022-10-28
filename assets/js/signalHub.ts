@@ -149,7 +149,11 @@ export type MovementEvents = {
   right_grip_mesh: BABYLON.AbstractMesh;
   right_lost_mesh: any;
 
-  trigger_holding_mesh: string;
+  trigger_holding_mesh: {
+    hand: "left" | "right";
+    mesh: BABYLON.AbstractMesh;
+    inputSource: BABYLON.WebXRInputSource;
+  };
   // ... with a mesh
   // left_grip_squeezed_w_mesh: BABYLON.AbstractMesh
   // left_grip_released_w_mesh: BABYLON.AbstractMesh

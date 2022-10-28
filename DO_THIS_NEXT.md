@@ -34,6 +34,7 @@ abstract into a local "first_enter" event.
 
 - ammo system
    - is a kind of collectable value
+   - need to load it into a gun?  or maybe like doom, as long as you have this collectable value then your gun keeps shooting for now
 
 - gun system
    - moniters for discreet trigger sequeezes while holding an entity with a shootable component

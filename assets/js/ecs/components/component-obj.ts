@@ -54,6 +54,6 @@ export interface ComponentObj {
   };
   serialized_mesh?: { mesh_id: string; path: string };
   collectable?: { value?: { label: string; amount: number }; item?: string };
-
+  gun?: any;
   [anykey: string]: any;
 }

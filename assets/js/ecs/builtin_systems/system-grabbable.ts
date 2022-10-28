@@ -46,20 +46,27 @@ export class SystemGrabbable implements ISystem {
           .on(`${hand}_trigger_squeezed`)
           .pipe(takeUntil(this.signalHub.movement.on(`${hand}_lost_mesh`)))
           .subscribe((inputSource) => {
-            console.log(
-              "discreet gun fire",
+            this.signalHub.movement.emit("trigger_holding_mesh", {
               hand,
-              inputSource.grip.position.asArray()
-            );
+              mesh,
+              inputSource,
+            });
+            console.log("discreet gun fire");
             // this.signalHub.movement.emit("");
           });
       } else if (
         this.context.state[mesh.name].grabbable.shootable === "continuous"
       ) {
         this.signalHub.movement
-          .on("left_trigger")
+          .on(`${hand}_trigger`)
           .pipe(takeUntil(this.signalHub.movement.on(`${hand}_lost_mesh`)))
           .subscribe((compChange) => {
+            this.signalHub.movement.emit("trigger_holding_mesh", {
+              hand,
+              mesh,
+              inputSource: compChange.inputSource,
+            });
+
             console.log(
               "continous spry",
               hand,
