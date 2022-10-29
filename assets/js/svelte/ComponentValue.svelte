@@ -22,7 +22,7 @@
             <input id="input-{i}" value={item} />
         {/each}
     </div>
-{:else if typeof value === "object"}
+{:else if value !== null && typeof value === "object"}
     {#each Object.entries(value) as entry}
         <div id="object-{entry[0]}">
             <div id="object-name">{entry[0]}</div>

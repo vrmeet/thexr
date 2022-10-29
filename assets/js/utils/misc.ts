@@ -165,6 +165,55 @@ export const camPosRot = (cam: BABYLON.Camera) => {
   };
 };
 
+export function deepMerge(target, source) {
+  const isObject = (obj) => obj && typeof obj === "object";
+
+  if (!isObject(target) || !isObject(source)) {
+    return source;
+  }
+
+  Object.keys(source).forEach((key) => {
+    const targetValue = target[key];
+    const sourceValue = source[key];
+
+    if (Array.isArray(targetValue) && Array.isArray(sourceValue)) {
+      target[key] = sourceValue;
+    } else if (isObject(targetValue) && isObject(sourceValue)) {
+      target[key] = deepMerge(Object.assign({}, targetValue), sourceValue);
+    } else {
+      target[key] = sourceValue;
+    }
+  });
+
+  return target;
+}
+
+export function showNormals(
+  mesh: BABYLON.AbstractMesh,
+  size: number,
+  color: BABYLON.Color3,
+  scene: BABYLON.Scene
+) {
+  const normals = mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+  const positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+  color = color || BABYLON.Color3.White();
+  size = size || 1;
+
+  const lines = [];
+  for (let i = 0; i < normals.length; i += 3) {
+    const v1 = BABYLON.Vector3.FromArray(positions, i);
+    const v2 = v1.add(BABYLON.Vector3.FromArray(normals, i).scaleInPlace(size));
+    lines.push([v1.add(mesh.position), v2.add(mesh.position)]);
+  }
+  const normalLines = BABYLON.MeshBuilder.CreateLineSystem(
+    "normalLines",
+    { lines: lines },
+    scene
+  );
+  normalLines.color = color;
+  return normalLines;
+}
+
 export function random_id(length: number) {
   let result = "";
   const characters =

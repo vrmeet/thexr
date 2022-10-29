@@ -44,6 +44,7 @@ defmodule Thexr.Spaces do
 
     Thexr.SpaceSupervisor.start_space(space)
 
+    # make a light
     Thexr.SpaceServer.process_event(
       space.id,
       "entity_created",
@@ -56,6 +57,7 @@ defmodule Thexr.Spaces do
       nil
     )
 
+    # make grid floor
     Thexr.SpaceServer.process_event(
       space.id,
       "entity_created",
@@ -66,6 +68,25 @@ defmodule Thexr.Spaces do
           "transform" => %{"rotation" => [-1.5708, 0, 0]},
           "material" => %{"name" => "grid"},
           "floor" => %{}
+        }
+      },
+      nil
+    )
+
+    # make some interactable items
+    Thexr.SpaceServer.process_event(
+      space.id,
+      "entity_created",
+      %{
+        "id" => "gun1",
+        "components" => %{
+          "shape" => %{
+            "prim" => "box",
+            "prim_params" => %{"depth" => 0.2, "height" => 0.1, "width" => 0.5}
+          },
+          "transform" => %{"position" => [-1.5, 1, -4]},
+          "grabbable" => %{"pickup" => "fixed", "shootable" => "discreet"},
+          "gun" => %{}
         }
       },
       nil

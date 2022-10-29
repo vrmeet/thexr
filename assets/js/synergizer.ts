@@ -1,12 +1,11 @@
 import * as BABYLON from "babylonjs";
-import { mergeAdvanced } from "object-merge-advanced";
 import { createContext, type Context } from "./context";
 import type { ComponentObj } from "./ecs/components/component-obj";
 import type { ISystem } from "./ecs/builtin_systems/isystem";
 import { SystemBroker } from "./ecs/builtin_systems/system-broker";
 import { SystemUtilities } from "./ecs/builtin_systems/system-utilities";
 import { SystemInline } from "./ecs/builtin_systems/system-inline";
-import { camPosRot } from "./utils/misc";
+import { camPosRot, deepMerge } from "./utils/misc";
 import * as sessionPersistance from "./sessionPersistance";
 import { SystemXR } from "./ecs/builtin_systems/system-xr";
 import Ammo from "ammojs-typed";
@@ -23,7 +22,7 @@ import { SystemGrabbable } from "./ecs/builtin_systems/system-grabbable";
 import { SystemFloor } from "./ecs/builtin_systems/system-floor";
 import { SystemLogger } from "./ecs/builtin_systems/system-logger";
 import { SystemXRFlight } from "./ecs/builtin_systems/system-xr-flight";
-import { SystemShootable } from "./ecs/builtin_systems/system-shootable";
+import { SystemGun } from "./ecs/builtin_systems/system-gun";
 import { SystemSerializedMesh } from "./ecs/builtin_systems/system-serialized-mesh";
 import { SystemHUD } from "./ecs/builtin_systems/system-hud";
 import { SystemHealth } from "./ecs/builtin_systems/system-health";
@@ -109,7 +108,7 @@ export class Synergize {
     // loading models from serialized geometry
     this.addSystem(new SystemSerializedMesh());
     // shootable
-    this.addSystem(new SystemShootable());
+    this.addSystem(new SystemGun());
     // heads up display message
     this.addSystem(new SystemHUD());
     // health
@@ -233,7 +232,7 @@ export class Synergize {
             );
           }
           // patch new values into the state
-          this.context.state[evt.id][compName] = mergeAdvanced(
+          deepMerge(
             this.context.state[evt.id][compName],
             evt.components[compName]
           );

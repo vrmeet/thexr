@@ -1,3 +1,5 @@
+deleting a space should also kill it's process
+
 focus on the experience you'll have in this space that you won't have in other spaces:
 
 - can you play doom yet?

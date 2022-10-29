@@ -34,15 +34,29 @@ defmodule ThexrWeb.Resolvers.SpaceResolver do
   #   {:ok, Spaces.list_components_for_entity(args.entity_id)}
   # end
 
-  # def create_entity(_root, %{space_id: space_id, type: type}, _) do
-  #   case Spaces.find_and_nudge_space(space_id) do
-  #     nil ->
-  #       {:error, :space_not_found}
+  def create_entity(_root, %{space_id: space_id, entity_id: entity_id, components: components}, _) do
+    IO.inspect(components, label: "components")
+    {:ok, true}
+    # case Spaces.find_and_nudge_space(space_id) do
+    #   nil ->
+    #     {:error, :space_not_found}
 
-  #     space ->
-  #       Thexr.Spaces.CommandHandler.create_entity(space.id, type)
-  #   end
-  # end
+    #   space ->
+    #     Thexr.Spaces.CommandHandler.create_entity(space.id, type)
+    # end
+  end
+
+  def upsert_entity(_root, %{space_id: space_id, entity_id: entity_id, components: components}, _) do
+    IO.inspect(components, label: "components")
+    {:ok, true}
+    # case Spaces.find_and_nudge_space(space_id) do
+    #   nil ->
+    #     {:error, :space_not_found}
+
+    #   space ->
+    #     Thexr.Spaces.CommandHandler.create_entity(space.id, type)
+    # end
+  end
 
   # def create_box(_root, %{space_id: space_id} = args, _) do
   #   case Spaces.find_and_nudge_space(space_id) do
