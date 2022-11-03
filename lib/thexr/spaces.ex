@@ -82,7 +82,7 @@ defmodule Thexr.Spaces do
         "components" => %{
           "shape" => %{
             "prim" => "box",
-            "prim_params" => %{"depth" => 0.2, "height" => 0.1, "width" => 0.5}
+            "prim_params" => %{"depth" => 0.25, "height" => 0.1, "width" => 0.05}
           },
           "transform" => %{"position" => [-1.5, 1, -4]},
           "grabbable" => %{"pickup" => "fixed", "shootable" => "discreet"},
@@ -96,6 +96,7 @@ defmodule Thexr.Spaces do
   end
 
   def delete_space(%Space{} = space) do
+    Thexr.SpaceSupervisor.stop_space(space.id)
     query = from(e in Entity, where: e.state_id == ^space.state_id)
     Repo.delete_all(query)
     query = from(s in StateMesh, where: s.state_id == ^space.state_id)

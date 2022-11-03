@@ -1,0 +1,28 @@
+<style>
+  html, body {
+      overflow: hidden;
+      width   : 100%;
+      height  : 100%;
+      margin  : 0;
+      padding : 0;
+
+  }
+
+  #mapMaker {
+      position: absolute;
+      width   : 60%;
+      height  : 100%;
+      touch-action: none;
+      outline: none;
+      z-index: 1;
+      border: 3px solid black;
+  }
+
+</style>
+
+<canvas id="mapMaker"></canvas>
+
+<script>
+  window['member_id'] = '<%= @member_id %>';
+  window['userToken'] = '<%= @user_token %>';
+</script>

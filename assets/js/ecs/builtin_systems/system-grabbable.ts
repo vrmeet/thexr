@@ -289,9 +289,16 @@ export class SystemGrabbable implements ISystem {
     );
     const rayHelper = new BABYLON.RayHelper(ray);
     rayHelper.show(this.context.scene, BABYLON.Color3.Red());
-
-    // showNormals(inputSource.grip, 1, BABYLON.Color3.Red(), this.context.scene);
-
+    // try {
+    //   showNormals(
+    //     inputSource.grip,
+    //     1,
+    //     BABYLON.Color3.Red(),
+    //     this.context.scene
+    //   );
+    // } catch (e) {
+    //   console.log(e);
+    // }
     const pickInfo = this.context.scene.pickWithRay(ray);
     if (
       pickInfo.pickedMesh &&

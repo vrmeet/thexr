@@ -6,6 +6,7 @@ defmodule ThexrWeb.SpaceController do
 
   alias Thexr.Spaces
 
+  @spec show(Plug.Conn.t(), map) :: Plug.Conn.t()
   def show(conn, %{"space_id" => space_id}) do
     case Spaces.find_and_nudge_space(space_id) do
       nil ->

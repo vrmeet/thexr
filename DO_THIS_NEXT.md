@@ -1,10 +1,29 @@
-deleting a space should also kill it's process
-
 focus on the experience you'll have in this space that you won't have in other spaces:
+- such as give things to other players
+- have some inventory
+- collect items
+- wearables
+- add own cause and effect (switches, basic building blocks)
 
-- can you play doom yet?
+- But FIRST: can you play doom yet?  Make that first, then learn how to extract an API for other games
 
-What's next?
+What's next in DOOM?
+
+  - give me large procedural environemnts to explore
+    - not just uniform mazes, but interesting color pallet, sense of scale
+    - algorithm:
+        1. make a large floor
+
+    - door and key mechanics
+    - gun, health, armor mechanics
+    - monster and monster throw fireball
+    - spawn and respawn
+    - start and end game concept
+    - no attack while editing.  maybe for a game, you must export a snapshot in order to play it.
+       - can't play and edit it at the same time.
+
+    
+        
 
 - health system ->
     always present with attendance upon synergizer 'enter', creating avatar, attendance components on the create entity event

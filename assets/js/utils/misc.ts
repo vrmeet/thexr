@@ -20,6 +20,61 @@ export const makeXRFrameSignal = (xrHelper: BABYLON.WebXRDefaultExperience) => {
   });
 };
 
+export const detailOnWall = (maxHeight, maxWidth, maxDepth, scene) => {
+  const height = (Math.random() * maxHeight) / 2 + 0.1;
+  const depth = maxDepth;
+  const width = (Math.random() * maxWidth) / 2 + 0.1;
+  const detail = BABYLON.MeshBuilder.CreateBox(
+    "",
+    {
+      height,
+      width,
+      depth,
+    },
+    scene
+  );
+  // lift above ground
+  detail.position.y = Math.random() * (maxHeight - height) + height / 2;
+  detail.position.x =
+    Math.random() * (maxWidth - width) - (maxWidth - width) / 2;
+  detail.position.z = Math.random() * maxDepth - maxDepth / 2;
+
+  detail.bakeCurrentTransformIntoVertices();
+  return detail;
+};
+
+export const detailedWall = (
+  options: { height: number; depth: number; width: number },
+  scene: BABYLON.Scene
+) => {
+  const base = BABYLON.MeshBuilder.CreateBox("", options, scene);
+  base.position.y = options.height / 2;
+  base.bakeCurrentTransformIntoVertices();
+  // add some details
+  const d = detailOnWall(options.height, options.width, options.depth, scene);
+};
+
+window["detailedWall"] = detailedWall;
+
+export const randomEnv = (scene: BABYLON.Scene) => {
+  function randomBox() {
+    const depth = reduceSigFigs(Math.random() * 3) + 0.2;
+    const width = reduceSigFigs(Math.random() * 2) + 0.2;
+    const height = reduceSigFigs(Math.random() * 3) + 0.2;
+
+    return BABYLON.MeshBuilder.CreateBox("", { depth, width, height }, scene);
+  }
+
+  for (let i = 0; i < 50; i++) {
+    const b = randomBox();
+    b.position.x = reduceSigFigs(Math.random() * 40) - 20;
+    b.position.y = reduceSigFigs(Math.random() * 10);
+    b.position.z = reduceSigFigs(Math.random() * 40) - 20;
+  }
+};
+
+window["randEnv"] = randomEnv;
+
 export const animateTranslation = (
   entity: Entity,
   endPos: BABYLON.Vector3,
@@ -198,21 +253,24 @@ export function showNormals(
   const positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
   color = color || BABYLON.Color3.White();
   size = size || 1;
-
+  console.log("got here", normals.length, positions.length);
   const lines = [];
   for (let i = 0; i < normals.length; i += 3) {
     const v1 = BABYLON.Vector3.FromArray(positions, i);
     const v2 = v1.add(BABYLON.Vector3.FromArray(normals, i).scaleInPlace(size));
     lines.push([v1.add(mesh.position), v2.add(mesh.position)]);
   }
+  console.log("lines", lines);
   const normalLines = BABYLON.MeshBuilder.CreateLineSystem(
     "normalLines",
     { lines: lines },
     scene
   );
+  console.log("normal lines");
   normalLines.color = color;
   return normalLines;
 }
+window["showNormals"] = showNormals;
 
 export function random_id(length: number) {
   let result = "";

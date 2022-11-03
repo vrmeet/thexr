@@ -79,6 +79,7 @@ defmodule ThexrWeb.Router do
     # live "/edit_space/:id/edit", SpaceEditLive.Index, :edit
 
     # live "/spaces/:id/show/edit", SpaceLive.Show, :edit
+    get "/create_map", MapController, :index
   end
 
   # Enables LiveDashboard only for development

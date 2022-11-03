@@ -7,7 +7,7 @@
     <%= csrf_meta_tag() %>
     <%= live_title_tag assigns[:page_title] || "thexr.space", suffix: "" %>
     <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/assets/app.css")}/>
-    <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/assets/spec.css")}/>
+    <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/assets/space.css")}/>
     <script>
       var environment_name = "<%= Application.get_env(:thexr, :environment_name) %>";
     </script>
@@ -19,7 +19,7 @@
     <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
     <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
-    <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/spec.js")}></script>
+    <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/space.js")}></script>
     
     <%= if Application.get_env(:thexr, :environment_name) == :prod do %>
 

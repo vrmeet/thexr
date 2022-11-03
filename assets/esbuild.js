@@ -48,7 +48,7 @@ const globals = {
 
 // Define esbuild options + extras for watch and deploy
 let opts = {
-  entryPoints: ["js/app.js", "js/spec.ts"],
+  entryPoints: ["js/app.js", "js/space.ts", "js/map_maker.ts"],
   bundle: true,
   external: ["/fonts/*", "/images/*"],
   logLevel: "info",
