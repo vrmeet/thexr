@@ -1,8 +1,11 @@
 import {
+  bufferCount,
   filter,
+  from,
   map,
   mergeMap,
   Observable,
+  pairwise,
   scan,
   Subscription,
   takeUntil,
@@ -88,8 +91,11 @@ export class MapView {
       .subscribe((info) => {
         const offsetX = this.engine.getRenderWidth() / 2 / this.pixelsPerMeter;
         const offsetZ = this.engine.getRenderHeight() / 2 / this.pixelsPerMeter;
-        let x = info.event.x / this.pixelsPerMeter - offsetX;
-        let z = -(info.event.y / this.pixelsPerMeter - offsetZ);
+        let x =
+          this.camera.position.x + info.event.x / this.pixelsPerMeter - offsetX;
+        let z =
+          this.camera.position.z -
+          (info.event.y / this.pixelsPerMeter - offsetZ);
         // round to nearest meter
         x = Math.round(x);
         z = Math.round(z);
@@ -101,8 +107,29 @@ export class MapView {
           info.pickInfo.pickedPoint.x,
           info.pickInfo.pickedPoint.z
         );
+        this.sectorPoints.push([x, z]);
+        this.drawSector();
+
         // this.sectorPoints.push(info.pickInfo);
       });
+  }
+
+  drawSector() {
+    from(this.sectorPoints)
+      .pipe(
+        // bufferCount(2), // [x,z]
+        pairwise() // [[x1,z1], [x2,z2]]
+      )
+      .subscribe((data) => {
+        // draw lines
+        console.log("pairwise data", data);
+      });
+
+    this.sectorPoints.forEach(([x, z]) => {
+      const m = BABYLON.MeshBuilder.CreateBox("", { size: 0.3 }, this.scene);
+      m.position.x = x;
+      m.position.z = z;
+    });
   }
 
   listenMouse() {
@@ -171,26 +198,39 @@ export class MapView {
     if (this.zoomSub) {
       return;
     }
-    this.zoomSub = this.mouseWheel$.subscribe((data) => {
-      const event = data.event as WheelEvent;
-      this.metersHorizontal += event.deltaY / 2;
-      this.pixelsPerMeter =
-        this.engine.getRenderWidth() / this.metersHorizontal;
-      if (this.metersHorizontal <= 5) {
-        this.metersHorizontal = 5;
-      }
-      console.log(this.metersHorizontal);
-      this.setCameraMapping();
-    });
+    this.zoomSub = this.mouseWheel$
+      // .pipe(filter((info) => info.event.ctrlKey))
+      .subscribe((data) => {
+        const event = data.event as WheelEvent;
+        this.metersHorizontal += event.deltaY / 2;
+        this.pixelsPerMeter =
+          this.engine.getRenderWidth() / this.metersHorizontal;
+        if (this.metersHorizontal <= 5) {
+          this.metersHorizontal = 5;
+        }
+        console.log(this.metersHorizontal);
+        this.setCameraMapping();
+      });
   }
 
   enablePan() {
     if (this.panSub) {
       return;
     }
+
+    // this.panSub = this.mouseWheel$
+    //   .pipe(filter((info) => info.event.shiftKey))
+    //   .subscribe((data) => {
+    //     const event = data.event as WheelEvent;
+    //     this.scene.activeCamera.position.x +=
+    //       event.deltaX / this.pixelsPerMeter;
+    //     this.scene.activeCamera.position.z -=
+    //       event.deltaY / this.pixelsPerMeter;
+    //   });
+
     this.panSub = this.mouseDown$
       .pipe(
-        filter((data: BABYLON.PointerInfo) => data.event.ctrlKey === false),
+        // filter((data: BABYLON.PointerInfo) => data.event.shiftKey),
         map((downData) => ({
           x: downData.event.x,
           y: downData.event.y,
