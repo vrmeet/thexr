@@ -1,16 +1,90 @@
 import {
-  bufferCount,
   filter,
-  from,
   map,
   mergeMap,
   Observable,
-  pairwise,
   scan,
   Subscription,
   takeUntil,
   tap,
 } from "rxjs";
+import { random_id } from "../utils/misc";
+
+class Sector {
+  xzPoints: number[][] = [];
+  floorHeight: number;
+  ceilingHeight: number;
+  assetContainer: BABYLON.AssetContainer;
+  constructor(public name: string) {
+    this.assetContainer = new BABYLON.AssetContainer();
+  }
+  addPoint(x: number, z: number) {
+    if (this.pointExists(x, z) && this.xzPoints.length < 3) {
+      return; // don't allow
+    }
+    this.xzPoints.push([x, z]);
+  }
+  isClosed() {
+    return (
+      this.xzPoints.length > 3 &&
+      this.pointEqual(this.xzPoints[0], this.xzPoints[this.xzPoints.length - 1])
+    );
+  }
+  pointEqual(p1: number[], p2: number[]) {
+    return p1[0] == p2[0] && p1[1] == p2[1];
+  }
+  pointExists(x: number, z: number): boolean {
+    return this.xzPoints.find(([_x, _z]) => x == _x && z == _z) !== undefined;
+  }
+  clearAssetContainer() {
+    this.assetContainer.meshes.forEach((m) => {
+      m.dispose();
+    });
+    this.assetContainer.meshes.length = 0;
+  }
+  drawSector() {
+    this.clearAssetContainer();
+
+    // from(this.points)
+    //   .pipe(
+    //     bufferCount(2), // [x,z]
+    //     pairwise() // [[x1,z1], [x2,z2]]
+    //   )
+    //   .subscribe((data) => {
+    //     // draw lines
+    //     console.log("pairwise data", data);
+    //   });
+
+    if (this.xzPoints.length > 1) {
+      const lineOpts = {
+        points: this.xzPoints.map(([_x, _z]) => new BABYLON.Vector3(_x, 0, _z)),
+        dashSize: 2,
+        gapSize: 1,
+        dashNb: 80,
+      };
+      const lines = BABYLON.MeshBuilder.CreateDashedLines(
+        "sectorOutline",
+        lineOpts
+      );
+      this.assetContainer.meshes.push(lines);
+    }
+
+    this.xzPoints.forEach(([_x, _z]) => {
+      const pt = BABYLON.MeshBuilder.CreateBox(`sp${_x}-${_z}`, {
+        size: 0.3,
+      });
+      pt.position.x = _x;
+      pt.position.z = _z;
+      this.assetContainer.meshes.push(pt);
+    });
+  }
+  //   // this.sectorPoints.forEach(([x, z]) => {
+  //   //   const m = BABYLON.MeshBuilder.CreateBox("", { size: 0.3 }, this.scene);
+  //   //   m.position.x = x;
+  //   //   m.position.z = z;
+  //   // });
+  // }
+}
 
 export class MapView {
   public canvas: HTMLCanvasElement;
@@ -19,6 +93,7 @@ export class MapView {
   public engine: BABYLON.Engine;
   public scene: BABYLON.Scene;
   public camera: BABYLON.FreeCamera;
+  public sectors: Sector[] = [];
   //   camera.attachControl(canvas, true);
 
   public light: BABYLON.HemisphericLight;
@@ -30,7 +105,6 @@ export class MapView {
 
   public zoomSub: Subscription;
   public panSub: Subscription;
-  public sectorPoints = [];
 
   constructor(id: string) {
     this.canvas = document.getElementById(id) as HTMLCanvasElement;
@@ -82,7 +156,11 @@ export class MapView {
     this.enablePan();
     this.enableZoom();
     this.enableCaptureSectorPoint();
+
+    this.sectors.push(new Sector(random_id(3)));
+
     window["scene"] = this.scene;
+    window["mapview"] = this;
   }
 
   enableCaptureSectorPoint() {
@@ -107,29 +185,14 @@ export class MapView {
           info.pickInfo.pickedPoint.x,
           info.pickInfo.pickedPoint.z
         );
-        this.sectorPoints.push([x, z]);
-        this.drawSector();
-
+        const lastIndex = this.sectors.length - 1;
+        this.sectors[lastIndex].addPoint(x, z);
+        this.sectors[lastIndex].drawSector();
+        if (this.sectors[lastIndex].isClosed()) {
+          this.sectors.push(new Sector(random_id(3)));
+        }
         // this.sectorPoints.push(info.pickInfo);
       });
-  }
-
-  drawSector() {
-    from(this.sectorPoints)
-      .pipe(
-        // bufferCount(2), // [x,z]
-        pairwise() // [[x1,z1], [x2,z2]]
-      )
-      .subscribe((data) => {
-        // draw lines
-        console.log("pairwise data", data);
-      });
-
-    this.sectorPoints.forEach(([x, z]) => {
-      const m = BABYLON.MeshBuilder.CreateBox("", { size: 0.3 }, this.scene);
-      m.position.x = x;
-      m.position.z = z;
-    });
   }
 
   listenMouse() {
