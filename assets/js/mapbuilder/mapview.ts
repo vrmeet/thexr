@@ -12,7 +12,7 @@ import {
 export class MapView {
   public canvas: HTMLCanvasElement;
   public metersHorizontal = 40; // number of squares we'd like to see in the horizontal axis
-
+  public pixelsPerMeter: number;
   public engine: BABYLON.Engine;
   public scene: BABYLON.Scene;
   public camera: BABYLON.FreeCamera;
@@ -86,14 +86,14 @@ export class MapView {
     this.mouseUp$
       .pipe(filter((info) => info.event.ctrlKey === true))
       .subscribe((info) => {
-        const pixelsPerMeter =
-          this.engine.getRenderWidth() / this.metersHorizontal;
-        const offsetX = this.engine.getRenderWidth() / 2 / pixelsPerMeter;
-        const offsetZ = this.engine.getRenderHeight() / 2 / pixelsPerMeter;
-        const clientX = info.event.x / pixelsPerMeter - offsetX;
-        const clientZ = -(info.event.y / pixelsPerMeter - offsetZ);
-
-        console.log("calculated", clientX, clientZ);
+        const offsetX = this.engine.getRenderWidth() / 2 / this.pixelsPerMeter;
+        const offsetZ = this.engine.getRenderHeight() / 2 / this.pixelsPerMeter;
+        let x = info.event.x / this.pixelsPerMeter - offsetX;
+        let z = -(info.event.y / this.pixelsPerMeter - offsetZ);
+        // round to nearest meter
+        x = Math.round(x);
+        z = Math.round(z);
+        console.log("calculated", x, z);
         // calculate a clicked point in x,z plane relative to
         // camera position
         console.log(
@@ -174,6 +174,8 @@ export class MapView {
     this.zoomSub = this.mouseWheel$.subscribe((data) => {
       const event = data.event as WheelEvent;
       this.metersHorizontal += event.deltaY / 2;
+      this.pixelsPerMeter =
+        this.engine.getRenderWidth() / this.metersHorizontal;
       if (this.metersHorizontal <= 5) {
         this.metersHorizontal = 5;
       }
@@ -213,10 +215,11 @@ export class MapView {
             ),
             tap((v) => {
               // convert delta to number of meters
-              const metersPerPx =
-                this.metersHorizontal / this.engine.getRenderWidth();
-              this.scene.activeCamera.position.x += v.deltaX * metersPerPx;
-              this.scene.activeCamera.position.z += v.deltaY * metersPerPx;
+
+              this.scene.activeCamera.position.x +=
+                v.deltaX / this.pixelsPerMeter;
+              this.scene.activeCamera.position.z +=
+                v.deltaY / this.pixelsPerMeter;
             }),
             // complete inner observable on mouseup event
             takeUntil(this.mouseUp$)
@@ -236,12 +239,12 @@ export class MapView {
     const heightInPx = this.engine.getRenderHeight();
     // We chose an orthographic view to simplify at most our mesh creation
     this.camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-    const pixelsPerMeter = widthInPx / this.metersHorizontal;
+    this.pixelsPerMeter = widthInPx / this.metersHorizontal;
     // Setup the camera to fit with our gl coordinates in the canvas
     this.camera.unfreezeProjectionMatrix();
-    this.camera.orthoTop = heightInPx / pixelsPerMeter / 2;
+    this.camera.orthoTop = heightInPx / this.pixelsPerMeter / 2;
     this.camera.orthoLeft = -this.metersHorizontal / 2;
-    this.camera.orthoBottom = -heightInPx / pixelsPerMeter / 2;
+    this.camera.orthoBottom = -heightInPx / this.pixelsPerMeter / 2;
     this.camera.orthoRight = this.metersHorizontal / 2;
     this.camera.getProjectionMatrix(true);
     this.camera.freezeProjectionMatrix();
