@@ -1,4 +1,5 @@
 import {
+  filter,
   map,
   mergeMap,
   Observable,
@@ -22,8 +23,11 @@ export class MapView {
   public mouseMove$: Observable<BABYLON.PointerInfo>;
   public mouseUp$: Observable<BABYLON.PointerInfo>;
   public mouseWheel$: Observable<BABYLON.PointerInfo>;
+  public mouseUpRight$: Observable<BABYLON.PointerInfo>;
+
   public zoomSub: Subscription;
   public panSub: Subscription;
+  public sectorPoints = [];
 
   constructor(id: string) {
     this.canvas = document.getElementById(id) as HTMLCanvasElement;
@@ -46,7 +50,8 @@ export class MapView {
       this.scene
     );
 
-    this.camera.target = BABYLON.Vector3.Zero();
+    // this.camera.target = BABYLON.Vector3.Zero();
+    this.camera.target = new BABYLON.Vector3(0, 0, 0.000001);
 
     this.setCameraMapping();
     const ground = BABYLON.MeshBuilder.CreateGround("ground", {
@@ -73,6 +78,31 @@ export class MapView {
     this.listenMouse();
     this.enablePan();
     this.enableZoom();
+    this.enableCaptureSectorPoint();
+    window["scene"] = this.scene;
+  }
+
+  enableCaptureSectorPoint() {
+    this.mouseUp$
+      .pipe(filter((info) => info.event.ctrlKey === true))
+      .subscribe((info) => {
+        const pixelsPerMeter =
+          this.engine.getRenderWidth() / this.metersHorizontal;
+        const offsetX = this.engine.getRenderWidth() / 2 / pixelsPerMeter;
+        const offsetZ = this.engine.getRenderHeight() / 2 / pixelsPerMeter;
+        const clientX = info.event.x / pixelsPerMeter - offsetX;
+        const clientZ = -(info.event.y / pixelsPerMeter - offsetZ);
+
+        console.log("calculated", clientX, clientZ);
+        // calculate a clicked point in x,z plane relative to
+        // camera position
+        console.log(
+          "actual",
+          info.pickInfo.pickedPoint.x,
+          info.pickInfo.pickedPoint.z
+        );
+        // this.sectorPoints.push(info.pickInfo);
+      });
   }
 
   listenMouse() {
@@ -99,6 +129,18 @@ export class MapView {
         this.scene.onPointerObservable.remove(babylonObserver);
       };
     });
+
+    // this.mouseUpRight$ = new Observable<BABYLON.PointerInfo>((subscriber) => {
+    //   // wrap the babylonjs observable
+    //   const babylonObserver = this.scene.onPointerObservable.add((data) => {
+    //     if (data.type === BABYLON.PointerEventTypes.POINTERUP) {
+    //       subscriber.next(data);
+    //     }
+    //   });
+    //   return () => {
+    //     this.scene.onPointerObservable.remove(babylonObserver);
+    //   };
+    // });
 
     this.mouseUp$ = new Observable<BABYLON.PointerInfo>((subscriber) => {
       // wrap the babylonjs observable
@@ -131,7 +173,6 @@ export class MapView {
     }
     this.zoomSub = this.mouseWheel$.subscribe((data) => {
       const event = data.event as WheelEvent;
-      console.log(event.deltaX, event.deltaY);
       this.metersHorizontal += event.deltaY / 2;
       if (this.metersHorizontal <= 5) {
         this.metersHorizontal = 5;
@@ -147,6 +188,7 @@ export class MapView {
     }
     this.panSub = this.mouseDown$
       .pipe(
+        filter((data: BABYLON.PointerInfo) => data.event.ctrlKey === false),
         map((downData) => ({
           x: downData.event.x,
           y: downData.event.y,
@@ -161,8 +203,8 @@ export class MapView {
                 acc: { x: number; y: number; deltaX: number; deltaY: number },
                 moveData: BABYLON.PointerInfo
               ) => {
-                acc.deltaX = moveData.event.x - acc.x;
-                acc.deltaY = acc.y - moveData.event.y;
+                acc.deltaX = acc.x - moveData.event.x;
+                acc.deltaY = moveData.event.y - acc.y;
                 acc.x = moveData.event.x;
                 acc.y = moveData.event.y;
                 return acc;
