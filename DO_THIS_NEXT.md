@@ -1,3 +1,43 @@
+TODO:
+  - update ISystem to:
+      enable systems to be loaded as script tags and will register themselves using a global object
+      
+      AFRAME.registerComponent('foo', {
+  schema: {},
+  init: function () {},
+  update: function () {},
+  tick: function () {},
+  remove: function () {},
+  pause: function () {},
+  play: function () {}
+});
+
+       dependency: "name of system that needs to be done first"
+       - remove order
+
+
+linedef
+  - start vertex
+  - end vertex
+  - front sidedef
+  - back sidedef
+
+sidedef
+  - upper texture
+  - middle texture
+  - lower texture
+  - x, y offset
+
+sector
+  - ceiling texture
+  - floor texture
+  - ceiling height
+  - floor height
+
+I get it now, but apart from sectors. the rest is kind of cumbersome to use
+I like drawing shapes.  I like dropping items.
+
+
 focus on the experience you'll have in this space that you won't have in other spaces:
 - such as give things to other players
 - have some inventory

@@ -67,6 +67,14 @@ class Sector {
         lineOpts
       );
       this.assetContainer.meshes.push(lines);
+      if (this.isClosed()) {
+        const polygon_triangulation = new BABYLON.PolygonMeshBuilder(
+          `${this.name}polygon`,
+          this.xzPoints.map(([x, z]) => new BABYLON.Vector2(x, z))
+        );
+        const polygon = polygon_triangulation.build();
+        this.assetContainer.meshes.push(polygon);
+      }
     }
 
     this.xzPoints.forEach(([_x, _z]) => {

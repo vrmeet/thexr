@@ -79,7 +79,7 @@
 
     const ready = () => {
         context.signalHub.local.emit("client_ready", choice);
-        let canvas = document.getElementById(context.space_id);
+        let canvas = document.getElementById(context.space.id);
         canvas.focus();
     };
 

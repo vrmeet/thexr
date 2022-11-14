@@ -26,7 +26,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     engine
   );
   window["synergizer"] = synergizer;
-  synergizer.context.bypass_modal = true;
+  // synergizer.context.bypass_modal = true;
   await synergizer.init();
   if (typeof window["systems"] === "string" && window["systems"].length > 0) {
     const systemPaths = window["systems"].split(",");

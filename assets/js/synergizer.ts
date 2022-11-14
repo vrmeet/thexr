@@ -168,6 +168,10 @@ export class Synergize {
         },
       },
     });
+    this.context.signalHub.outgoing.emit("msg", {
+      system: "hud",
+      data: { msg: `${this.context.my_nickname} entered` },
+    });
   }
 
   setupListeners() {
