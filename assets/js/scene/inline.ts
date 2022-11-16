@@ -141,7 +141,7 @@ export class Inline {
             BABYLON.Tags.MatchesQuery(mesh, "shootable || interactable")
           ) {
             if (this.heldMesh() === null) {
-              this.emitGrabbed(mesh);
+              this.emitGrabbedmenu_bar: HTMLElement, menu_home: HTMLElement | nulys(mesh);
               // this.heldMesh = mesh
             } else {
               // let go,

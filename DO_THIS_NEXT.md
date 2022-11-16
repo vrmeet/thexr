@@ -1,3 +1,11 @@
+NEXT:
+
+fix deep merge, or get rid of it.  enforce shallow keys
+and a patch or put API.  usually it's just one entity or component that we want to update
+
+
+do not persist avatars into db
+
 TODO:
   - update ISystem to:
       enable systems to be loaded as script tags and will register themselves using a global object

@@ -35,18 +35,18 @@ export class SystemInline implements ISystem {
     );
     this.bindFKeyForFlight();
 
-    this.context.signalHub.local.on("mesh_picked").subscribe((mesh) => {
-      if (
-        this.context.state[mesh.name] !== undefined &&
-        this.context.state[mesh.name].grabbable !== undefined
-      ) {
-        if (!this.rightHandHolding) {
-          this.inlineGrab(mesh);
-        } else {
-          this.inlineDrop(mesh);
-        }
-      }
-    });
+    // this.context.signalHub.local.on("mesh_picked").subscribe((mesh) => {
+    //   if (
+    //     this.context.state[mesh.name] !== undefined &&
+    //     this.context.state[mesh.name].grabbable !== undefined
+    //   ) {
+    //     if (!this.rightHandHolding) {
+    //       this.inlineGrab(mesh);
+    //     } else {
+    //       this.inlineDrop(mesh);
+    //     }
+    //   }
+    // });
     this.context.signalHub.local
       .on("xr_state_changed")
       .pipe(filter((msg) => msg === BABYLON.WebXRState.EXITING_XR))

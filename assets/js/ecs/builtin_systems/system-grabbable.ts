@@ -287,8 +287,8 @@ export class SystemGrabbable implements ISystem {
       p2,
       inputSource.grip.getWorldMatrix()
     );
-    const rayHelper = new BABYLON.RayHelper(ray);
-    rayHelper.show(this.context.scene, BABYLON.Color3.Red());
+    // const rayHelper = new BABYLON.RayHelper(ray);
+    // rayHelper.show(this.context.scene, BABYLON.Color3.Red());
     // try {
     //   showNormals(
     //     inputSource.grip,

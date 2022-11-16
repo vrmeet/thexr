@@ -235,6 +235,15 @@ export class Synergize {
               evt.components
             );
           }
+          console.log(
+            "deep merging",
+            this.context.state[evt.id][compName],
+            "and",
+            evt.components[compName]
+          );
+          if (this.context.state[evt.id][compName] == undefined) {
+            this.context.state[evt.id][compName] = {};
+          }
           // patch new values into the state
           deepMerge(
             this.context.state[evt.id][compName],
