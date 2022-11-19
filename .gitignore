@@ -36,3 +36,5 @@ npm-debug.log
 postgres-data
 
 .DS_Store
+
+assets/spec/test-files-index*
