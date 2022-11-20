@@ -46,6 +46,8 @@ const bundleTestFiles = () => {
     path.resolve(__dirname, "../test-files-index.ts"),
     importsFileStr
   );
+};
+const transpileBundledTestFile = () => {
   let opts = {
     bundle: true,
     sourcemap: "inline",
@@ -59,7 +61,13 @@ if (mode === "watch") {
   console.log("i'm wating for changes");
   gaze(path.resolve(__dirname, "../../**/*.ts"), (a, b) => {
     b.on("all", (event, filepath) => {
-      if (!filepath.endsWith("test-files-index.ts")) {
+      console.log(filepath, event);
+      if (filepath.endsWith("test-files-index.ts")) {
+        // the bundle was changed to make the ts -> js version of it for jasmine runner
+        transpileBundledTestFile();
+      } else {
+        // some other ts file was changed, accumulate all files into a bundle
+        // the next pass will make it js for jasmine
         bundleTestFiles();
       }
     });
