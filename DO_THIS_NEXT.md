@@ -1,5 +1,11 @@
 NEXT:
 
+write test for:
+
+when getting a message for entity created and contains both shape and transform
+  make sure shape is processed first
+  or allow transform to still work even if processed later
+
 fix deep merge, or get rid of it.  enforce shallow keys
 and a patch or put API.  usually it's just one entity or component that we want to update
 

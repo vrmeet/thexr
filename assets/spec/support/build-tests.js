@@ -53,11 +53,14 @@ const transpileBundledTestFile = () => {
     sourcemap: "inline",
     entryPoints: [path.resolve(__dirname, "../test-files-index.ts")],
     outfile: path.resolve(__dirname, "../test-files-index.spec.js"),
+    external: ["require", "fs", "path"],
   };
   esbuild.build(opts);
 };
 
 if (mode === "watch") {
+  bundleTestFiles();
+  transpileBundledTestFile();
   console.log("i'm wating for changes");
   gaze(path.resolve(__dirname, "../../**/*.ts"), (a, b) => {
     b.on("all", (event, filepath) => {
