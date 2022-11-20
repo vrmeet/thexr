@@ -21,12 +21,10 @@
 
 </style>
 
-<canvas class="spaceCanvas" id={ @space.id }></canvas>
+<canvas class="spaceCanvas" id={ @context_opts.space.id }></canvas>
 
 <script>
-  window['member_id'] = '<%= @member_id %>';
-  window['userToken'] = '<%= @user_token %>';
-  window['space'] = <%= raw Jason.encode!(@space) %>;
-  window['webrtc_channel_id'] = '<%= @webrtc_channel_id %>';
-  window['systems'] = '<%= @systems %>';
+window.addEventListener("DOMContentLoaded", async () => {
+  XRS.init(<%= raw Jason.encode!(@context_opts) %>)
+});
 </script>

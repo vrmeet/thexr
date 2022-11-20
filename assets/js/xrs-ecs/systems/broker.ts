@@ -14,7 +14,5 @@ export class SystemBroker extends BaseSystem {
   init(xrs: XRS) {
     this.xrs = xrs;
     this.context = xrs.context;
-    this.createScene();
-    this.createDefaultCamera();
   }
 }

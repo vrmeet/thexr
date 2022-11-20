@@ -20,6 +20,13 @@ export class Entity {
     const component = this.components[componentName];
     if (component) {
       component.update(componentData);
+    } else {
+      console.error(
+        "Cannot update non-existant component",
+        componentName,
+        "on entity",
+        this.name
+      );
     }
   }
   removeComponent(componentName: string) {

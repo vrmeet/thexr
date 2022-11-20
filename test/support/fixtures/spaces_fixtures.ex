@@ -9,13 +9,15 @@ defmodule Thexr.SpacesFixtures do
   """
   def space_fixture(attrs \\ %{}) do
     {:ok, space} =
-      attrs
-      |> Enum.into(%{
-        description: "some description",
-        name: "some name",
-        state_id: "test",
-        id: "test"
-      })
+      Enum.into(
+        %{
+          description: "some description",
+          name: "some name",
+          state_id: "test",
+          id: "test-space"
+        },
+        attrs
+      )
       |> Thexr.Spaces.create_space()
 
     space

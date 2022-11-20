@@ -3,66 +3,76 @@ defmodule Thexr.SpacesTest do
 
   alias Thexr.Spaces
 
+  import Thexr.SpacesFixtures
+
   describe "spaces" do
-    alias Thexr.Spaces.{Space, State}
-
-    @state_id "fake_state_id"
-    @entity_id "fake_entity_id"
-    @entity_id2 "fake_entity_id2"
-    @mesh_id "fake_mesh_id"
-
-    test "deleting an entity will remove it's serialized mesh" do
-      # the UI will save the serialized mesh, even before entity is created
-      Spaces.save_state_mesh(@state_id, @mesh_id, %{})
-
-      Spaces.upsert_entity(@state_id, @entity_id, %{"serialized_mesh" => %{"mesh_id" => @mesh_id}})
-
-      assert Repo.aggregate(from(e in "entities"), :count, :id) == 1
-      assert Repo.aggregate(from(e in "entity_meshes"), :count, :mesh_id) == 1
-      assert Repo.aggregate(from(m in "serialized_meshes"), :count, :id) == 1
-      Spaces.delete_entity(@state_id, @entity_id)
-      assert Repo.aggregate(from(e in "entities"), :count, :id) == 0
-      assert Repo.aggregate(from(e in "entity_meshes"), :count, :mesh_id) == 0
-      assert Repo.aggregate(from(m in "serialized_meshes"), :count, :id) == 0
+    test "can create a space" do
+      space = space_fixture()
+      Thexr.SpaceServer.space_state(space.id) |> IO.inspect(label: "genserver")
+      Spaces.get_state(space.state_id) |> IO.inspect(label: "database")
+      :timer.sleep(6000)
+      IO.puts("--------------------")
+      Thexr.SpaceServer.space_state(space.id) |> IO.inspect(label: "genserver")
+      Spaces.get_state(space.state_id) |> IO.inspect(label: "database")
     end
 
-    test "duplicate a mesh" do
-      Spaces.save_state_mesh(@state_id, @mesh_id, %{})
+    # @state_id "fake_state_id"
+    # @entity_id "fake_entity_id"
+    # @entity_id2 "fake_entity_id2"
+    # @mesh_id "fake_mesh_id"
 
-      Spaces.upsert_entity(@state_id, @entity_id, %{"serialized_mesh" => %{"mesh_id" => @mesh_id}})
+    # test "deleting an entity will remove it's serialized mesh" do
+    #   # the UI will save the serialized mesh, even before entity is created
+    #   Spaces.save_state_mesh(@state_id, @mesh_id, %{})
 
-      # dup, makes a new entity_id pointing to the same mesh_id
-      Spaces.upsert_entity(@state_id, @entity_id2, %{
-        "serialized_mesh" => %{"mesh_id" => @mesh_id}
-      })
+    #   Spaces.upsert_entity(@state_id, @entity_id, %{"serialized_mesh" => %{"mesh_id" => @mesh_id}})
 
-      assert Repo.aggregate(from(e in "entities"), :count, :id) == 2
-      assert Repo.aggregate(from(e in "entity_meshes"), :count, :mesh_id) == 2
-      assert Repo.aggregate(from(m in "serialized_meshes"), :count, :id) == 1
+    #   assert Repo.aggregate(from(e in "entities"), :count, :id) == 1
+    #   assert Repo.aggregate(from(e in "entity_meshes"), :count, :mesh_id) == 1
+    #   assert Repo.aggregate(from(m in "serialized_meshes"), :count, :id) == 1
+    #   Spaces.delete_entity(@state_id, @entity_id)
+    #   assert Repo.aggregate(from(e in "entities"), :count, :id) == 0
+    #   assert Repo.aggregate(from(e in "entity_meshes"), :count, :mesh_id) == 0
+    #   assert Repo.aggregate(from(m in "serialized_meshes"), :count, :id) == 0
+    # end
 
-      # but if we delete one, entity, the serialized mesh will stay for the other entity
-      Spaces.delete_entity(@state_id, @entity_id)
-      assert Repo.aggregate(from(e in "entities"), :count, :id) == 1
-      assert Repo.aggregate(from(e in "entity_meshes"), :count, :mesh_id) == 1
-      assert Repo.aggregate(from(m in "serialized_meshes"), :count, :id) == 1
-      # finally if we delete the last entity, it will remove the serialized mesh
-      Spaces.delete_entity(@state_id, @entity_id2)
-      assert Repo.aggregate(from(e in "entities"), :count, :id) == 0
-      assert Repo.aggregate(from(e in "entity_meshes"), :count, :mesh_id) == 0
-      assert Repo.aggregate(from(m in "serialized_meshes"), :count, :id) == 0
-    end
+    # test "duplicate a mesh" do
+    #   Spaces.save_state_mesh(@state_id, @mesh_id, %{})
 
-    test "deleting a space will remove its state entities and serialized meshes" do
-      {:ok, space} = Spaces.create_space(%{id: "abc", name: "abc", state_id: @state_id})
-      Spaces.save_state_mesh(@state_id, @mesh_id, %{})
+    #   Spaces.upsert_entity(@state_id, @entity_id, %{"serialized_mesh" => %{"mesh_id" => @mesh_id}})
 
-      Spaces.upsert_entity(@state_id, @entity_id, %{"serialized_mesh" => %{"mesh_id" => @mesh_id}})
+    #   # dup, makes a new entity_id pointing to the same mesh_id
+    #   Spaces.upsert_entity(@state_id, @entity_id2, %{
+    #     "serialized_mesh" => %{"mesh_id" => @mesh_id}
+    #   })
 
-      Spaces.delete_space(space)
-      assert Repo.aggregate(from(e in "entities"), :count, :id) == 0
-      assert Repo.aggregate(from(e in "entity_meshes"), :count, :mesh_id) == 0
-      assert Repo.aggregate(from(m in "serialized_meshes"), :count, :id) == 0
-    end
+    #   assert Repo.aggregate(from(e in "entities"), :count, :id) == 2
+    #   assert Repo.aggregate(from(e in "entity_meshes"), :count, :mesh_id) == 2
+    #   assert Repo.aggregate(from(m in "serialized_meshes"), :count, :id) == 1
+
+    #   # but if we delete one, entity, the serialized mesh will stay for the other entity
+    #   Spaces.delete_entity(@state_id, @entity_id)
+    #   assert Repo.aggregate(from(e in "entities"), :count, :id) == 1
+    #   assert Repo.aggregate(from(e in "entity_meshes"), :count, :mesh_id) == 1
+    #   assert Repo.aggregate(from(m in "serialized_meshes"), :count, :id) == 1
+    #   # finally if we delete the last entity, it will remove the serialized mesh
+    #   Spaces.delete_entity(@state_id, @entity_id2)
+    #   assert Repo.aggregate(from(e in "entities"), :count, :id) == 0
+    #   assert Repo.aggregate(from(e in "entity_meshes"), :count, :mesh_id) == 0
+    #   assert Repo.aggregate(from(m in "serialized_meshes"), :count, :id) == 0
+    # end
+
+    # test "deleting a space will remove its state entities and serialized meshes" do
+    #   {:ok, space} = Spaces.create_space(%{id: "abc", name: "abc", state_id: @state_id})
+    #   Spaces.save_state_mesh(@state_id, @mesh_id, %{})
+
+    #   Spaces.upsert_entity(@state_id, @entity_id, %{"serialized_mesh" => %{"mesh_id" => @mesh_id}})
+
+    #   Spaces.delete_space(space)
+    #   assert Repo.aggregate(from(e in "entities"), :count, :id) == 0
+    #   assert Repo.aggregate(from(e in "entity_meshes"), :count, :mesh_id) == 0
+    #   assert Repo.aggregate(from(m in "serialized_meshes"), :count, :id) == 0
+    # end
 
     # test "persists space state" do
     #   state = %{

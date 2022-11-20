@@ -44,6 +44,10 @@ defmodule Thexr.SpaceServer do
     |> GenServer.whereis()
   end
 
+  def state(space_id) do
+    GenServer.call(via_tuple(space_id), :state)
+  end
+
   def space_state(server) when is_pid(server) do
     GenServer.call(server, :space_state)
   end
@@ -84,13 +88,15 @@ defmodule Thexr.SpaceServer do
      }, @timeout}
   end
 
+  def handle_call(:state, _from, state) do
+    {:reply, state, state}
+  end
+
   def handle_call(:space_state, _from, state) do
     {:reply, state.space_state, state}
   end
 
   def handle_cast({:process_event, event, message, channel_pid}, state) do
-    IO.inspect(message, label: "#{event}")
-
     if channel_pid == nil do
       ThexrWeb.Endpoint.broadcast("space:#{state.space.id}", event, message)
     else

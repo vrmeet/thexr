@@ -8,16 +8,42 @@ import { BaseSystem } from "../base-system";
 
 export class SystemScene extends BaseSystem {
   public xrs: XRS;
-  public name: "scene";
+  public name = "scene";
   public order = 0;
   public context: Context;
 
   init(xrs: XRS) {
     this.xrs = xrs;
     this.context = xrs.context;
+    this.createEngine();
     this.createScene();
     this.createDefaultCamera();
   }
+  createEngine() {
+    if (!this.context.engine) {
+      const canvas = document.getElementById(
+        this.context.space.id
+      ) as HTMLCanvasElement;
+      this.context.engine = new BABYLON.Engine(canvas, true, {
+        preserveDrawingBuffer: true,
+        stencil: true,
+      });
+    }
+  }
+
+  run() {
+    // run the render loop
+    this.context.engine.runRenderLoop(() => {
+      this.context.scene.render();
+    });
+    // the canvas/window resize event handler
+    window.addEventListener("resize", () => {
+      this.context.engine.resize();
+    });
+
+    this.context.signalHub.local.emit("system_started", true);
+  }
+
   async createScene() {
     this.context.scene = new BABYLON.Scene(this.context.engine);
 

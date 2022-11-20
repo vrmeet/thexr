@@ -38,7 +38,7 @@ export interface Context {
   logs_opened: boolean;
   space: { id: string; name: string; state_id: string };
   webrtc_channel_id: string;
-  userToken: string;
+  user_token: string;
   scene: BABYLON.Scene;
   engine: BABYLON.Engine;
   channel: Channel;
@@ -52,23 +52,23 @@ export type OPTS = {
   my_member_id: string;
   space: { id: string; name: string; state_id: string };
   webrtc_channel_id: string;
-  userToken: string;
+  user_token: string;
   engine: BABYLON.Engine;
 };
 
-export const createContext = (opts: OPTS): Context => {
-  const defaults = {
+export const defaultContext = () => {
+  return {
     systems: {},
     entities: {},
     my_member_id: null,
-    my_nickname: null,
+    my_nickname: sessionPersistance.getNickname()?.nickname,
     my_mic_muted: true,
     bypass_modal: false,
     menu_opened: false,
     logs_opened: false,
     space: null,
     webrtc_channel_id: null,
-    userToken: null,
+    user_token: null,
     scene: null,
     engine: null,
     channel: null,
@@ -84,13 +84,4 @@ export const createContext = (opts: OPTS): Context => {
     MAT: MAT,
     RXJS: RXJS,
   };
-  defaults.engine = opts.engine;
-  defaults.my_member_id = opts.my_member_id;
-  defaults.my_nickname =
-    sessionPersistance.getNickname()?.nickname || opts.my_member_id;
-  defaults.my_mic_muted = true;
-  defaults.space = opts.space;
-  defaults.webrtc_channel_id = opts.webrtc_channel_id;
-  defaults.userToken = opts.userToken;
-  return defaults;
 };

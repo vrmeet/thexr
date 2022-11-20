@@ -5,7 +5,7 @@ import type { Entity } from "../entity";
 
 export class ComponentShape extends BaseComponent {
   public entity: Entity;
-  public data: { shape: string; options: any };
+  public data: { prim: string; prim_params: any };
   add(target: Entity, data: typeof this.data) {
     // creates a mesh
     this.entity = target;
@@ -34,16 +34,14 @@ export class ComponentShape extends BaseComponent {
     this.entity.transformable?.dispose();
   }
   capitalize(string: string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
   }
   createMesh() {
     if (
-      ["box", "sphere", "cylinder", "plane", "capsule"].includes(
-        this.data.shape
-      )
+      ["box", "sphere", "cylinder", "plane", "capsule"].includes(this.data.prim)
     ) {
-      const builderFunction = `Create${this.capitalize(this.data.shape)}`;
-      const builderOptions = this.data.options;
+      const builderFunction = `Create${this.capitalize(this.data.prim)}`;
+      const builderOptions = this.data.prim_params;
 
       const mesh = BABYLON.MeshBuilder[builderFunction](
         this.entity.name,
