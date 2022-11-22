@@ -17,7 +17,7 @@ defmodule ThexrWeb.SpaceController do
       {:ok, space, pid} ->
         render(conn, "show.html",
           context_opts: %{
-            member_id: conn.assigns.unique_id,
+            my_member_id: conn.assigns.unique_id,
             user_token: user_token(conn),
             space: space,
             webrtc_channel_id: space.id

@@ -2,6 +2,8 @@ const fg = require("fast-glob");
 const fs = require("fs");
 const path = require("path");
 const esbuild = require("esbuild");
+const sveltePlugin = require("esbuild-svelte");
+const sveltePreprocess = require("svelte-preprocess");
 const gaze = require("gaze");
 
 // const externalPackages = ['react', 'react-dom'];
@@ -54,6 +56,11 @@ const transpileBundledTestFile = () => {
     entryPoints: [path.resolve(__dirname, "../test-files-index.ts")],
     outfile: path.resolve(__dirname, "../test-files-index.spec.js"),
     external: ["require", "fs", "path"],
+    plugins: [
+      sveltePlugin({
+        preprocess: sveltePreprocess(),
+      }),
+    ],
   };
   esbuild.build(opts);
 };
