@@ -1,11 +1,16 @@
 import * as BABYLON from "babylonjs";
-import { BaseComponent } from "../base-component";
-import { BaseSystem } from "../base-system";
 import type { Entity } from "../entity";
+import {
+  BaseSystemWithBehaviors,
+  type IBehavior,
+  type ISystem,
+} from "../system";
+import type { XRS } from "../xrs";
 
-export class ComponentShape extends BaseComponent {
+export class BehaviorShape implements IBehavior {
   public entity: Entity;
   public data: { prim: string; prim_params: any };
+  constructor(public system: SystemShape) {}
   add(target: Entity, data: typeof this.data) {
     // creates a mesh
     this.entity = target;
@@ -38,7 +43,9 @@ export class ComponentShape extends BaseComponent {
   }
   createMesh() {
     if (
-      ["box", "sphere", "cylinder", "plane", "capsule"].includes(this.data.prim)
+      ["box", "sphere", "cylinder", "plane", "capsule", "ground"].includes(
+        this.data.prim
+      )
     ) {
       const builderFunction = `Create${this.capitalize(this.data.prim)}`;
       const builderOptions = this.data.prim_params;
@@ -57,10 +64,13 @@ export class ComponentShape extends BaseComponent {
   }
 }
 
-export class SystemShape extends BaseSystem {
+export class SystemShape extends BaseSystemWithBehaviors implements ISystem {
   public name = "shape";
   public order = 1;
-  buildComponent() {
-    return new ComponentShape(this);
+  public xrs: XRS;
+  public schema = { prim: { type: "string" }, prim_params: {} }; // unused
+
+  buildBehavior(): IBehavior {
+    return new BehaviorShape(this);
   }
 }

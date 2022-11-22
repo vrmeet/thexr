@@ -4,15 +4,14 @@ import Ammo from "ammojs-typed";
 import * as sessionPersistance from "../../sessionPersistance";
 import type { Context } from "../context";
 import { camPosRot } from "../../utils/misc";
-import { BaseSystem } from "../base-system";
+import type { ISystem } from "../system";
 
-export class SystemScene extends BaseSystem {
+export class SystemScene implements ISystem {
   public xrs: XRS;
   public name = "scene";
-  public order = 0;
   public context: Context;
 
-  init(xrs: XRS) {
+  setup(xrs: XRS) {
     this.xrs = xrs;
     this.context = xrs.context;
     this.createEngine();
@@ -31,7 +30,7 @@ export class SystemScene extends BaseSystem {
     }
   }
 
-  run() {
+  start() {
     // run the render loop
     this.context.engine.runRenderLoop(() => {
       this.context.scene.render();

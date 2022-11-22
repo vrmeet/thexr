@@ -2,8 +2,6 @@
  * The context is a way of sharing commonly used data globally from any module that imports it
  */
 
-import * as sessionPersistance from "../sessionPersistance";
-
 import * as BABYLON from "babylonjs";
 type BABYLON = typeof BABYLON;
 
@@ -24,7 +22,7 @@ import type {
   ServiceRequests,
 } from "../signalHub";
 import type { Channel } from "phoenix";
-import type { ISystem } from "./isystem";
+import type { ISystem } from "./system";
 import type { Entity } from "./entity";
 
 export interface Context {
@@ -61,7 +59,7 @@ export const defaultContext = () => {
     systems: {},
     entities: {},
     my_member_id: null,
-    my_nickname: sessionPersistance.getNickname()?.nickname,
+    my_nickname: null,
     my_mic_muted: true,
     bypass_modal: false,
     menu_opened: false,

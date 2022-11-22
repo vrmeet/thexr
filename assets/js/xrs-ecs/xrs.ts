@@ -1,6 +1,8 @@
 import { defaultContext, type Context, type OPTS } from "./context";
 import { Entity } from "./entity";
-import type { ISystem } from "./isystem";
+import type { ISystem } from "./system";
+import { SystemAttendance } from "./systems/attendance";
+import { SystemBroker } from "./systems/broker";
 import { SystemScene } from "./systems/scene";
 import { SystemShape } from "./systems/shape";
 
@@ -11,33 +13,18 @@ export class XRS {
     this.context = defaultContext();
   }
 
-  init(opts: Partial<OPTS>) {
-    this.context = Object.assign(this.context, opts);
-    if (!this.context.my_nickname) {
-      this.context.my_nickname = this.context.my_member_id;
-    }
-
-    this.initDefaultSystems();
-    (this.getSystem("scene") as SystemScene).run();
-  }
-
-  debug() {
-    this.context.scene.debugLayer.show({ embedMode: true });
-  }
-
-  initDefaultSystems() {
-    // order matters here since context is updated between systems
-    // for example shape depends on context.scene
-    this.registerSystem(new SystemScene());
-    this.registerSystem(new SystemShape());
-  }
-
   registerSystem(sys: ISystem) {
     if (!sys.name) {
       throw new Error("Invalid System Name");
     }
-    sys.init(this);
+    sys.setup(this);
     this.context.systems[sys.name] = sys;
+  }
+  deregisterSystem(name: string) {
+    const system = this.getSystem(name);
+    if (system) {
+      system.tearDown();
+    }
   }
 
   getSystem(name: string) {
@@ -60,5 +47,25 @@ export class XRS {
       entity.dispose();
       delete this.context.entities[name];
     }
+  }
+
+  init(opts: Partial<OPTS>) {
+    this.context = Object.assign(this.context, opts);
+
+    this.initDefaultSystems();
+    this.getSystem("scene").start();
+  }
+
+  debug() {
+    this.context.scene.debugLayer.show({ embedMode: true });
+  }
+
+  initDefaultSystems() {
+    // order matters here since context is updated between systems
+    // for example shape depends on context.scene
+    this.registerSystem(new SystemScene());
+    this.registerSystem(new SystemShape());
+    this.registerSystem(new SystemBroker());
+    this.registerSystem(new SystemAttendance());
   }
 }

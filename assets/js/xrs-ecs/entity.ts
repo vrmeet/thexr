@@ -1,25 +1,25 @@
-import type { IComponent } from "./icomponent";
 import type { XRS } from "./xrs";
 import type * as BABYLON from "babylonjs";
+import type { ISystem } from "./system";
 
 export class Entity {
   public transformable: BABYLON.TransformNode | BABYLON.AbstractMesh;
   constructor(public name: string, public xrs: XRS) {}
-  components: Record<string, IComponent> = {};
+  components: { [componentName: string]: ISystem } = {};
   addComponent(componentName: string, componentData) {
     const system = this.xrs.getSystem(componentName);
+
     if (system) {
-      const component = system.buildComponent();
-      this.components[componentName] = component;
-      component.add(this, componentData);
+      this.components[system.name] = system;
+      system.addBehavior(this, componentData);
     } else {
       console.error("Unregistered System", componentName);
     }
   }
   updateComponent(componentName: string, componentData) {
-    const component = this.components[componentName];
-    if (component) {
-      component.update(componentData);
+    const system = this.components[componentName];
+    if (system) {
+      system.updateBehavior(this, componentData);
     } else {
       console.error(
         "Cannot update non-existant component",
@@ -30,9 +30,9 @@ export class Entity {
     }
   }
   removeComponent(componentName: string) {
-    const component = this.components[componentName];
-    if (component) {
-      component.remove();
+    const system = this.components[componentName];
+    if (system) {
+      system.removeBehavior(this);
     }
     delete this.components[componentName];
   }
