@@ -6,7 +6,7 @@
     import * as sessionPersistance from "../sessionPersistance";
     import { initClient } from "@urql/svelte";
     import { isMobileVR } from "../utils/utils-browser";
-    import type { Context } from "../context";
+    import type { Context } from "../xrs-ecs/context";
 
     // initClient({
     //     url: "/api",

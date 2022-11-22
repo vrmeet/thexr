@@ -49,7 +49,9 @@ export class BehaviorShape implements IBehavior {
     ) {
       const builderFunction = `Create${this.capitalize(this.data.prim)}`;
       const builderOptions = this.data.prim_params;
-
+      if (this.data.prim === "plane") {
+        builderOptions["sideOrientation"] = BABYLON.Mesh.DOUBLESIDE;
+      }
       const mesh = BABYLON.MeshBuilder[builderFunction](
         this.entity.name,
         builderOptions
@@ -58,6 +60,7 @@ export class BehaviorShape implements IBehavior {
       this.copyPosRotScale(mesh, this.entity.transformable);
       this.entity.transformable?.dispose();
       this.entity.transformable = mesh;
+      console.log("create mesh", this.entity.name, mesh);
     } else {
       throw new Error("unsupported shape");
     }

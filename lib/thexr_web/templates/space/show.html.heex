@@ -25,6 +25,6 @@
 
 <script>
 window.addEventListener("DOMContentLoaded", async () => {
-  XRS.init(<%= raw Jason.encode!(@context_opts) %>)
+  XRS.init(<%= raw Jason.encode!(@context_opts) %>, <%= raw Jason.encode!(@state) %>)
 });
 </script>

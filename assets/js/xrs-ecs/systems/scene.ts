@@ -5,6 +5,7 @@ import * as sessionPersistance from "../../sessionPersistance";
 import type { Context } from "../context";
 import { camPosRot } from "../../utils/misc";
 import type { ISystem } from "../system";
+import type { ComponentObj } from "../../ecs/components/component-obj";
 
 export class SystemScene implements ISystem {
   public xrs: XRS;
@@ -39,8 +40,6 @@ export class SystemScene implements ISystem {
     window.addEventListener("resize", () => {
       this.context.engine.resize();
     });
-
-    this.context.signalHub.local.emit("system_started", true);
   }
 
   async createScene() {
@@ -93,5 +92,11 @@ export class SystemScene implements ISystem {
       },
       { capture: true }
     );
+  }
+
+  parseState(state: { [entityName: string]: ComponentObj }) {
+    Object.entries(state).forEach(([entityName, components]) => {
+      this.xrs.createEntity(entityName, components);
+    });
   }
 }

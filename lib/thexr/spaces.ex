@@ -64,8 +64,7 @@ defmodule Thexr.Spaces do
       %{
         "id" => "grid-floor",
         "components" => %{
-          "shape" => %{"prim" => "plane", "prim_params" => %{"size" => 25}},
-          "transform" => %{"rotation" => [-1.5708, 0, 0]},
+          "shape" => %{"prim" => "ground", "prim_params" => %{"width" => 25, "height" => 25}},
           "material" => %{"name" => "grid"},
           "floor" => %{}
         }

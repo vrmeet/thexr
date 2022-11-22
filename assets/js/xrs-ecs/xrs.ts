@@ -1,10 +1,17 @@
+import type { ComponentObj } from "../ecs/components/component-obj";
 import { defaultContext, type Context, type OPTS } from "./context";
 import { Entity } from "./entity";
 import type { ISystem } from "./system";
 import { SystemAttendance } from "./systems/attendance";
 import { SystemBroker } from "./systems/broker";
+import { SystemFloor } from "./systems/floor";
+import { SystemInline } from "./systems/inline";
+import { SystemLighting } from "./systems/lighting";
+import { SystemMaterial } from "./systems/material";
 import { SystemScene } from "./systems/scene";
 import { SystemShape } from "./systems/shape";
+import { SystemStartModal } from "./systems/start-modal";
+import { SystemXR } from "./systems/xr";
 
 export class XRS {
   public context: Context;
@@ -28,12 +35,25 @@ export class XRS {
   }
 
   getSystem(name: string) {
-    return this.context.systems[name];
+    const system = this.context.systems[name] || null;
+    if (!system) {
+      console.warn("No system", name);
+    }
+    return system;
   }
 
-  createEntity(name: string) {
+  createEntity(name: string, components: ComponentObj = {}) {
     const entity = new Entity(name, this);
     this.context.entities[name] = entity;
+    // sort components by system order
+    Object.keys(components)
+      .map((componentName) => this.getSystem(componentName))
+      .filter((system) => system !== null)
+      .sort((a, b) => a.order - b.order)
+      .forEach((system) => {
+        entity.addComponent(system.name, components[system.name]);
+      });
+
     return entity;
   }
 
@@ -49,11 +69,18 @@ export class XRS {
     }
   }
 
-  init(opts: Partial<OPTS>) {
+  init(
+    opts: Partial<OPTS>,
+    beginningState: { [entityName: string]: ComponentObj }
+  ) {
     this.context = Object.assign(this.context, opts);
 
     this.initDefaultSystems();
-    this.getSystem("scene").start();
+    const systemScene = this.getSystem("scene") as SystemScene;
+    systemScene.start();
+    systemScene.parseState(beginningState);
+
+    this.context.signalHub.local.emit("system_started", true);
   }
 
   debug() {
@@ -65,7 +92,13 @@ export class XRS {
     // for example shape depends on context.scene
     this.registerSystem(new SystemScene());
     this.registerSystem(new SystemShape());
+    this.registerSystem(new SystemMaterial());
+    this.registerSystem(new SystemXR());
+    this.registerSystem(new SystemFloor());
+    this.registerSystem(new SystemInline());
+    this.registerSystem(new SystemLighting());
     this.registerSystem(new SystemBroker());
     this.registerSystem(new SystemAttendance());
+    this.registerSystem(new SystemStartModal());
   }
 }

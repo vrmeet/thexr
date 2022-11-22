@@ -24,6 +24,7 @@ import type {
 import type { Channel } from "phoenix";
 import type { ISystem } from "./system";
 import type { Entity } from "./entity";
+import type { ComponentObj } from "../ecs/components/component-obj";
 
 export interface Context {
   systems: Record<string, ISystem>;

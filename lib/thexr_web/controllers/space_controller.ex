@@ -14,7 +14,7 @@ defmodule ThexrWeb.SpaceController do
         |> put_flash(:error, "Unrecognized Space ID in the URL")
         |> redirect(to: Routes.page_path(conn, :index))
 
-      {:ok, space, _pid} ->
+      {:ok, space, pid} ->
         render(conn, "show.html",
           context_opts: %{
             member_id: conn.assigns.unique_id,
@@ -22,6 +22,7 @@ defmodule ThexrWeb.SpaceController do
             space: space,
             webrtc_channel_id: space.id
           },
+          state: Spaces.get_state(space.state_id, pid),
           layout: false
         )
     end
