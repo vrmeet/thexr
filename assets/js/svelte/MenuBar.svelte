@@ -3,18 +3,16 @@
   import { afterUpdate } from "svelte";
   import type { Subscription } from "rxjs";
   import MenuHome from "./MenuHome.svelte";
-  import type { Context } from "../context";
-  import {
-    BAR_HEIGHT,
-    BAR_WIDTH,
-    SystemMenu,
-  } from "../ecs/builtin_systems/system-menu";
+  import { BAR_HEIGHT, BAR_WIDTH, SystemMenu } from "../xrs-ecs/systems/menu";
+  import type { Context } from "../xrs-ecs/context";
   //props
 
   export let context: Context;
 
   setContext("context", context);
-  const systemMenu: SystemMenu = context.systems["menu"] as SystemMenu;
+  const systemMenu: SystemMenu = context.systems[
+    "menu"
+  ] as unknown as SystemMenu;
   $: muted = context.my_mic_muted;
   $: menu_opened = context.menu_opened;
   $: logs_opened = context.logs_opened;

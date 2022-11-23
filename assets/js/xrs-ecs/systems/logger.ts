@@ -1,9 +1,9 @@
 /* eslint-disable no-fallthrough */
-import type { Context } from "../../context";
-import type { SignalHub } from "../../signalHub";
-import type { ISystem } from "./isystem";
 import * as BABYLON from "babylonjs";
 import * as GUI from "babylonjs-gui";
+import type { SignalHub } from "../../signalHub";
+import type { ISystem } from "../system";
+import type { XRS } from "../xrs";
 
 enum LogLevel {
   DEBUG,
@@ -25,10 +25,12 @@ export class SystemLogger implements ISystem {
   public logPlane: BABYLON.AbstractMesh;
   public logTexture: GUI.AdvancedDynamicTexture;
   public textBlock: GUI.TextBlock;
-  init(context: Context) {
+  public xrs: XRS;
+  setup(xrs: XRS) {
+    this.xrs = xrs;
     this.recentLogs = [];
-    this.scene = context.scene;
-    this.signalHub = context.signalHub;
+    this.scene = xrs.context.scene;
+    this.signalHub = xrs.context.signalHub;
     this.overRideWindowConsole();
     this.signalHub.local.on("menu_event").subscribe((value) => {
       if (value === "logger_opened") {
@@ -134,7 +136,10 @@ export class SystemLogger implements ISystem {
   }
 
   flashError(...args) {
-    this.signalHub.incoming.emit("hud_msg", this.rowToString(args));
+    this.signalHub.incoming.emit("msg", {
+      system: "logger",
+      data: { msg: this.rowToString(args) },
+    });
   }
 
   rowToString(row: any[]) {

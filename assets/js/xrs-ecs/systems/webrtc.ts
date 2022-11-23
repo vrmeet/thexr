@@ -1,6 +1,4 @@
 /* eslint-disable no-prototype-builtins */
-import type { Context } from "../../context";
-import type { ISystem } from "./isystem";
 import AgoraRTC from "agora-rtc-sdk-ng";
 import type {
   ConnectionState,
@@ -12,11 +10,14 @@ import type {
   IRemoteVideoTrack,
 } from "agora-rtc-sdk-ng";
 import { filter, take, Subject, scan } from "rxjs";
-import type { ComponentObj } from "../components/component-obj";
+import type { ISystem } from "../system";
+import type { Context } from "../context";
+import type { XRS } from "../xrs";
 
 export class SystemWebRTC implements ISystem {
   public name = "webrtc";
   public order = 10;
+  public xrs: XRS;
   public context: Context;
   public client: IAgoraRTCClient;
   public verification = new Subject<"be_connected" | "be_disconnected">();
@@ -40,8 +41,9 @@ export class SystemWebRTC implements ISystem {
     token: null,
   };
 
-  init(context: Context) {
-    this.context = context;
+  setup(xrs: XRS) {
+    this.xrs = xrs;
+    this.context = xrs.context;
     this.options.channel = this.context.webrtc_channel_id;
     this.options.uid = this.context.my_member_id;
 

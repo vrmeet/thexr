@@ -5,13 +5,19 @@ import type { ISystem } from "./system";
 import { SystemAttendance } from "./systems/attendance";
 import { SystemBroker } from "./systems/broker";
 import { SystemFloor } from "./systems/floor";
+import { SystemHUD } from "./systems/hud";
 import { SystemInline } from "./systems/inline";
 import { SystemLighting } from "./systems/lighting";
+import { SystemLogger } from "./systems/logger";
 import { SystemMaterial } from "./systems/material";
+import { SystemMenu } from "./systems/menu";
 import { SystemScene } from "./systems/scene";
 import { SystemShape } from "./systems/shape";
 import { SystemStartModal } from "./systems/start-modal";
+import { SystemTransform } from "./systems/transform";
+import { SystemWebRTC } from "./systems/webrtc";
 import { SystemXR } from "./systems/xr";
+import { SystemXRFlight } from "./systems/xr-flight";
 
 export class XRS {
   public context: Context;
@@ -100,5 +106,12 @@ export class XRS {
     this.registerSystem(new SystemBroker());
     this.registerSystem(new SystemAttendance());
     this.registerSystem(new SystemStartModal());
+    this.registerSystem(new SystemTransform());
+
+    this.registerSystem(new SystemHUD());
+    this.registerSystem(new SystemLogger());
+    this.registerSystem(new SystemMenu());
+    this.registerSystem(new SystemWebRTC());
+    this.registerSystem(new SystemXRFlight());
   }
 }

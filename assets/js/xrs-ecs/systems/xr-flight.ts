@@ -1,27 +1,25 @@
-import { filter, Subscription } from "rxjs";
-import type { Context } from "../../context";
-import type { ISystem } from "./isystem";
-import * as BABYLON from "babylonjs";
+import { filter, type Subscription } from "rxjs";
 import { makeXRFrameSignal } from "../../utils/misc";
-import type { SystemXR } from "./system-xr";
-
+import type { Context } from "../context";
+import type { ISystem } from "../system";
+import type { XRS } from "../xrs";
+import * as BABYLON from "babylonjs";
+import type { SystemXR } from "./xr";
 const NORMAL_DAMPENING_FACTOR = 0.1;
 const GO_FASTER_DAMPENING = 0.2;
 
 export class SystemXRFlight implements ISystem {
+  public xrs: XRS;
   public context: Context;
   public name = "xr-flight";
   public order = 20;
   public forwardVelocity = 0;
   public sideVelocity = 0;
   public dampeningFactor = NORMAL_DAMPENING_FACTOR; // slows down the speed to prevent nausea
-
-  // public exitingXR$;
-  // public enteringXR$;
   public subscriptions: Subscription[] = [];
-
-  init(context: Context) {
-    this.context = context;
+  setup(xrs: XRS): void {
+    this.xrs = xrs;
+    this.context = xrs.context;
 
     this.context.signalHub.local
       .on("xr_state_changed")

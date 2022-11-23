@@ -1,15 +1,16 @@
 /* ability to show a message that is sticky to VR camera */
 import * as BABYLON from "babylonjs";
 import * as GUI from "babylonjs-gui";
-
-import { scan, map, filter } from "rxjs/operators";
-import type { Context } from "../../context";
+import type { Context } from "../context";
+import type { ISystem } from "../system";
+import type { XRS } from "../xrs";
 import type { SignalHub } from "../../signalHub";
-import type { ISystem } from "./isystem";
+import { filter, map, scan } from "rxjs";
 
 const MSG_DURATION = 3000; // ms
 
 export class SystemHUD implements ISystem {
+  public xrs: XRS;
   public context: Context;
   public name = "hud";
   public order = 30;
@@ -21,11 +22,12 @@ export class SystemHUD implements ISystem {
   timeout: any;
   signalHub: SignalHub;
   scene: BABYLON.Scene;
+  setup(xrs: XRS): void {
+    this.xrs = xrs;
 
-  init(context: Context) {
-    this.context = context;
-    this.signalHub = context.signalHub;
-    this.scene = context.scene;
+    this.context = xrs.context;
+    this.signalHub = xrs.context.signalHub;
+    this.scene = xrs.context.scene;
     const utilLayer = BABYLON.UtilityLayerRenderer.DefaultUtilityLayer;
     this.plane = BABYLON.MeshBuilder.CreatePlane(
       "hud_msg_plane",

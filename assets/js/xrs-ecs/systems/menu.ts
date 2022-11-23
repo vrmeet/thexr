@@ -1,13 +1,13 @@
 /// <reference types="svelte" />
-import type { Context } from "../../context";
-import type { ISystem } from "./isystem";
 import * as BABYLON from "babylonjs";
 import * as GUI from "babylonjs-gui";
-import type { SignalHub } from "../../signalHub";
 import { filter } from "rxjs";
-
-import MenuBar from "../../svelte/MenuBar.svelte";
+import type { SignalHub } from "../../signalHub";
 import { cameraFrontPosition } from "../../utils/misc";
+import type { Context } from "../context";
+import type { ISystem } from "../system";
+import type { XRS } from "../xrs";
+import MenuBar from "../../svelte/MenuBar.svelte";
 
 export const BAR_WIDTH = 256;
 export const BAR_HEIGHT = 256;
@@ -32,10 +32,11 @@ export class SystemMenu implements ISystem {
   // used to determine when to attach keyboard
   public inputs: Record<string, GUI.InputText> = {};
   public guiControls: Record<string, GUI.Control> = {};
-
-  init(context: Context) {
-    this.context = context;
-    this.scene = context.scene;
+  public xrs: XRS;
+  setup(xrs: XRS) {
+    this.xrs = xrs;
+    this.context = xrs.context;
+    this.scene = xrs.context.scene;
     this.mode = "fs";
 
     // const engine = this.context.scene.getEngine();
@@ -50,7 +51,7 @@ export class SystemMenu implements ISystem {
     // fakeGrip.position.y = 1.5;
     // this.grip = fakeGrip;
 
-    this.signalHub = context.signalHub;
+    this.signalHub = xrs.context.signalHub;
 
     this.signalHub.local
       .on("client_ready")

@@ -1,5 +1,9 @@
 NEXT:
 
+move the gizmo stuff out of transform and into new service
+  -- maybe it's only a inline feature
+  - in VR we can move by grabbing
+
 write test for:
 
 when getting a message for entity created and contains both shape and transform

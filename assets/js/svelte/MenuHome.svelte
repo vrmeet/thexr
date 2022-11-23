@@ -6,16 +6,14 @@
   import Select from "./Select.svelte";
   import Export from "./Export.svelte";
   import { afterUpdate } from "svelte";
-  import {
-    HOME_HEIGHT,
-    HOME_WIDTH,
-    SystemMenu,
-  } from "../ecs/builtin_systems/system-menu";
+  import { HOME_HEIGHT, HOME_WIDTH, SystemMenu } from "../xrs-ecs/systems/menu";
 
   export let toggleMenu: () => void;
 
   let context: Context = getContext("context");
-  const systemMenu: SystemMenu = context.systems["menu"] as SystemMenu;
+  const systemMenu: SystemMenu = context.systems[
+    "menu"
+  ] as unknown as SystemMenu;
   let selected;
   let componentData;
   const setSelected = (component, data = {}) => {
