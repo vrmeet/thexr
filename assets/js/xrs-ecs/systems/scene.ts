@@ -19,6 +19,23 @@ export class SystemScene implements ISystem {
     this.createScene();
     this.createDefaultCamera();
   }
+
+  setupListeners() {
+    this.xrs.context.scene.onPointerObservable.add((pointerInfo) => {
+      this.context.signalHub.local.emit("pointer_info", pointerInfo);
+      if (
+        pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK &&
+        pointerInfo.pickInfo.hit &&
+        pointerInfo.pickInfo.pickedMesh
+      ) {
+        // generic message some mesh picked
+        this.context.signalHub.local.emit(
+          "mesh_picked",
+          pointerInfo.pickInfo.pickedMesh
+        );
+      }
+    });
+  }
   createEngine() {
     if (!this.context.engine) {
       const canvas = document.getElementById(
@@ -94,9 +111,12 @@ export class SystemScene implements ISystem {
     );
   }
 
+  // this is called before the user enters the space, so they can see some of it
   parseState(state: { [entityName: string]: ComponentObj }) {
     Object.entries(state).forEach(([entityName, components]) => {
-      this.xrs.createEntity(entityName, components);
+      if (components && components.avatar === undefined) {
+        this.xrs.createEntity(entityName, components);
+      }
     });
   }
 }

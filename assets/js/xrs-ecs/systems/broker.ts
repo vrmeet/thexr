@@ -6,6 +6,7 @@ import { Channel, Socket } from "phoenix";
 import type { IncomingEvents, OutgoingEvents } from "../../signalHub";
 import { filter, map, mergeWith, pipe, scan, throttleTime } from "rxjs";
 import type { PosRot } from "../../types";
+import { camPosRot } from "../../utils/misc";
 
 export class SystemBroker implements ISystem {
   public name = "broker";
@@ -23,6 +24,76 @@ export class SystemBroker implements ISystem {
     this.setupListeners();
   }
   setupListeners() {
+    this.context.signalHub.incoming.on("space_state").subscribe((state) => {
+      this.xrs.clearAllEntities();
+
+      // draw any previously existing entities in genserver memory
+      for (const [entity_id, components] of Object.entries(state)) {
+        this.context.signalHub.incoming.emit("entity_created", {
+          id: entity_id,
+          components: components,
+        });
+      }
+      // send initial entity for self if not already in the state
+      if (!state[this.context.my_member_id]) {
+        this.enter();
+      } else {
+        // check if there are differences and send those
+        if (
+          state[this.context.my_member_id].nickname !== this.context.my_nickname
+        ) {
+          this.context.signalHub.outgoing.emit("components_upserted", {
+            id: this.context.my_member_id,
+            components: {
+              attendance: {
+                nickname: this.context.my_nickname,
+                mic_muted: this.context.my_mic_muted,
+              },
+            },
+          });
+        }
+      }
+    });
+
+    this.context.signalHub.incoming.on("entity_created").subscribe((evt) => {
+      // components can be marked nil if just deleted and just loaded state from a genserver
+      if (evt.components !== null) {
+        this.xrs.createEntity(evt.id, evt.components);
+        // this.registerEntity(evt.id, evt.components);
+      }
+    });
+
+    this.context.signalHub.incoming.on("entities_deleted").subscribe((evt) => {
+      evt.ids.forEach((id) => {
+        this.xrs.deleteEntity(id);
+        // this.deregisterEntity(id);
+      });
+    });
+
+    this.context.signalHub.incoming
+      .on("components_upserted")
+      .subscribe((evt) => {
+        console.log("receiving", evt);
+        const entity = this.xrs.getEntity(evt.id);
+        if (!entity) {
+          console.warn("cannot upsert components of undefined entity", evt);
+        }
+        Object.entries(evt.components).forEach(([componentName, data]) => {
+          if (entity.hasComponent(componentName)) {
+            entity.updateComponent(componentName, data);
+          } else {
+            entity.addComponent(componentName, data);
+          }
+        });
+      });
+
+    this.context.signalHub.incoming.on("msg").subscribe((data) => {
+      const system = this.xrs.getSystem(data.system);
+      if (system && system.processMsg !== undefined) {
+        system.processMsg(data.data);
+      }
+    });
+
     this.context.signalHub.incoming.on("server_lost").subscribe(() => {
       window.location.href = "/";
     });
@@ -165,5 +236,24 @@ export class SystemBroker implements ISystem {
           components: { avatar: payload },
         });
       });
+  }
+
+  enter() {
+    this.context.signalHub.outgoing.emit("entity_created", {
+      id: this.context.my_member_id,
+      components: {
+        avatar: { head: camPosRot(this.context.scene.activeCamera) },
+        attendance: {
+          nickname: this.context.my_nickname,
+          mic_muted: this.context.my_mic_muted,
+          collectable_values: { health: 100 },
+          collectable_items: [],
+        },
+      },
+    });
+    this.context.signalHub.outgoing.emit("msg", {
+      system: "hud",
+      data: { msg: `${this.context.my_nickname} entered` },
+    });
   }
 }

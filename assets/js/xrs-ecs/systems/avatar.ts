@@ -21,7 +21,7 @@ export class SystemAvatar extends BaseSystemWithBehaviors implements ISystem {
   public context: Context;
   public signalHub: SignalHub;
   public xrs: XRS;
-  init(xrs: XRS) {
+  setup(xrs: XRS) {
     this.context = xrs.context;
     this.signalHub = xrs.context.signalHub;
     this.scene = xrs.context.scene;
@@ -93,6 +93,7 @@ export class SystemAvatar extends BaseSystemWithBehaviors implements ISystem {
     // });
   }
   buildBehavior(): IBehavior {
+    console.log("building behavior for", this.name, this);
     return new BehaviorAvatar(this);
   }
 
@@ -175,11 +176,13 @@ class BehaviorAvatar implements IBehavior {
   }
 
   add(entity: Entity, data: AvatarType): void {
+    console.log("in avatar add");
     this.entity = entity;
     this.data = data;
     this.findOrCreateAvatarHead();
 
     this.findOrCreateAvatarHand("left");
+    console.log("created left hand", this);
     this.setHandRaisedPosition(this.leftTransform, "left");
 
     this.findOrCreateAvatarHand("right");
@@ -337,13 +340,17 @@ class BehaviorAvatar implements IBehavior {
   }
 
   findOrCreateAvatarHand(hand: string) {
+    console.log("in find or create avatar hand");
     const transformName = `${this.entity.name}_avatar_${hand}_transform`;
     const meshName = `${this.entity.name}_avatar_${hand}`;
     let transform = this.scene.getTransformNodeByName(transformName);
+    console.log("what is transfomr", transform?.name);
     if (!transform) {
       transform = new BABYLON.TransformNode(transformName, this.scene);
       transform.rotationQuaternion = new this.context.BABYLON.Quaternion();
+      console.log("setting", `${hand}Transform`);
       this[`${hand}Transform`] = transform;
+      console.log(this[`${hand}Transform`]);
       const mesh = this.context.BABYLON.MeshBuilder.CreateBox(
         meshName,
         { width: 0.053, height: 0.08, depth: 0.1 },

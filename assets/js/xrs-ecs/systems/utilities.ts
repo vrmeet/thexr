@@ -1,16 +1,18 @@
-import type { Context } from "../../context";
+import type { Context } from "../context";
+import type { ISystem } from "../system";
+import type { XRS } from "../xrs";
 import * as BABYLON from "babylonjs";
-import type { ISystem } from "./isystem";
 
 const ANIMATION_FRAME_PER_SECOND = 60;
 
 export class SystemUtilities implements ISystem {
   name = "utilities";
-  public order = 10;
+  public xrs: XRS;
   public animatables: Record<string, BABYLON.Animatable> = {};
   public context: Context;
-  init(context: Context) {
-    this.context = context;
+  setup(xrs: XRS) {
+    this.xrs = xrs;
+    this.context = xrs.context;
     this.context.signalHub.service.on("animate_translate").subscribe((req) => {
       let target = req.target;
       if (typeof target === "string") {

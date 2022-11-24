@@ -23,6 +23,7 @@ export interface ISystem {
   removeBehavior?(entity: Entity): void;
   pauseBehavior?(entity: Entity): void;
   resumeBehavior?(entity: Entity): void;
+  processMsg?(any): void;
 }
 
 export abstract class BaseSystemWithBehaviors implements ISystem {

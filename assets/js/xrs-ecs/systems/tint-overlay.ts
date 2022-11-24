@@ -1,8 +1,9 @@
-import type { Context } from "../../context";
-import type { ISystem } from "./isystem";
 import * as BABYLON from "babylonjs";
 import { filter, take, type BehaviorSubject } from "rxjs";
 import type { SignalHub } from "../../signalHub";
+import type { Context } from "../context";
+import type { ISystem } from "../system";
+import type { XRS } from "../xrs";
 
 export class SystemTintOverlay implements ISystem {
   public name = "tint-overlay";
@@ -12,10 +13,12 @@ export class SystemTintOverlay implements ISystem {
   public signalHub: SignalHub;
   public tint: BehaviorSubject<"asc" | "desc" | "holding" | "none">;
   public scene: BABYLON.Scene;
-  init(context: Context) {
-    this.context = context;
-    this.signalHub = context.signalHub;
-    this.scene = context.scene;
+  public xrs: XRS;
+  setup(xrs: XRS) {
+    this.xrs = xrs;
+    this.context = xrs.context;
+    this.signalHub = xrs.context.signalHub;
+    this.scene = xrs.context.scene;
     BABYLON.Effect.ShadersStore["tintFragmentShader"] = `
         #ifdef GL_ES
             precision highp float;
