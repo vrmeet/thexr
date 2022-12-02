@@ -23,6 +23,7 @@ export interface ISystem {
   removeBehavior?(entity: Entity): void;
   pauseBehavior?(entity: Entity): void;
   resumeBehavior?(entity: Entity): void;
+  getBehaviorData?(entity: Entity): any;
   processMsg?(any): void;
 }
 
@@ -41,7 +42,9 @@ export abstract class BaseSystemWithBehaviors implements ISystem {
     this.entities[entity.name] = behavior;
     behavior.add(entity, data);
   }
-
+  getBehaviorData(entity: Entity) {
+    return this.entities[entity.name].data;
+  }
   updateBehavior(entity: Entity, data: any): void {
     this.entities[entity.name].update(data);
   }

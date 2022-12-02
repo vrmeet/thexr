@@ -144,15 +144,29 @@ export type MovementEvents = {
   right_button_down: string;
   right_button_up: string;
 
-  left_grip_mesh: BABYLON.AbstractMesh;
-  left_lost_mesh: any;
-  right_grip_mesh: BABYLON.AbstractMesh;
-  right_lost_mesh: any;
+  left_grip_mesh: {
+    mesh: BABYLON.AbstractMesh;
+    input: BABYLON.WebXRInputSource;
+  };
+  left_lost_mesh: {
+    reason: "released" | "transferred" | "taken";
+    mesh: BABYLON.AbstractMesh;
+    input: BABYLON.WebXRInputSource;
+  };
+  right_grip_mesh: {
+    mesh: BABYLON.AbstractMesh;
+    input: BABYLON.WebXRInputSource;
+  };
+  right_lost_mesh: {
+    reason: "released" | "transferred" | "taken";
+    mesh: BABYLON.AbstractMesh;
+    input: BABYLON.WebXRInputSource;
+  };
 
   trigger_holding_mesh: {
     hand: "left" | "right";
     mesh: BABYLON.AbstractMesh;
-    inputSource: BABYLON.WebXRInputSource;
+    input: BABYLON.WebXRInputSource;
   };
   // ... with a mesh
   // left_grip_squeezed_w_mesh: BABYLON.AbstractMesh

@@ -1,8 +1,14 @@
 import * as BABYLON from "babylonjs";
-import { filter, switchMap, takeUntil } from "rxjs";
+import { filter, Subscription, switchMap, takeUntil } from "rxjs";
 import type { SignalHub } from "../../signalHub";
+import { arrayReduceSigFigs } from "../../utils/misc";
 import type { Context } from "../context";
-import type { ISystem } from "../system";
+import type { Entity } from "../entity";
+import {
+  BaseSystemWithBehaviors,
+  type IBehavior,
+  type ISystem,
+} from "../system";
 import type { XRS } from "../xrs";
 
 /*
@@ -21,7 +27,7 @@ const BULLET_SPEED = 60;
 const BULLET_DISTANCE = 60;
 const FRAME_RATE = 60;
 
-export class SystemGun implements ISystem {
+export class SystemGun extends BaseSystemWithBehaviors implements ISystem {
   public name = "gun";
   public order = 30;
   public context: Context;
@@ -62,33 +68,33 @@ export class SystemGun implements ISystem {
     );
     this.bulletTrail.stop();
 
-    this.signalHub.movement
-      .on("trigger_holding_mesh")
-      .pipe(
-        filter(
-          (evt) =>
-            this.context.state[evt.mesh.name] !== undefined &&
-            this.context.state[evt.mesh.name].gun !== undefined
-        )
-      )
-      .subscribe((evt) => {
-        // fire a bullet if we have ammo
-        console.log("fire a bullet");
-        this.signalHub.outgoing.emit("msg", {
-          system: "gun",
-          data: <FireBulletEvent>{
-            name: "fire_bullet",
-            shooter: this.context.my_member_id,
-            gun: evt.mesh.name,
-            pos: arrayReduceSigFigs(
-              evt.inputSource.grip.absolutePosition.asArray()
-            ),
-            direction: arrayReduceSigFigs(
-              evt.inputSource.pointer.forward.asArray()
-            ),
-          },
-        });
-      });
+    // this.signalHub.movement
+    //   .on("trigger_holding_mesh")
+    //   .pipe(
+    //     filter(
+    //       (evt) =>
+    //         this.context.state[evt.mesh.name] !== undefined &&
+    //         this.context.state[evt.mesh.name].gun !== undefined
+    //     )
+    //   )
+    //   .subscribe((evt) => {
+    //     // fire a bullet if we have ammo
+    //     console.log("fire a bullet");
+    //     this.signalHub.outgoing.emit("msg", {
+    //       system: "gun",
+    //       data: <FireBulletEvent>{
+    //         name: "fire_bullet",
+    //         shooter: this.context.my_member_id,
+    //         gun: evt.mesh.name,
+    //         pos: arrayReduceSigFigs(
+    //           evt.inputSource.grip.absolutePosition.asArray()
+    //         ),
+    //         direction: arrayReduceSigFigs(
+    //           evt.inputSource.pointer.forward.asArray()
+    //         ),
+    //       },
+    //     });
+    //   });
 
     // replenish ammo if I pick up a collectable...
 
@@ -98,7 +104,7 @@ export class SystemGun implements ISystem {
   }
 
   // this method called on custom msg that matches system name
-  process_msg(data: FireBulletEvent) {
+  processMsg(data: FireBulletEvent) {
     console.log("a bulelt was fired", data);
     const bullet = this.bulletModel.clone("bullet", null);
     bullet.setEnabled(true);
@@ -155,5 +161,51 @@ export class SystemGun implements ISystem {
 
     //see if this bullet intersects *any* mesh
     this.scene.registerBeforeRender(checkBulletForIntersect);
+  }
+  buildBehavior(): IBehavior {
+    return new BehaviorGun(this);
+  }
+}
+
+export class BehaviorGun implements IBehavior {
+  data: any;
+  entity: Entity;
+  subscription: Subscription;
+  signalHub: SignalHub;
+  constructor(public system: SystemGun) {
+    this.signalHub = this.system.context.signalHub;
+  }
+  add(entity: Entity, data: any): void {
+    this.entity = entity;
+    this.data = data;
+    this.subscription = this.makeSubscription();
+  }
+  update(data: any): void {
+    this.data = data;
+  }
+  remove(): void {
+    this.subscription.unsubscribe();
+  }
+  makeSubscription() {
+    return this.signalHub.movement
+      .on("trigger_holding_mesh")
+      .pipe(filter((evt) => evt.mesh.name === this.entity.name))
+      .subscribe((evt) => {
+        this.emitBulletFire(evt.inputSource);
+      });
+  }
+  emitBulletFire(inputSource: BABYLON.WebXRInputSource) {
+    // fire a bullet if we have ammo
+    console.log("fire a bullet");
+    return this.signalHub.outgoing.emit("msg", {
+      system: "gun",
+      data: <FireBulletEvent>{
+        name: "fire_bullet",
+        shooter: this.system.context.my_member_id,
+        gun: this.entity.name,
+        pos: arrayReduceSigFigs(inputSource.grip.absolutePosition.asArray()),
+        direction: arrayReduceSigFigs(inputSource.pointer.forward.asArray()),
+      },
+    });
   }
 }

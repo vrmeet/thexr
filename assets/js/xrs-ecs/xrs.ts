@@ -6,6 +6,7 @@ import type { ISystem } from "./system";
 import { SystemAttendance } from "./systems/attendance";
 import { SystemAvatar } from "./systems/avatar";
 import { SystemBroker } from "./systems/broker";
+import { SystemCollectable } from "./systems/collectable";
 import { SystemFloor } from "./systems/floor";
 import { SystemHUD } from "./systems/hud";
 import { SystemInline } from "./systems/inline";
@@ -131,5 +132,6 @@ export class XRS {
     this.registerSystem(new SystemXRFlight());
     this.registerSystem(new SystemAvatar());
     this.registerSystem(new SystemTintOverlay());
+    this.registerSystem(new SystemCollectable());
   }
 }

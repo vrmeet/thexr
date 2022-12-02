@@ -6,6 +6,9 @@ export class Entity {
   public transformable: BABYLON.TransformNode | BABYLON.AbstractMesh;
   constructor(public name: string, public xrs: XRS) {}
   components: { [componentName: string]: ISystem } = {};
+  getComponentBehaviorData(componentName: string) {
+    return this.components[componentName]?.getBehaviorData(this);
+  }
   hasComponent(componentName: string) {
     return this.components[componentName] !== undefined;
   }

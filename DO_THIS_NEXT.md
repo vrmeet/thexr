@@ -1,5 +1,56 @@
 NEXT:
 
+animation as components, only work as a mostly static attribute.  constant rotation.  bobbing up and down.  For dynamic movement, you would have to keep updating the component to the current state, like avatar movement.  Some movement is linear,
+like a bullet, or procedural like an arc.  So we can just msg the remote procedure call to limit
+messages.  But sometimes those animations can be interrupted.  For example two people playing catch with throwing an object.  If the item is not interrupted, let the person that threw it, continuously update the pos/rot like an animator until the object comes to a rest (times out) or until a second player or first player, grabs it.
+
+BUT if the system you are updating (like transform), also repositions the object when the component is changed, then there is a fight between animating and updating a static position.  Either don't send the messages, or don't update the position when there is physics or animation going on for the object.
+
+OR: animation can be part of the state as a component.  animate: { pos:, rot: , ttl: },
+animate component is not stored in db.  but the animate system will apply the animation.
+This will create an animation in the scene.
+When there is an animation in the scene for an entity name, transform will not update position for it.
+
+How holdable works:
+  The system xr detects raw positions and button presses and emits them into the signal hub movements.
+
+  holdable listens to all grip, on both hands and checks to see if rays intersect a mesh whose
+  entity has a holdable component, then emits a mesh grip left event.  
+
+  From the entity's point of view, the component is added which adds a subscription to listen to
+  mesh grip left and mesh grip right.
+    - in the subscription, 
+    The holdable can have an optional offset.  If no position/rotation offset then the parenting is
+    relative to dynamic data where the ever the users hands are now.
+    
+    1. emit outgoing event, so every and self can parent the mesh to the hand
+    2. add a one time subscription that is triggered by a race between
+       a. release of this hand grip
+       b. mesh grip from the other hand on this mesh
+       c. incoming event that upserts the transform of this mesh
+       - if any of these are met, then 
+          1. emit entity upsert that unparents the mesh
+          2. if there is any throwable data, then impulse the mesh by sending system msg
+            grabbable: { throwable: "discard" | "keep" }
+
+
+  Depending on the shape of component data, the mesh should be parented to the left or right hand
+    and an event should upsert the component transform to update the parentage of the mesh to the hand
+
+  If both hands are grabbing, the distance and angle between the hands could be used to update rotation and scale of the mesh.  Of course the component data must specify this option, otherwise
+  grabbing with second hand would unparent the mesh from the first hand.
+
+a duplicate entity should just be a component that points at the original
+
+an export saves to external file
+an import uses an external url
+
+a merge, intersect or subtract hides and disables the original and makes a component
+boolean with the operation of "subtract(entity1, entity2)" and entity1 and entitey2 are hidden
+with entity 3 created with a component of boolean on those 2.
+
+
+
 move the gizmo stuff out of transform and into new service
   -- maybe it's only a inline feature
   - in VR we can move by grabbing

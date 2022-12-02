@@ -7,6 +7,12 @@ import type { ISystem } from "../system";
 import type { XRS } from "../xrs";
 import * as BABYLON from "babylonjs";
 
+/**
+ * Sends all head and controller events into signal hub
+ * automatically unsubscribes to observables when leaving XR
+ * and recreates observables when controllers are ready again
+ */
+
 export class SystemXR implements ISystem {
   public xrs: XRS;
   name = "xr";
