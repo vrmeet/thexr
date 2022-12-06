@@ -76,7 +76,6 @@ export class SystemInline implements ISystem {
   }
 
   inlineGrab(mesh: BABYLON.AbstractMesh) {
-    console.log("can grab this");
     // tell everyone you grabbed it
     const rightHand = this.scene.getMeshByName(
       `${this.context.my_member_id}_avatar_right`

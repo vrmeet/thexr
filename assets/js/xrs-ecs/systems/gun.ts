@@ -79,7 +79,7 @@ export class SystemGun extends BaseSystemWithBehaviors implements ISystem {
     //   )
     //   .subscribe((evt) => {
     //     // fire a bullet if we have ammo
-    //     console.log("fire a bullet");
+    //
     //     this.signalHub.outgoing.emit("msg", {
     //       system: "gun",
     //       data: <FireBulletEvent>{
@@ -105,7 +105,6 @@ export class SystemGun extends BaseSystemWithBehaviors implements ISystem {
 
   // this method called on custom msg that matches system name
   processMsg(data: FireBulletEvent) {
-    console.log("a bulelt was fired", data);
     const bullet = this.bulletModel.clone("bullet", null);
     bullet.setEnabled(true);
     bullet.position.fromArray(data.pos);
@@ -154,7 +153,7 @@ export class SystemGun extends BaseSystemWithBehaviors implements ISystem {
         animation.stop();
 
         // TODO, after hit something, emit some message,
-        console.log("a bullet hit something");
+
         removeBullet();
       }
     };
@@ -196,7 +195,7 @@ export class BehaviorGun implements IBehavior {
   }
   emitBulletFire(inputSource: BABYLON.WebXRInputSource) {
     // fire a bullet if we have ammo
-    console.log("fire a bullet");
+
     return this.signalHub.outgoing.emit("msg", {
       system: "gun",
       data: <FireBulletEvent>{

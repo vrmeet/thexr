@@ -100,16 +100,16 @@ export const animateTranslation = (
 // export const bindSceneObservablesToSignalHub = (scene: BABYLON.Scene) => {
 //   scene.onPointerObservable.add((pointerInfo) => {
 //     signalHub.local.emit("pointer_info", pointerInfo);
-//     console.log("pointerInfo", pointerInfo);
+//
 //     if (
 //       pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN &&
 //       pointerInfo.pickInfo.hit &&
 //       pointerInfo.pickInfo.pickedMesh
 //     ) {
-//       console.log("a mesh was picked");
+//
 //       signalHub.local.emit("mesh_picked", pointerInfo.pickInfo.pickedMesh);
 //     } else {
-//       console.log("no mesh was picked");
+//
 //     }
 //   });
 //   scene.onKeyboardObservable.add((keyboardInfo) => {
@@ -134,15 +134,14 @@ export const cameraFrontFloorPosition = (
     .getDirection(BABYLON.Vector3.Forward())
     .normalize()
     .scaleInPlace(distance);
-  console.log("forwardVec", forwardVec);
+
   const assetPosition = scene.activeCamera.position.add(forwardVec);
-  console.log("assetPosition", assetPosition);
+
   const ray = new BABYLON.Ray(assetPosition, BABYLON.Vector3.Down());
   ray.length = 20;
-  console.log("ray", ray);
+
   const pickInfo = scene.pickWithRay(ray);
 
-  console.log("pickInfo", pickInfo);
   if (pickInfo.hit) {
     return arrayReduceSigFigs(pickInfo.pickedPoint.asArray());
   } else {
@@ -253,20 +252,20 @@ export function showNormals(
   const positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
   color = color || BABYLON.Color3.White();
   size = size || 1;
-  console.log("got here", normals.length, positions.length);
+
   const lines = [];
   for (let i = 0; i < normals.length; i += 3) {
     const v1 = BABYLON.Vector3.FromArray(positions, i);
     const v2 = v1.add(BABYLON.Vector3.FromArray(normals, i).scaleInPlace(size));
     lines.push([v1.add(mesh.position), v2.add(mesh.position)]);
   }
-  console.log("lines", lines);
+
   const normalLines = BABYLON.MeshBuilder.CreateLineSystem(
     "normalLines",
     { lines: lines },
     scene
   );
-  console.log("normal lines");
+
   normalLines.color = color;
   return normalLines;
 }

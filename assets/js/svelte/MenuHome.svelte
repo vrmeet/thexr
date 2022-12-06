@@ -29,7 +29,7 @@
     systemMenu.renderMenuToTexture();
   });
   onDestroy(() => {
-    console.log("destroy menu home");
+    
     systemMenu.tearDownVRMenu();
     systemMenu.tearDownFullScreenMenu();
   });

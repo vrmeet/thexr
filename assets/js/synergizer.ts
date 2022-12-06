@@ -293,7 +293,7 @@ export class Synergize {
     //     };
     //   }
     // );
-    // meshPickObservable$.subscribe((d) => console.log(d.type));
+    // meshPickObservable$.subscribe((d) =>
 
     // const pointerDown$ = meshPickObservable$.pipe(
     //   filter((pi) => pi.type === BABYLON.PointerEventTypes.POINTERDOWN)
@@ -306,11 +306,11 @@ export class Synergize {
     // );
 
     // pointerDown$.subscribe((info) => {
-    //   console.log("pointer down");
+    //
     //   race(pointerMove$, pointerUp$)
     //     .pipe(take(1))
     //     .subscribe((pointerInfo) => {
-    //       console.log(pointerInfo.type);
+    //
     //       if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERUP) {
     //         if (
     //           pointerInfo.type === BABYLON.PointerEventTypes.POINTERUP &&

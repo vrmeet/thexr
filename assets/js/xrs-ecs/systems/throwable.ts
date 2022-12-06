@@ -63,7 +63,6 @@ export class BehaviorThrowable implements IBehavior {
     mesh: BABYLON.AbstractMesh,
     inputSource: BABYLON.WebXRInputSource
   ) {
-    console.log("make this mesh fly");
     // TODO: emit outgoing custom message to
     // throwable system
     /*

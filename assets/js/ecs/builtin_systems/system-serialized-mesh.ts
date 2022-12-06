@@ -103,7 +103,6 @@ export class SystemSerializedMesh implements ISystem {
           data: serializedMesh,
         })
         .receive("ok", () => {
-          console.log("mesh exported");
           resolve("Mesh Exported " + mesh.name);
         })
         .receive("error", (reason) => {
@@ -156,10 +155,7 @@ export class SystemSerializedMesh implements ISystem {
     path: string
     // state_mesh = true
   ): Promise<BABYLON.AbstractMesh> {
-    console.log("in create mesh", entity_id, mesh_id);
     if (!this.importedMeshes[mesh_id]) {
-      console.log("no such imported mesh", mesh_id);
-
       this.importedMeshes[mesh_id] = new Promise((resolve, reject) => {
         BABYLON.SceneLoader.ImportMesh(
           [mesh_id],
@@ -167,10 +163,9 @@ export class SystemSerializedMesh implements ISystem {
           null,
           this.context.scene,
           (success) => {
-            console.log("what is success", success[0].name);
             const importedMesh = this.context.scene.getMeshByName(mesh_id);
             importedMesh.name = entity_id;
-            console.log("find imported Mesh in scene", importedMesh);
+
             resolve(importedMesh);
           },
           null,
@@ -181,7 +176,6 @@ export class SystemSerializedMesh implements ISystem {
       });
       return this.importedMeshes[mesh_id];
     } else {
-      console.log("there is an imported mesh for", mesh_id);
       // you might be duplicating an existing mesh
       return (await this.importedMeshes[mesh_id]).clone(entity_id, null);
     }

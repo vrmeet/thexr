@@ -52,7 +52,7 @@ class Sector {
     //   )
     //   .subscribe((data) => {
     //     // draw lines
-    //     console.log("pairwise data", data);
+    //
     //   });
 
     if (this.xzPoints.length > 1) {
@@ -155,7 +155,6 @@ export class MapView {
     });
     // the canvas/window resize event handler
     window.addEventListener("resize", () => {
-      console.log("resized");
       this.engine.resize();
       this.setCameraMapping();
     });
@@ -185,7 +184,7 @@ export class MapView {
         // round to nearest meter
         x = Math.round(x);
         z = Math.round(z);
-        console.log("calculated", x, z);
+
         // calculate a clicked point in x,z plane relative to
         // camera position
         console.log(
@@ -279,7 +278,7 @@ export class MapView {
         if (this.metersHorizontal <= 5) {
           this.metersHorizontal = 5;
         }
-        console.log(this.metersHorizontal);
+
         this.setCameraMapping();
       });
   }

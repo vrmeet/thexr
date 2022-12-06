@@ -24,7 +24,7 @@
             navigator.mediaDevices
                 .enumerateDevices()
                 .then((devices) => {
-                    console.log("the devices are", devices);
+                    
                     populateLists(devices);
                     if (mics && mics.length > 0) {
                         selectedMic = mics[0].deviceId;
@@ -34,7 +34,7 @@
                     }
                 })
                 .catch((reason) => {
-                    console.log("error", reason);
+                    
                 });
         })
         .catch((reason) => {

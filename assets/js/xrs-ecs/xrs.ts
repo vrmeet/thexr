@@ -8,6 +8,7 @@ import { SystemAvatar } from "./systems/avatar";
 import { SystemBroker } from "./systems/broker";
 import { SystemCollectable } from "./systems/collectable";
 import { SystemFloor } from "./systems/floor";
+import { SystemHoldable } from "./systems/holdable";
 import { SystemHUD } from "./systems/hud";
 import { SystemInline } from "./systems/inline";
 import { SystemLighting } from "./systems/lighting";
@@ -36,7 +37,7 @@ export class XRS {
       throw new Error("Invalid System Name");
     }
     sys.setup(this);
-    console.log("initialized", sys.name);
+
     this.context.systems[sys.name] = sys;
   }
   deregisterSystem(name: string) {
@@ -133,5 +134,6 @@ export class XRS {
     this.registerSystem(new SystemAvatar());
     this.registerSystem(new SystemTintOverlay());
     this.registerSystem(new SystemCollectable());
+    this.registerSystem(new SystemHoldable());
   }
 }

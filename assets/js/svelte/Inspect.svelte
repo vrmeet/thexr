@@ -50,7 +50,7 @@
                     },
                 });
             }
-            console.log("i want to add component", componentName);
+            
         };
     };
 </script>

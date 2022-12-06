@@ -11,12 +11,8 @@ describe("when receiving messages", function () {
     engine: new BABYLON.NullEngine(),
   });
   class TestComponent {
-    add(target) {
-      console.log("add called");
-    }
-    update(data) {
-      console.log("update called");
-    }
+    add(target) {}
+    update(data) {}
     remove() {}
   }
   xrspace.registerSystem({
@@ -24,7 +20,7 @@ describe("when receiving messages", function () {
     init: () => {},
     buildComponent: () => new TestComponent(),
   });
-  console.log("xrspace", xrspace);
+
   it("can register systems", () => {
     expect(xrspace.getSystem("fireplace").name === "fireplace").toBe(true);
   });

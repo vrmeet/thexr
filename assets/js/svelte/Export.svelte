@@ -35,7 +35,7 @@
                 systemTransform.lastPickedMesh
             );
         } catch (e) {
-            console.log(e);
+            
             result = e;
         }
         context.signalHub.incoming.emit("msg", {

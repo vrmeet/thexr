@@ -60,7 +60,6 @@ export class BehaviorShape implements IBehavior {
       this.copyPosRotScale(mesh, this.entity.transformable);
       this.entity.transformable?.dispose();
       this.entity.transformable = mesh;
-      console.log("create mesh", this.entity.name, mesh);
     } else {
       throw new Error("unsupported shape");
     }

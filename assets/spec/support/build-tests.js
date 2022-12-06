@@ -68,10 +68,9 @@ const transpileBundledTestFile = () => {
 if (mode === "watch") {
   bundleTestFiles();
   transpileBundledTestFile();
-  console.log("i'm wating for changes");
+
   gaze(path.resolve(__dirname, "../../**/*.ts"), (a, b) => {
     b.on("all", (event, filepath) => {
-      console.log(filepath, event);
       if (filepath.endsWith("test-files-index.ts")) {
         // the bundle was changed to make the ts -> js version of it for jasmine runner
         transpileBundledTestFile();

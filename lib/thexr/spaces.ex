@@ -84,8 +84,7 @@ defmodule Thexr.Spaces do
             "prim_params" => %{"depth" => 0.25, "height" => 0.1, "width" => 0.05}
           },
           "transform" => %{"position" => [-1.5, 1, -4]},
-          "grabbable" => %{"pickup" => "fixed", "shootable" => "discreet"},
-          "gun" => %{}
+          "holdable" => %{}
         }
       },
       nil

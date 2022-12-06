@@ -51,7 +51,7 @@ export class SystemGrabbable implements ISystem {
               mesh,
               inputSource,
             });
-            console.log("discreet gun fire");
+
             // this.signalHub.movement.emit("");
           });
       } else if (
@@ -155,9 +155,7 @@ export class SystemGrabbable implements ISystem {
       // if other hand grabbed the same mesh away from the first hand
       this.context.signalHub.movement.on(`${otherHand}_grip_mesh`).pipe(
         filter((mesh) => mesh.name === grabbedMesh.name),
-        tap(() => {
-          console.log("other hand grabbed mesh away");
-        })
+        tap(() => {})
       ),
       // OR another player stole our object
       this.context.signalHub.incoming.on("components_upserted").pipe(
@@ -166,15 +164,12 @@ export class SystemGrabbable implements ISystem {
             msg.id === grabbedMesh.name &&
             msg.components?.grabbable?.grabbed_by !== this.context.my_member_id
         ),
-        tap((msg) => {
-          console.log("other player stole mesh away", msg.components.grabbable);
-        })
+        tap((msg) => {})
       ),
 
       // OR the hand released the mesh
       this.context.signalHub.movement.on(`${hand}_grip_released`).pipe(
         tap((inputSource) => {
-          console.log("hand released mesh");
           grabbedMesh.setParent(null); // keeps current position in world space
           this.context.signalHub.outgoing.emit("components_upserted", {
             id: grabbedMesh.name,
@@ -190,7 +185,6 @@ export class SystemGrabbable implements ISystem {
           // if this grabble component supports throwable, then send custom message
           // to impulse it and determine it's final resting position with another pos rotation update msg
           if (this.context.state[grabbedMesh.name].grabbable?.throwable) {
-            console.log("this is throwable");
             //tell everyone to send it flying
             const imposter =
               this.systemXR.controllerPhysicsFeature.getImpostorForController(
@@ -256,7 +250,7 @@ export class SystemGrabbable implements ISystem {
       rotation: arrayReduceSigFigs(grabbedMesh.rotation.asArray()),
       parent: handNode.name,
     };
-    console.log("parented mesh", grabbedMesh.name, "to", handNode.name);
+
     // update your own state, this helps dup delayed incoming event from repeating
     Object.assign(this.context.state[grabbedMesh.name].transform, transform);
 
@@ -297,7 +291,7 @@ export class SystemGrabbable implements ISystem {
     //     this.context.scene
     //   );
     // } catch (e) {
-    //   console.log(e);
+    //
     // }
     const pickInfo = this.context.scene.pickWithRay(ray);
     if (
@@ -312,7 +306,7 @@ export class SystemGrabbable implements ISystem {
         inputSource,
       };
     }
-    console.log("no grab");
+
     return null;
   }
 

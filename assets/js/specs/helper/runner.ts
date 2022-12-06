@@ -19,15 +19,15 @@ export function describe(message: string, testFunc: () => void) {
 }
 
 export function beforeEach(func: () => void) {
-  // console.log("in before each");
+  //
   this.beforeEaches.push(func);
   // func.call(this);
-  // console.log("after bfore each");
+  //
 }
 
 export function test(message: string, testfunc: () => void) {
   try {
-    this.beforeEaches.forEach(fn => fn.call(this));
+    this.beforeEaches.forEach((fn) => fn.call(this));
     testfunc.call(this);
     this.testResults.push({ message, status: "ok" });
   } catch (e) {

@@ -117,7 +117,7 @@ export class SystemMenu implements ISystem {
       rect.background = "#888888";
     }
     // setInterval(() => {
-    //   console.log("inter val for ", el.id);
+    //
     //   document.getElementById(el.id);
     //   if (el.disabled) {
     //     gui.isEnabled = false;
@@ -342,7 +342,6 @@ export class SystemMenu implements ISystem {
     this.browseGui?.dispose();
     this.smallPlane?.dispose();
     this.bigPlane?.dispose();
-    console.log("big plane is disposed", this.bigPlane?.isDisposed());
     this.wristGui = null;
     this.browseGui = null;
     this.smallPlane = null;
@@ -392,7 +391,6 @@ export class SystemMenu implements ISystem {
       { height: HOME_HEIGHT * HOME_SCALING, width: HOME_WIDTH * HOME_SCALING },
       this.scene
     );
-    console.log("big plane created");
 
     // this.bigPlane.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
     this.bigPlane.showBoundingBox = true;

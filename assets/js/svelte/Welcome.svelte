@@ -23,7 +23,7 @@
 
     // query(space);
     // space.subscribe((value) => {
-    //     console.log("value", value);
+    //     
     //     if (value.data) {
     //         name = value.data.space.name;
     //         description = value.data.space.description;

@@ -35,7 +35,7 @@
         chosenColor = color;
     });
     const applyColor = () => {
-        console.log("applying color", chosenColor.toHexString());
+        
         context.signalHub.outgoing.emit("components_upserted", {
             id: systemTransform.lastPickedMesh.name,
             components: {

@@ -15,7 +15,7 @@ export class SystemStartModal implements ISystem {
       if (this.context.bypass_modal) {
         // eslint-disable-next-line no-inner-declarations
         // function firstInteraction() {
-        //   console.log("first interation");
+        //
         //   window.removeEventListener("click", firstInteraction);
         this.context.signalHub.local.emit("client_ready", "enter");
         // }

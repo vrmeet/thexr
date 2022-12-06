@@ -249,7 +249,7 @@ export class SystemXR implements ISystem {
     componentButtonObservable$
       .pipe(takeUntil(this.exitingXR$))
       .subscribe((xr_button_change_evt) => {
-        // console.log(`${hand}_${component.type}`, xr_button_change_evt);
+        //
         this.signalHub.movement.emit(
           `${hand}_${component.type}`,
           xr_button_change_evt

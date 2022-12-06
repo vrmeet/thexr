@@ -26,7 +26,7 @@ describe("consuming events to create entities", () => {
     // and load an entity from that event
     let entity = new Entity(event.p.entity_id, event.p.components, scene);
     // you still have a mesh
-    console.log("entity mesh is", entity.mesh);
+
     assert.typeOf(entity.mesh, "Object");
   });
 

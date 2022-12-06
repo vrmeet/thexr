@@ -74,7 +74,7 @@ export class SystemHoldable extends BaseSystemWithBehaviors implements ISystem {
   //               mesh,
   //               inputSource,
   //             });
-  //             console.log("discreet gun fire");
+  //
   //             // this.signalHub.movement.emit("");
   //           });
   //       } else if (
@@ -139,7 +139,6 @@ export class SystemHoldable extends BaseSystemWithBehaviors implements ISystem {
     this.context.signalHub.movement
       .on(`${hand}_grip_squeezed`)
       .pipe(
-        // takeUntil(this.exitingXR$),
         map((inputSource) => {
           return this.findGrabbableMesh(inputSource);
         }),
@@ -167,16 +166,20 @@ export class SystemHoldable extends BaseSystemWithBehaviors implements ISystem {
       p2,
       inputSource.grip.getWorldMatrix()
     );
-
+    BABYLON.RayHelper.CreateAndShow(
+      ray,
+      this.xrs.context.scene,
+      BABYLON.Color3.Red()
+    );
     const pickInfo = this.context.scene.pickWithRay(ray);
-    const entity = this.xrs.context.entities[pickInfo.pickedMesh.name];
-    if (entity && entity.hasComponent("grabbable")) {
+
+    const entity = this.xrs.context.entities[pickInfo.pickedMesh?.name];
+    if (entity && entity.hasComponent("holdable")) {
       return {
         mesh: pickInfo.pickedMesh,
         inputSource,
       };
     }
-    console.log("no grab");
     return null;
   }
 }
@@ -215,7 +218,6 @@ export class BehaviorHoldable implements IBehavior {
   parentGrabbedMeshIntoHand(hand: "left" | "right") {
     //TODO, move all this logic into the transform system,
     // idea: can call a function from the transform system if we want it to be fast
-
     if (this.grabbedMesh.physicsImpostor) {
       this.grabbedMesh.physicsImpostor.dispose();
       this.grabbedMesh.physicsImpostor = null;
@@ -245,7 +247,6 @@ export class BehaviorHoldable implements IBehavior {
       rotation: arrayReduceSigFigs(this.grabbedMesh.rotation.asArray()),
       parent: handNode.name,
     };
-    console.log("parented mesh", this.grabbedMesh.name, "to", handNode.name);
 
     // tell everyone (and ourselves) you grabbed it
     this.context.signalHub.outgoing.emit("components_upserted", {
@@ -276,7 +277,6 @@ export class BehaviorHoldable implements IBehavior {
       this.context.signalHub.movement.on(`${otherHand}_grip_mesh`).pipe(
         filter((data) => data.mesh.name === grabbedMesh.name),
         tap(() => {
-          console.log("other hand grabbed mesh away");
           this.signalHub.movement.emit(`${hand}_lost_mesh`, {
             reason: "transferred",
             mesh: this.grabbedMesh,
@@ -292,7 +292,6 @@ export class BehaviorHoldable implements IBehavior {
             msg.components?.grabbable?.grabbed_by !== this.context.my_member_id
         ),
         tap((msg) => {
-          console.log("other player stole mesh away", msg.components.grabbable);
           this.signalHub.movement.emit(`${hand}_lost_mesh`, {
             reason: "taken",
             mesh: this.grabbedMesh,
@@ -315,7 +314,6 @@ export class BehaviorHoldable implements IBehavior {
     );
   }
   releaseMesh(hand: "left" | "right", inputSource: BABYLON.WebXRInputSource) {
-    console.log("hand released mesh");
     this.grabbedMesh.setParent(null);
     this.signalHub.outgoing.emit("components_upserted", {
       id: this.entity.name,

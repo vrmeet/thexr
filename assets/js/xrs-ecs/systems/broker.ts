@@ -73,7 +73,6 @@ export class SystemBroker implements ISystem {
     this.context.signalHub.incoming
       .on("components_upserted")
       .subscribe((evt) => {
-        console.log("receiving", evt);
         const entity = this.xrs.getEntity(evt.id);
         if (!entity) {
           console.warn("cannot upsert components of undefined entity", evt);

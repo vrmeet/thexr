@@ -12,7 +12,7 @@
     import type { SystemMenu } from "../ecs/builtin_systems/system-menu";
 
     export let value;
-    console.log("value is", value);
+    
     let context: Context = getContext("context");
 </script>
 

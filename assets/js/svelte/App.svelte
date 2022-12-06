@@ -27,7 +27,7 @@
 
     const micConfirmed = async () => {
         const micChoice = sessionPersistance.getMicAndOutputChoice();
-        console.log("micChoice", micChoice);
+        
         if (micChoice === null) {
             return false;
         } else {
@@ -52,7 +52,7 @@
             return ready();
         }
         if (!(await micConfirmed())) {
-            console.log("we should show mic and out form");
+            
             showMicAndOutputForm = true;
         } else {
             ready();

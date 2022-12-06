@@ -8,10 +8,7 @@ describe("util", () => {
 });
 
 describe("addition", () => {
-  console.log("2nd block");
-  beforeEach(() => {
-    console.log("do this in each test");
-  });
+  beforeEach(() => {});
   test("1 + 1", () => {
     assert(1 + 1, 2);
   });

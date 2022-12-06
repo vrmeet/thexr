@@ -23,7 +23,7 @@ export abstract class EntityBase {
 
   buildMeshFromEvent(id: string, name: string, components: Component[]) {
     // don't create the same mesh twice
-    let mesh = this.scene.getMeshById(id);
+    const mesh = this.scene.getMeshById(id);
     if (mesh) {
       return mesh;
     }
@@ -112,44 +112,44 @@ export abstract class EntityBase {
   }
 
   setTeleportableFromComponent() {
-    let comp = this.getComponentByType("teleportable");
+    const comp = this.getComponentByType("teleportable");
     if (comp) {
       BABYLON.Tags.AddTagsTo(this.mesh, "teleportable");
     }
   }
 
   setEditableFromComponent() {
-    let comp = this.getComponentByType("editable");
+    const comp = this.getComponentByType("editable");
     if (comp) {
       BABYLON.Tags.AddTagsTo(this.mesh, "editable");
     }
   }
 
   setInteractableFromComponent() {
-    let comp = this.getComponentByType("interactable");
+    const comp = this.getComponentByType("interactable");
     if (comp) {
       BABYLON.Tags.AddTagsTo(this.mesh, "interactable");
     }
   }
 
   setShootableFromComponent() {
-    let comp = this.getComponentByType("shootable");
+    const comp = this.getComponentByType("shootable");
     if (comp) {
       BABYLON.Tags.AddTagsTo(this.mesh, "shootable");
     }
   }
 
   setCollectableFromComponent() {
-    let comp = this.getComponentByType("collectable");
+    const comp = this.getComponentByType("collectable");
     if (comp) {
       BABYLON.Tags.AddTagsTo(this.mesh, "collectable");
     }
   }
 
   setColorFromComponent() {
-    let comp = this.getComponentByType("color");
+    const comp = this.getComponentByType("color");
     if (comp) {
-      let colorString = comp.data.value as string;
+      const colorString = comp.data.value as string;
       let mat;
       if (colorString.startsWith("#")) {
         mat = findOrCreateMaterial({ type: "color", colorString }, this.scene);
@@ -159,9 +159,9 @@ export abstract class EntityBase {
   }
 
   setMaterialFromComponent() {
-    let comp = this.getComponentByType("material");
+    const comp = this.getComponentByType("material");
     if (comp) {
-      let nickname = comp.data.value as string;
+      const nickname = comp.data.value as string;
       let mat;
       if (nickname === "grid") {
         mat = findOrCreateMaterial({ type: "grid" }, this.scene);
@@ -171,15 +171,15 @@ export abstract class EntityBase {
   }
 
   setPositionFromComponent() {
-    let comp = this.getComponentByType("position");
+    const comp = this.getComponentByType("position");
     if (comp) {
-      let posArray = comp.data.value;
+      const posArray = comp.data.value;
       this.mesh.position.fromArray(posArray);
     }
   }
 
   setRotationFromComponent() {
-    let comp = this.getComponentByType("rotation") || {
+    const comp = this.getComponentByType("rotation") || {
       type: "rotation",
       data: { value: [0, 0, 0] },
     };
@@ -200,9 +200,9 @@ export abstract class EntityBase {
   }
 
   setScaleFromComponent() {
-    let comp = this.getComponentByType("scaling");
+    const comp = this.getComponentByType("scaling");
     if (comp) {
-      let array = comp.data.value;
+      const array = comp.data.value;
       this.mesh.scaling.fromArray(array);
     }
   }
@@ -218,7 +218,7 @@ export abstract class EntityBase {
   }
 
   getComponentByType(type: string) {
-    let result = this.components.filter(comp => comp.type === type);
+    const result = this.components.filter((comp) => comp.type === type);
     if (result.length > 0) {
       return result[0];
     } else {
@@ -227,28 +227,27 @@ export abstract class EntityBase {
   }
 
   cameraFrontPosition() {
-    let forwardVec = this.scene.activeCamera
+    const forwardVec = this.scene.activeCamera
       .getDirection(BABYLON.Vector3.Forward())
       .normalize()
       .scaleInPlace(2.5);
-    let assetPosition = this.scene.activeCamera.position.add(forwardVec);
+    const assetPosition = this.scene.activeCamera.position.add(forwardVec);
     return arrayReduceSigFigs(assetPosition.asArray());
   }
 
   cameraFrontFloorPosition() {
-    let forwardVec = this.scene.activeCamera
+    const forwardVec = this.scene.activeCamera
       .getDirection(BABYLON.Vector3.Forward())
       .normalize()
       .scaleInPlace(2.5);
-    console.log("forwardVec", forwardVec);
-    let assetPosition = this.scene.activeCamera.position.add(forwardVec);
-    console.log("assetPosition", assetPosition);
-    let ray = new BABYLON.Ray(assetPosition, BABYLON.Vector3.Down());
-    ray.length = 20;
-    console.log("ray", ray);
-    let pickInfo = this.scene.pickWithRay(ray);
 
-    console.log("pickInfo", pickInfo);
+    const assetPosition = this.scene.activeCamera.position.add(forwardVec);
+
+    const ray = new BABYLON.Ray(assetPosition, BABYLON.Vector3.Down());
+    ray.length = 20;
+
+    const pickInfo = this.scene.pickWithRay(ray);
+
     if (pickInfo.hit) {
       return arrayReduceSigFigs(pickInfo.pickedPoint.asArray());
     } else {

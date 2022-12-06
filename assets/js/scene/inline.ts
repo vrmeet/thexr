@@ -189,17 +189,17 @@ export class Inline {
         )
       )
       .subscribe(data => {
-        console.log("got here");
+        
         if (this.flying === false) {
           this.camera.inputs.removeByType("FreeCameraKeyboardWalkInput");
           this.camera.inputs.add(new FreeCameraKeyboardFlyingInput());
-          console.log("fly mode on");
+          
           signalHub.incoming.emit("hud_msg", "Flying mode ON");
         } else {
           this.camera.inputs.removeByType("FreeCameraKeyboardFlyingInput");
           this.camera.inputs.add(new FreeCameraKeyboardWalkInput());
           signalHub.incoming.emit("hud_msg", "fly mode off");
-          console.log("fly mode off");
+          
         }
         this.flying = !this.flying;
       });

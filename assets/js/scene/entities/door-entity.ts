@@ -64,7 +64,7 @@ export class DoorEntity extends EntityBase {
       0,
       middle.middleZ
     );
-    const pointsInLocalSpace = opts.globalPoints.map(globalPoint =>
+    const pointsInLocalSpace = opts.globalPoints.map((globalPoint) =>
       globalPoint.subtract(offsetPosition)
     );
     const xzPoints = pointsInLocalSpace.reduce((acc, wallPoint) => {
@@ -94,8 +94,8 @@ export class DoorEntity extends EntityBase {
    * Given a list of points in object space, draw a wall there
    * @returns
    */
-  createWall = (points: number[], height: number = 2) => {
-    let parts: BABYLON.Mesh[] = [];
+  createWall = (points: number[], height = 2) => {
+    const parts: BABYLON.Mesh[] = [];
 
     from(points)
       .pipe(
@@ -106,22 +106,22 @@ export class DoorEntity extends EntityBase {
           points: [],
         })
       )
-      .subscribe(data => {
+      .subscribe((data) => {
         // for each pair of points, draw a wall
 
-        let point1 = new BABYLON.Vector3(
+        const point1 = new BABYLON.Vector3(
           data.points[0][0],
           0,
           data.points[0][1]
         );
-        let point2 = new BABYLON.Vector3(
+        const point2 = new BABYLON.Vector3(
           data.points[1][0],
           0,
           data.points[1][1]
         );
         // length of the wall is the distance between points
-        let length = BABYLON.Vector3.Distance(point1, point2);
-        let wall = BABYLON.MeshBuilder.CreateBox(
+        const length = BABYLON.Vector3.Distance(point1, point2);
+        const wall = BABYLON.MeshBuilder.CreateBox(
           "",
           { width: 0.1, depth: length, height },
           this.scene
@@ -139,7 +139,7 @@ export class DoorEntity extends EntityBase {
           parts.push(c1);
         }
 
-        let c2 = BABYLON.MeshBuilder.CreateCylinder(
+        const c2 = BABYLON.MeshBuilder.CreateCylinder(
           "",
           { height: height, diameter: 0.1 },
           this.scene
@@ -148,8 +148,8 @@ export class DoorEntity extends EntityBase {
         parts.push(c2);
 
         // find midpoint between points
-        let diff = point2.subtract(point1);
-        let midpoint = new BABYLON.Vector3(
+        const diff = point2.subtract(point1);
+        const midpoint = new BABYLON.Vector3(
           point1.x + diff.x / 2,
           point1.y + diff.y / 2,
           point1.z + diff.z / 2
@@ -158,10 +158,10 @@ export class DoorEntity extends EntityBase {
         wall.position.copyFromFloats(midpoint.x, height / 2, midpoint.z);
 
         // find angle between points
-        let alpha = Math.atan2(-1 * diff.x, -1 * diff.z);
+        const alpha = Math.atan2(-1 * diff.x, -1 * diff.z);
         wall.rotation.y = alpha;
       });
-    let mergedMesh = BABYLON.Mesh.MergeMeshes(parts, true);
+    const mergedMesh = BABYLON.Mesh.MergeMeshes(parts, true);
     if (mergedMesh) {
       mergedMesh.name = this.name;
       return mergedMesh;
@@ -175,7 +175,7 @@ export class DoorEntity extends EntityBase {
       "height",
       "points",
     ]);
-    console.log("hiehgt", height, "points", points);
+
     return this.createWall(points, height);
     // return BABYLON.MeshBuilder.CreateBox(this.name, { width: 1, depth: 1, height: 0.05 }, this.scene)
   }
