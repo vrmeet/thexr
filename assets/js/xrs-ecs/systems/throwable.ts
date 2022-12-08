@@ -30,7 +30,7 @@ export class BehaviorThrowable implements IBehavior {
   data: ThrowableType;
   entity: Entity;
   signalHub: SignalHub;
-  subscriptions: Subscription[];
+  subscriptions: Subscription[] = [];
   constructor(public system: SystemThrowable) {}
   add(entity: Entity, data: ThrowableType): void {
     this.entity = entity;
@@ -47,7 +47,7 @@ export class BehaviorThrowable implements IBehavior {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
   makeSubscription(hand: "left" | "right") {
-    this.signalHub.movement
+    const sub = this.signalHub.movement
       .on(`${hand}_lost_mesh`)
       .pipe(
         filter(
@@ -58,11 +58,14 @@ export class BehaviorThrowable implements IBehavior {
       .subscribe((evt) => {
         this.animateMesh(evt.mesh, evt.input);
       });
+
+    this.subscriptions.push(sub);
   }
   animateMesh(
     mesh: BABYLON.AbstractMesh,
     inputSource: BABYLON.WebXRInputSource
   ) {
+    console.log("animate a throw");
     // TODO: emit outgoing custom message to
     // throwable system
     /*

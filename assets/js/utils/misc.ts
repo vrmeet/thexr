@@ -286,6 +286,32 @@ export function cap(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+export function getSetParentValues(
+  child: BABYLON.TransformNode,
+  parent: BABYLON.Node
+) {
+  const currentPos = child.position.asArray();
+  const currentRot = child.rotationQuaternion.asArray();
+  const currentScale = child.scaling.asArray();
+  const currentParent = child.parent;
+  child.setParent(parent);
+  const newPos = child.position.asArray();
+  const newRot = child.rotationQuaternion.asArray();
+  const newScale = child.scaling.asArray();
+
+  // undo
+  child.parent = currentParent;
+  child.position.fromArray(currentPos);
+  child.rotationQuaternion.copyFromFloats(
+    currentRot[0],
+    currentRot[1],
+    currentRot[2],
+    currentRot[3]
+  );
+  child.scaling.fromArray(currentScale);
+  return { pos: newPos, rot: newRot, scaling: newScale };
+}
+
 export function throttleByMovement(movementDelta: number) {
   return pipe(
     scan(

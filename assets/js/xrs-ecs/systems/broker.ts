@@ -76,6 +76,7 @@ export class SystemBroker implements ISystem {
         const entity = this.xrs.getEntity(evt.id);
         if (!entity) {
           console.warn("cannot upsert components of undefined entity", evt);
+          return;
         }
         Object.entries(evt.components).forEach(([componentName, data]) => {
           if (entity.hasComponent(componentName)) {

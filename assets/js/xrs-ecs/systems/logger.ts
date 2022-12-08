@@ -39,6 +39,34 @@ export class SystemLogger implements ISystem {
         this.removeLogGui();
       }
     });
+    this.trapWindowError();
+  }
+
+  trapWindowError() {
+    window.onerror = function (message, source, lineno, colno, error) {
+      console.error(error);
+      try {
+        // catch errors and display them to self
+        const line = JSON.stringify({ message, source, lineno, colno, error });
+        const size = 50;
+        const numChunks = Math.ceil(line.length / size);
+        const chunks = new Array(numChunks);
+
+        for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
+          chunks[i] = line.substr(o, size);
+        }
+        chunks.forEach((chunk) => {
+          this.signalHub.incoming.emit("msg", {
+            system: "hud",
+            data: { msg: chunk },
+          });
+        });
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
+      if (window["Honeybadger"]) {
+        window["Honeybadger"].notify(error);
+      }
+    };
   }
 
   removeLogGui() {

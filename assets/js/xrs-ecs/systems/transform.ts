@@ -1,4 +1,4 @@
-import type * as BABYLON from "babylonjs";
+import * as BABYLON from "babylonjs";
 
 import type { Context } from "../context";
 import type { Entity } from "../entity";
@@ -120,17 +120,17 @@ export class BehaviorTransform implements IBehavior {
   add(entity: Entity, data: TransformType): void {
     this.entity = entity;
     this.data = data;
+    this.setParenting();
     this.setPosition();
     this.setRotation();
     this.setScaling();
-    this.setParenting();
   }
   update(data: TransformType): void {
     Object.assign(this.data, data);
+    this.setParenting();
     this.setPosition();
     this.setRotation();
     this.setScaling();
-    this.setParenting();
   }
   remove(): void {}
 
@@ -141,7 +141,17 @@ export class BehaviorTransform implements IBehavior {
   }
   setRotation() {
     if (this.data.rotation) {
-      this.entity.transformable.rotation.fromArray(this.data.rotation);
+      if (this.data.rotation.length === 4) {
+        this.entity.transformable.rotationQuaternion =
+          BABYLON.Quaternion.FromArray(this.data.rotation);
+      } else {
+        this.entity.transformable.rotationQuaternion =
+          BABYLON.Quaternion.FromEulerAngles(
+            this.data.rotation[0],
+            this.data.rotation[1],
+            this.data.rotation[2]
+          );
+      }
     }
   }
   setScaling() {
@@ -156,12 +166,16 @@ export class BehaviorTransform implements IBehavior {
     const newParentName = this.data.parent;
     const currentParent = this.entity.transformable?.parent;
 
+    // if your new parent is null, but your current parent is not null
+    // then this is an unparent action
     if (newParentName === null && currentParent !== null) {
-      (this.entity.transformable as BABYLON.AbstractMesh).parent = null; // because pos,rot,scale are already in world positions
+      // remove the parent, keeping the child at the same world position it was in before
+      (this.entity.transformable as BABYLON.AbstractMesh).parent = null;
     } else if (
       newParentName !== null &&
       (currentParent === null || currentParent?.name !== newParentName)
     ) {
+      // getting a new parent (either you didn't have one before, or you're switching parents)
       const parent =
         this.system.scene.getTransformNodeByName(this.data.parent) ||
         this.system.scene.getMeshByName(this.data.parent);

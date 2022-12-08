@@ -84,7 +84,27 @@ defmodule Thexr.Spaces do
             "prim_params" => %{"depth" => 0.25, "height" => 0.1, "width" => 0.05}
           },
           "transform" => %{"position" => [-1.5, 1, -4]},
-          "holdable" => %{}
+          "holdable" => %{"offset" => %{"pos" => [0, 0, 0], "rot" => [0, 0, 0]}},
+          "throwable" => %{"type" => "physics_simulator"}
+        }
+      },
+      nil
+    )
+
+    Thexr.SpaceServer.process_event(
+      space.id,
+      "entity_created",
+      %{
+        "id" => "gun2",
+        "components" => %{
+          "shape" => %{
+            "prim" => "box",
+            "prim_params" => %{"depth" => 0.35, "height" => 0.15, "width" => 0.1}
+          },
+          "transform" => %{"position" => [-1.6, 1.1, -4.1]},
+          "holdable" => %{},
+          "throwable" => %{"type" => "physics_simulator"},
+          "material" => %{"name" => "color", "color_string" => "#FF0000"}
         }
       },
       nil

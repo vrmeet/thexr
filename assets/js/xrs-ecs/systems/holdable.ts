@@ -7,9 +7,15 @@ import {
   take,
   tap,
   Subscription,
+  mapTo,
 } from "rxjs";
 import * as BABYLON from "babylonjs";
-import { arrayReduceSigFigs, getPosRot, showNormals } from "../../utils/misc";
+import {
+  arrayReduceSigFigs,
+  getPosRot,
+  getSetParentValues,
+  showNormals,
+} from "../../utils/misc";
 import type { AbstractMesh } from "babylonjs";
 import {
   BaseSystemWithBehaviors,
@@ -216,37 +222,23 @@ export class BehaviorHoldable implements IBehavior {
 
   // side effect of receiving a mesh grabbed messaged
   parentGrabbedMeshIntoHand(hand: "left" | "right") {
-    //TODO, move all this logic into the transform system,
-    // idea: can call a function from the transform system if we want it to be fast
-    if (this.grabbedMesh.physicsImpostor) {
-      this.grabbedMesh.physicsImpostor.dispose();
-      this.grabbedMesh.physicsImpostor = null;
-    }
-
-    if (this.grabbedMesh.parent) {
-      // if grabbed by other hand, unparent so we get world position
-      this.grabbedMesh.setParent(null);
-    }
     const handNode = this.system[`${hand}HandNode`];
-    if (!this.data.offset) {
-      // you can pick this object up anywhere
-      this.grabbedMesh.setParent(handNode); // retains grabbedMesh position in world space
-    } else if (this.data.offset) {
-      this.grabbedMesh.position = BABYLON.Vector3.FromArray(
-        this.data.offset.pos
-      );
-      this.grabbedMesh.rotation = BABYLON.Vector3.FromArray(
-        this.data.offset.rot
-      );
-      this.grabbedMesh.parent = handNode;
-    }
 
-    // emit external event
-    const transform = {
-      position: arrayReduceSigFigs(this.grabbedMesh.position.asArray()),
-      rotation: arrayReduceSigFigs(this.grabbedMesh.rotation.asArray()),
-      parent: handNode.name,
-    };
+    let transform = {};
+    if (this.data.offset) {
+      transform = {
+        position: this.data.offset.pos,
+        rotation: this.data.offset.rot,
+        parent: handNode.name,
+      };
+    } else {
+      const { pos, rot } = getSetParentValues(this.grabbedMesh, handNode);
+      transform = {
+        position: arrayReduceSigFigs(pos),
+        rotation: arrayReduceSigFigs(rot),
+        parent: handNode.name,
+      };
+    }
 
     // tell everyone (and ourselves) you grabbed it
     this.context.signalHub.outgoing.emit("components_upserted", {
@@ -265,7 +257,19 @@ export class BehaviorHoldable implements IBehavior {
         .subscribe((event) => {
           this.grabbedMesh = event.mesh;
           this.parentGrabbedMeshIntoHand(hand);
-          this.releaseEvents(hand, event.mesh).pipe(take(1)).subscribe();
+          this.releaseEvents(hand, event.mesh)
+            .pipe(take(1))
+            .subscribe((releaseEvent) => {
+              console.log("the release event was", releaseEvent.reason);
+              this.signalHub.movement.emit(`${hand}_lost_mesh`, {
+                reason: releaseEvent.reason as any,
+                mesh: event.mesh,
+                input: releaseEvent.inputSource as any,
+              });
+              if (releaseEvent.reason === "released") {
+                this.releaseMesh();
+              }
+            });
         })
     );
   }
@@ -276,55 +280,50 @@ export class BehaviorHoldable implements IBehavior {
       // if other hand grabbed the same mesh away from the first hand
       this.context.signalHub.movement.on(`${otherHand}_grip_mesh`).pipe(
         filter((data) => data.mesh.name === grabbedMesh.name),
-        tap(() => {
-          this.signalHub.movement.emit(`${hand}_lost_mesh`, {
-            reason: "transferred",
-            mesh: this.grabbedMesh,
-            input: null,
-          });
-        })
+        mapTo({ reason: "transferred", inputSource: null })
       ),
       // OR another player stole our object
       this.context.signalHub.incoming.on("components_upserted").pipe(
         filter(
           (msg) =>
             msg.id === grabbedMesh.name &&
-            msg.components?.grabbable?.grabbed_by !== this.context.my_member_id
+            msg.components?.transform?.parent !== null &&
+            !msg.components?.transform?.parent.includes(
+              this.context.my_member_id
+            )
         ),
-        tap((msg) => {
-          this.signalHub.movement.emit(`${hand}_lost_mesh`, {
-            reason: "taken",
-            mesh: this.grabbedMesh,
-            input: null,
-          });
-        })
+        mapTo({ reason: "taken", inputSource: null })
       ),
 
       // OR the hand released the mesh
-      this.context.signalHub.movement.on(`${hand}_grip_released`).pipe(
-        tap((inputSource) => {
-          this.releaseMesh(hand, inputSource);
-          this.signalHub.movement.emit(`${hand}_lost_mesh`, {
-            reason: "released",
-            mesh: this.grabbedMesh,
-            input: inputSource,
-          });
-        })
-      )
+      this.context.signalHub.movement
+        .on(`${hand}_grip_released`)
+        .pipe(
+          map((evt) => ({ reason: "released", inputSource: evt.inputSource }))
+        )
     );
   }
-  releaseMesh(hand: "left" | "right", inputSource: BABYLON.WebXRInputSource) {
-    this.grabbedMesh.setParent(null);
-    this.signalHub.outgoing.emit("components_upserted", {
+  releaseMesh() {
+    // this.grabbedMesh.setParent(null);
+    const payload = {
       id: this.entity.name,
       components: {
         transform: {
-          position: arrayReduceSigFigs(this.grabbedMesh.position.asArray()),
-          rotation: arrayReduceSigFigs(this.grabbedMesh.rotation.asArray()),
+          position: arrayReduceSigFigs(
+            this.grabbedMesh.absolutePosition.asArray()
+          ),
+          rotation: arrayReduceSigFigs(
+            this.grabbedMesh.absoluteRotationQuaternion.asArray()
+          ),
           parent: null,
         },
       },
-    });
+    };
+    // this.signalHub.outgoing.emit("msg", {
+    //   system: "hud",
+    //   data: { msg: JSON.stringify(payload) },
+    // });
+    this.signalHub.outgoing.emit("components_upserted", payload);
     this.grabbedMesh = null;
   }
 }
