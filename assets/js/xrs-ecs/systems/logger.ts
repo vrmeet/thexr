@@ -44,7 +44,7 @@ export class SystemLogger implements ISystem {
 
   trapWindowError() {
     window.onerror = function (message, source, lineno, colno, error) {
-      console.error(error);
+      console.log(message, source, lineno, colno, error);
       try {
         // catch errors and display them to self
         const line = JSON.stringify({ message, source, lineno, colno, error });

@@ -1,22 +1,15 @@
 import {
   filter,
-  takeUntil,
   map,
   Observable,
   race,
   take,
-  tap,
   Subscription,
   mapTo,
+  tap,
 } from "rxjs";
 import * as BABYLON from "babylonjs";
-import {
-  arrayReduceSigFigs,
-  getPosRot,
-  getSetParentValues,
-  showNormals,
-} from "../../utils/misc";
-import type { AbstractMesh } from "babylonjs";
+import { arrayReduceSigFigs, getSetParentValues } from "../../utils/misc";
 import {
   BaseSystemWithBehaviors,
   type IBehavior,
@@ -60,54 +53,10 @@ export class SystemHoldable extends BaseSystemWithBehaviors implements ISystem {
 
     this.detectMeshGrab("left");
     this.detectMeshGrab("right");
-
-    // this.listenForShootDuringGrab("left");
-    // this.listenForShootDuringGrab("right");
   }
   buildBehavior(): IBehavior {
     return new BehaviorHoldable(this);
   }
-
-  //   listenForShootDuringGrab(hand: "left" | "right") {
-  //     this.signalHub.movement.on(`${hand}_grip_mesh`).subscribe((mesh) => {
-  //       if (this.context.state[mesh.name].grabbable.shootable === "discreet") {
-  //         this.signalHub.movement
-  //           .on(`${hand}_trigger_squeezed`)
-  //           .pipe(takeUntil(this.signalHub.movement.on(`${hand}_lost_mesh`)))
-  //           .subscribe((inputSource) => {
-  //             this.signalHub.movement.emit("trigger_holding_mesh", {
-  //               hand,
-  //               mesh,
-  //               inputSource,
-  //             });
-  //
-  //             // this.signalHub.movement.emit("");
-  //           });
-  //       } else if (
-  //         this.context.state[mesh.name].grabbable.shootable === "continuous"
-  //       ) {
-  //         this.signalHub.movement
-  //           .on(`${hand}_trigger`)
-  //           .pipe(takeUntil(this.signalHub.movement.on(`${hand}_lost_mesh`)))
-  //           .subscribe((compChange) => {
-  //             this.signalHub.movement.emit("trigger_holding_mesh", {
-  //               hand,
-  //               mesh,
-  //               inputSource: compChange.inputSource,
-  //             });
-
-  //             console.log(
-  //               "continous spry",
-  //               hand,
-  //               compChange.inputSource.grip.position.asArray(),
-  //               compChange.controllerComponent.value,
-  //               compChange.inputSource.pointer.forward.asArray() // direction
-  //             );
-  //             // this.signalHub.movement.emit("");
-  //           });
-  //       }
-  //     });
-  //   }
 
   parentAvatarHandsToGripWheneverControllersAreOnline() {
     this.context.signalHub.local
@@ -154,7 +103,6 @@ export class SystemHoldable extends BaseSystemWithBehaviors implements ISystem {
         // emit that we grabbed a mesh
         this.signalHub.movement.emit(`${hand}_grip_mesh`, {
           mesh: data.mesh,
-          input: data.inputSource,
         });
       });
   }
@@ -260,13 +208,15 @@ export class BehaviorHoldable implements IBehavior {
           this.releaseEvents(hand, event.mesh)
             .pipe(take(1))
             .subscribe((releaseEvent) => {
-              console.log("the release event was", releaseEvent.reason);
               this.signalHub.movement.emit(`${hand}_lost_mesh`, {
                 reason: releaseEvent.reason as any,
                 mesh: event.mesh,
-                input: releaseEvent.inputSource as any,
               });
               if (releaseEvent.reason === "released") {
+                console.log(
+                  "during a release the input source was",
+                  releaseEvent.inputSource
+                );
                 this.releaseMesh();
               }
             });
@@ -296,11 +246,12 @@ export class BehaviorHoldable implements IBehavior {
       ),
 
       // OR the hand released the mesh
-      this.context.signalHub.movement
-        .on(`${hand}_grip_released`)
-        .pipe(
-          map((evt) => ({ reason: "released", inputSource: evt.inputSource }))
-        )
+      this.context.signalHub.movement.on(`${hand}_grip_released`).pipe(
+        tap((evt) => {
+          console.log("tap on grip released", evt.inputSource);
+        }),
+        map((evt) => ({ reason: "released", inputSource: evt.inputSource }))
+      )
     );
   }
   releaseMesh() {

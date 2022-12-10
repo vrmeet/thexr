@@ -19,6 +19,10 @@ Copy .env.sample to .env (ignored by git) to add secrets
 
 Start a postgres DB by running `docker-compose up -d`
 
+mix ecto.setup (creates the database)
+
+Create a .env file (see .env.sample)
+
 Start the server locally using `./server`
 
 Start e2e tests using `npx cypress open` from the `assets` folder

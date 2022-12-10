@@ -1,6 +1,6 @@
 import { filter, takeUntil, map, distinctUntilChanged, Observable } from "rxjs";
 import type { SignalHub } from "../../signalHub";
-import { getPosRot, camPosRot } from "../../utils/misc";
+import { getPosRot, camPosRot, arrayReduceSigFigs } from "../../utils/misc";
 import { isMobileVR } from "../../utils/utils-browser";
 import type { Context } from "../context";
 import type { ISystem } from "../system";
@@ -23,6 +23,24 @@ export class SystemXR implements ISystem {
   public exitingXR$;
   public controllerPhysicsFeature: BABYLON.WebXRControllerPhysics;
   public teleportation: BABYLON.WebXRMotionControllerTeleportation;
+  // convenience cache
+  public leftInputSource: BABYLON.WebXRInputSource;
+  public rightInputSource: BABYLON.WebXRInputSource;
+
+  getHandVelocity(hand: "left" | "right") {
+    const inputSource = this[`${hand}InputSource`];
+    if (inputSource && this.controllerPhysicsFeature) {
+      const imposter =
+        this.controllerPhysicsFeature.getImpostorForController(inputSource);
+      return {
+        av: arrayReduceSigFigs(imposter.getAngularVelocity().asArray()),
+        lv: arrayReduceSigFigs(imposter.getLinearVelocity().asArray()),
+      };
+    }
+    // this system is not ready to return a hand velocity for the requester
+    return { av: [0, 0, 0], lv: [0, 0, 0] };
+  }
+
   setup(xrs: XRS) {
     this.xrs = xrs;
     this.context = xrs.context;
@@ -127,12 +145,19 @@ export class SystemXR implements ISystem {
 
     // triggered once per hand
     xrInput.onControllerAddedObservable.add((inputSource) => {
+      // save left and right input sources so that this system can support
+      // querying linear and angular velocity
+      const hand = inputSource.motionController.handedness;
+      this[`${hand}InputSource`] = inputSource;
+
       inputSource.onMotionControllerInitObservable.add(() => {
         this.initController(inputSource);
       });
     });
 
     xrInput.onControllerRemovedObservable.add((inputSource) => {
+      const hand = inputSource.motionController.handedness;
+      this[`${hand}InputSource`] = null;
       this.signalHub.local.emit("controller_removed", {
         hand: inputSource.motionController.handness,
       });

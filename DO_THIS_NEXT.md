@@ -1,5 +1,6 @@
 NEXT:
 
+
 animation as components, only work as a mostly static attribute.  constant rotation.  bobbing up and down.  For dynamic movement, you would have to keep updating the component to the current state, like avatar movement.  Some movement is linear,
 like a bullet, or procedural like an arc.  So we can just msg the remote procedure call to limit
 messages.  But sometimes those animations can be interrupted.  For example two people playing catch with throwing an object.  If the item is not interrupted, let the person that threw it, continuously update the pos/rot like an animator until the object comes to a rest (times out) or until a second player or first player, grabs it.

@@ -44,7 +44,9 @@ export class XRS {
   deregisterSystem(name: string) {
     const system = this.getSystem(name);
     if (system) {
+      if (system.tearDown) {
       system.tearDown();
+      }
     }
   }
 

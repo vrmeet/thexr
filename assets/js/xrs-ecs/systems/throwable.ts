@@ -6,7 +6,10 @@ import {
   type IBehavior,
   type ISystem,
 } from "../system";
-import type * as BABYLON from "babylonjs";
+import * as BABYLON from "babylonjs";
+import type { SystemXR } from "./xr";
+import { arrayReduceSigFigs } from "../../utils/misc";
+import type { Context } from "../context";
 
 export class SystemThrowable
   extends BaseSystemWithBehaviors
@@ -16,6 +19,34 @@ export class SystemThrowable
   order = 40;
   buildBehavior() {
     return new BehaviorThrowable(this);
+  }
+  processMsg(data: {
+    throw: string;
+    av: number[];
+    lv: number[];
+    pos: number[];
+    rot: number[];
+  }): void {
+    console.log("receiving a throwable message");
+    // handle throw
+    const thrownObject = this.xrs.context.scene.getMeshByName(data.throw);
+    // reset pos, rot for more accurate client simulations
+    thrownObject.position = BABYLON.Vector3.FromArray(data.pos);
+    thrownObject.rotation = BABYLON.Vector3.FromArray(data.rot);
+    if (!thrownObject.physicsImpostor) {
+      thrownObject.physicsImpostor = new BABYLON.PhysicsImpostor(
+        thrownObject,
+        BABYLON.PhysicsImpostor.BoxImpostor,
+        { mass: 1, friction: 0.8, restitution: 0.5 },
+        this.xrs.context.scene
+      );
+    }
+    thrownObject.physicsImpostor.setLinearVelocity(
+      BABYLON.Vector3.FromArray(data.lv)
+    );
+    thrownObject.physicsImpostor.setAngularVelocity(
+      BABYLON.Vector3.FromArray(data.av)
+    );
   }
 }
 
@@ -31,12 +62,17 @@ export class BehaviorThrowable implements IBehavior {
   entity: Entity;
   signalHub: SignalHub;
   subscriptions: Subscription[] = [];
+  systemXR: SystemXR;
+  context: Context;
   constructor(public system: SystemThrowable) {}
+
   add(entity: Entity, data: ThrowableType): void {
     this.entity = entity;
     this.data = data;
+    this.systemXR = this.system.xrs.getSystem("xr") as SystemXR;
     // listen for a release
-    this.signalHub = this.system.xrs.context.signalHub;
+    this.context = this.system.xrs.context;
+    this.signalHub = this.context.signalHub;
     this.makeSubscription("left");
     this.makeSubscription("right");
   }
@@ -56,16 +92,24 @@ export class BehaviorThrowable implements IBehavior {
         )
       )
       .subscribe((evt) => {
-        this.animateMesh(evt.mesh, evt.input);
+        this.emitFlightType(evt.mesh, hand);
       });
 
     this.subscriptions.push(sub);
   }
-  animateMesh(
-    mesh: BABYLON.AbstractMesh,
-    inputSource: BABYLON.WebXRInputSource
-  ) {
-    console.log("animate a throw");
+  emitFlightType(thrownObject: BABYLON.AbstractMesh, hand: "left" | "right") {
+    const { av, lv } = this.systemXR.getHandVelocity(hand);
+    this.context.signalHub.outgoing.emit("msg", {
+      system: "throwable",
+      data: {
+        throw: thrownObject.name,
+        av,
+        lv,
+        pos: arrayReduceSigFigs(thrownObject.getAbsolutePosition().asArray()),
+        rot: arrayReduceSigFigs(thrownObject.rotation.asArray()),
+      },
+    });
+
     // TODO: emit outgoing custom message to
     // throwable system
     /*
