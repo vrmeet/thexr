@@ -207,16 +207,12 @@ export class BehaviorHoldable implements IBehavior {
           this.parentGrabbedMeshIntoHand(hand);
           this.releaseEvents(hand, event.mesh)
             .pipe(take(1))
-            .subscribe((releaseEvent) => {
+            .subscribe((reason) => {
               this.signalHub.movement.emit(`${hand}_lost_mesh`, {
-                reason: releaseEvent.reason as any,
+                reason,
                 mesh: event.mesh,
               });
-              if (releaseEvent.reason === "released") {
-                console.log(
-                  "during a release the input source was",
-                  releaseEvent.inputSource
-                );
+              if (reason === "released") {
                 this.releaseMesh();
               }
             });
@@ -230,7 +226,7 @@ export class BehaviorHoldable implements IBehavior {
       // if other hand grabbed the same mesh away from the first hand
       this.context.signalHub.movement.on(`${otherHand}_grip_mesh`).pipe(
         filter((data) => data.mesh.name === grabbedMesh.name),
-        mapTo({ reason: "transferred", inputSource: null })
+        mapTo("transferred")
       ),
       // OR another player stole our object
       this.context.signalHub.incoming.on("components_upserted").pipe(
@@ -242,16 +238,13 @@ export class BehaviorHoldable implements IBehavior {
               this.context.my_member_id
             )
         ),
-        mapTo({ reason: "taken", inputSource: null })
+        mapTo("taken")
       ),
 
       // OR the hand released the mesh
-      this.context.signalHub.movement.on(`${hand}_grip_released`).pipe(
-        tap((evt) => {
-          console.log("tap on grip released", evt.inputSource);
-        }),
-        map((evt) => ({ reason: "released", inputSource: evt.inputSource }))
-      )
+      this.context.signalHub.movement
+        .on(`${hand}_grip_released`)
+        .pipe(mapTo("released"))
     );
   }
   releaseMesh() {

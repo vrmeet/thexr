@@ -27,13 +27,19 @@ export class SystemThrowable
     pos: number[];
     rot: number[];
   }): void {
-    console.log("receiving a throwable message");
     // handle throw
     const thrownObject = this.xrs.context.scene.getMeshByName(data.throw);
+    if (thrownObject.parent) {
+      // even though holdable will emit a component upsert message to unparent the mesh
+      // a race condition, will process this before it's unparented
+      thrownObject.setParent(null);
+    }
     // reset pos, rot for more accurate client simulations
     thrownObject.position = BABYLON.Vector3.FromArray(data.pos);
-    thrownObject.rotation = BABYLON.Vector3.FromArray(data.rot);
+    thrownObject.rotationQuaternion = BABYLON.Quaternion.FromArray(data.rot);
+
     if (!thrownObject.physicsImpostor) {
+      console.log("thrown object has NO physics imposter");
       thrownObject.physicsImpostor = new BABYLON.PhysicsImpostor(
         thrownObject,
         BABYLON.PhysicsImpostor.BoxImpostor,
@@ -41,6 +47,7 @@ export class SystemThrowable
         this.xrs.context.scene
       );
     }
+    // console.log("data", data);
     thrownObject.physicsImpostor.setLinearVelocity(
       BABYLON.Vector3.FromArray(data.lv)
     );
@@ -106,7 +113,9 @@ export class BehaviorThrowable implements IBehavior {
         av,
         lv,
         pos: arrayReduceSigFigs(thrownObject.getAbsolutePosition().asArray()),
-        rot: arrayReduceSigFigs(thrownObject.rotation.asArray()),
+        rot: arrayReduceSigFigs(
+          thrownObject.absoluteRotationQuaternion.asArray()
+        ),
       },
     });
 

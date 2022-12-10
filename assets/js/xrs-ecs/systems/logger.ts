@@ -62,7 +62,9 @@ export class SystemLogger implements ISystem {
           });
         });
         // eslint-disable-next-line no-empty
-      } catch (e) {}
+      } catch (e) {
+        console.log("error in the trap error itself", e);
+      }
       if (window["Honeybadger"]) {
         window["Honeybadger"].notify(error);
       }

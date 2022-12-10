@@ -145,12 +145,12 @@ export class SystemXR implements ISystem {
 
     // triggered once per hand
     xrInput.onControllerAddedObservable.add((inputSource) => {
-      // save left and right input sources so that this system can support
-      // querying linear and angular velocity
-      const hand = inputSource.motionController.handedness;
-      this[`${hand}InputSource`] = inputSource;
-
       inputSource.onMotionControllerInitObservable.add(() => {
+        // save left and right input sources so that this system can support
+        // querying linear and angular velocity
+        const hand = inputSource.motionController.handedness;
+        this[`${hand}InputSource`] = inputSource;
+
         this.initController(inputSource);
       });
     });

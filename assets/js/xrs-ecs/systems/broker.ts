@@ -78,13 +78,7 @@ export class SystemBroker implements ISystem {
           console.warn("cannot upsert components of undefined entity", evt);
           return;
         }
-        Object.entries(evt.components).forEach(([componentName, data]) => {
-          if (entity.hasComponent(componentName)) {
-            entity.updateComponent(componentName, data);
-          } else {
-            entity.addComponent(componentName, data);
-          }
-        });
+        entity.upsertComponents(evt.components);
       });
 
     this.context.signalHub.incoming.on("msg").subscribe((data) => {
@@ -100,6 +94,7 @@ export class SystemBroker implements ISystem {
 
     this.context.signalHub.local.on("client_ready").subscribe((choice) => {
       this.connectToChannel(choice);
+      this.receiveAllChannelMessagesAndForwardToIncoming();
 
       if (choice === "enter") {
         this.pipeCameraMovementToOutgoing();
@@ -122,11 +117,7 @@ export class SystemBroker implements ISystem {
     });
   }
 
-  connectToChannel(choice: "enter" | "observe") {
-    this.channel = this.socket.channel(`space:${this.context.space.id}`, {
-      choice: choice,
-    });
-    this.context.channel = this.channel;
+  receiveAllChannelMessagesAndForwardToIncoming() {
     // forward incoming from channel to event bus
     this.channel.onMessage = (event: keyof IncomingEvents, payload) => {
       if (!event.startsWith("phx_") && !event.startsWith("chan_")) {
@@ -134,6 +125,13 @@ export class SystemBroker implements ISystem {
       }
       return payload;
     };
+  }
+
+  connectToChannel(choice: "enter" | "observe") {
+    this.channel = this.socket.channel(`space:${this.context.space.id}`, {
+      choice: choice,
+    });
+    this.context.channel = this.channel;
 
     this.socket.connect();
     this.channel

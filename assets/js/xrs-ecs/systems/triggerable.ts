@@ -1,4 +1,4 @@
-import { filter, takeUntil } from "rxjs";
+import { filter, Subscription, takeUntil } from "rxjs";
 import type { SignalHub } from "../../signalHub";
 import type { Entity } from "../entity";
 import {
@@ -12,7 +12,7 @@ export class SystemTriggerable
   implements ISystem
 {
   name = "triggerable";
-  order = 50;
+  order = 30;
   buildBehavior() {
     return new BehaviorTriggerable(this);
   }
@@ -26,37 +26,46 @@ export class BehaviorTriggerable implements IBehavior {
   data: TriggerableType;
   entity: Entity;
   signalHub: SignalHub;
+  subscriptions: Subscription[] = [];
   constructor(public system: SystemTriggerable) {
     this.signalHub = system.xrs.context.signalHub;
   }
   add(entity: Entity, data: TriggerableType): void {
     this.entity = entity;
     this.data = data;
+    this.buildSubscription("left");
+    this.buildSubscription("right");
   }
   update(data: TriggerableType): void {
     this.data = data;
   }
-  remove(): void {}
+  remove(): void {
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
+  }
   buildSubscription(hand: "left" | "right") {
     // while this mesh is held
-    this.signalHub.movement.on(`${hand}_grip_mesh`).subscribe((gripEvent) => {
-      // listen to trigger
-      this.signalHub.movement
-        .on(`${hand}_trigger_squeezed`)
-        .pipe(
-          takeUntil(
-            this.signalHub.movement
-              .on(`${hand}_lost_mesh`)
-              .pipe(filter((evt) => evt.mesh.name === this.entity.name))
+    const sub = this.signalHub.movement
+      .on(`${hand}_grip_mesh`)
+      .pipe(filter((evt) => evt.mesh.name === this.entity.name))
+      .subscribe((gripEvent) => {
+        // listen to trigger
+        this.signalHub.movement
+          .on(`${hand}_trigger_squeezed`)
+          .pipe(
+            takeUntil(
+              this.signalHub.movement
+                .on(`${hand}_lost_mesh`)
+                .pipe(filter((evt) => evt.mesh.name === this.entity.name))
+            )
           )
-        )
-        .subscribe((triggerEvent) => {
-          this.signalHub.movement.emit("trigger_holding_mesh", {
-            hand,
-            mesh: gripEvent.mesh,
-            input: triggerEvent,
+          .subscribe(() => {
+            console.log("trigger holding mesh");
+            this.signalHub.movement.emit("trigger_holding_mesh", {
+              hand,
+              mesh: gripEvent.mesh,
+            });
           });
-        });
-    });
+      });
+    this.subscriptions.push(sub);
   }
 }

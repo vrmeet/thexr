@@ -10,6 +10,7 @@ import {
   type ISystem,
 } from "../system";
 import type { XRS } from "../xrs";
+import type { SystemXR } from "./xr";
 
 /*
 a particular implementation of a gun
@@ -38,10 +39,12 @@ export class SystemGun extends BaseSystemWithBehaviors implements ISystem {
   public ray: BABYLON.Ray;
   public rayHelper: BABYLON.RayHelper;
   public xrs: XRS;
+  public systemXR: SystemXR;
   async setup(xrs: XRS) {
     this.context = xrs.context;
     this.scene = this.context.scene;
     this.signalHub = this.context.signalHub;
+    this.systemXR = this.xrs.getSystem("xr") as SystemXR;
     this.ray = new BABYLON.Ray(
       BABYLON.Vector3.Zero(),
       BABYLON.Vector3.One(),
@@ -190,11 +193,20 @@ export class BehaviorGun implements IBehavior {
       .on("trigger_holding_mesh")
       .pipe(filter((evt) => evt.mesh.name === this.entity.name))
       .subscribe((evt) => {
-        this.emitBulletFire(evt.inputSource);
+        this.emitBulletFire(evt.hand);
       });
   }
-  emitBulletFire(inputSource: BABYLON.WebXRInputSource) {
+  emitBulletFire(hand: "left" | "right") {
     // fire a bullet if we have ammo
+    let inputSource;
+    if (hand[0] === "l") {
+      inputSource = this.system.systemXR.leftInputSource;
+    } else {
+      inputSource = this.system.systemXR.rightInputSource;
+    }
+    if (!inputSource) {
+      return;
+    }
 
     return this.signalHub.outgoing.emit("msg", {
       system: "gun",

@@ -148,14 +148,14 @@ export type MovementEvents = {
     mesh: BABYLON.AbstractMesh;
   };
   left_lost_mesh: {
-    reason: "released" | "transferred" | "taken";
+    reason: string;
     mesh: BABYLON.AbstractMesh;
   };
   right_grip_mesh: {
     mesh: BABYLON.AbstractMesh;
   };
   right_lost_mesh: {
-    reason: "released" | "transferred" | "taken";
+    reason: string;
     mesh: BABYLON.AbstractMesh;
   };
 

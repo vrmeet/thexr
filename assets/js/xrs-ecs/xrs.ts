@@ -45,7 +45,7 @@ export class XRS {
     const system = this.getSystem(name);
     if (system) {
       if (system.tearDown) {
-      system.tearDown();
+        system.tearDown();
       }
     }
   }
@@ -58,23 +58,29 @@ export class XRS {
     return system;
   }
 
+  // convenince function for sorting an object representing components into a
+  // sorted array of component name and values
+  sortComponentsBySystemOrder(
+    components: ComponentObj
+  ): { componentName: string; componentValue: any }[] {
+    return Object.keys(components)
+      .map((componentName) => this.getSystem(componentName))
+      .filter((sys) => sys !== null)
+      .sort((a, b) => a.order - b.order)
+      .reduce((acc, sys) => {
+        acc.push({
+          componentName: sys.name,
+          componentValue: components[sys.name],
+        });
+        return acc;
+      }, []);
+  }
+
   // has protection for not doubling entity if already exists
   createEntity(name: string, components: ComponentObj = {}) {
     const entity = this.getEntity(name) || new Entity(name, this);
     this.context.entities[name] = entity;
-    // sort components by system order
-    Object.keys(components)
-      .map((componentName) => this.getSystem(componentName))
-      .filter((system) => system !== null)
-      .sort((a, b) => a.order - b.order)
-      .forEach((system) => {
-        if (entity.hasComponent(system.name)) {
-          entity.updateComponent(system.name, components[system.name]);
-        } else {
-          entity.addComponent(system.name, components[system.name]);
-        }
-      });
-
+    entity.upsertComponents(components);
     return entity;
   }
 
