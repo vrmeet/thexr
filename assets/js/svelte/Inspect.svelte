@@ -2,9 +2,9 @@
     import { getContext, afterUpdate } from "svelte";
     import type { Context } from "../context";
     import Select from "./Select.svelte";
-    import type { SystemTransform } from "../ecs/builtin_systems/system-transform";
     import ComponentView from "./ComponentView.svelte";
-    import type { SystemMenu } from "../ecs/builtin_systems/system-menu";
+    import type { SystemTransform } from "../xrs-ecs/systems/transform";
+    import type { SystemMenu } from "../xrs-ecs/systems/menu";
 
     let context: Context = getContext("context");
     const systemMenu: SystemMenu = context.systems["menu"] as SystemMenu;
@@ -50,7 +50,6 @@
                     },
                 });
             }
-            
         };
     };
 </script>

@@ -2,8 +2,8 @@
     import { getContext, afterUpdate } from "svelte";
     import type { Context } from "../context";
     import Inspect from "./Inspect.svelte";
-    import type { SystemTransform } from "../ecs/builtin_systems/system-transform";
     import ComponentValue from "./ComponentValue.svelte";
+    import type { SystemTransform } from "../xrs-ecs/systems/transform";
 
     export let data: { entity_id: string; componentName: string };
 

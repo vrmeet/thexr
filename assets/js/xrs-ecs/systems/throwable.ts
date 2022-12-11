@@ -86,6 +86,7 @@ export class BehaviorThrowable implements IBehavior {
   }
   remove(): void {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
+    this.subscriptions.length = 0;
   }
   makeSubscription(hand: "left" | "right") {
     const sub = this.signalHub.movement

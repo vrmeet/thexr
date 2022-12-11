@@ -4,11 +4,11 @@
     import type * as BABYLON from "babylonjs";
     import Select from "./Select.svelte";
     import type { SystemSerializedMesh } from "../ecs/builtin_systems/system-serialized-mesh";
-    import type { SystemTransform } from "../ecs/builtin_systems/system-transform";
 
     import type { ComponentObj } from "../ecs/components/component-obj";
     import type { Subscription } from "rxjs";
     import { random_id } from "../utils/misc";
+    import type { SystemTransform } from "../xrs-ecs/systems/transform";
 
     let subscriptions: Subscription[] = [];
     let context: Context = getContext("context");
@@ -35,7 +35,6 @@
                 systemTransform.lastPickedMesh
             );
         } catch (e) {
-            
             result = e;
         }
         context.signalHub.incoming.emit("msg", {

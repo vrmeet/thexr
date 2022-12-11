@@ -87,5 +87,6 @@ export class SystemXRFlight implements ISystem {
     this.subscriptions.forEach((sub) => {
       sub.unsubscribe();
     });
+    this.subscriptions.length = 0;
   }
 }

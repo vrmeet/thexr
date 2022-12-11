@@ -66,6 +66,7 @@
 
   onDestroy(() => {
     subscriptions.forEach((sub) => sub.unsubscribe());
+    subscriptions.length = 0;
   });
 </script>
 

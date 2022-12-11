@@ -166,6 +166,7 @@ export class BehaviorHoldable implements IBehavior {
   }
   remove(): void {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
+    this.subscriptions.length = 0;
   }
 
   // side effect of receiving a mesh grabbed messaged

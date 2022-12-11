@@ -1,12 +1,12 @@
 <script lang="ts">
   import { getContext } from "svelte";
-  import type { Context } from "../context";
-  import type { SystemAttendance } from "../ecs/builtin_systems/system-attendance";
+  import type { SystemAttendance } from "../xrs-ecs/systems/attendance";
+  import type { XRS } from "../xrs-ecs/xrs";
 
-  let context: Context = getContext("context");
-  const serviceAttendees = context.systems["attendance"] as SystemAttendance;
-  const nicknames = Object.values(serviceAttendees.attendees).map(
-    (comp) => comp.attendance.nickname
+  let xrs: XRS = getContext("xrs");
+  const serviceAttendees = xrs.getSystem("attendance") as SystemAttendance;
+  const nicknames = Object.values(serviceAttendees.entities).map(
+    (comp) => comp.data.nickname
   );
 </script>
 

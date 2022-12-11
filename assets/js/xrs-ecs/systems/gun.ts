@@ -151,7 +151,10 @@ export class SystemGun extends BaseSystemWithBehaviors implements ISystem {
       // the faster the bullet the longer the beam needs to be
       this.ray.length = (2 * BULLET_SPEED) / BULLET_DISTANCE;
 
-      const hitTest = this.scene.pickWithRay(this.ray);
+      const hitTest = this.scene.pickWithRay(
+        this.ray,
+        (mesh) => mesh.name !== data.gun && mesh.name !== "bullet"
+      );
       if (hitTest.pickedMesh) {
         this.scene.unregisterAfterRender(checkBulletForIntersect);
         animation.stop();
@@ -194,22 +197,39 @@ export class BehaviorGun implements IBehavior {
       .on("trigger_holding_mesh")
       .pipe(filter((evt) => evt.mesh.name === this.entity.name))
       .subscribe((evt) => {
-        this.emitBulletFire(evt.hand);
+        this.emitBulletFire(evt.hand, evt.mesh);
       });
   }
-  emitBulletFire(hand: "left" | "right") {
-    // fire a bullet if we have ammo
-    const inputSource = this.system.systemXR.getInputSource(hand);
-
+  emitBulletFire(hand: "left" | "right", gunMesh: BABYLON.AbstractMesh) {
+    const { pos, direction } = this.getHandPosDirection(hand, gunMesh);
     return this.signalHub.outgoing.emit("msg", {
       system: "gun",
       data: <FireBulletEvent>{
         name: "fire_bullet",
         shooter: this.system.context.my_member_id,
         gun: this.entity.name,
-        pos: arrayReduceSigFigs(inputSource.grip.absolutePosition.asArray()),
-        direction: arrayReduceSigFigs(inputSource.pointer.forward.asArray()),
+        pos,
+        direction,
       },
     });
+  }
+
+  getHandPosDirection(hand: "left" | "right", gunMesh: BABYLON.AbstractMesh) {
+    // try to get position and direction from XR input source, but if in 2D mode
+    // get it from the parent of the held mesh, which is the right hand mesh
+    const inputSource = this.system.systemXR.getInputSource(hand);
+    if (inputSource) {
+      return {
+        pos: arrayReduceSigFigs(inputSource.grip.absolutePosition.asArray()),
+        direction: arrayReduceSigFigs(inputSource.pointer.forward.asArray()),
+      };
+    } else {
+      const handMesh = gunMesh.parent as BABYLON.AbstractMesh;
+      const direction = handMesh.getDirection(BABYLON.Vector3.Forward());
+      return {
+        pos: arrayReduceSigFigs(handMesh.absolutePosition.asArray()),
+        direction: arrayReduceSigFigs(direction.asArray()),
+      };
+    }
   }
 }

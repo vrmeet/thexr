@@ -41,6 +41,7 @@ export class BehaviorTriggerable implements IBehavior {
   }
   remove(): void {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
+    this.subscriptions.length = 0;
   }
   buildSubscription(hand: "left" | "right") {
     // while this mesh is held

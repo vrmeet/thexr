@@ -18,6 +18,7 @@ export class SystemScene implements ISystem {
     this.createEngine();
     this.createScene();
     this.createDefaultCamera();
+    this.setupListeners();
   }
 
   setupListeners() {

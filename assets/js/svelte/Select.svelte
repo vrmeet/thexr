@@ -3,7 +3,6 @@
     import { afterUpdate, onDestroy, getContext } from "svelte";
     import * as BABYLON from "babylonjs";
     import type { SystemSerializedMesh } from "../ecs/builtin_systems/system-serialized-mesh";
-    import type { SystemMenu } from "../ecs/builtin_systems/system-menu";
     import Primitives from "./Primitives.svelte";
     import Inspect from "./Inspect.svelte";
     import {
@@ -14,8 +13,9 @@
     import { filter, mapTo, Subscription } from "rxjs";
     import Color from "./Color.svelte";
     import Export from "./Export.svelte";
-    import type { SystemTransform } from "../ecs/builtin_systems/system-transform";
     import { merge as rxjsmerge, tap } from "rxjs";
+    import type { SystemTransform } from "../xrs-ecs/systems/transform";
+    import type { SystemMenu } from "../xrs-ecs/systems/menu";
 
     let subscriptions: Subscription[] = [];
     const keyCodeForShift = 16;
@@ -219,6 +219,7 @@
 
     onDestroy(() => {
         subscriptions.forEach((sub) => sub.unsubscribe());
+        subscriptions.length = 0;
         hl.dispose();
         systemTransform.disableGizmoManager();
     });

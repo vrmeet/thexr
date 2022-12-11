@@ -1,10 +1,10 @@
 <script lang="ts">
     import { getContext } from "svelte";
-    import type { Context } from "../context";
+    import type { XRS } from "../xrs-ecs/xrs";
     export let avatarAndNicknameCallback;
 
-    let context: Context = getContext("context");
-    let nickname: string = context.my_nickname;
+    let xrs: XRS = getContext("xrs");
+    let nickname: string = xrs.context.my_nickname;
 </script>
 
 <div class="modal">

@@ -1,24 +1,23 @@
 <script lang="ts">
     import { getContext, onDestroy } from "svelte";
-    import type { Context } from "../context";
     import type * as BABYLON from "babylonjs";
     import Select from "./Select.svelte";
-    import type { SystemTransform } from "../ecs/builtin_systems/system-transform";
-    import type { ComponentObj } from "../ecs/components/component-obj";
     import type { Subscription } from "rxjs";
+    import type { SystemTransform } from "../xrs-ecs/systems/transform";
+    import type { XRS } from "../xrs-ecs/xrs";
 
     let subscriptions: Subscription[] = [];
-    let context: Context = getContext("context");
+    let xrs: XRS = getContext("xrs");
 
     let setSelected: (component: any, data?: {}) => () => void =
         getContext("setSelected");
 
-    const systemTransform: SystemTransform = context.systems[
+    const systemTransform: SystemTransform = xrs.context.systems[
         "transform"
     ] as SystemTransform;
     systemTransform.enableGizmoManager();
 
-    const sub1 = context.signalHub.local
+    const sub1 = xrs.context.signalHub.local
         .on("mesh_picked")
         .subscribe((meshPicked) => {
             if (meshPicked.metadata?.menu === true) {
@@ -28,14 +27,13 @@
         });
     subscriptions.push(sub1);
 
-    let meshMaterial = context.state[systemTransform.lastPickedMesh.name]
+    let meshMaterial = xrs.context.state[systemTransform.lastPickedMesh.name]
         ?.material as { color_string: string };
     let chosenColor: BABYLON.Color3;
     context.signalHub.local.on("color_picked").subscribe((color) => {
         chosenColor = color;
     });
     const applyColor = () => {
-        
         context.signalHub.outgoing.emit("components_upserted", {
             id: systemTransform.lastPickedMesh.name,
             components: {
@@ -49,6 +47,7 @@
 
     onDestroy(() => {
         subscriptions.forEach((sub) => sub.unsubscribe());
+        subscriptions.length = 0;
         systemTransform.disableGizmoManager();
     });
 </script>

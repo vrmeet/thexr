@@ -6,7 +6,7 @@
     import * as sessionPersistance from "../sessionPersistance";
     import { initClient } from "@urql/svelte";
     import { isMobileVR } from "../utils/utils-browser";
-    import type { Context } from "../xrs-ecs/context";
+    import type { XRS } from "../xrs-ecs/xrs";
 
     // initClient({
     //     url: "/api",
@@ -14,11 +14,11 @@
     // });
 
     //props
-    export let context: Context;
+    export let xrs: XRS;
 
     let choice: "enter" | "observe";
 
-    setContext("context", context);
+    setContext("xrs", xrs);
 
     //state
     let didInteract = false;
@@ -27,7 +27,7 @@
 
     const micConfirmed = async () => {
         const micChoice = sessionPersistance.getMicAndOutputChoice();
-        
+
         if (micChoice === null) {
             return false;
         } else {
@@ -42,7 +42,7 @@
 
     //callbacks
     const avatarAndNicknameCallback = async (nickname: string) => {
-        context.my_nickname = nickname;
+        xrs.context.my_nickname = nickname;
         sessionPersistance.saveNickname({ nickname });
 
         showAvatarAndNickNameForm = false;
@@ -52,7 +52,6 @@
             return ready();
         }
         if (!(await micConfirmed())) {
-            
             showMicAndOutputForm = true;
         } else {
             ready();
@@ -78,8 +77,8 @@
     };
 
     const ready = () => {
-        context.signalHub.local.emit("client_ready", choice);
-        let canvas = document.getElementById(context.space.id);
+        xrs.context.signalHub.local.emit("client_ready", choice);
+        let canvas = document.getElementById(xrs.context.space.id);
         canvas.focus();
     };
 

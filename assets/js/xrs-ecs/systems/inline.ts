@@ -2,10 +2,11 @@ import type { Context } from "../context";
 import type { ISystem } from "../system";
 import type { XRS } from "../xrs";
 import * as BABYLON from "babylonjs";
-import { filter } from "rxjs";
+import { filter, map, Subscription, tap } from "rxjs";
 import { FreeCameraKeyboardFlyingInput } from "../../scene/camera-inputs/free-camera-keyboard-flying-input";
 import { FreeCameraKeyboardWalkInput } from "../../scene/camera-inputs/free-camera-keyboard-walk-input";
 import { arrayReduceSigFigs } from "../../utils/misc";
+import { Entity } from "../entity";
 
 /**
  * Inline mode means 2D, not immersive playing
@@ -22,11 +23,13 @@ export class SystemInline implements ISystem {
   camera: BABYLON.FreeCamera;
   scene: BABYLON.Scene;
   context: Context;
-  rightHandHolding: BABYLON.AbstractMesh;
+  holdingEntity: Entity;
+  subscriptions: Subscription[] = [];
+  rightHandMesh: BABYLON.AbstractMesh;
   public xrs: XRS;
   setup(xrs: XRS): void {
     this.xrs = xrs;
-    this.context = xrs.context;
+    this.context = this.xrs.context;
     this.scene = this.context.scene;
     this.scene.collisionsEnabled = true;
     this.camera = <BABYLON.FreeCamera>this.scene.activeCamera;
@@ -36,14 +39,14 @@ export class SystemInline implements ISystem {
         this.context.signalHub.local.emit("keyboard_info", keyboardInfo);
       }
     );
-    this.bindFKeyForFlight();
+    this.bindInlineEvents();
     this.context.signalHub.local
       .on("xr_state_changed")
       .pipe(filter((msg) => msg === BABYLON.WebXRState.EXITING_XR))
       .subscribe(() => {
         // show block hands next to face
         // this.createInlineHands();
-        // this.bindInlineEvents();
+        this.bindInlineEvents();
       });
 
     this.context.signalHub.local
@@ -51,13 +54,51 @@ export class SystemInline implements ISystem {
       .pipe(filter((msg) => msg === BABYLON.WebXRState.ENTERING_XR))
       .subscribe(() => {
         // can hide own hands because we have controllers
-        // this.unbindInlineEvents();
+        this.unbindInlineEvents();
       });
+
+    this.listenForTriggerSubstitute();
   }
-  inlineDrop(mesh: BABYLON.AbstractMesh) {
-    const rightHand = this.scene.getMeshByName(
-      `${this.context.my_member_id}_avatar_right`
-    );
+
+  listenForTriggerSubstitute() {
+    this.context.signalHub.local.on("trigger_substitute").subscribe(() => {
+      if (
+        this.holdingEntity &&
+        this.holdingEntity.hasComponent("triggerable")
+      ) {
+        this.context.signalHub.movement.emit("trigger_holding_mesh", {
+          hand: "right",
+          mesh: this.rightHandMesh.getChildMeshes()[0],
+        });
+      }
+      // if (this.heldMesh()) {
+      //   this.emitTriggerSqueezed();
+      // }
+    });
+  }
+
+  bindInlineEvents() {
+    this.subscriptions.push(this.bindFKeyForFlight());
+    this.subscriptions.push(this.bindDoubleClickToGrab());
+    this.subscriptions.push(this.bindKeyboardForTrigger());
+  }
+
+  unbindInlineEvents() {
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
+    this.subscriptions.length = 0;
+  }
+
+  getRightHandMesh() {
+    if (!this.rightHandMesh) {
+      this.rightHandMesh = this.scene.getMeshByName(
+        `${this.context.my_member_id}_avatar_right`
+      );
+    }
+    return this.rightHandMesh;
+  }
+
+  inlineDrop() {
+    const rightHand = this.getRightHandMesh();
     const transform = {
       position: arrayReduceSigFigs(rightHand.absolutePosition.asArray()),
       rotation: arrayReduceSigFigs(
@@ -66,20 +107,16 @@ export class SystemInline implements ISystem {
       parent: null,
     };
     this.context.signalHub.outgoing.emit("components_upserted", {
-      id: mesh.name,
+      id: this.holdingEntity.name,
       components: {
-        grabbable: { grabbed_by: null },
         transform: transform,
       },
     });
-    this.rightHandHolding = null;
+    this.holdingEntity = null;
   }
 
-  inlineGrab(mesh: BABYLON.AbstractMesh) {
-    // tell everyone you grabbed it
-    const rightHand = this.scene.getMeshByName(
-      `${this.context.my_member_id}_avatar_right`
-    );
+  inlineGrab(entity: Entity) {
+    const rightHand = this.getRightHandMesh();
     const transform = {
       position: [0, 0, 0],
       rotation: [0, 0, 0],
@@ -87,13 +124,12 @@ export class SystemInline implements ISystem {
     };
 
     this.context.signalHub.outgoing.emit("components_upserted", {
-      id: mesh.name,
+      id: entity.name,
       components: {
-        grabbable: { grabbed_by: this.context.my_member_id },
         transform: transform,
       },
     });
-    this.rightHandHolding = mesh;
+    this.holdingEntity = entity;
   }
 
   enhanceCamera() {
@@ -102,6 +138,49 @@ export class SystemInline implements ISystem {
     this.camera.inertia = 0.2;
     this.camera.angularSensibility = 250;
     this.camera.minZ = 0.05;
+  }
+  bindDoubleClickToGrab() {
+    return this.context.signalHub.local
+      .on("pointer_info")
+      .pipe(
+        filter(
+          (info) => info.type === BABYLON.PointerEventTypes.POINTERDOUBLETAP
+        ),
+        map((info) => info.pickInfo.pickedMesh),
+        filter((mesh) => mesh !== null),
+        map((mesh) => this.xrs.getEntity(mesh.name)),
+        filter((entity) => entity !== null),
+        filter((entity) => entity.hasComponent("holdable"))
+      )
+      .subscribe((entity) => {
+        if (!this.holdingEntity) {
+          this.inlineGrab(entity);
+        } else {
+          if (entity.name === this.holdingEntity.name) {
+            this.inlineDrop();
+          } else {
+            // swap
+            this.inlineDrop();
+            this.inlineGrab(entity);
+          }
+        }
+      });
+  }
+
+  bindKeyboardForTrigger() {
+    // when space bar pressed
+    return this.context.signalHub.local
+      .on("keyboard_info")
+      .pipe(
+        filter(
+          (info) =>
+            info.type === BABYLON.KeyboardEventTypes.KEYDOWN &&
+            info.event.keyCode === 32
+        )
+      )
+      .subscribe(() => {
+        this.context.signalHub.local.emit("trigger_substitute", true);
+      });
   }
 
   bindFKeyForFlight() {

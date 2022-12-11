@@ -29,7 +29,7 @@ export class SystemStartModal implements ISystem {
     new App({
       target: document.body,
       props: {
-        context: this.context,
+        xrs: this.xrs,
       },
     });
   }

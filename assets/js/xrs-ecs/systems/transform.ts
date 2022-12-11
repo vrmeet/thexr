@@ -1,4 +1,5 @@
 import * as BABYLON from "babylonjs";
+import { arrayReduceSigFigs } from "../../utils/misc";
 
 import type { Context } from "../context";
 import type { Entity } from "../entity";
@@ -26,81 +27,81 @@ export class SystemTransform
   public gizmoManager: BABYLON.GizmoManager;
   public lastPickedMesh: BABYLON.AbstractMesh;
   public xrs: XRS;
-  // enableGizmoManager() {
-  //   this.gizmoManager = new BABYLON.GizmoManager(this.scene);
-  //   this.gizmoManager.positionGizmoEnabled = true;
-  //   this.gizmoManager.rotationGizmoEnabled = true;
-  //   this.gizmoManager.gizmos.positionGizmo.scaleRatio = 2;
-  //   this.gizmoManager.gizmos.rotationGizmo.scaleRatio = 1.5;
-  //   this.gizmoManager.scaleGizmoEnabled = true;
-  //   this.gizmoManager.usePointerToAttachGizmos = false;
-  //   if (
-  //     this.lastPickedMesh &&
-  //     this.xrs.context.entities[this.lastPickedMesh.name]
-  //   ) {
-  //     this.gizmoManagerAttachMesh(this.lastPickedMesh);
-  //   }
-  //   this.gizmoManager.gizmos.positionGizmo.onDragEndObservable.add(
-  //     (_data, _state) => {
-  //       this.broadcastNewPosition();
-  //     }
-  //   );
+  enableGizmoManager() {
+    this.gizmoManager = new BABYLON.GizmoManager(this.scene);
+    this.gizmoManager.positionGizmoEnabled = true;
+    this.gizmoManager.rotationGizmoEnabled = true;
+    this.gizmoManager.gizmos.positionGizmo.scaleRatio = 2;
+    this.gizmoManager.gizmos.rotationGizmo.scaleRatio = 1.5;
+    this.gizmoManager.scaleGizmoEnabled = true;
+    this.gizmoManager.usePointerToAttachGizmos = false;
+    if (
+      this.lastPickedMesh &&
+      this.xrs.context.entities[this.lastPickedMesh.name]
+    ) {
+      this.gizmoManagerAttachMesh(this.lastPickedMesh);
+    }
+    this.gizmoManager.gizmos.positionGizmo.onDragEndObservable.add(
+      (_data, _state) => {
+        this.broadcastNewPosition();
+      }
+    );
 
-  //   this.gizmoManager.gizmos.rotationGizmo.onDragEndObservable.add(
-  //     (_data, _state) => {
-  //       this.broadcastNewRotation();
-  //     }
-  //   );
+    this.gizmoManager.gizmos.rotationGizmo.onDragEndObservable.add(
+      (_data, _state) => {
+        this.broadcastNewRotation();
+      }
+    );
 
-  //   this.gizmoManager.gizmos.scaleGizmo.onDragEndObservable.add(
-  //     (_data, _state) => {
-  //       this.broadcastNewScale();
-  //     }
-  //   );
-  // }
+    this.gizmoManager.gizmos.scaleGizmo.onDragEndObservable.add(
+      (_data, _state) => {
+        this.broadcastNewScale();
+      }
+    );
+  }
 
-  // gizmoManagerAttachMesh(mesh: BABYLON.AbstractMesh) {
-  //   this.lastPickedMesh = mesh;
-  //   this.gizmoManager.attachToMesh(mesh);
-  // }
+  gizmoManagerAttachMesh(mesh: BABYLON.AbstractMesh) {
+    this.lastPickedMesh = mesh;
+    this.gizmoManager.attachToMesh(mesh);
+  }
 
-  // broadcastNewPosition = () => {
-  //   this.context.signalHub.outgoing.emit("components_upserted", {
-  //     id: this.lastPickedMesh.name,
-  //     components: {
-  //       transform: {
-  //         position: arrayReduceSigFigs(this.lastPickedMesh.position.asArray()),
-  //       },
-  //     },
-  //   });
-  // };
+  broadcastNewPosition = () => {
+    this.context.signalHub.outgoing.emit("components_upserted", {
+      id: this.lastPickedMesh.name,
+      components: {
+        transform: {
+          position: arrayReduceSigFigs(this.lastPickedMesh.position.asArray()),
+        },
+      },
+    });
+  };
 
-  // broadcastNewRotation = () => {
-  //   this.context.signalHub.outgoing.emit("components_upserted", {
-  //     id: this.lastPickedMesh.name,
-  //     components: {
-  //       transform: {
-  //         rotation: arrayReduceSigFigs(this.lastPickedMesh.rotation.asArray()),
-  //       },
-  //     },
-  //   });
-  // };
+  broadcastNewRotation = () => {
+    this.context.signalHub.outgoing.emit("components_upserted", {
+      id: this.lastPickedMesh.name,
+      components: {
+        transform: {
+          rotation: arrayReduceSigFigs(this.lastPickedMesh.rotation.asArray()),
+        },
+      },
+    });
+  };
 
-  // broadcastNewScale = () => {
-  //   this.context.signalHub.outgoing.emit("components_upserted", {
-  //     id: this.lastPickedMesh.name,
-  //     components: {
-  //       transform: {
-  //         scaling: arrayReduceSigFigs(this.lastPickedMesh.scaling.asArray()),
-  //       },
-  //     },
-  //   });
-  // };
+  broadcastNewScale = () => {
+    this.context.signalHub.outgoing.emit("components_upserted", {
+      id: this.lastPickedMesh.name,
+      components: {
+        transform: {
+          scaling: arrayReduceSigFigs(this.lastPickedMesh.scaling.asArray()),
+        },
+      },
+    });
+  };
 
-  // disableGizmoManager() {
-  //   this.gizmoManager.dispose();
-  //   this.gizmoManager = null;
-  // }
+  disableGizmoManager() {
+    this.gizmoManager.dispose();
+    this.gizmoManager = null;
+  }
 
   setup(xrs: XRS) {
     this.xrs = xrs;

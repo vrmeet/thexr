@@ -4,15 +4,13 @@
     import type * as BABYLON from "babylonjs";
     import Select from "./Select.svelte";
     import type { SystemSerializedMesh } from "../ecs/builtin_systems/system-serialized-mesh";
-    import type { SystemTransform } from "../ecs/builtin_systems/system-transform";
 
     import type { ComponentObj } from "../ecs/components/component-obj";
     import type { Subscription } from "rxjs";
     import { cameraFrontPosition, random_id } from "../utils/misc";
-    import type { SystemMenu } from "../ecs/builtin_systems/system-menu";
 
     export let value;
-    
+
     let context: Context = getContext("context");
 </script>
 
