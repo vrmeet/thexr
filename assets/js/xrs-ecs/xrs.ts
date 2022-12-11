@@ -8,6 +8,7 @@ import { SystemAvatar } from "./systems/avatar";
 import { SystemBroker } from "./systems/broker";
 import { SystemCollectable } from "./systems/collectable";
 import { SystemFloor } from "./systems/floor";
+import { SystemGun } from "./systems/gun";
 import { SystemHoldable } from "./systems/holdable";
 import { SystemHUD } from "./systems/hud";
 import { SystemInline } from "./systems/inline";
@@ -21,6 +22,7 @@ import { SystemStartModal } from "./systems/start-modal";
 import { SystemThrowable } from "./systems/throwable";
 import { SystemTintOverlay } from "./systems/tint-overlay";
 import { SystemTransform } from "./systems/transform";
+import { SystemTriggerable } from "./systems/triggerable";
 import { SystemUtilities } from "./systems/utilities";
 import { SystemWebRTC } from "./systems/webrtc";
 import { SystemXR } from "./systems/xr";
@@ -145,5 +147,7 @@ export class XRS {
     this.registerSystem(new SystemCollectable());
     this.registerSystem(new SystemHoldable());
     this.registerSystem(new SystemThrowable());
+    this.registerSystem(new SystemTriggerable());
+    this.registerSystem(new SystemGun());
   }
 }

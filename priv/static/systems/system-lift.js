@@ -99,7 +99,9 @@ class SystemLift {
     this.context.signalHub.service.emit("animate_translate", {
       target: mesh,
       from: mesh.position,
-      to: mesh.position.add(new this.context.BABYLON.Vector3(0, liftState.height, 0)),
+      to: mesh.position.add(
+        new this.context.BABYLON.Vector3(0, liftState.height, 0)
+      ),
       duration: liftState.height / liftState.speed,
       callback: () => {
         this.context.signalHub.outgoing.emit("components_upserted", {

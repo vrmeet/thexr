@@ -27,8 +27,12 @@ export class SystemXR implements ISystem {
   public leftInputSource: BABYLON.WebXRInputSource;
   public rightInputSource: BABYLON.WebXRInputSource;
 
+  getInputSource(hand: "left" | "right") {
+    return this[`${hand}InputSource`];
+  }
+
   getHandVelocity(hand: "left" | "right") {
-    const inputSource = this[`${hand}InputSource`];
+    const inputSource = this.getInputSource(hand);
     if (inputSource && this.controllerPhysicsFeature) {
       const imposter =
         this.controllerPhysicsFeature.getImpostorForController(inputSource);
@@ -146,11 +150,6 @@ export class SystemXR implements ISystem {
     // triggered once per hand
     xrInput.onControllerAddedObservable.add((inputSource) => {
       inputSource.onMotionControllerInitObservable.add(() => {
-        // save left and right input sources so that this system can support
-        // querying linear and angular velocity
-        const hand = inputSource.motionController.handedness;
-        this[`${hand}InputSource`] = inputSource;
-
         this.initController(inputSource);
       });
     });
@@ -165,6 +164,11 @@ export class SystemXR implements ISystem {
   }
 
   initController(inputSource: BABYLON.WebXRInputSource) {
+    // save left and right input sources so that this system can support
+    // querying linear and angular velocity
+    const hand = inputSource.motionController.handedness;
+    this[`${hand}InputSource`] = inputSource;
+
     this.setupComponentData(inputSource);
     this.setupVibration(inputSource);
     this.setupHandMotionData(inputSource);

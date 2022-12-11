@@ -85,7 +85,9 @@ defmodule Thexr.Spaces do
           },
           "transform" => %{"position" => [-1.5, 1, -4]},
           "holdable" => %{"offset" => %{"pos" => [0, 0, 0], "rot" => [0, 0, 0]}},
-          "throwable" => %{"type" => "physics_simulator"}
+          "throwable" => %{"type" => "physics_simulator"},
+          "triggerable" => %{"type" => "discreet"},
+          "gun" => %{}
         }
       },
       nil
@@ -104,6 +106,8 @@ defmodule Thexr.Spaces do
           "transform" => %{"position" => [-1.6, 1.1, -4.1]},
           "holdable" => %{},
           "throwable" => %{"type" => "physics_simulator"},
+          "triggerable" => %{"type" => "discreet"},
+          "gun" => %{},
           "material" => %{"name" => "color", "color_string" => "#FF0000"}
         }
       },

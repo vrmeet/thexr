@@ -59,7 +59,6 @@ export class BehaviorTriggerable implements IBehavior {
             )
           )
           .subscribe(() => {
-            console.log("trigger holding mesh");
             this.signalHub.movement.emit("trigger_holding_mesh", {
               hand,
               mesh: gripEvent.mesh,

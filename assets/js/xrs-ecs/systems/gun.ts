@@ -1,5 +1,5 @@
 import * as BABYLON from "babylonjs";
-import { filter, Subscription, switchMap, takeUntil } from "rxjs";
+import { filter, Subscription } from "rxjs";
 import type { SignalHub } from "../../signalHub";
 import { arrayReduceSigFigs } from "../../utils/misc";
 import type { Context } from "../context";
@@ -30,7 +30,7 @@ const FRAME_RATE = 60;
 
 export class SystemGun extends BaseSystemWithBehaviors implements ISystem {
   public name = "gun";
-  public order = 30;
+  public order = 40;
   public context: Context;
   public signalHub: SignalHub;
   public bulletModel: BABYLON.AbstractMesh;
@@ -41,7 +41,8 @@ export class SystemGun extends BaseSystemWithBehaviors implements ISystem {
   public xrs: XRS;
   public systemXR: SystemXR;
   async setup(xrs: XRS) {
-    this.context = xrs.context;
+    this.xrs = xrs;
+    this.context = this.xrs.context;
     this.scene = this.context.scene;
     this.signalHub = this.context.signalHub;
     this.systemXR = this.xrs.getSystem("xr") as SystemXR;
@@ -198,15 +199,7 @@ export class BehaviorGun implements IBehavior {
   }
   emitBulletFire(hand: "left" | "right") {
     // fire a bullet if we have ammo
-    let inputSource;
-    if (hand[0] === "l") {
-      inputSource = this.system.systemXR.leftInputSource;
-    } else {
-      inputSource = this.system.systemXR.rightInputSource;
-    }
-    if (!inputSource) {
-      return;
-    }
+    const inputSource = this.system.systemXR.getInputSource(hand);
 
     return this.signalHub.outgoing.emit("msg", {
       system: "gun",

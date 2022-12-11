@@ -39,7 +39,6 @@ export class SystemThrowable
     thrownObject.rotationQuaternion = BABYLON.Quaternion.FromArray(data.rot);
 
     if (!thrownObject.physicsImpostor) {
-      console.log("thrown object has NO physics imposter");
       thrownObject.physicsImpostor = new BABYLON.PhysicsImpostor(
         thrownObject,
         BABYLON.PhysicsImpostor.BoxImpostor,
@@ -47,7 +46,6 @@ export class SystemThrowable
         this.xrs.context.scene
       );
     }
-    // console.log("data", data);
     thrownObject.physicsImpostor.setLinearVelocity(
       BABYLON.Vector3.FromArray(data.lv)
     );

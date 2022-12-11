@@ -24,7 +24,6 @@
             navigator.mediaDevices
                 .enumerateDevices()
                 .then((devices) => {
-                    
                     populateLists(devices);
                     if (mics && mics.length > 0) {
                         selectedMic = mics[0].deviceId;
@@ -33,9 +32,7 @@
                         selectedOutput = outputs[0].deviceId;
                     }
                 })
-                .catch((reason) => {
-                    
-                });
+                .catch((reason) => {});
         })
         .catch((reason) => {
             alert(
@@ -64,6 +61,7 @@
         <h2>Mic</h2>
         <ul>
             {#each mics as mic}
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <li
                     class:selected={mic.deviceId === selectedMic}
                     on:click={() => selectMic(mic)}
@@ -75,6 +73,7 @@
         <h2>Output</h2>
         <ul>
             {#each outputs as output}
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <li
                     class:selected={output.deviceId === selectedOutput}
                     on:click={() => selectOutput(output)}
