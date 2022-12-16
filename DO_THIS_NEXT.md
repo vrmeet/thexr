@@ -1,5 +1,7 @@
 NEXT:
 
+test: remove a component through signal hub, by setting to nil, 
+
 bug: menu -> attendees and edit are broken
 
 STILL need a better menu system

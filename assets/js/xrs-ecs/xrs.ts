@@ -1,5 +1,4 @@
 import type { ComponentObj } from "../ecs/components/component-obj";
-import { Avatar } from "../scene/avatar";
 import { defaultContext, type Context, type OPTS } from "./context";
 import { Entity } from "./entity";
 import type { ISystem } from "./system";
@@ -121,6 +120,13 @@ export class XRS {
 
   debug() {
     this.context.scene.debugLayer.show({ embedMode: true });
+  }
+
+  printState() {
+    return Object.values(this.context.entities).reduce((acc, entity) => {
+      acc[entity.name] = entity.componentData();
+      return acc;
+    }, {});
   }
 
   initDefaultSystems() {

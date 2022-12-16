@@ -6,7 +6,6 @@ import {
   take,
   Subscription,
   mapTo,
-  tap,
 } from "rxjs";
 import * as BABYLON from "babylonjs";
 import { arrayReduceSigFigs, getSetParentValues } from "../../utils/misc";
@@ -230,7 +229,7 @@ export class BehaviorHoldable implements IBehavior {
       // if other hand grabbed the same mesh away from the first hand
       this.context.signalHub.movement.on(`${otherHand}_grip_mesh`).pipe(
         filter((data) => data.mesh.name === grabbedMesh.name),
-        mapTo("transferred")
+        map(() => "transferred")
       ),
       // OR another player stole our object
       this.context.signalHub.incoming.on("components_upserted").pipe(
@@ -242,13 +241,13 @@ export class BehaviorHoldable implements IBehavior {
               this.context.my_member_id
             )
         ),
-        mapTo("taken")
+        map(() => "taken")
       ),
 
       // OR the hand released the mesh
       this.context.signalHub.movement
         .on(`${hand}_grip_released`)
-        .pipe(mapTo("released"))
+        .pipe(map(() => "released"))
     );
   }
   releaseMesh() {
