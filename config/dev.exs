@@ -34,8 +34,6 @@ config :thexr, ThexrWeb.Endpoint,
     npm: ["run", "watchsys", cd: Path.expand("../assets", __DIR__)],
     npm: ["run", "watch", cd: Path.expand("../assets", __DIR__)],
     npm: ["run", "test:watch", cd: Path.expand("../assets", __DIR__)]
-
-    # npm: ["run", "sync_event_types", cd: Path.expand("../assets", __DIR__)]
   ]
 
 config :thexr,

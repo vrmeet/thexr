@@ -50,9 +50,9 @@ export interface ComponentObj {
   };
   throwable?: {
     type:
-      | "physics_simulator" // use physics imposters, can't predict where this object ends up
-      | { linear: number } // animate the object in a straight line at this constant speed M/s
-      | { dampening: number }; // slight floaty effect when object is released, object comes to a halt quickly
+    | "physics_simulator" // use physics imposters, can't predict where this object ends up
+    | { linear: number } // animate the object in a straight line at this constant speed M/s
+    | { dampening: number }; // slight floaty effect when object is released, object comes to a halt quickly
   };
   triggerable?: {
     type: "discreet" | "continuous";
@@ -75,5 +75,6 @@ export interface ComponentObj {
   serialized_mesh?: { mesh_id: string; path: string };
   collectable?: { value?: { label: string; amount: number }; item?: string };
   gun?: any;
+  spin?: { speed: number[] };
   [anykey: string]: any;
 }

@@ -114,6 +114,23 @@ defmodule Thexr.Spaces do
       nil
     )
 
+    Thexr.SpaceServer.process_event(
+      space.id,
+      "entity_created",
+      %{
+        "id" => "abcd",
+        "components" => %{
+          "shape" => %{
+            "prim" => "box",
+            "prim_params" => %{}
+          },
+          "material" => %{"name" => "color", "color_string" => "#00FF00"},
+          "spin" => %{"speed" => [0, 0.01, 0]}
+        }
+      },
+      nil
+    )
+
     {:ok, space}
   end
 

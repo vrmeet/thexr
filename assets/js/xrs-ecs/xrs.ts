@@ -18,6 +18,7 @@ import { SystemMaterial } from "./systems/material";
 import { SystemMenu } from "./systems/menu";
 import { SystemScene } from "./systems/scene";
 import { SystemShape } from "./systems/shape";
+import { SystemSpin } from "./systems/spin";
 import { SystemStartModal } from "./systems/start-modal";
 import { SystemThrowable } from "./systems/throwable";
 import { SystemTintOverlay } from "./systems/tint-overlay";
@@ -149,5 +150,6 @@ export class XRS {
     this.registerSystem(new SystemThrowable());
     this.registerSystem(new SystemTriggerable());
     this.registerSystem(new SystemGun());
+    this.registerSystem(new SystemSpin());
   }
 }

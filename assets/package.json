@@ -9,7 +9,6 @@
     "sys": "esbuild `find js/ecs/pluggable_systems -name '*.ts'` --outdir=../priv/static/systems --target=es2016",
     "watchsys": "esbuild `find js/ecs/pluggable_systems -name '*.ts'` --outdir=../priv/static/systems --target=es2016 --watch",
     "typecheck": "tsc --watch",
-    "sync_event_types": "node event-name-watcher.js",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "test:build": "node spec/support/build-tests.js",
     "test:watch": "node spec/support/build-tests.js --watch",

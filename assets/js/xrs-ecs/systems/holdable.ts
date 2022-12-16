@@ -113,6 +113,9 @@ export class SystemHoldable extends BaseSystemWithBehaviors implements ISystem {
   } | null {
     const multiplier =
       inputSource.motionController.handness[0] === "l" ? 1 : -1;
+
+    // const ray1 = BABYLON.Ray.CreateNewFromTo(BABYLON.Vector3.Zero(), new BABYLON.Vector3(1, 1, 1))
+
     const p1 = new BABYLON.Vector3(0.1 * multiplier, 0.1, -0.1);
     const p2 = new BABYLON.Vector3(0, -0.26, 0.024);
     const ray = BABYLON.Ray.CreateNewFromTo(
