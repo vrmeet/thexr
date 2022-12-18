@@ -44,13 +44,6 @@ export class SystemHoldable extends BaseSystemWithBehaviors implements ISystem {
 
     this.detectMeshGrab("left");
     this.detectMeshGrab("right");
-
-    window["test"] = () => {
-      this.findGrabbableMesh(
-        "right",
-        this.xrs.context.scene.getMeshByName("abc").getWorldMatrix()
-      );
-    };
   }
   buildBehavior(): IBehavior {
     return new BehaviorHoldable(this);
@@ -116,8 +109,14 @@ export class SystemHoldable extends BaseSystemWithBehaviors implements ISystem {
 
     const rayParams = [
       { p1: [multiplier * 0.03, 0, 0], p2: [multiplier * 0.2, 0, 0] }, // horizontal
-      { p1: [0, 0, 0.05], p2: [0, 0, 0.2] }, // forward
-      { p1: [0.1 * multiplier, 0.1, -0.1], p2: [0, -0.26, 0.024] }, // diagonal
+      { p1: [0, -0.05, 0], p2: [0, -0.2, 0] }, // forward,
+      { p1: [0, 0, 0.05], p2: [0, 0, 0.1] }, // top
+      {
+        p1: [multiplier * 0.08, 0, 0.05],
+        p2: [multiplier * 0.08, -0.2, 0.05],
+      }, // 2nd forward,
+
+      // { p1: [0.1 * multiplier, 0.1, -0.1], p2: [0, -0.26, 0.024] }, // diagonal
     ];
 
     for (let i = 0; i < rayParams.length; i++) {
@@ -127,11 +126,12 @@ export class SystemHoldable extends BaseSystemWithBehaviors implements ISystem {
         BABYLON.Vector3.FromArray(p2),
         handMatrix
       );
-      BABYLON.RayHelper.CreateAndShow(
-        ray,
-        this.xrs.context.scene,
-        BABYLON.Color3.Red()
-      );
+      // BABYLON.RayHelper.CreateAndShow(
+      //   ray,
+      //   this.xrs.context.scene,
+      //   BABYLON.Color3.Red()
+      // );
+
       const pickInfo = this.context.scene.pickWithRay(ray);
       const entity = this.xrs.context.entities[pickInfo.pickedMesh?.name];
       if (entity && entity.hasComponent("holdable")) {
