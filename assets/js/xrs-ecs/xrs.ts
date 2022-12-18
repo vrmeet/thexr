@@ -24,6 +24,7 @@ import { SystemTintOverlay } from "./systems/tint-overlay";
 import { SystemTransform } from "./systems/transform";
 import { SystemTriggerable } from "./systems/triggerable";
 import { SystemUtilities } from "./systems/utilities";
+import { SystemVisiblity } from "./systems/visibility";
 import { SystemWebRTC } from "./systems/webrtc";
 import { SystemXR } from "./systems/xr";
 import { SystemXRFlight } from "./systems/xr-flight";
@@ -157,5 +158,6 @@ export class XRS {
     this.registerSystem(new SystemTriggerable());
     this.registerSystem(new SystemGun());
     this.registerSystem(new SystemSpin());
+    this.registerSystem(new SystemVisiblity());
   }
 }

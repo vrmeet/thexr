@@ -1,12 +1,4 @@
-import {
-  filter,
-  map,
-  Observable,
-  race,
-  take,
-  Subscription,
-  mapTo,
-} from "rxjs";
+import { filter, map, Observable, race, take, Subscription, mapTo } from "rxjs";
 import * as BABYLON from "babylonjs";
 import { arrayReduceSigFigs, getSetParentValues } from "../../utils/misc";
 import {
@@ -52,6 +44,13 @@ export class SystemHoldable extends BaseSystemWithBehaviors implements ISystem {
 
     this.detectMeshGrab("left");
     this.detectMeshGrab("right");
+
+    window["test"] = () => {
+      this.findGrabbableMesh(
+        "right",
+        this.xrs.context.scene.getMeshByName("abc").getWorldMatrix()
+      );
+    };
   }
   buildBehavior(): IBehavior {
     return new BehaviorHoldable(this);
@@ -94,47 +93,50 @@ export class SystemHoldable extends BaseSystemWithBehaviors implements ISystem {
       .on(`${hand}_grip_squeezed`)
       .pipe(
         map((inputSource) => {
-          return this.findGrabbableMesh(inputSource);
+          return this.findGrabbableMesh(
+            hand,
+            inputSource.grip.getWorldMatrix()
+          );
         }),
         filter((result) => result !== null)
       )
-      .subscribe((data) => {
+      .subscribe((foundMesh) => {
         // emit that we grabbed a mesh
         this.signalHub.movement.emit(`${hand}_grip_mesh`, {
-          mesh: data.mesh,
+          mesh: foundMesh,
         });
       });
   }
 
-  findGrabbableMesh(inputSource: BABYLON.WebXRInputSource): {
-    mesh: BABYLON.AbstractMesh;
-    inputSource: BABYLON.WebXRInputSource;
-  } | null {
-    const multiplier =
-      inputSource.motionController.handness[0] === "l" ? 1 : -1;
+  findGrabbableMesh(
+    hand: "left" | "right",
+    handMatrix: BABYLON.Matrix
+  ): BABYLON.AbstractMesh | null {
+    const multiplier = hand[0] === "l" ? 1 : -1;
 
-    // const ray1 = BABYLON.Ray.CreateNewFromTo(BABYLON.Vector3.Zero(), new BABYLON.Vector3(1, 1, 1))
+    const rayParams = [
+      { p1: [multiplier * 0.03, 0, 0], p2: [multiplier * 0.2, 0, 0] }, // horizontal
+      { p1: [0, 0, 0.05], p2: [0, 0, 0.2] }, // forward
+      { p1: [0.1 * multiplier, 0.1, -0.1], p2: [0, -0.26, 0.024] }, // diagonal
+    ];
 
-    const p1 = new BABYLON.Vector3(0.1 * multiplier, 0.1, -0.1);
-    const p2 = new BABYLON.Vector3(0, -0.26, 0.024);
-    const ray = BABYLON.Ray.CreateNewFromTo(
-      p1,
-      p2,
-      inputSource.grip.getWorldMatrix()
-    );
-    BABYLON.RayHelper.CreateAndShow(
-      ray,
-      this.xrs.context.scene,
-      BABYLON.Color3.Red()
-    );
-    const pickInfo = this.context.scene.pickWithRay(ray);
-
-    const entity = this.xrs.context.entities[pickInfo.pickedMesh?.name];
-    if (entity && entity.hasComponent("holdable")) {
-      return {
-        mesh: pickInfo.pickedMesh,
-        inputSource,
-      };
+    for (let i = 0; i < rayParams.length; i++) {
+      const { p1, p2 } = rayParams[i];
+      const ray = BABYLON.Ray.CreateNewFromTo(
+        BABYLON.Vector3.FromArray(p1),
+        BABYLON.Vector3.FromArray(p2),
+        handMatrix
+      );
+      BABYLON.RayHelper.CreateAndShow(
+        ray,
+        this.xrs.context.scene,
+        BABYLON.Color3.Red()
+      );
+      const pickInfo = this.context.scene.pickWithRay(ray);
+      const entity = this.xrs.context.entities[pickInfo.pickedMesh?.name];
+      if (entity && entity.hasComponent("holdable")) {
+        return pickInfo.pickedMesh;
+      }
     }
     return null;
   }

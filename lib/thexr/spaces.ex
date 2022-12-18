@@ -118,14 +118,16 @@ defmodule Thexr.Spaces do
       space.id,
       "entity_created",
       %{
-        "id" => "abcd",
+        "id" => "abc",
         "components" => %{
           "shape" => %{
             "prim" => "box",
-            "prim_params" => %{}
+            "prim_params" => %{"width" => 0.03, "depth" => 0.1, "height" => 0.05}
           },
-          "material" => %{"name" => "color", "color_string" => "#00FF00"},
-          "spin" => %{"speed" => [0, 0.01, 0]}
+          "visibility" => %{"value" => 0.5},
+          "transform" => %{"position" => [0, 1.1, 3]},
+          "material" => %{"name" => "color", "color_string" => "#00FF00"}
+          # "spin" => %{"speed" => [0, 0.01, 0]}
         }
       },
       nil
