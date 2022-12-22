@@ -1,5 +1,11 @@
 NEXT:
 
+- add text signage
+- add button to emit an arbitrary event
+- add component to receive arbitrary message then add or remove a component
+
+3D slides built with some text description?  possible?
+
 test: remove a component through signal hub, by setting to nil, 
 
 bug: menu -> attendees and edit are broken
