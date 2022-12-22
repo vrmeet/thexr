@@ -81,7 +81,7 @@ export class BehaviorMaterial implements IBehavior {
     this.system.pruneMaterial(materialName);
   }
   assignMaterial(mat: BABYLON.Material) {
-    const mesh = this.entity.transformable as BABYLON.AbstractMesh;
+    const mesh = this.entity.getFirstMesh();
 
     if (mesh) {
       mesh.material = mat;

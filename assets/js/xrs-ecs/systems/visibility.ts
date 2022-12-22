@@ -30,7 +30,7 @@ export class BehaviorVisiblity implements IBehavior {
   add(entity: Entity, data: VisiblityType) {
     this.data = data;
     this.entity = entity;
-    this.mesh = entity.transformable as BABYLON.AbstractMesh;
+    this.mesh = entity.getFirstMesh();
     this.mesh.visibility = data.value;
   }
   update(data: VisiblityType) {

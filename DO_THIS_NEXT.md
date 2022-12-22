@@ -1,8 +1,11 @@
 NEXT:
 
 - add text signage
+  - almost done, but need generic way to preserve transform and material when changing out a model
+  
 - add button to emit an arbitrary event
 - add component to receive arbitrary message then add or remove a component
+- music sequencer with tonejs
 
 3D slides built with some text description?  possible?
 

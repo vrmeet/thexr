@@ -19,12 +19,13 @@
     <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
     <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+    <script type="text/javascript" src="/assets/meshwriter.min.js" defer></script>
     <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/space.js")}></script>
-    
+
     <%= if Application.get_env(:thexr, :environment_name) == :prod do %>
 
       <script src="//js.honeybadger.io/v3.2/honeybadger.min.js" type="text/javascript"></script>
-  
+
       <script type="text/javascript">
         Honeybadger.configure({
           apiKey: 'd839a21f',

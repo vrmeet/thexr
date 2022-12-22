@@ -18,21 +18,12 @@ export class BehaviorShape implements IBehavior {
 
     this.createMesh();
   }
-  copyPosRotScale(
-    mesh: BABYLON.AbstractMesh,
-    transformable: BABYLON.TransformNode | BABYLON.AbstractMesh
-  ) {
-    if (!transformable) {
-      return;
-    }
-    mesh.position.copyFrom(transformable.position);
-    mesh.rotationQuaternion.copyFrom(transformable.rotationQuaternion);
-    mesh.scaling.copyFrom(this.entity.transformable.scaling);
-  }
+
   update(data: typeof this.data) {
-    // replaces a mesh, but keep same pos,rot,scale
-    this.data = data;
-    this.createMesh();
+    this.entity.changeModel(() => {
+      this.remove();
+      this.add(this.entity, data);
+    });
   }
   remove() {
     // removes the mesh
@@ -57,8 +48,6 @@ export class BehaviorShape implements IBehavior {
         builderOptions
       );
       mesh.rotationQuaternion = new BABYLON.Quaternion();
-      this.copyPosRotScale(mesh, this.entity.transformable);
-      this.entity.transformable?.dispose();
       this.entity.transformable = mesh;
     } else {
       throw new Error("unsupported shape");

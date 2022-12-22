@@ -19,6 +19,7 @@ import { SystemScene } from "./systems/scene";
 import { SystemShape } from "./systems/shape";
 import { SystemSpin } from "./systems/spin";
 import { SystemStartModal } from "./systems/start-modal";
+import { SystemText3D } from "./systems/text3d";
 import { SystemThrowable } from "./systems/throwable";
 import { SystemTintOverlay } from "./systems/tint-overlay";
 import { SystemTransform } from "./systems/transform";
@@ -159,5 +160,6 @@ export class XRS {
     this.registerSystem(new SystemGun());
     this.registerSystem(new SystemSpin());
     this.registerSystem(new SystemVisiblity());
+    this.registerSystem(new SystemText3D());
   }
 }
