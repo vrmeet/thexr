@@ -6,6 +6,7 @@ import * as MAT from "babylonjs-materials";
 
 export class SystemMaterial extends BaseSystemWithBehaviors {
   name = "material";
+  public callWhenModelChanges = true;
   public materials: { [material_name: string]: BABYLON.Material } = {};
   // keep track of entities using material name so that
   // if no one is using the material it can be pruned

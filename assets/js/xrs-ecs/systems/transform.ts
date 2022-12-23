@@ -21,6 +21,7 @@ export class SystemTransform
   extends BaseSystemWithBehaviors
   implements ISystem
 {
+  public callWhenModelChanges = true;
   public name = "transform";
   public scene: BABYLON.Scene;
   public context: Context;

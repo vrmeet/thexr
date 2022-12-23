@@ -120,8 +120,9 @@ defmodule Thexr.Spaces do
       %{
         "id" => "abc",
         "components" => %{
-          "text" => %{"value" => "Hello World!"},
-          "material" => %{"name" => "color", "color_string" => "#FF0000"}
+          "text3d" => %{"value" => "Hello World!"},
+          "material" => %{"name" => "color", "color_string" => "#FF0000"},
+          "visibility" => %{"value" => 0.5}
         }
       },
       nil

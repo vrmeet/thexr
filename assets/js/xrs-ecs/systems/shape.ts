@@ -7,6 +7,17 @@ import {
 } from "../system";
 import type { XRS } from "../xrs";
 
+export class SystemShape extends BaseSystemWithBehaviors implements ISystem {
+  public name = "shape";
+  public order = 1;
+  public xrs: XRS;
+  public schema = { prim: { type: "string" }, prim_params: {} }; // unused
+
+  buildBehavior(): IBehavior {
+    return new BehaviorShape(this);
+  }
+}
+
 export class BehaviorShape implements IBehavior {
   public entity: Entity;
   public data: { prim: string; prim_params: any };
@@ -20,10 +31,9 @@ export class BehaviorShape implements IBehavior {
   }
 
   update(data: typeof this.data) {
-    this.entity.changeModel(() => {
-      this.remove();
-      this.add(this.entity, data);
-    });
+    this.remove();
+    this.add(this.entity, data);
+    this.entity.refreshAfterModelChanged();
   }
   remove() {
     // removes the mesh
@@ -52,16 +62,5 @@ export class BehaviorShape implements IBehavior {
     } else {
       throw new Error("unsupported shape");
     }
-  }
-}
-
-export class SystemShape extends BaseSystemWithBehaviors implements ISystem {
-  public name = "shape";
-  public order = 1;
-  public xrs: XRS;
-  public schema = { prim: { type: "string" }, prim_params: {} }; // unused
-
-  buildBehavior(): IBehavior {
-    return new BehaviorShape(this);
   }
 }

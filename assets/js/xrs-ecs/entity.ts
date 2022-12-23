@@ -3,56 +3,30 @@ import type * as BABYLON from "babylonjs";
 import type { ISystem } from "./system";
 import type { ComponentObj } from "../ecs/components/component-obj";
 import { pre } from "../menu/helpers";
+import { SystemMaterial } from "./systems/material";
 
 export class Entity {
-  public transformable: BABYLON.TransformNode | BABYLON.AbstractMesh;
+  public transformable: BABYLON.TransformNode | BABYLON.AbstractMesh | null =
+    null;
   constructor(public name: string, public xrs: XRS) {}
-  getFirstMesh(): BABYLON.AbstractMesh {
-    if (this.transformable.getClassName() === "TransformNode") {
+  getFirstMesh(): BABYLON.AbstractMesh | null {
+    if (this.transformable?.getClassName() === "TransformNode") {
       return this.transformable.getChildMeshes()[0];
-    } else {
+    } else if (this.transformable) {
       return this.transformable as BABYLON.AbstractMesh;
-    }
-  }
-  changeModel(callback: () => void) {
-    let position, rotationQuaternion, scaling;
-    let preserveTransform = false;
-    let preserveMaterial = false;
-    if (this.transformable) {
-      if (this.hasComponent("transform")) {
-        preserveTransform = true;
-        position = this.transformable.position.clone();
-        rotationQuaternion = this.transformable.rotationQuaternion.clone();
-        scaling = this.transformable.scaling.clone();
-      }
-      if (this.hasComponent("material")) {
-        preserveMaterial = true;
-      }
-    }
-    callback();
-    if (preserveTransform) {
-      this.transformable.position = position;
-      this.transformable.rotationQuaternion = rotationQuaternion;
-      this.transformable.scaling = scaling;
-    }
-    if (preserveMaterial) {
-      this.updateComponent(
-        "material",
-        this.getComponentBehaviorData("material")
-      );
+    } else {
+      return null;
     }
   }
 
-  copyPosRotScale(
-    mesh: BABYLON.Tran,
-    transformable: BABYLON.TransformNode | BABYLON.AbstractMesh
-  ) {
-    if (!transformable) {
-      return;
-    }
-    mesh.position.copyFrom(transformable.position);
-    mesh.rotationQuaternion.copyFrom(transformable.rotationQuaternion);
-    mesh.scaling.copyFrom(this.entity.transformable.scaling);
+  // if the model is changed, then applied things on the model like material and transform might be lost,
+  // re-apply them
+  refreshAfterModelChanged() {
+    Object.values(this.componentSystems)
+      .filter((sys) => sys.callWhenModelChanges === true)
+      .forEach((sys) => {
+        this.updateComponent(sys.name, this.getComponentBehaviorData(sys.name));
+      });
   }
 
   componentSystems: { [componentName: string]: ISystem } = {};
@@ -124,8 +98,10 @@ export class Entity {
   }
 
   dispose() {
-    Object.keys(this.componentSystems).forEach((componentName) =>
-      this.removeComponent(componentName)
-    );
+    Object.values(this.componentSystems)
+      .sort((a, b) => b.order - a.order)
+      .forEach((sys) => {
+        this.removeComponent(sys.name);
+      });
   }
 }

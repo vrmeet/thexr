@@ -14,6 +14,7 @@ export interface ISystem {
   name: string;
   order?: number;
   schema?: any;
+  callWhenModelChanges?: boolean;
   setup(xrs: XRS): void;
   start?(): void;
   pause?(): void;
@@ -30,6 +31,7 @@ export interface ISystem {
 export abstract class BaseSystemWithBehaviors implements ISystem {
   abstract name: string;
   public order = 5;
+  public callWhenModelChanges = false;
   public xrs: XRS;
   public schema = { prim: { type: "string" }, prim_params: {} }; // unused
   public entities: Record<string, IBehavior> = {};

@@ -10,6 +10,7 @@ export class SystemVisiblity
   extends BaseSystemWithBehaviors
   implements ISystem
 {
+  public callWhenModelChanges = true;
   name = "visibility";
   order = 10;
   buildBehavior() {
@@ -31,13 +32,17 @@ export class BehaviorVisiblity implements IBehavior {
     this.data = data;
     this.entity = entity;
     this.mesh = entity.getFirstMesh();
-    this.mesh.visibility = data.value;
+    if (this.mesh) {
+      this.mesh.visibility = data.value;
+    }
   }
   update(data: VisiblityType) {
-    this.data = data;
-    this.mesh.visibility = data.value;
+    this.remove();
+    this.add(this.entity, data);
   }
   remove() {
-    this.mesh.visibility = 1;
+    if (this.mesh) {
+      this.mesh.visibility = 1;
+    }
   }
 }

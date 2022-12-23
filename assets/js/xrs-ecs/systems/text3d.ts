@@ -8,7 +8,7 @@ import * as BABYLON from "babylonjs";
 import type { XRS } from "../xrs";
 
 export class SystemText3D extends BaseSystemWithBehaviors implements ISystem {
-  name = "text";
+  name = "text3d";
   order = 1;
   public Writer;
   setup(xrs: XRS) {
@@ -59,10 +59,9 @@ export class BehaviorText implements IBehavior {
   }
 
   update(data: TextType) {
-    this.entity.changeModel(() => {
-      this.remove();
-      this.add(this.entity, data);
-    });
+    this.remove();
+    this.add(this.entity, data);
+    this.entity.refreshAfterModelChanged();
   }
   remove() {
     this.entity.transformable.dispose();
